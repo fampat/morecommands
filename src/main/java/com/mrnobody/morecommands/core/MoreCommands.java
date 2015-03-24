@@ -300,8 +300,8 @@ public class MoreCommands {
 	private List<String> readDisabledCommands() {
 		List<String> disabled = new ArrayList<String>();
 		File file = new File(Reference.getModDir(), "disable.cfg");
-		
-		try {
+
+	    try {
 			if (!file.exists() || !file.isFile()) file.createNewFile();
 			BufferedReader br = new BufferedReader(new FileReader(file));
 			String line;
