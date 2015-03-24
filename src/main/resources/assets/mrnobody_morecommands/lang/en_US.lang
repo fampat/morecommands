@@ -1,0 +1,946 @@
+command.generic.notEnabled=More Commands is not enabled (Probably because Commands and Handlers couldn't be loaded)
+command.generic.notClient=You executed a client command as non-client Player o_O
+command.generic.notIntegrated=This command is only allowed on the integrated server (Singleplayer)
+command.generic.notDedicated=This command is only allowed on a dedicated server (Multiplayer)
+command.generic.clientPlayerNotPatched=The patch to the Client Player (EntityClientPlayerMP) wasn't applied and this command can therefore not be executed
+command.generic.clientCommandHandlerNotPatched=The patch to the Client Command Handler (ClientCommandHandler) wasn't applied and this command can therefore not be executed
+command.generic.notServer=You executed this command not as server side player
+command.generic.noPlayerInfoAvailable=No Settings information to this player is available, although it's required. Therefore the command can't be executed
+command.generic.serverConfigManagerNotPatched=The patch to the Server Configuration Manager (ServerConfigurationManager) wasn't applied and this command can therefore not be executed
+command.generic.clientNotModded=You don't have the More Commands Mod installed at your PC (client Side), but this Command requires this mod installed client Side. Install it or you can't use this command
+command.generic.serverPlayerNotPatched=The patch to the Server Player (EntityPlayerMP) wasn't applied and this command can therefore not be executed
+command.generic.netServerPlayHandlerNotPatched=The patch to the Server Player Net Handler (NetHandlerPlayServer) wasn't applied and this command can therefore not be executed
+
+command.generic.help.pageheader======Help (Page %d of %d)======
+command.generic.help.commandheader==========Command Help==========
+command.generic.help.footer================================
+command.generic.help.name=Name: 
+command.generic.help.description=Description: 
+command.generic.help.syntax=Syntax: 
+command.generic.help.example=Example: 
+command.generic.help.video=Video: 
+command.generic.help.moreinfo=Use /help <page> or /help <command> to get more help
+command.generic.help.noDescription=This Command doesn't have a description D:
+command.generic.help.noExample=This Command doesn't have an example D:
+command.generic.help.noVideo=This Command doesn't have a video D:
+command.generic.notFound=Command not found.
+
+command.alias.description=Adds an alias for a command
+command.alias.example=/alias t toggledownfall
+command.alias.syntax=/alias <NAME> <COMMAND> [PARAMETERS]
+command.alias.videoURL=youtu.be/gDp5evEEu-E
+command.alias.overwrite=This name is already reserved to a command
+command.alias.success=Alias successfully set
+command.alias.infiniteRecursion=The name for an alias can't be the command Name ...
+command.alias.invalidUsage=Invalid Usage. Type 'help alias' to get help
+
+command.bind.description=Adds a keyboard binding for a command
+command.bind.example=/bind p gamemode 0
+command.bind.syntax=/bind <KEYCODE> <COMMAND> [PARAMETERS]
+command.bind.videoURL=youtu.be/sTAte3Wm0iY
+command.bind.success=Binding successfully added
+command.bind.invalidChar=Invalid Keycode
+command.bind.invalidUsage=Invalid Usage. Type 'help bind' to get help
+
+command.bindid.description=Adds a keyboard binding for a command by the key id
+command.bindid.example=/bindid 25 kill
+command.bindid.syntax=/bindid <KEYID> <COMMAND> [PARAMETERS]
+command.bindid.videoURL=youtu.be/sTAte3Wm0iY
+command.bindid.success=Binding successfully added
+command.bindid.invalidChar=Invalid Key ID
+command.bindid.invalidUsage=Invalid Usage. Type 'help bindid' to get help
+command.bindid.invalidID=Unknown Key ID.
+
+command.chelp.description=Gives help to client commands
+command.chelp.example=/chelp clear
+command.chelp.syntax=/chelp [PAGE|COMMAND]
+command.chelp.videoURL=youtu.be/zTZZHSgz198
+
+command.clear.description=Clears the chat console.
+command.clear.example=/clear
+command.clear.syntax=/clear
+command.clear.videoURL=youtu.be/flyUbLX6WwM
+
+command.clientcommands.description=Turns client side command handling on/off
+command.clientcommands.example=/clientcommands disable
+command.clientcommands.syntax=/clientcommands <ENABLE|DISABLE>
+command.clientcommands.videoURL=youtu.be/SZfJNlBQy8c
+command.clientcommands.on=Client Commands successfully turned on
+command.clientcommands.off=Client Commands successfully turned off
+command.clientcommands.failure=Invalid Argument.
+
+command.clouds.description=Turns clouds on or off
+command.clouds.example=/clouds off
+command.clouds.syntax=/clouds [TRUE|FALSE|ON|OFF|0|1]
+command.clouds.videoURL=youtu.be/oSwIETW_trU
+command.clouds.on=Clouds successfully turned on
+command.clouds.off=Clouds successfully turned off
+command.clouds.failure=Invalid Argument.
+
+command.morecommands.description=Gives information about this mod
+command.morecommands.example=/morecommands
+command.morecommands.syntax=/morecommands
+command.morecommands.videoURL=youtu.be/Fg8MVc3VI3Q
+
+command.fog.description=Changes the Render distance
+command.fog.example=/fog tiny
+command.fog.syntax=/fog <TINY|SMALL|NORMAL|FAR>
+command.fog.videoURL=youtu.be/6okUNR7-5kg
+command.fog.invalidArg=Invalid Argument.
+command.fog.success=Render distance successfully changed
+command.fog.invalidUsage=Invalid Usage. Type 'help fog' to get help
+
+command.freeze.description=Freezes Entities
+command.freeze.example=/freeze
+command.freeze.syntax=/freeze
+command.freeze.videoURL=youtu.be/egouVQSCY4Q
+command.freeze.on=Entities successfully frozen
+command.freeze.off=Entities successfully unfrozen
+command.freeze.failure=Invalid Argument.
+
+command.helpSideClient.description=Displays information about how to get help with this mod
+command.helpSideClient.example=/help
+command.helpSideClient.syntax=/help
+command.helpSideClient.videoURL=youtu.be/qDs_D1kI3Ag
+command.helpSideClient.info=The More Commands Mod adds Client and Server Commands. Client Commands work without installing the mod server side, but they aren't displayed in the help menu. To get help for Client Commands, use 'chelp' or 'help client', for regular Server Commands 'shelp' or 'help server'. If you want to disable all client side Commands, use '/clientcommands disable'
+
+command.macro.description=Adds/Executes/Removes/Edits a macro
+command.macro.syntax=/macro <ADD NAME [COMMAND1;COMMAND2;...]|EDIT NAME [COMMAND1;COMMAND2;...]|DELETE NAME|EXECUTE NAME>
+command.macro.example=/macro add test fly;noclip;achievement unlockAll;damage
+command.macro.videoURL=youtu.be/dWTPpWa1H64
+command.macro.deleteSuccess=Macro %s successfully removed
+command.macro.executeError=There was an Error executing this macro
+command.macro.notFound=Couldn't find macro %s
+command.macro.exists=Couldn't add macro %s, because it exists already: Use '/macro edit' to edit macros
+command.macro.writeError=There was an Error saving this macro
+command.macro.createSuccess=Macro %s successfully created
+command.macro.invalidUsage=Invalid Usage. Type 'help macro' to get help
+
+command.music.description=Stops/Plays/Skips Music or sets the music volume
+command.music.example=/music play
+command.music.syntax=/music [PLAY|STOP|SKIP|VOLUME <VOLUME>]
+command.music.videoURL=Not yet available
+command.music.played=Music playing.
+command.music.stopped=Music stopped.
+command.music.skipped=Current Track skipped.
+command.music.volumeset=Volume successfully set
+command.music.invalidArg=Invalid Argument.
+command.music.invalidUsage=Invalid Usage. Type 'help music' to get help
+command.music.playedrandom=Playing random Track.
+
+command.output.description=Turns chat output from this mod on/off
+command.output.example=/output off
+command.output.syntax=/output [TRUE|FALSE|ON|OFF|0|1]
+command.output.videoURL=youtu.be/-8HxUQg-yDU
+command.output.on=Chat output successfully turned on
+command.output.off=Chat output successfully turned off
+command.output.failure=Invalid Argument.
+
+command.position.description=Shows you current position
+command.position.example=/position
+command.position.syntax=/position
+command.position.videoURL=youtu.be/x6ffLV-TNjM
+
+command.ride.description=Let's you ride any entity you're looking at (Type ride again to dismount entity)
+command.ride.example=/ride
+command.ride.syntax=/ride
+command.ride.videoURL=youtu.be/EUmDAi_sM9Y
+command.ride.mounted=Entity mounted
+command.ride.notLiving=Entity is not living
+command.ride.notFound=No Entity found
+command.ride.dismounted=Entity dismounted
+
+command.shelp.description=Gives help to server commands
+command.shelp.example=/shelp toggledownfall
+command.shelp.syntax=/shelp [PAGE|COMMAND]
+command.shelp.videoURL=youtu.be/6Q8cHSVmoeU
+
+command.unalias.description=Removes an alias
+command.unalias.example=/unalias test
+command.unalias.syntax=/unalias <ALIAS>
+command.unalias.videoURL=youtu.be/gDp5evEEu-E
+command.unalias.success=Alias successfully removed
+command.unalias.notFound=Alias not found
+command.unalias.invalidUsage=Invalid Usage. Type 'help unalias' to get help
+
+command.unbind.description=Removes a key binding
+command.unbind.example=/unbind p
+command.unbind.syntax=/unbind <KEYCODE|KEYID>
+command.unbind.videoURL=youtu.be/sTAte3Wm0iY
+command.unbind.success=Key successfully removed
+command.unbind.bindingNotFound=Key binding not found
+command.unbind.invalidUsage=Invalid Usage. Type 'help unbind' to get help
+
+command.world.description=Performs several operations on worlds (works only partially in multiplayer)
+command.world.example=/world new test 0123456789
+command.world.syntax=/world <LOAD NAME|BACKUP|SAVE|EXIT|NEW NAME [SEED]|LIST|SEED|NAME>
+command.world.videoURL=youtu.be/iHC0ZuhZc_M
+command.world.NAN=The seed must be a number
+command.world.cantcreate=Can't create world because folder exists already
+command.world.invalidArg=Invalid Argument.
+command.world.invalidUsage=Invalid Usage. Type 'help world' to get help
+command.world.serverNotModded=This Command works only on servers having the MoreCommands Mod installed
+command.world.setseed=Seed successfully set to %s
+command.world.currentseed=The current world seed is %s
+command.world.setname=World name successfully set to %s
+command.world.currentname=The current world name is %s
+command.world.notLoadable=Can't load world %s
+
+command.achievement.description=Unlocks or lists achievements
+command.achievement.example=/achievement unlockAll
+command.achievement.syntax=/achievement <unlock <NAME>|unlockAll|list>
+command.achievement.videoURL=youtu.be/neq4oPO6Geg
+command.achievement.invalidUsage=Invalid Usage. Type 'help achievement' to get help
+command.achievement.unlockAllSuccess=All achievements successfully unlocked
+command.achievement.unlockSuccess=Achievement successfully unlocked
+command.achievement.parent=Achievement could not be unlocked, parent achievement %s must be unlocked first
+command.achievement.unlockFailure=Achievement could not be found
+command.achievement.more=Use '/achievement list PAGE' and replace PAGE with the page number to see more achievement Names
+
+command.air.description=Sets your air (under water)
+command.air.example=/air 150
+command.air.syntax=/air <GET|MAX|MIN|VALUE>
+command.air.videoURL=youtu.be/uLj-t8Vtcek
+command.air.success=Air successfully set
+command.air.get=Your air is %s
+command.air.invalidParam=Invalid Argument
+command.air.notInWater=Your are not in water
+command.air.invalidUsage=Invalid Usage. Type 'help air' to get help
+
+command.ascend.description=Moves you to the next platform above your position
+command.ascend.example=/ascend
+command.ascend.syntax=/ascend
+command.ascend.videoURL=youtu.be/guxEEU_cweU
+command.ascend.ascended=You ascended %d blocks
+
+command.biome.description=Displays info to the the current biome or lists all biomes
+command.biome.example=/biome info
+command.biome.syntax=/biome <INFO|LIST>
+command.biome.videoURL=youtu.be/y-sqmkXJeAs
+command.biome.info=Your current Biome is: %s (ID %d)
+command.biome.more=Use '/biome list PAGE' and replace PAGE with the page number to see more biome Names
+command.biome.invalidUsage=Invalid Usage. Type 'help biome' to get help
+
+command.breakspeed.description=Sets the break speed for blocks
+command.breakspeed.example=/breakspeed 20
+command.breakspeed.syntax=/breakspeed <VALUE|MIN|MAX|RESET>
+command.breakspeed.videoURL=youtu.be/BnJ6yq5cBmI
+command.breakspeed.invalidArg=The break speed must be a number
+command.breakspeed.invalidUsage=Invalid Usage. Type 'help breakspeed' to get help
+command.breakspeed.setto=Break Speed successfully set to %s
+command.breakspeed.reset=Break Speed successfully reseted
+
+command.breathe.description=Breathes under water (fills your by a certain amount)
+command.breathe.example=/breathe 50
+command.breathe.syntax=/breathe [VALUE]
+command.breathe.videoURL=youtu.be/Zf5Rf-dLc7Q
+command.breathe.noNumber=The amount of air you want to get must be a number
+command.breathe.notInWater=You are not in water
+
+command.bring.description=Brings nearby Entities to your crosshair position (by default items)
+command.bring.example=/bring creeper 50
+command.bring.syntax=/bring [ENTITY|RADIUS|ENTITY RADIUS]
+command.bring.videoURL=youtu.be/Vqen-jjS5rs
+command.bring.NAN=The radius must be a number
+command.bring.unknownEntity=Unknown Entity Type
+command.bring.invalidRadius=The radius must be between 0 and 256
+
+command.cannon.description=Fires a primed TNT
+command.cannon.example=/cannon 10
+command.cannon.syntax=/cannon [STRENGTH]
+command.cannon.videoURL=youtu.be/O5jFrNbQNUo
+command.cannon.NAN=The strength must be a number
+command.cannon.success=Fire!
+
+command.cheats.description=Turns cheats on/off (only Singleplayer)
+command.cheats.example=/cheats on
+command.cheats.syntax=/cheats [TRUE|FALSE|ON|OFF|0|1]
+command.cheats.videoURL=youtu.be/NBJvqfeSQXk
+command.cheats.on=Cheats successfully turned on
+command.cheats.off=Cheats successfully turned off
+command.cheats.failure=Invalid Argument.
+
+command.chest.description=Performs several operations on chests
+command.chest.example=/chest swap
+command.chest.syntax=/chest <DROP|FILL|GET|SWAP|CLEAR>
+command.chest.videoURL=youtu.be/quWnfURTc9o
+command.chest.invalidUsage=Invalid Usage. Type 'help chest' to get help
+command.chest.noBlockInSight=No block in sight
+command.chest.noChest=Block is not a chest
+
+command.cleardrops.description=Removes item drops around you
+command.cleardrops.example=/cleardrops
+command.cleardrops.syntax=/cleardrops
+command.cleardrops.videoURL=youtu.be/NGVN86MGx-k
+command.cleardrops.removed=%s Item(s) removed
+
+command.clearwater.description=Turns clear water on/off
+command.clearwater.example=/clearwater on
+command.clearwater.syntax=/clearwater [TRUE|FALSE|ON|OFF|0|1]
+command.clearwater.videoURL=youtu.be/9BSIxKG7GEE
+command.clearwater.on=Clear water turned on
+command.clearwater.off=Clear water turned off
+command.clearwater.failure=Invalid Argument.
+
+command.climb.description=Allows you to climb on any block
+command.climb.example=/climb on
+command.climb.syntax=/climb [TRUE|FALSE|ON|OFF|0|1]
+command.climb.videoURL=youtu.be/oJG4DvemZhg
+command.climb.on=Climb mode turned on
+command.climb.off=Climb mode turned off
+command.climb.failure=Invalid Argument.
+
+command.clone.description=Clones the NPC you're looking at
+command.clone.example=/clone 5
+command.clone.syntax=/clone [AMOUNT]
+command.clone.videoURL=youtu.be/gJ5Dn9FpaBs
+command.clone.invalidArg=The amount must be a number
+command.clone.noNPCFound=No NPC found
+command.clone.success=NPC successfully cloned
+
+command.confuse.description=Confuses nearby Entities
+command.confuse.example=/confuse 20
+command.confuse.syntax=/confuse [RADIUS]
+command.confuse.videoURL=youtu.be/7gH0BDU5_bI
+command.confuse.invalidArg=The radius must be a number
+command.confuse.invalidRadius=The maximum Radius is 50
+command.confuse.confused=Confused %d entities within radius %f
+
+command.confusesuicide.description=Makes Entities attacking themselves
+command.confusesuicide.example=/confusesuicide 20
+command.confusesuicide.syntax=/confusesuicide [RADIUS]
+command.confusesuicide.videoURL=youtu.be/jsWL8mJHLXg
+command.confusesuicide.invalidArg=The radius must be a number
+command.confusesuicide.invalidRadius=The maximum Radius is 50
+command.confusesuicide.confused=Confused %d entities within radius %f
+
+command.creeper.description=Creepers won't blow you up (but they will die)
+command.creeper.example=/creeper off
+command.creeper.syntax=/creeper [TRUE|FALSE|ON|OFF|0|1]
+command.creeper.videoURL=youtu.be/1T7bxY72H1A
+command.creeper.on=Creeper explosions turned on
+command.creeper.off=Creeper explosions turned off
+command.creeper.failure=Invalid Argument.
+
+command.criticalhit.description=You will always make critical hits
+command.criticalhit.example=/criticalhit on
+command.criticalhit.syntax=/criticalhit [TRUE|FALSE|ON|OFF|0|1]
+command.criticalhit.videoURL=youtu.be/yRmIplVE1Vw
+command.criticalhit.on=You will always make Critical Hits
+command.criticalhit.off=You won't always make Critical Hits
+command.criticalhit.failure=Invalid Argument.
+
+command.cyclepainting.description=Allows you to cycle through the pictures for a painting
+command.cyclepainting.example=/cyclepainting
+command.cyclepainting.syntax=/cyclepainting
+command.cyclepainting.videoURL=youtu.be/MSbpAicBdoE
+command.cyclepainting.noPainting=You have to look on a painting
+command.cyclepainting.noMoreArts=No more pictures found
+
+command.damage.description=Turns damage on/off
+command.damage.example=/damage off
+command.damage.syntax=/damage [TRUE|FALSE|ON|OFF|0|1]
+command.damage.videoURL=youtu.be/-4ybChnBffA
+command.damage.on=You will take damage
+command.damage.off=You won't take damage
+command.damage.failure=Invalid Argument.
+
+command.defuse.description=Defuses nearby TNT and drops it
+command.defuse.example=/defuse 50
+command.defuse.syntax=/defuse [RADIUS]
+command.defuse.videoURL=youtu.be/0ipC5LPgVVo
+command.defuse.invalidArg=The radius must be a number
+command.defuse.defused=TNT defused
+
+command.descend.description=Moves you to the next platform below your position
+command.descend.example=/descend
+command.descend.syntax=/descend
+command.descend.videoURL=youtu.be/pEVqePI_n1E
+command.descend.descended=You descended %d blocks
+
+command.destroy.description=Destroys the current or all items in your inventory
+command.destroy.example=/destroy all
+command.destroy.syntax=/destroy [all]
+command.destroy.videoURL=youtu.be/b-BMg4LyXdU
+command.destroy.destroyed=Item(s) destroyed
+
+command.difficulty.description=Sets the difficulty
+command.difficulty.example=/difficulty hard
+command.difficulty.syntax=/difficulty <PEACEFUL|0|EASY|1|NORMAL|2|HARD|3>
+command.difficulty.videoURL=youtu.be/DUgyfPEzWZE
+command.difficulty.setto=Difficulty successfully set to %s
+command.difficulty.invalidUsage=Invalid Usage. Type 'help difficulty' to get help
+
+command.dimension.description=Travels to another dimension
+command.dimension.example=/dimension nether
+command.dimension.syntax=/dimension <NETHER|-1|NORMAL|SURFACE|0|END|1>
+command.dimension.videoURL=youtu.be/j0sWIelTDTU
+command.dimension.changed=Dimension changed
+command.dimension.unknown=Unknown dimension
+command.dimension.notSpecified=You must specify a dimension
+
+command.dodrops.description=Turns item drops on/off
+command.dodrops.example=/dodrops
+command.dodrops.syntax=/dodrops
+command.dodrops.videoURL=youtu.be/oxg3_z7YwcQ
+command.dodrops.enabled=Item drops enabled
+command.dodrops.disabled=Item drops disabled
+
+command.dropstore.description=Puts all your items in a chest next to you
+command.dropstore.example=/dropstore
+command.dropstore.syntax=/dropstore
+command.dropstore.videoURL=youtu.be/wcH2IH-v4E8
+command.dropstore.stored=Items stored
+
+command.duplicate.description=Duplicates the currently held item
+command.duplicate.example=/duplicate
+command.duplicate.syntax=/duplicate
+command.duplicate.videoURL=youtu.be/4RZWEJ6xs-s
+command.duplicate.duplicated=Items duplicated
+
+command.effect.description=Applies an effect to you
+command.effect.example=/effect confusion
+command.effect.syntax=/effect <add <NAME|ID DURATION [STRENGTH]>|remove <NAME|ID>|removeAll|list>
+command.effect.videoURL=youtu.be/_YqlnWTIgyM
+command.effect.more=Use '/effect list PAGE' and replace PAGE with the page number to see more effect Names
+command.effect.addSuccess=Effect successfully added
+command.effect.removeSuccess=Effect successfully removed
+command.effect.removeFailure=Effect couldn't be removed
+command.effect.invalidUsage=Invalid Usage. Type 'help effect' to get help
+command.effect.removeAllSuccess=All effects successfully removed
+command.effect.NAN=The potion ID must be a number
+command.effect.notFound=Potion not found
+
+command.enchant.description=Adds an enchantment to the currently held item
+command.enchant.example=/enchant protect.fire
+command.enchant.syntax=/enchant <add <NAME>|remove <NAME>|list>
+command.enchant.videoURL=youtu.be/7jQvmVqR3LI
+command.enchant.more=Use '/enchant list PAGE' and replace PAGE with the page number to see more enchantment Names
+command.enchant.addSuccess=Enchantment successfully added
+command.enchant.removeSuccess=Enchantment successfully removed
+command.enchant.invalidUsage=Invalid Usage. Type 'help enchant' to get help
+command.enchant.NAN=The enchantment ID must be a number
+command.enchant.notFound=Enchantment not found
+
+command.enderchest.description=Opens the enderchest
+command.enderchest.example=/enderchest
+command.enderchest.syntax=/enderchest
+command.enderchest.videoURL=youtu.be/ZtXtgOl0jWs
+
+command.endercrystal.description=Spawns an Ender Crystal where you're looking at
+command.endercrystal.example=/endercrystal
+command.endercrystal.syntax=/endercrystal
+command.endercrystal.videoURL=youtu.be/egDL1ZvDvVk
+command.endercrystal.notFound=No Block in sight
+
+command.enderman.description=Turns enderman pickup on/off
+command.enderman.example=/enderman off
+command.enderman.syntax=/enderman [TRUE|FALSE|ON|OFF|0|1]
+command.enderman.videoURL=youtu.be/H8FqPoWyNR4
+command.enderman.on=Endermen will pickup blocks
+command.enderman.off=Endermen won't pickup blocks
+command.enderman.failure=Invalid Argument.
+
+command.explode.description=Makes an explosion where you're looking
+command.explode.example=/explode 10
+command.explode.syntax=/explode [STRENGTH [X|Y|Z]]
+command.explode.videoURL=youtu.be/tEFNgyvxuow
+command.explode.NAN=Strength and coordinates must be numbers
+command.explode.booooom=Booooom!
+command.explode.notInSight=No Block in sight
+
+command.explosions.description=Turns explosions on/off
+command.explosions.example=/explosions off
+command.explosions.syntax=/explosions [TRUE|FALSE|ON|OFF|0|1]
+command.explosions.videoURL=youtu.be/0DjjgfKZr2M
+command.explosions.on=Explosions turned on
+command.explosions.off=Explosions turned off
+command.explosions.failure=Invalid Argument.
+
+command.exterminate.description=Blows entities up
+command.exterminate.example=/exterminate 5
+command.exterminate.syntax=/exterminate [STRENGTH]
+command.exterminate.videoURL=youtu.be/OXFK5INODfk
+command.exterminate.invalidArg=The strength must be a number
+command.exterminate.boooom=Booooom!
+command.exterminate.notLiving=Entity is not living
+command.exterminate.notFound=No entity found
+
+command.extinguish.description=Extinguishes fire around or the player
+command.extinguish.example=/extinguish me
+command.extinguish.syntax=/extinguish [ME|ALL [RADIUS]|RADIUS]
+command.extinguish.videoURL=youtu.be/8rf0IuLTbGM
+command.extinguish.invalidArg=The radius must be a number
+command.extinguish.extinguished=Fire extinguished
+
+command.falldamage.description=Turns fall damage on/off
+command.falldamage.example=/falldamage off
+command.falldamage.syntax=/falldamage [TRUE|FALSE|ON|OFF|0|1]
+command.falldamage.videoURL=youtu.be/s7xlFROC3iI
+command.falldamage.on=You will take fall damage
+command.falldamage.off=You won't take fall damage
+command.falldamage.failure=Invalid Argument.
+
+command.firedamage.description=Turns fire damage on/off
+command.firedamage.example=/firedamage off
+command.firedamage.syntax=/firedamage [TRUE|FALSE|ON|OFF|0|1]
+command.firedamage.videoURL=youtu.be/IfzdzbC_OlI
+command.firedamage.on=You will take fire damage
+command.firedamage.off=You won't take fire damage
+command.firedamage.failure=Invalid Argument.
+
+command.firework.description=Launches a rocket
+command.firework.example=/firework
+command.firework.syntax=/firework
+command.firework.videoURL=youtu.be/-UmWMFzYQg0
+command.firework.notFound=No Block in Sight
+
+command.flammable.description=Sets the flammability of a block
+command.flammable.example=/flammable dirt 5 3
+command.flammable.syntax=/flammable <BLOCK <RESET|ENCOURAGEMENT FLAMMABILITY>>
+command.flammable.videoURL=youtu.be/2IvU496Z9AE
+command.flammable.notFound=No Block in Sight
+command.flammable.invalidArg=The encouragement and the flammability must be a number
+command.flammable.success=Successfully changed the flammability
+command.flammable.reset=Successfully reseted the flammability
+command.flammable.notFound=Block not found
+command.flammable.invalidUsage=Invalid Usage. Type 'help flammable' to get help
+
+command.fly.description=Allows you to fly
+command.fly.example=/fly on
+command.fly.syntax=/fly [TRUE|FALSE|ON|OFF|0|1]
+command.fly.videoURL=youtu.be/40oaWSR3g4A
+command.fly.on=Fly mode successfully turned on
+command.fly.off=Fly mode successfully turned off
+command.fly.failure=Invalid Argument.
+
+command.freecam.description=Allows you to freecam around the map
+command.freecam.example=/freecam
+command.freecam.syntax=/freecam
+command.freecam.videoURL=youtu.be/WN7kiK83R7s
+command.freecam.off=Freecam successfully turned off
+command.freecam.on=Freecam successfully turned on
+
+command.freezecam.description=Freezes the player camera at the current position
+command.freezecam.example=/freezecam
+command.freezecam.syntax=/freezecam
+command.freezecam.videoURL=youtu.be/MecwzyHDYyU
+command.freezecam.off=Freezecam successfully turned off
+command.freezecam.on=Freezecam successfully turned on
+
+command.give.description=Gives you items
+command.give.example=/give me stone 64
+command.give.syntax=/give <PLAYER|ME <ITEM [AMOUNT] [METADATA]>>
+command.give.videoURL=youtu.be/k884_3P5v2A
+command.give.notFound=Item not found
+command.give.noMeta=The specified item doesn't have subtypes
+command.give.success=Item successfully given
+command.give.invalidUsage=Invalid Usage. Type 'help give' to get help
+
+command.grow.description=Grows plants around you
+command.grow.example=/grow 20
+command.grow.syntax=/grow [RADIUS]
+command.grow.videoURL=youtu.be/NPQvJOwLQDA
+command.grow.invalidArg=The radius must be a number
+command.grow.grown=Plants grown
+
+command.hardcore.description=Turns hardcore mode on/off
+command.hardcore.example=/hardcore off
+command.hardcore.syntax=/hardcore [TRUE|FALSE|ON|OFF|0|1]
+command.hardcore.videoURL=youtu.be/5dkbCKnyQzA
+command.hardcore.on=Hardcore mode successfully turned on
+command.hardcore.off=Hardcore mode successfully turned off
+command.hardcore.failure=Invalid Argument.
+
+command.heal.description=Heals you
+command.heal.example=/heal
+command.heal.syntax=/heal [AMOUNT]
+command.heal.videoURL=youtu.be/XiVfzg4s77M
+command.heal.success=Healed successfully
+command.heal.NAN=The amount you want to heal must be a number
+
+command.health.description=Sets your health
+command.health.example=/health 10
+command.health.syntax=/health <GET|MAX|MIN|VALUE>
+command.health.videoURL=youtu.be/5coj_lvQ0wU
+command.health.invalidParam=Invalid Argument.
+command.health.success=Health successfully set
+command.health.invalidUsage=Invalid Usage. Type 'help health' to get help
+command.health.get=Your health is %f
+
+command.helpSideServer.description=Gives help to commands
+command.helpSideServer.example=/help
+command.helpSideServer.syntax=/help [PAGE|COMMAND]
+command.helpSideServer.videoURL=youtu.be/qDs_D1kI3Ag
+
+command.home.description=Teleports you to your spawn point
+command.home.example=/home
+command.home.syntax=/home
+command.home.videoURL=youtu.be/3H-vnWXT2RQ
+command.home.atHome=Welcome at home
+
+command.hunger.description=Sets your hunger
+command.hunger.example=/hunger 10
+command.hunger.syntax=/hunger <GET|MAX|MIN|VALUE>
+command.hunger.videoURL=youtu.be/xHDQN8uvl9Y
+command.hunger.invalidParam=Invalid Argument.
+command.hunger.success=Hunger successfully set
+command.hunger.error=An error occurred performing this command
+command.hunger.invalidUsage=Invalid Usage. Type 'help hunger' to get help
+command.hunger.get=Your hunger is %d
+
+command.ignite.description=Ignites the block you're looking at
+command.ignite.example=/ignite
+command.ignite.syntax=/ignite
+command.ignite.videoURL=youtu.be/qpyY49zJs8k
+command.ignite.notInSight=No Block in sight
+
+command.infiniteitems.description=Turns infinite items on/off
+command.infiniteitems.example=/infiniteitems on
+command.infiniteitems.syntax=/infiniteitems [TRUE|FALSE|ON|OFF|0|1]
+command.infiniteitems.videoURL=youtu.be/mt9vCnsdhWY
+command.infiniteitems.on=Infinite Items successfully turned on
+command.infiniteitems.off=Infinite Items successfully turned off
+command.infiniteitems.failure=Invalid Argument.
+
+command.instantgrow.description=Makes plants growing instantly
+command.instantgrow.example=/instantgrow on
+command.instantgrow.syntax=/instantgrow [TRUE|FALSE|ON|OFF|0|1]
+command.instantgrow.videoURL=youtu.be/NvGkqc6pVm0
+command.instantgrow.on=Instant Grow successfully turned on
+command.instantgrow.off=Instant Grow successfully turned off
+command.instantgrow.failure=Invalid Argument.
+
+command.instantkill.description=Kills enemies instantly
+command.instantkill.example=/instantkill on
+command.instantkill.syntax=/instantkill [TRUE|FALSE|ON|OFF|0|1]
+command.instantkill.videoURL=youtu.be/Uv4c_E1Jiak
+command.instantkill.on=Instant Kill successfully turned on
+command.instantkill.off=Instant Kill successfully turned off
+command.instantkill.failure=Invalid Argument.
+
+command.instantmine.description=Mines blocks instantly
+command.instantmine.example=/instantmine on
+command.instantmine.syntax=/instantmine [TRUE|FALSE|ON|OFF|0|1]
+command.instantmine.videoURL=youtu.be/CbeCeGoJA1A
+command.instantmine.on=Instant Mine successfully turned on
+command.instantmine.off=Instant Mine successfully turned off
+command.instantmine.failure=Invalid Argument.
+
+command.inventory.description=Saves/Loads Inventories
+command.inventory.example=/inventory save test
+command.inventory.syntax=/inventory <SAVE|LOAD|DELETE> [NAME]
+command.inventory.videoURL=youtu.be/wF7_zcEsLcE
+command.inventory.notSettingsFound=No Player Settings found
+command.inventory.notFound=Inventory %s not found
+command.inventory.removeSuccess=Inventory %s successfully removed
+command.inventory.saveSuccess=Inventory %s successfully saved
+command.inventory.loadSuccess=Inventory %s successfully loaded
+
+command.invisible.description=Turns invisibilty on/off
+command.invisible.example=/invisible off
+command.invisible.syntax=/invisible [TRUE|FALSE|ON|OFF|0|1]
+command.invisible.videoURL=youtu.be/_33DoK-QIuU
+command.invisible.on=You are invisible
+command.invisible.off=You aren't invisible
+command.invisible.failure=Invalid Argument.
+
+command.itemdamage.description=Turns item damage on/off
+command.itemdamage.example=/itemdamage off
+command.itemdamage.syntax=/itemdamage [TRUE|FALSE|ON|OFF|0|1]
+command.itemdamage.videoURL=youtu.be/kLwgzlMlF4s
+command.itemdamage.on=Item damage successfully turned on
+command.itemdamage.off=Item damage successfully turned off
+command.itemdamage.failure=Invalid Argument.
+
+command.itemname.description=Sets the display name of the currently held item
+command.itemname.example=/itemname Killer Sword
+command.itemname.syntax=/itemname <NAME>
+command.itemname.videoURL=youtu.be/x8Q36b_b6p0
+command.itemname.noSelection=No Item selected
+command.itemname.invalidUsage=No Item name specified
+
+command.jump.description=Jumps to the block you're looking at
+command.jump.example=/jump
+command.jump.syntax=/jump
+command.jump.videoURL=youtu.be/FgYVynAZL3U
+command.jump.notInSight=No Block in Sight
+
+command.jumpheight.description=Sets the hight of your jumps
+command.jumpheight.example=/jumpheight 10
+command.jumpheight.syntax=/jumpheight <HEIGHT>
+command.jumpheight.videoURL=youtu.be/r-tgSHdk-wY
+command.jumpheight.success=Jump Height successfully set
+command.jumpheight.reset=Jump Height successfully reseted
+command.jumpheight.NAN=The height must be a number
+command.jumpheight.invalidUsage=No Jump height specified
+
+command.keepinventory.description=Makes you keeping your inventory when you die
+command.keepinventory.example=/keepinventory on
+command.keepinventory.syntax=/keepinventory [TRUE|FALSE|ON|OFF|0|1]
+command.keepinventory.videoURL=youtu.be/VM2gL2g2wUU
+command.keepinventory.on=You will keep your inventory on death
+command.keepinventory.off=You won't keep your inventory on death
+command.keepinventory.failure=Invalid Argument.
+
+command.killall.description=Kills entities around you
+command.killall.example=/killall creeper
+command.killall.syntax=/killall <ENTITY [RADIUS]>
+command.killall.videoURL=youtu.be/woTXoJD2qpw
+command.killall.unknownEntity=Unknown Entity
+command.killall.NAN=The radius must be a number
+command.killall.invalidRadius=The radius must be between 0 and 256
+command.killall.killed=Killed %d Entities
+command.killall.invalidUsage=Invalid Usage. Type 'help killall' to get help
+
+command.killattacker.description=Kills every Enemy which attacks you
+command.killattacker.example=/killattacker on
+command.killattacker.syntax=/killattacker [TRUE|FALSE|ON|OFF|0|1]
+command.killattacker.videoURL=youtu.be/YUA0vBX32LA
+command.killattacker.on=Attackers will die
+command.killattacker.off=Attackers won't die
+command.killattacker.failure=Invalid Argument.
+
+command.light.description=Lightens the world
+command.light.example=/light
+command.light.syntax=/light
+command.light.videoURL=youtu.be/Vwxf-zC14_Q
+command.light.lightup=Light on!
+command.light.restore=Original Light Levels restored
+
+command.melt.description=Melts or cooks items
+command.melt.example=/melt all
+command.melt.syntax=/melt [all]
+command.melt.videoURL=youtu.be/23Y-YozxYfw
+command.melt.molten=%d Items molten
+
+command.mobdamage.description=Turns mob damage on/off
+command.mobdamage.example=/mobdamage off
+command.mobdamage.syntax=/mobdamage [TRUE|FALSE|ON|OFF|0|1]
+command.mobdamage.videoURL=youtu.be/waanv_z_AD4
+command.mobdamage.on=You will take mob damage
+command.mobdamage.off=You won't take mob damage
+command.mobdamage.failure=Invalid Argument.
+
+command.move.description=Moves you a certain direction
+command.move.example=/move 5 north
+command.move.syntax=/move <DISTANCE <N|S|E|W|D|U>>
+command.move.videoURL=youtu.be/h2Cp0Qaniv8
+command.move.invalidDirection=Invalid Direction
+command.move.NAN=The distance must be a number
+command.move.invalidUsage=Invalid Usage. Type 'help move' to get help
+
+command.noclip.description=Turns Clipping on/off
+command.noclip.example=/noclip off
+command.noclip.syntax=/noclip [TRUE|FALSE|ON|OFF|0|1]
+command.noclip.videoURL=youtu.be/mA5WYb-IOMU
+command.noclip.mustBeFlying=You must be flying to use noclip
+command.noclip.enabled=Noclip enabled
+command.noclip.disabled=Noclip disabled
+command.noclip.failure=Invalid Argument.
+command.noclip.autodisable=Noclip auto-disabled. (Player not flying)
+
+command.path.description=Creates a path under your feet
+command.path.example=/path stone 4
+command.path.syntax=/path <BLOCK> [RADIUS]
+command.path.videoURL=youtu.be/QsHQZ-sYCIw
+command.path.unknownBlock=Unknown Block: %s
+command.path.invalidMeta=Invalid Metadata
+command.path.invalidRadius=Radius must be between 0 and 50
+command.path.noChange=You didn't change the path settings
+command.path.enabled=Path enabled
+command.path.disabled=Path disabled
+command.path.invalidUsage=Invalid Usage. Type 'help path' to get help
+
+command.pick.description=Adds the block you're looking at to your inventory (like in creative)
+command.pick.example=/pick 27
+command.pick.syntax=/pick [AMOUNT]
+command.pick.videoURL=youtu.be/dpVSZLJZFrc
+command.pick.NAN=The amount must be a number
+command.pick.cantgive=Can't give item
+command.pick.notInSight=No Block in sight
+
+command.reach.description=Sets your reach distance
+command.reach.example=/reach 20
+command.reach.syntax=/reach <DISTANCE|RESET>
+command.reach.videoURL=youtu.be/RNzgEKbMxqY
+command.reach.reset=Reach distance reseted to 5.0
+command.reach.set=Reach distance successfully set to %s
+command.reach.invalidArg=Invalid Argument.
+
+command.refill.description=Refills the items
+command.refill.example=/refill all
+command.refill.syntax=/refill [all]
+command.refill.videoURL=youtu.be/MIcUP0S9aeM
+command.refill.refilled=Items refilled
+command.refill.noSelection=No Item selected
+
+command.repair.description=Repairs items
+command.repair.example=/repair all
+command.repair.syntax=/repair [all]
+command.repair.videoURL=youtu.be/rNRoG1jbhss
+
+command.return.description=Returns to the location before the teleport
+command.return.example=/return
+command.return.syntax=/return
+command.return.videoURL=youtu.be/M2J2dld-wgE
+command.return.noLastPos=You didn't do a teleport recently
+
+command.scuba.description=Allows you to breathe under water
+command.scuba.example=/scuba on
+command.scuba.syntax=/scuba [TRUE|FALSE|ON|OFF|0|1]
+command.scuba.videoURL=youtu.be/3EopjW4GU0c
+command.scuba.on=Scuba enabled
+command.scuba.off=Scuba disabled
+command.scuba.failure=Invalid Argument.
+
+command.setspawn.description=Sets the players spawn point
+command.setspawn.example=/setspawn
+command.setspawn.syntax=/setspawn [X|Y|Z]
+command.setspawn.videoURL=youtu.be/HMdmi-PSwsE
+command.setspawn.invalidPos=Invalid Position Data
+
+command.sign.description=Allows you to add and edit signs
+command.sign.example=/sign edit "Line1" "Line2" "Line3" "Line4"
+command.sign.syntax=/sign <ADD|EDIT> "LINE1" "LINE2" "LINE3" "LINE4"
+command.sign.videoURL=youtu.be/2zKi0JA4Acs
+command.sign.invalidUsage=Invalid Usage. Type 'help sign' to get help
+command.sign.addsuccess=Sign successfully added
+command.sign.editsuccess=Sign successfully edited
+command.sign.bottom=You can't place signs at the bottom of a block
+command.sign.noBlockInSight=No Block in sight
+
+command.slippery.description=Sets the slippery of a block (Use little numbers!!!)
+command.slippery.example=/slippery grass 5
+command.slippery.syntax=/slippery <BLOCK <SLIPPERY>|RESET>
+command.slippery.videoURL=youtu.be/bvj8pfPRprQ
+command.slippery.invalidArg=Invalid Argument.
+command.slippery.success=Slippery successfully set
+command.slippery.reset=Slippery successfully reseted
+command.slippery.notFound=Block not found
+command.slippery.invalidUsage=Invalid Usage. Type 'help slippery' to get help
+
+command.spawn.description=Spawns entities
+command.spawn.example=/spawn creeper 5
+command.spawn.syntax=/spawn <LIST|RANDOM|ENTITY <AMOUNT> [X|Y|Z]>
+command.spawn.videoURL=youtu.be/W-dx4J-9yd4
+command.spawn.unknownEntityID=Unknown Entity ID
+command.spawn.unknownEntity=Unknown Entity
+command.spawn.invalidPos=Invalid Position Data
+command.spawn.couldNotSpawn=Could not spawn Entity %s
+command.spawn.invalidUsage=Invalid Usage. Type 'help spawn' to get help
+
+command.spawner.description=Changes the Entity a Spawner spawns (Write the first letter upper case!)
+command.spawner.example=/spawner Skeleton
+command.spawner.syntax=/spawner <ENTITY>
+command.spawner.videoURL=youtu.be/e81RnvCVMf8
+command.spawner.unknownEntityID=Unknown Entity ID
+command.spawner.unknownEntity=Unknown Entity
+command.spawner.success=Spawner Entity successfully changed (may need to reopen world)
+command.spawner.notASpawner=The block you're looking at is not a spawner
+command.spawner.invalidUsage=Invalid Usage. Type 'help spawner' to get help
+
+command.spawnportal.description=Spawns a portal to another dimension (End portals have a fixed height)
+command.spawnportal.example=/spawnportal end
+command.spawnportal.syntax=/spawnportal <END|NETHER>
+command.spawnportal.videoURL=youtu.be/jSTw2H3AF4I
+command.spawnportal.endError=Could not create an End Portal
+command.spawnportal.unknownPortal=Unknown Portal Type
+command.spawnportal.noArgs=No portal specified
+
+command.speed.description=Sets the walk or fly speed
+command.speed.example=/speed fly set 10
+command.speed.syntax=/speed <WALK|FLY> <GET|RESET|SET VALUE>
+command.speed.videoURL=youtu.be/ZJg8SXVra5s
+command.speed.NAN=The speed must be a number
+command.speed.walkSet=Walk speed successfully set
+command.speed.flySet=Fly speed successfully set
+command.speed.noArg=Speed not specified
+command.speed.getFly=Your Fly Speed is %f
+command.speed.getWalk=Your Walk Speed is %f
+command.speed.walkReset=Walk speed reseted
+command.speed.flyReset=Fly speed reseted
+command.speed.invalidUsage=Invalid Usage. Type 'help speed' to get help
+
+command.sprint.description=Allows you to sprint infinite
+command.sprint.example=/sprint on
+command.sprint.syntax=/sprint [TRUE|FALSE|ON|OFF|0|1]
+command.sprint.videoURL=youtu.be/qvOaMaUxNbY
+command.sprint.on=Sprinting enabled
+command.sprint.off=Sprinting disabled
+command.sprint.failure=Invalid Argument.
+
+command.stacksize.description=Allows you to set the stacksize for an item
+command.stacksize.example=/stacksize dirt 128
+command.stacksize.syntax=/stacksize <ITEM> <SIZE>
+command.stacksize.videoURL=Not yet available
+
+command.stepheight.description=Allows you to set your step height
+command.stepheight.example=/stepheight dirt 128
+command.stepheight.syntax=/stepheight [VALUE|RESET]
+command.stepheight.videoURL=youtu.be/aYCvmfSWAb4
+command.stepheight.setto=Step height successfully set to %f
+command.stepheight.reset=Stepheight successfully reseted
+command.stepheight.invalidArg=Invalid Argument.
+command.stepheight.invalidUsage=Invalid Usage. Type 'help stepheight' to get help
+
+command.sudo.description=Allows you to execute a command as somebody else in LAN Mode
+command.sudo.example=/sudo player123 kill
+command.sudo.syntax=/sudo <PLAYER> <COMMAND> [PARAMETERS]
+command.sudo.videoURL=youtu.be/KaLTW2zVehM
+command.sudo.playerNotFound=Player not found
+command.sudo.executed=Command '%s' was successfully executed for Player '%s'
+command.sudo.notInLAN=You are not in LAN Mode
+command.sudo.invalidArgs=Invalid Arguments.
+
+command.superpunch.description=Knocks your enemies back
+command.superpunch.example=/superpunch 10
+command.superpunch.syntax=/superpunch <STRENGTH|RESET>
+command.superpunch.videoURL=youtu.be/bfJBBJ9DPig
+command.superpunch.reset=Superpunch strength was reseted
+command.superpunch.success=Superpunch was successfully set
+command.superpunch.NAN=The strength must be a number
+command.superpunch.invalidUsage=Invalid Usage. Type 'help superpunch' to get help
+
+command.teleport.description=Teleports you to coordinates
+command.teleport.example=/teleport 156 57 234
+command.teleport.syntax=/teleport <X|Y|Z>
+command.teleport.videoURL=youtu.be/h1UuzNxhM6I
+command.teleport.NAN=The coordinates must be numbers
+command.teleport.invalidParams=Arguments are missing.
+
+command.waterdamage.description=Turns water damage on/off
+command.waterdamage.example=/waterdamage off
+command.waterdamage.syntax=/waterdamage [TRUE|FALSE|ON|OFF|0|1]
+command.waterdamage.videoURL=youtu.be/H86RthQZrAs
+command.waterdamage.on=You will take water damage
+command.waterdamage.off=You won't take water damage
+command.waterdamage.failure=Invalid Argument.
+
+command.waypoint.description=Sets waypoints
+command.waypoint.example=/waypoint set test
+command.waypoint.syntax=/waypoint <SET <NAME [X|Y|Z]>|GOTO <NAME>|REMOVE <NAME>|LIST>
+command.waypoint.videoURL=youtu.be/FQEj92-BL5Y
+command.waypoint.NAN=Coordinates must be numbers
+command.waypoint.removed=Waypoint %s successfully removed
+command.waypoint.notFound=Waypoint %s not found
+command.waypoint.teleported=Successfully teleported to waypoint %s
+command.waypoint.invalidArgs=Invalid Arguments.
+
+command.weather.description=Sets the weather
+command.weather.example=/weather lightning
+command.weather.syntax=/weather <RAIN|THUNDER|LIGHTNING>
+command.weather.videoURL=youtu.be/ND06hsOW8k4
+command.weather.rainSuccess=Rain toggled
+command.weather.thunderSuccess=Thunder toggled
+command.weather.lightningSuccess=Lightning spawned
+command.weather.notInSight=No Block in sight
+command.weather.invalidUsage=Invalid Usage. Type 'help weather' to get help
+
+command.xray.description=Toggles and cofigures xray
+command.xray.example=/xray config
+command.xray.syntax=/xray [ENABLE|DISABLE|CONFIG]
+command.xray.videoURL=youtu.be/rZpD014RvNs
+command.xray.enabled=Xray enabled
+command.xray.disabled=Xray disabled
+command.xray.invalidUsage=Invalid Usage. Type 'help xray' to get help
