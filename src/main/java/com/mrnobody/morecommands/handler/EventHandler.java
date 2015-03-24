@@ -28,21 +28,21 @@ import cpw.mods.fml.common.gameevent.TickEvent;
  * @author MrNobody98
  */
 public enum EventHandler {
-	ATTACK(EnumBus.MinecraftForge, new Handler<LivingAttackEvent>(LivingAttackEvent.class)),
-	BLOCK_PLACEMENT(EnumBus.MinecraftForge, new Handler<PlaceEvent>(PlaceEvent.class)),
-	BREAKSPEED(EnumBus.MinecraftForge, new Handler<BreakSpeed>(BreakSpeed.class)),
-	COMMAND(EnumBus.MinecraftForge, new Handler<CommandEvent>(CommandEvent.class)),
-	ENTITYJOIN(EnumBus.MinecraftForge, new Handler<EntityJoinWorldEvent>(EntityJoinWorldEvent.class)),
-	EXPLOSION(EnumBus.MinecraftForge, new Handler<ExplosionEvent>(ExplosionEvent.class)),
-	FALL(EnumBus.MinecraftForge, new Handler<LivingFallEvent>(LivingFallEvent.class)),
-	DROPS(EnumBus.MinecraftForge, new Handler<HarvestDropsEvent>(HarvestDropsEvent.class)),
-	HURT(EnumBus.MinecraftForge, new Handler<LivingHurtEvent>(LivingHurtEvent.class)),
-	ITEM_DESTROY(EnumBus.MinecraftForge, new Handler<PlayerDestroyItemEvent>(PlayerDestroyItemEvent.class)),
-	KEYINPUT(EnumBus.FML, new Handler<KeyInputEvent>(KeyInputEvent.class)),
-	PLAYER_ATTACK(EnumBus.MinecraftForge, new Handler<AttackEntityEvent>(AttackEntityEvent.class)),
-	INTERACT(EnumBus.MinecraftForge, new Handler<PlayerInteractEvent>(PlayerInteractEvent.class)),
-	RENDERWORLD(EnumBus.MinecraftForge, new Handler<RenderWorldLastEvent>(RenderWorldLastEvent.class)),
-	TICK(EnumBus.FML, new Handler<TickEvent>(TickEvent.class));
+	ATTACK(EnumBus.MinecraftForge, new Handler<LivingAttackEvent>(LivingAttackEvent.class, false)),
+	BLOCK_PLACEMENT(EnumBus.MinecraftForge, new Handler<PlaceEvent>(PlaceEvent.class, false)),
+	BREAKSPEED(EnumBus.MinecraftForge, new Handler<BreakSpeed>(BreakSpeed.class, false)),
+	COMMAND(EnumBus.MinecraftForge, new Handler<CommandEvent>(CommandEvent.class, false)),
+	ENTITYJOIN(EnumBus.MinecraftForge, new Handler<EntityJoinWorldEvent>(EntityJoinWorldEvent.class, false)),
+	EXPLOSION(EnumBus.MinecraftForge, new Handler<ExplosionEvent>(ExplosionEvent.class, false)),
+	FALL(EnumBus.MinecraftForge, new Handler<LivingFallEvent>(LivingFallEvent.class, false)),
+	DROPS(EnumBus.MinecraftForge, new Handler<HarvestDropsEvent>(HarvestDropsEvent.class, false)),
+	HURT(EnumBus.MinecraftForge, new Handler<LivingHurtEvent>(LivingHurtEvent.class, false)),
+	ITEM_DESTROY(EnumBus.MinecraftForge, new Handler<PlayerDestroyItemEvent>(PlayerDestroyItemEvent.class, false)),
+	KEYINPUT(EnumBus.FML, new Handler<KeyInputEvent>(KeyInputEvent.class, true)),
+	PLAYER_ATTACK(EnumBus.MinecraftForge, new Handler<AttackEntityEvent>(AttackEntityEvent.class, false)),
+	INTERACT(EnumBus.MinecraftForge, new Handler<PlayerInteractEvent>(PlayerInteractEvent.class, false)),
+	RENDERWORLD(EnumBus.MinecraftForge, new Handler<RenderWorldLastEvent>(RenderWorldLastEvent.class, true)),
+	TICK(EnumBus.FML, new Handler<TickEvent>(TickEvent.class, false));
 	
 	private EnumBus bus;
 	private Handler handler;
@@ -94,14 +94,5 @@ public enum EventHandler {
 				catch (Exception ex) {ex.printStackTrace();}
 			}
 		}
-	}
-	
-	/**
-	 * @return whether this handler is intended to be used only on client side
-	 */
-	public static boolean isClientOnly(EventHandler handler) {
-		if (handler == EventHandler.RENDERWORLD) return true;
-		if (handler == EventHandler.KEYINPUT) return true;
-		return false;
 	}
 }

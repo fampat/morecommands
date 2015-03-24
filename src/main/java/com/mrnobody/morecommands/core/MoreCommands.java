@@ -41,7 +41,6 @@ import cpw.mods.fml.relauncher.Side;
  * @author MrNobody98
  *
  */
-
 @Mod(modid = Reference.MODID, version = Reference.VERSION, name = Reference.NAME, acceptableRemoteVersions = "*")
 public class MoreCommands {
 	@SidedProxy(clientSide="com.mrnobody.morecommands.core.ClientProxy", serverSide="com.mrnobody.morecommands.core.ServerProxy", modId=Reference.MODID)
@@ -239,7 +238,7 @@ public class MoreCommands {
 	/**
 	 * Loads Command Classes
 	 * 
-	 * @return if the commands were loaded successfully
+	 * @return Whether the commands were loaded successfully
 	 */
 	private boolean loadCommands() {
 		List<Class<?>> clientCommands = MoreCommands.CLASSLOADER.getCommandClasses(MoreCommands.clientCommandsPackage, ClientCommand.class);
@@ -270,7 +269,7 @@ public class MoreCommands {
 	/**
 	 * Registers all Packets
 	 * 
-	 * @return if the packets were registered successfully
+	 * @return Whether the packets were registered successfully
 	 */
 	private boolean registerPackets() {
 		List<Class<?>> packets = new ArrayList<Class<?>>();

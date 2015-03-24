@@ -8,7 +8,7 @@ import com.mrnobody.morecommands.util.KeyEvent;
  * @author MrNobody98
  */
 public enum PacketHandler {
-	KEYINPUT(new Handler<KeyEvent>(KeyEvent.class));
+	KEYINPUT(new Handler<KeyEvent>(KeyEvent.class, false));
 	
 	private Handler handler;
 	
@@ -21,12 +21,5 @@ public enum PacketHandler {
 	 */
 	public Handler getHandler() {
 		return this.handler;
-	}
-	
-	/**
-	 * @return whether this handler is intended to be used only on client side
-	 */
-	public static boolean isClientOnly(PacketHandler handler) {
-		return false;
 	}
 }

@@ -103,8 +103,10 @@ public class ServerProxy extends CommonProxy {
 		catch (Exception ex) {ex.printStackTrace(); return false;}
 		
 		if (container == null || register == null || !container.getModId().equals(Reference.MODID)) return false;
-		for (EventHandler handler : EventHandler.values()) 
-			{if (!EventHandler.isClientOnly(handler)) EventHandler.register(handler.getBus(), handler.getHandler(), register, container);}
+		for (EventHandler handler : EventHandler.values()) {
+			if (!handler.getHandler().isClientOnly()) 
+				EventHandler.register(handler.getBus(), handler.getHandler(), register, container);
+		}
 		
 		MoreCommands.getLogger().info("Event Handlers registered");
 		return true;

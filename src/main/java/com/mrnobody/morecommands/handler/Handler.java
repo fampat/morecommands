@@ -15,9 +15,15 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 public class Handler<T extends Event> {
 	private List<Listener<T>> listener = new ArrayList<Listener<T>>();
 	private Class<? extends Event> eventClass;
+	private boolean clientOnly;
 	
-	public Handler(Class<T> eventClass) {
+	public Handler(Class<T> eventClass, boolean clientOnly) {
 		this.eventClass = eventClass;
+		this.clientOnly = clientOnly;
+	}
+	
+	public boolean isClientOnly() {
+		return this.clientOnly;
 	}
 	
 	public Class<? extends Event> getEventClass() {
