@@ -15,8 +15,4 @@ public @interface Command {
 	   String syntax();
 	   String example();
 	   String videoURL();
-	   //String version() default "";
-	   //boolean enabled() default true;
-	   //boolean async() default false;
-	   //String[] alias() default {};
 }
