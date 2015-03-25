@@ -142,13 +142,6 @@ public class MoreCommands {
 	}
 	
 	/**
-	 * @return The Patcher Instance
-	 */
-	public Patcher getPatcherInstance() {
-		return MoreCommands.proxy.getPatcher();
-	}
-	
-	/**
 	 * @return The Mod Logger
 	 */
 	public Logger getLogger() {

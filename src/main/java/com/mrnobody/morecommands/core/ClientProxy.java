@@ -88,8 +88,8 @@ public class ClientProxy extends CommonProxy {
 		for (Object command : MinecraftServer.getServer().getCommandManager().getCommands().values()) {
 			if (command instanceof ServerCommand) ((ServerCommand) command).unregisterFromHandler();
 		}
-		this.mod.getPatcherInstance().setServerCommandManagerPatched(false);
-		this.mod.getPatcherInstance().setServerConfigManagerPatched(false);
+		Patcher.setServerCommandManagerPatched(false);
+		Patcher.setServerConfigManagerPatched(false);
 	}
 
 	@Override
