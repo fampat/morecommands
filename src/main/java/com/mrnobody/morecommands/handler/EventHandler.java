@@ -90,8 +90,7 @@ public enum EventHandler {
 	/**
 	 * Registers a handler to a {@link cpw.mods.fml.common.eventhandler.EventBus}. <br>
 	 * The regular {@link cpw.mods.fml.common.eventhandler.EventBus#register(Object)} method can't
-	 * be used, because it doesn't work with generic types. <br> Instead, reflection is used to get <br>
-	 * a private register method using the event class.
+	 * be used, because it doesn't work with generic types.
 	 * 
 	 * @author MrNobody98
 	 */
