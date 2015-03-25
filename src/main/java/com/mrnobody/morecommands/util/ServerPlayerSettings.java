@@ -163,6 +163,7 @@ public class ServerPlayerSettings {
 	public Map<String, double[]> waypoints = new HashMap<String, double[]>();
 	public Map<String, NBTTagList> inventories = new HashMap<String, NBTTagList>();
 	
+	public int[] pathData = new int[6];
 	public boolean climb = false;
 	public boolean clouds = true;
 	public boolean creeperExplosion = true;

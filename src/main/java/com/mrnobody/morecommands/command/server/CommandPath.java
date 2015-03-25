@@ -13,6 +13,7 @@ import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
 import com.mrnobody.morecommands.handler.Listener;
+import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
@@ -28,9 +29,6 @@ import cpw.mods.fml.common.gameevent.TickEvent;
 		videoURL = "command.path.videoURL"
 		)
 public class CommandPath extends ServerCommand implements Listener<TickEvent> {
-	private static Map<EntityPlayer, int[]> playerConfig = new HashMap<EntityPlayer, int[]>();
-	private World loadedWorld = null;
-	
 	public CommandPath() {EventHandler.TICK.getHandler().register(this);}
 
 	@Override
@@ -46,7 +44,6 @@ public class CommandPath extends ServerCommand implements Listener<TickEvent> {
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		EntityPlayer playerEntity = sender.toPlayer().getMinecraftPlayer();
-		this.checkWorld(playerEntity);
 		
 		if (params.length > 0) {
 			if (params[0].toLowerCase().startsWith("minecraft:")) params[0] = params[0].substring("minecraft:".length());
@@ -77,7 +74,7 @@ public class CommandPath extends ServerCommand implements Listener<TickEvent> {
 				}
 			}
 			
-			if (block != null && !(block instanceof BlockAir)) {
+			if (block == null || block instanceof BlockAir) {
 				sender.sendLangfileMessageToPlayer("command.path.unknownBlock", new Object[] {block.getUnlocalizedName()});
 				return;
 			}
@@ -94,42 +91,32 @@ public class CommandPath extends ServerCommand implements Listener<TickEvent> {
 				}
 			}
 			
-			if (this.playerConfig.containsKey(playerEntity)) {
-				int[] plrData = playerConfig.get(playerEntity);
+			if (ServerPlayerSettings.playerSettingsMapping.containsKey(playerEntity)) {
+				ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(playerEntity);
+				int[] plrData = settings.pathData;
 				if(plrData[0] == Block.getIdFromBlock(block) && plrData[1] == meta && plrData[2] == size) {
 					sender.sendLangfileMessageToPlayer("command.path.noChange", new Object[0]);
 					return;
 				}
+				sender.sendLangfileMessageToPlayer("command.path.enabled", new Object[0]);
+				settings.pathData = new int[] {Block.getIdFromBlock(block), meta, size, -1, -1, -1};
 			}
-			
-			sender.sendLangfileMessageToPlayer("command.path.enabled", new Object[0]);
-			playerConfig.put(playerEntity, new int[]{Block.getIdFromBlock(block), meta, size, -1, -1, -1});
-		
-		} else if(playerConfig.containsKey(playerEntity) && playerConfig.get(playerEntity)[0] > -1) {
+		} else if (ServerPlayerSettings.playerSettingsMapping.containsKey(playerEntity) && ServerPlayerSettings.playerSettingsMapping.get(playerEntity).pathData[0] > -1) {
 			sender.sendLangfileMessageToPlayer("command.path.disabled", new Object[0]);
-			playerConfig.get(playerEntity)[0] = -1;
+			ServerPlayerSettings.playerSettingsMapping.get(playerEntity).pathData[0] = -1;
 		} else {
 			sender.sendLangfileMessageToPlayer("command.path.invalidUsage", new Object[0]);
 			return;
 		}
-	}
-	
-	private void checkWorld(EntityPlayer player) {
-		if(this.loadedWorld == null) {
-			this.playerConfig.clear();
-			this.loadedWorld = player.worldObj;
-		}
-	}
-	   
+	}   
 		
 	@Override
 	public void onEvent(TickEvent e) {
 		if (e instanceof TickEvent.PlayerTickEvent) {
 			TickEvent.PlayerTickEvent event = (TickEvent.PlayerTickEvent) e;
 			
-			if (this.playerConfig.containsKey(event.player)) {
-				checkWorld(event.player);
-				int[] plrData = playerConfig.get(event.player);
+			if (ServerPlayerSettings.playerSettingsMapping.containsKey(event.player)) {
+				int[] plrData = ServerPlayerSettings.playerSettingsMapping.get(event.player).pathData;
 				this.makePath(new Player(event.player), plrData);
 			} else {
 			return;
@@ -182,7 +169,7 @@ public class CommandPath extends ServerCommand implements Listener<TickEvent> {
 
 	@Override
 	public ServerType getAllowedServerType() {
-		return ServerType.INTEGRATED;
+		return ServerType.ALL;
 	}
 	
 	@Override
