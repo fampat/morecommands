@@ -43,41 +43,43 @@ import cpw.mods.fml.relauncher.Side;
  */
 @Mod(modid = Reference.MODID, version = Reference.VERSION, name = Reference.NAME, acceptableRemoteVersions = "*")
 public class MoreCommands {
-	@SidedProxy(clientSide="com.mrnobody.morecommands.core.ClientProxy", serverSide="com.mrnobody.morecommands.core.ServerProxy", modId=Reference.MODID)
-	public static CommonProxy proxy;
-	
 	@Instance
 	private static MoreCommands instance;
 	
+	@SidedProxy(clientSide="com.mrnobody.morecommands.core.ClientProxy", serverSide="com.mrnobody.morecommands.core.ServerProxy", modId=Reference.MODID)
+	private static CommonProxy proxy;
+	
 	public static final DynamicClassLoader CLASSLOADER = new DynamicClassLoader(MoreCommands.class.getClassLoader());
+	public static final String CHANNEL = "mrnobody_cmd";
 	
-	private static final String CHANNEL = "mrnobody_cmd";
-	private static SimpleNetworkWrapper network;
+	private SimpleNetworkWrapper network;
+	private UUID playerUUID;
+	private Logger logger;
 	
-	private static UUID playerUUID;
-	private static Logger logger;
+	private boolean handlersLoaded = false;
+	private boolean packetsLoaded = false;
 	
-	private static boolean handlersLoaded = false;
-	private static boolean packetsLoaded = false;
+	private final String clientCommandsPackage = "com.mrnobody.morecommands.command.client";
+	private List<Class<? extends ClientCommand>> clientCommandClasses = new ArrayList<Class<? extends ClientCommand>>();
 	
-	private static final String clientCommandsPackage = "com.mrnobody.morecommands.command.client";
-	private static List<Class<? extends ClientCommand>> clientCommandClasses = new ArrayList<Class<? extends ClientCommand>>();
+	private final String serverCommandsPackage = "com.mrnobody.morecommands.command.server";
+	private List<Class<? extends ServerCommand>> serverCommandClasses = new ArrayList<Class<? extends ServerCommand>>();
 	
-	private static final String serverCommandsPackage = "com.mrnobody.morecommands.command.server";
-	private static List<Class<? extends ServerCommand>> serverCommandClasses = new ArrayList<Class<? extends ServerCommand>>();
+	private final String clientPacketPackage = "com.mrnobody.morecommands.packet.client";
+	private List<Class<?>> clientPacketClasses = new ArrayList<Class<?>>();
 	
-	private static final String clientPacketPackage = "com.mrnobody.morecommands.packet.client";
-	private static List<Class<?>> clientPacketClasses = new ArrayList<Class<?>>();
+	private final String serverPacketPackage = "com.mrnobody.morecommands.packet.server";
+	private List<Class<?>> serverPacketClasses = new ArrayList<Class<?>>();
 	
-	private static final String serverPacketPackage = "com.mrnobody.morecommands.packet.server";
-	private static List<Class<?>> serverPacketClasses = new ArrayList<Class<?>>();
+	private List<String> disabledCommands;
 	
-	private static List<String> disabledCommands;
+	//Need this because forge injects the instance too late -> Causes a NullpointerException using getMoreCommands
+	public MoreCommands() {MoreCommands.instance = this;}
 	
 	/**
 	 * @return The Singleton mod instance
 	 */
-	public static MoreCommands getModInstance() {
+	public static MoreCommands getMoreCommands() {
 		return MoreCommands.instance;
 	}
 	
@@ -91,147 +93,147 @@ public class MoreCommands {
 	/**
 	 * @return The UUID for the server side player or null if the mod isn't installed server side
 	 */
-	public static UUID getPlayerUUID() {
-		return MoreCommands.playerUUID;
+	public UUID getPlayerUUID() {
+		return this.playerUUID;
 	}
 	
 	/**
 	 * Sets the player UUID
 	 */
-	public static void setPlayerUUID(UUID uuid) {
-		MoreCommands.playerUUID = uuid;
+	public void setPlayerUUID(UUID uuid) {
+		this.playerUUID = uuid;
 	}
 	
 	/**
 	 * @return A list of commands, which shall be disabled
 	 */
-	public static List<String> getDisabledCommands() {
-		return MoreCommands.disabledCommands;
+	public List<String> getDisabledCommands() {
+		return this.disabledCommands;
 	}
 	
 	/**
 	 * @return Whether the mod runs on a dedicated server
 	 */
-	public static boolean isServerSide() {
+	public boolean isServerSide() {
 		return MoreCommands.proxy instanceof ServerProxy;
 	}
 	
 	/**
 	 * @return Whether the mod runs client side (e.g. integrated server)
 	 */
-	public static boolean isClientSide() {
+	public boolean isClientSide() {
 		return MoreCommands.proxy instanceof ClientProxy;
 	}
 	
 	/**
 	 * @return The running side (client or server)
 	 */
-	public static Side getRunningSide() {
-		if (MoreCommands.isClientSide()) return Side.CLIENT;
-		else if (MoreCommands.isServerSide()) return Side.SERVER;
+	public Side getRunningSide() {
+		if (this.isClientSide()) return Side.CLIENT;
+		else if (this.isServerSide()) return Side.SERVER;
 		else return null;
 	}
 	
 	/**
 	 * @return The running Server Type (integrated or dedicated)
 	 */
-	public static ServerType getRunningServer() {
+	public ServerType getRunningServer() {
 		return MoreCommands.proxy.getRunningServerType();
 	}
 	
 	/**
 	 * @return The Patcher Instance
 	 */
-	public static Patcher getPatcherInstance() {
+	public Patcher getPatcherInstance() {
 		return MoreCommands.proxy.getPatcher();
 	}
 	
 	/**
 	 * @return The Mod Logger
 	 */
-	public static Logger getLogger() {
-		return MoreCommands.logger;
+	public Logger getLogger() {
+		return this.logger;
 	}
 	
 	/**
 	 * @return The Network Wrapper
 	 */
-	public static SimpleNetworkWrapper getNetwork() {
-		return MoreCommands.network;
+	public SimpleNetworkWrapper getNetwork() {
+		return this.network;
 	}
 	
 	/**
 	 * @return The Client Command Classes
 	 */
-	public static List<Class<? extends ClientCommand>> getClientCommandClasses() {
-		return MoreCommands.clientCommandClasses;
+	public List<Class<? extends ClientCommand>> getClientCommandClasses() {
+		return this.clientCommandClasses;
 	}
 	
 	/**
 	 * @return The Server Command Classes
 	 */
-	public static List<Class<? extends ServerCommand>> getServerCommandClasses() {
-		return MoreCommands.serverCommandClasses;
+	public List<Class<? extends ServerCommand>> getServerCommandClasses() {
+		return this.serverCommandClasses;
 	}
 	
 	/**
 	 * @return Whether the mod is enabled
 	 */
-	public static boolean isModEnabled() {
-		return MoreCommands.proxy.commandsLoaded() && MoreCommands.handlersLoaded && MoreCommands.packetsLoaded;
+	public boolean isModEnabled() {
+		return MoreCommands.proxy.commandsLoaded() && this.handlersLoaded && this.packetsLoaded;
 	}
 	
 	/**
 	 * @return Whether the command is enabled
 	 */
-	public static boolean isCommandEnabled(String command) {
-		return !MoreCommands.disabledCommands.contains(command);
+	public boolean isCommandEnabled(String command) {
+		return !this.disabledCommands.contains(command);
 	}
 	
 	/**
 	 * @return The current language
 	 */
-	public static String getCurrentLang(ICommandSender sender) {
+	public String getCurrentLang(ICommandSender sender) {
 		return MoreCommands.proxy.getLang(sender);
 	}
 	
 	@EventHandler
-	public void preInit(FMLPreInitializationEvent event) {
-		MoreCommands.logger = event.getModLog();
+	private void preInit(FMLPreInitializationEvent event) {
+		this.logger = event.getModLog();
 		Reference.init(event);
 		LanguageManager.readTranslations();
-		MoreCommands.network = NetworkRegistry.INSTANCE.newSimpleChannel(MoreCommands.CHANNEL);
+		this.network = NetworkRegistry.INSTANCE.newSimpleChannel(MoreCommands.CHANNEL);
 		
-		if (MoreCommands.packetsLoaded = this.registerPackets()) MoreCommands.getLogger().info("Packets successfully registered");
+		if (this.packetsLoaded = this.registerPackets()) this.getLogger().info("Packets successfully registered");
 		this.loadCommands();
-		MoreCommands.disabledCommands = this.readDisabledCommands();
+		this.disabledCommands = this.readDisabledCommands();
 		
 		MoreCommands.proxy.preInit(event);
 	}
 	
 	@EventHandler
-	public void init(FMLInitializationEvent event) {
-		MoreCommands.handlersLoaded = MoreCommands.proxy.registerHandlers();
+	private void init(FMLInitializationEvent event) {
+		this.handlersLoaded = MoreCommands.proxy.registerHandlers();
 		MoreCommands.proxy.init(event);
 	}
 	
 	@EventHandler
-	public void postInit(FMLPostInitializationEvent event) {
+	private void postInit(FMLPostInitializationEvent event) {
 		MoreCommands.proxy.postInit(event);
 	}
 	
 	@EventHandler
-	public void serverStart(FMLServerAboutToStartEvent event) {
+	private void serverStart(FMLServerAboutToStartEvent event) {
 		MoreCommands.proxy.serverStart(event);
 	}
 	
 	@EventHandler
-	public void serverInit(FMLServerStartingEvent event) {
+	private void serverInit(FMLServerStartingEvent event) {
 		MoreCommands.proxy.serverInit(event);
 	}
 	
 	@EventHandler
-	public void serverStop(FMLServerStoppedEvent event) {
+	private void serverStop(FMLServerStoppedEvent event) {
 		MoreCommands.proxy.serverStop(event);
 	}
 	
@@ -241,24 +243,24 @@ public class MoreCommands {
 	 * @return Whether the commands were loaded successfully
 	 */
 	private boolean loadCommands() {
-		List<Class<?>> clientCommands = MoreCommands.CLASSLOADER.getCommandClasses(MoreCommands.clientCommandsPackage, ClientCommand.class);
+		List<Class<?>> clientCommands = MoreCommands.CLASSLOADER.getCommandClasses(this.clientCommandsPackage, ClientCommand.class);
 		Iterator<Class<?>> clientCommandIterator = clientCommands.iterator();
 		
 		while (clientCommandIterator.hasNext()) {
 			try {
 				Class<? extends ClientCommand> command = clientCommandIterator.next().asSubclass(ClientCommand.class);
-				MoreCommands.clientCommandClasses.add(command);
+				this.clientCommandClasses.add(command);
 			}
 			catch (Exception ex) {ex.printStackTrace(); return false;}
 		}
 		
-		List<Class<?>> serverCommands = MoreCommands.CLASSLOADER.getCommandClasses(MoreCommands.serverCommandsPackage, ServerCommand.class);
+		List<Class<?>> serverCommands = MoreCommands.CLASSLOADER.getCommandClasses(this.serverCommandsPackage, ServerCommand.class);
 		Iterator<Class<?>> serverCommandIterator = serverCommands.iterator();
 		
 		while (serverCommandIterator.hasNext()) {
 			try {
 				Class<? extends ServerCommand> handler = serverCommandIterator.next().asSubclass(ServerCommand.class);
-				MoreCommands.serverCommandClasses.add(handler);
+				this.serverCommandClasses.add(handler);
 			}
 			catch (Exception ex) {ex.printStackTrace(); return false;}
 		}
@@ -273,8 +275,8 @@ public class MoreCommands {
 	 */
 	private boolean registerPackets() {
 		List<Class<?>> packets = new ArrayList<Class<?>>();
-		packets.addAll(MoreCommands.CLASSLOADER.getPacketClasses(MoreCommands.clientPacketPackage, Side.CLIENT));
-		packets.addAll(MoreCommands.CLASSLOADER.getPacketClasses(MoreCommands.serverPacketPackage, Side.SERVER));
+		packets.addAll(MoreCommands.CLASSLOADER.getPacketClasses(this.clientPacketPackage, Side.CLIENT));
+		packets.addAll(MoreCommands.CLASSLOADER.getPacketClasses(this.serverPacketPackage, Side.SERVER));
 		
 		int discriminator = 0;
 		Method register;
@@ -305,10 +307,10 @@ public class MoreCommands {
 			if (!file.exists() || !file.isFile()) file.createNewFile();
 			BufferedReader br = new BufferedReader(new FileReader(file));
 			String line;
-			while ((line = br.readLine()) != null) {disabled.add(line); MoreCommands.getLogger().info("Disabling command '" + line + "'");}
+			while ((line = br.readLine()) != null) {disabled.add(line); this.getLogger().info("Disabling command '" + line + "'");}
 			br.close();
 		}
-		catch (IOException ex) {ex.printStackTrace(); MoreCommands.getLogger().info("Could not read disable.cfg");}
+		catch (IOException ex) {ex.printStackTrace(); this.getLogger().info("Could not read disable.cfg");}
 		
 		return disabled;
 	}

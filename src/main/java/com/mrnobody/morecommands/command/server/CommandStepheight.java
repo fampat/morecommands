@@ -39,7 +39,7 @@ public class CommandStepheight extends ServerCommand {
 			
 			S11PacketStepheight packet = new S11PacketStepheight();
 			packet.stepheight = height;
-			MoreCommands.getNetwork().sendTo(packet, this.getCommandSenderAsPlayer(sender.getMinecraftISender()));
+			MoreCommands.getMoreCommands().getNetwork().sendTo(packet, this.getCommandSenderAsPlayer(sender.getMinecraftISender()));
 		}
 		else sender.sendLangfileMessageToPlayer("command.stepheight.invalidUsage", new Object[0]);
 	}

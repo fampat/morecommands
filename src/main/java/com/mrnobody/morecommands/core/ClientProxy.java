@@ -40,12 +40,14 @@ import cpw.mods.fml.common.eventhandler.EventBus;
  */
 public class ClientProxy extends CommonProxy {
 	private Patcher clientPatcher;
+	private MoreCommands mod;
 	
 	private boolean clientCommandsRegistered = false;
 	private boolean serverCommandsRegistered = false;
 	
 	public ClientProxy() {
 		this.clientPatcher = new ClientPatcher();
+		this.mod = MoreCommands.getMoreCommands();
 	}
 	
 	@Override
@@ -62,7 +64,7 @@ public class ClientProxy extends CommonProxy {
 	public void postInit(FMLPostInitializationEvent event) {
 		this.clientPatcher.applyModStatePatch(event);
 		if (this.clientCommandsRegistered = this.registerClientCommands()) 
-			MoreCommands.getLogger().info("Client Commands successfully registered");
+			this.mod.getLogger().info("Client Commands successfully registered");
 		PacketHandlerClient.INSTANCE.xrayHelper = new XrayHelper();
 	}
 
@@ -77,7 +79,7 @@ public class ClientProxy extends CommonProxy {
 		this.clientPatcher.applyModStatePatch(event);
 		GlobalSettings.readSettings();
 		if (this.serverCommandsRegistered = this.registerServerCommands()) 
-			MoreCommands.getLogger().info("Server Commands successfully registered");
+			this.mod.getLogger().info("Server Commands successfully registered");
 	}
 
 	@Override
@@ -86,8 +88,8 @@ public class ClientProxy extends CommonProxy {
 		for (Object command : MinecraftServer.getServer().getCommandManager().getCommands().values()) {
 			if (command instanceof ServerCommand) ((ServerCommand) command).unregisterFromHandler();
 		}
-		MoreCommands.getPatcherInstance().setServerCommandManagerPatched(false);
-		MoreCommands.getPatcherInstance().setServerConfigManagerPatched(false);
+		this.mod.getPatcherInstance().setServerCommandManagerPatched(false);
+		this.mod.getPatcherInstance().setServerConfigManagerPatched(false);
 	}
 
 	@Override
@@ -105,17 +107,12 @@ public class ClientProxy extends CommonProxy {
 	@Override
 	public boolean registerHandlers() {
 		ModContainer container = Loader.instance().activeModContainer();
-		Method register = null;
-		try {
-			register = EventBus.class.getDeclaredMethod("register", Class.class, Object.class, Method.class, ModContainer.class);
-			register.setAccessible(true);
-		}
-		catch (Exception ex) {ex.printStackTrace(); return false;}
+		if (container == null || !container.getModId().equals(Reference.MODID)) return false;
 		
-		if (container == null || register == null || !container.getModId().equals(Reference.MODID)) return false;
-		for (EventHandler handler : EventHandler.values()) EventHandler.register(handler.getBus(), handler.getHandler(), register, container);
+		for (EventHandler handler : EventHandler.values())
+			EventHandler.register(handler.getBus(), handler.getHandler(), container);
 		
-		MoreCommands.getLogger().info("Event Handlers registered");
+		this.mod.getLogger().info("Event Handlers registered");
 		return true;
 	}
 	
@@ -125,14 +122,14 @@ public class ClientProxy extends CommonProxy {
 	 * @return Whether the client commands were registered successfully
 	 */
 	private boolean registerClientCommands() {
-		List<Class<? extends ClientCommand>> clientCommands = MoreCommands.getClientCommandClasses();
+		List<Class<? extends ClientCommand>> clientCommands = this.mod.getClientCommandClasses();
 		if (clientCommands == null) return false;
 		Iterator<Class<? extends ClientCommand>> commandIterator = clientCommands.iterator();
 		
 		try {
 			while (commandIterator.hasNext()) {
 				ClientCommand clientCommand = commandIterator.next().newInstance();
-				if (MoreCommands.isCommandEnabled(clientCommand.getCommandName()))
+				if (this.mod.isCommandEnabled(clientCommand.getCommandName()))
 						ClientCommandHandler.instance.registerCommand(clientCommand);
 			}
 			
@@ -147,7 +144,7 @@ public class ClientProxy extends CommonProxy {
 	 * @return Whether the server commands were registered successfully
 	 */
 	private boolean registerServerCommands() {
-		List<Class<? extends ServerCommand>> serverCommands = MoreCommands.getServerCommandClasses();
+		List<Class<? extends ServerCommand>> serverCommands = this.mod.getServerCommandClasses();
 		if (serverCommands == null) return false;
 		Iterator<Class<? extends ServerCommand>> commandIterator = serverCommands.iterator();
 		
@@ -157,7 +154,7 @@ public class ClientProxy extends CommonProxy {
 				
 				while (commandIterator.hasNext()) {
 					ServerCommand serverCommand = commandIterator.next().newInstance();
-					if (MoreCommands.isCommandEnabled(serverCommand.getCommandName()))
+					if (this.mod.isCommandEnabled(serverCommand.getCommandName()))
 						commandManager.registerCommand(serverCommand);
 				}
 				
@@ -166,16 +163,6 @@ public class ClientProxy extends CommonProxy {
 			else return false;
 		}
 		catch (Exception ex) {ex.printStackTrace(); return false;}
-	}
-	
-	/**
-	 * Sends the client handshake to the server
-	 */
-	public void sendHandshake(UUID playerUUID) {
-		C00PacketHandshake packet = new C00PacketHandshake();
-		packet.playerUUID = playerUUID;
-		packet.clientPlayerPatched = Minecraft.getMinecraft().thePlayer instanceof EntityClientPlayerMP;
-		MoreCommands.getNetwork().sendToServer(packet);
 	}
 
 	@Override

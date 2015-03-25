@@ -36,11 +36,14 @@ import cpw.mods.fml.common.eventhandler.EventBus;
  */
 public class ServerProxy extends CommonProxy {
 	private Patcher serverPatcher;
+	private MoreCommands mod;
 	
 	private boolean serverCommandsLoaded = false;
 	
 	public ServerProxy() {
 		this.serverPatcher = new ServerPatcher();
+		this.mod = MoreCommands.getMoreCommands();
+		
 	}
 	
 	@Override
@@ -69,7 +72,7 @@ public class ServerProxy extends CommonProxy {
 		this.serverPatcher.applyModStatePatch(event);
 		GlobalSettings.readSettings();
 		if (this.serverCommandsLoaded = this.registerServerCommands()) 
-			MoreCommands.getLogger().info("Server Commands successfully registered");
+			this.mod.getLogger().info("Server Commands successfully registered");
 	}
 
 	@Override
@@ -78,8 +81,8 @@ public class ServerProxy extends CommonProxy {
 		for (Object command : MinecraftServer.getServer().getCommandManager().getCommands().values()) {
 			if (command instanceof ServerCommand) ((ServerCommand) command).unregisterFromHandler();
 		}
-		MoreCommands.getPatcherInstance().setServerCommandManagerPatched(false);
-		MoreCommands.getPatcherInstance().setServerConfigManagerPatched(false);
+		this.mod.getPatcherInstance().setServerCommandManagerPatched(false);
+		this.mod.getPatcherInstance().setServerConfigManagerPatched(false);
 	}
 
 	@Override
@@ -95,20 +98,14 @@ public class ServerProxy extends CommonProxy {
 	@Override
 	public boolean registerHandlers() {
 		ModContainer container = Loader.instance().activeModContainer();
-		Method register = null;
-		try {
-			register = EventBus.class.getDeclaredMethod("register", Class.class, Object.class, Method.class, ModContainer.class);
-			register.setAccessible(true);
-		}
-		catch (Exception ex) {ex.printStackTrace(); return false;}
+		if (container == null || !container.getModId().equals(Reference.MODID)) return false;
 		
-		if (container == null || register == null || !container.getModId().equals(Reference.MODID)) return false;
 		for (EventHandler handler : EventHandler.values()) {
 			if (!handler.getHandler().isClientOnly()) 
-				EventHandler.register(handler.getBus(), handler.getHandler(), register, container);
+				EventHandler.register(handler.getBus(), handler.getHandler(), container);
 		}
 		
-		MoreCommands.getLogger().info("Event Handlers registered");
+		this.mod.getLogger().info("Event Handlers registered");
 		return true;
 	}
 	
@@ -118,7 +115,7 @@ public class ServerProxy extends CommonProxy {
 	 * @return Whether the server commands were registered successfully
 	 */
 	private boolean registerServerCommands() {
-		List<Class<? extends ServerCommand>> serverCommands = MoreCommands.getServerCommandClasses();
+		List<Class<? extends ServerCommand>> serverCommands = this.mod.getServerCommandClasses();
 		if (serverCommands == null) return false;
 		Iterator<Class<? extends ServerCommand>> commandIterator = serverCommands.iterator();
 		
@@ -128,7 +125,7 @@ public class ServerProxy extends CommonProxy {
 				
 				while (commandIterator.hasNext()) {
 					ServerCommand serverCommand = commandIterator.next().newInstance();
-					if (MoreCommands.isCommandEnabled(serverCommand.getCommandName()))
+					if (this.mod.isCommandEnabled(serverCommand.getCommandName()))
 						commandManager.registerCommand(serverCommand);
 				}
 				

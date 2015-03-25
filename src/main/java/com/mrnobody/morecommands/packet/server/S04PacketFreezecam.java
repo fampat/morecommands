@@ -34,6 +34,6 @@ public class S04PacketFreezecam implements IMessage, IMessageHandler<S04PacketFr
 	 * Registers the packet to the network system
 	 */
 	public static void register(int discriminator) {
-		MoreCommands.getNetwork().registerMessage(S04PacketFreezecam.class, S04PacketFreezecam.class, discriminator, Side.CLIENT);
+		MoreCommands.getMoreCommands().getNetwork().registerMessage(S04PacketFreezecam.class, S04PacketFreezecam.class, discriminator, Side.CLIENT);
 	}
 }

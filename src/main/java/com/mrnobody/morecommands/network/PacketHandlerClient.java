@@ -28,6 +28,7 @@ import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.Patcher;
 import com.mrnobody.morecommands.handler.EventHandler;
 import com.mrnobody.morecommands.handler.Listener;
+import com.mrnobody.morecommands.packet.client.C00PacketHandshake;
 import com.mrnobody.morecommands.packet.client.C01PacketClientCommand;
 import com.mrnobody.morecommands.patch.EntityClientPlayerMP;
 import com.mrnobody.morecommands.patch.PlayerControllerMP;
@@ -76,7 +77,7 @@ public class PacketHandlerClient {
 	 * Is called if the client receives a handshake packet
 	 */
 	public void handshake(UUID uuid) {
-		MoreCommands.setPlayerUUID(uuid);
+		MoreCommands.getMoreCommands().setPlayerUUID(uuid);
 		Patcher.setServerModded(true);
 		
 		//Remove commands, which shall be removed if the server side version shall be used
@@ -90,18 +91,16 @@ public class PacketHandlerClient {
 		
 		for (String rem : remove) {
 			ClientCommandHandler.instance.getCommands().remove(rem);
-			MoreCommands.getLogger().info("Unregistered client command '" + rem + "' because server side version of this command is used");
+			MoreCommands.getMoreCommands().getLogger().info("Unregistered client command '" + rem + "' because server side version of this command is used");
 		}
 		
 		//Let the server know that the mod is installed client side
-		MoreCommands.getLogger().info("Sending client handshake");
+		MoreCommands.getMoreCommands().getLogger().info("Sending client handshake");
 		
-		if (MoreCommands.getProxy() instanceof ClientProxy) {
-			((ClientProxy) MoreCommands.getProxy()).sendHandshake(uuid);
-		}
-		else {
-			MoreCommands.getLogger().info("Couldn't send handshake, the proxy is not the client proxy. This shouldn't happend");
-		}
+		C00PacketHandshake packet = new C00PacketHandshake();
+		packet.playerUUID = uuid;
+		packet.clientPlayerPatched = Minecraft.getMinecraft().thePlayer instanceof EntityClientPlayerMP;
+		MoreCommands.getMoreCommands().getNetwork().sendToServer(packet);
 		
 		//Execute commands specified in the startup.cfg
 		try {
@@ -113,11 +112,11 @@ public class PacketHandlerClient {
 			while ((line = br.readLine()) != null) {
 				if (ClientCommandHandler.instance.executeCommand(Minecraft.getMinecraft().thePlayer, line) == 0)
 					Minecraft.getMinecraft().thePlayer.sendChatMessage(line.startsWith("/") ? line : "/" + line);
-				MoreCommands.getLogger().info("Executed startup command '" + line + "'");
+				MoreCommands.getMoreCommands().getLogger().info("Executed startup command '" + line + "'");
 			}
 			br.close();
 		}
-		catch (IOException ex) {ex.printStackTrace(); MoreCommands.getLogger().info("Startup commands couldn't be executed");}
+		catch (IOException ex) {ex.printStackTrace(); MoreCommands.getMoreCommands().getLogger().info("Startup commands couldn't be executed");}
 	}
 	
 	/**
@@ -254,9 +253,9 @@ public class PacketHandlerClient {
 		for (Object command : ClientCommandHandler.instance.getCommands().values()) {
 			if (command instanceof ClientCommand) {
 				C01PacketClientCommand packet = new C01PacketClientCommand();
-				packet.playerUUID = MoreCommands.getPlayerUUID();
+				packet.playerUUID = MoreCommands.getMoreCommands().getPlayerUUID();
 				packet.command = ((ClientCommand) command).getCommandName();
-				MoreCommands.getNetwork().sendToServer(packet);
+				MoreCommands.getMoreCommands().getNetwork().sendToServer(packet);
 			}
 		}
 	}

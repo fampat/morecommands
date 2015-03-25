@@ -46,6 +46,12 @@ import cpw.mods.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 
 public class ClientPatcher extends Patcher {
+	private MoreCommands mod;
+	
+	public ClientPatcher() {
+		this.mod = MoreCommands.getMoreCommands();
+	}
+	
 	/**
 	 * Registers the Patcher to the event buses to receive events determining when patches shall be applied
 	 */
@@ -78,7 +84,7 @@ public class ClientPatcher extends Patcher {
 			modifiers.setInt(instance, instance.getModifiers() & ~Modifier.FINAL);
 			instance.set(null, new ClientCommandManager());
 			
-			MoreCommands.getLogger().info("Client Command Manager Patches applied");
+			this.mod.getLogger().info("Client Command Manager Patches applied");
 			Patcher.setClientCommandManagerPatched(true);
 		}
 		catch (Exception ex)  {ex.printStackTrace();}
@@ -94,7 +100,7 @@ public class ClientPatcher extends Patcher {
 		if (commandManager != null) {
 			try {
 				commandManager.set(MinecraftServer.getServer(), new ServerCommandManager());
-				MoreCommands.getLogger().info("Server Command Manager Patches applied");
+				this.mod.getLogger().info("Server Command Manager Patches applied");
 				Patcher.setServerCommandManagerPatched(true);
 			}
 			catch (Exception ex) {
@@ -104,7 +110,7 @@ public class ClientPatcher extends Patcher {
 		
 		if (event.getServer() instanceof IntegratedServer) {
 			event.getServer().func_152361_a(new ServerConfigurationManagerIntegrated((IntegratedServer) event.getServer()));
-			MoreCommands.getLogger().info("Server Configuration Manager Patches applied");
+			this.mod.getLogger().info("Server Configuration Manager Patches applied");
 			Patcher.setServerConfigManagerPatched(true);
 		}
 	}
@@ -127,7 +133,7 @@ public class ClientPatcher extends Patcher {
 			if (player.playerNetServerHandler.playerEntity == event.entity) {
 				NetHandlerPlayServer handler = player.playerNetServerHandler;
 				player.playerNetServerHandler = new com.mrnobody.morecommands.patch.NetHandlerPlayServer(MinecraftServer.getServer(), handler.netManager, handler.playerEntity);
-				MoreCommands.getLogger().info("Server Play Handler Patches applied for Player " + player.getCommandSenderName());
+				this.mod.getLogger().info("Server Play Handler Patches applied for Player " + player.getCommandSenderName());
 				patches.setServerPlayHandlerPatched(true);
 			}
 			
@@ -159,7 +165,7 @@ public class ClientPatcher extends Patcher {
 					NetworkManager manager = clientPlayHandler.getNetworkManager();
 					FMLClientHandler.instance().setPlayClient(new com.mrnobody.morecommands.patch.NetHandlerPlayClient(Minecraft.getMinecraft(), guiScreen, manager));
 					this.clientNetHandlerPatchApplied = true;
-					MoreCommands.getLogger().info("Client Play Handler Patches applied");
+					this.mod.getLogger().info("Client Play Handler Patches applied");
 				}
 			}
 		}
@@ -175,13 +181,13 @@ public class ClientPatcher extends Patcher {
 		if (!(event.player instanceof EntityPlayerMP)) return;
 		EntityPlayerMP player = (EntityPlayerMP) event.player;
 		
-		MoreCommands.getLogger().info("Requesting Client Handshake");
+		this.mod.getLogger().info("Requesting Client Handshake");
 		if (!Patcher.playerPatchMapping.containsKey(player))
 			Patcher.playerPatchMapping.put(player, new PlayerPatches());
 		ServerPlayerSettings.playerUUIDMapping.put(event.player.getUniqueID(), player);
 		S00PacketHandshake packet = new S00PacketHandshake();
 		packet.playerUUID = player.getUniqueID();
-		MoreCommands.getNetwork().sendTo(packet, player);
+		this.mod.getNetwork().sendTo(packet, player);
 		
 		if (GlobalSettings.welcome_message)
 			player.addChatMessage((new ChatComponentText("More Commands Mod (v" + Reference.VERSION + ") loaded")).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.DARK_AQUA)));
@@ -222,7 +228,7 @@ public class ClientPatcher extends Patcher {
 	 */
 	@SubscribeEvent
 	public void playerDisconnect(ClientDisconnectionFromServerEvent event) {
-		MoreCommands.setPlayerUUID(null);
+		this.mod.setPlayerUUID(null);
 		Patcher.setServerModded(false);
 		for (ClientCommand cmd : PacketHandlerClient.removedCmds) ClientCommandHandler.instance.registerCommand(cmd);
 		PacketHandlerClient.removedCmds.clear();

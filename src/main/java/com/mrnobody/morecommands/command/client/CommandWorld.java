@@ -117,9 +117,9 @@ public class CommandWorld extends ClientCommand {
 					sender.sendLangfileMessageToPlayer("command.world.saves", new Object[0]);
 					sender.sendStringMessageToPlayer(saves);
 				}
-				else if (params[0].equalsIgnoreCase("seed") && MoreCommands.getPlayerUUID() != null) {
+				else if (params[0].equalsIgnoreCase("seed") && MoreCommands.getMoreCommands().getPlayerUUID() != null) {
 					C04PacketWorld packet = new C04PacketWorld();
-					packet.playerUUID = MoreCommands.getPlayerUUID();
+					packet.playerUUID = MoreCommands.getMoreCommands().getPlayerUUID();
 					
 					if (params.length > 2 && params[1].equalsIgnoreCase("set")) {
 						packet.params = "seed set " + params[2];
@@ -128,11 +128,11 @@ public class CommandWorld extends ClientCommand {
 						packet.params = "seed";
 					}
 					
-					MoreCommands.getNetwork().sendToServer(packet);
+					MoreCommands.getMoreCommands().getNetwork().sendToServer(packet);
 				}
-				else if (params[0].equalsIgnoreCase("name") && MoreCommands.getPlayerUUID() != null) {
+				else if (params[0].equalsIgnoreCase("name") && MoreCommands.getMoreCommands().getPlayerUUID() != null) {
 					C04PacketWorld packet = new C04PacketWorld();
-					packet.playerUUID = MoreCommands.getPlayerUUID();
+					packet.playerUUID = MoreCommands.getMoreCommands().getPlayerUUID();
 					
 					if (params.length > 2 && params[1].equalsIgnoreCase("set")) {
 						packet.params = "name set " + params[2];
@@ -141,7 +141,7 @@ public class CommandWorld extends ClientCommand {
 						packet.params = "name";
 					}
 					
-					MoreCommands.getNetwork().sendToServer(packet);
+					MoreCommands.getMoreCommands().getNetwork().sendToServer(packet);
 				}
 				else sender.sendLangfileMessageToPlayer("command.world.invalidArg", new Object[0]);
 			}

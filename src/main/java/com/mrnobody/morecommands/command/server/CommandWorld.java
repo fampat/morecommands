@@ -41,7 +41,7 @@ public class CommandWorld extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 0) {
-			if (MoreCommands.getRunningServer() == ServerType.DEDICATED) {
+			if (MoreCommands.getMoreCommands().getRunningServer() == ServerType.DEDICATED) {
 				DedicatedServer server = (DedicatedServer) MinecraftServer.getServer();
 				
 				if (params[0].equalsIgnoreCase("load") && params.length > 1) {

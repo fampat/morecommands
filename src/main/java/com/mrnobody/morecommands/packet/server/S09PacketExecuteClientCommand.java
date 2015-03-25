@@ -46,6 +46,6 @@ public class S09PacketExecuteClientCommand implements IMessage, IMessageHandler<
 	 * Registers the packet to the network system
 	 */
 	public static void register(int discriminator) {
-		MoreCommands.getNetwork().registerMessage(S09PacketExecuteClientCommand.class, S09PacketExecuteClientCommand.class, discriminator, Side.CLIENT);
+		MoreCommands.getMoreCommands().getNetwork().registerMessage(S09PacketExecuteClientCommand.class, S09PacketExecuteClientCommand.class, discriminator, Side.CLIENT);
 	}
 }

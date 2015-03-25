@@ -55,11 +55,11 @@ public class CommandOutput extends ClientCommand {
     	if (success) CommandSender.output = output;
     	sender.getMinecraftISender().addChatMessage(new ChatComponentTranslation(success ? output ? "command.output.on" : "command.output.off"  : "command.output.failure", new Object[0]));
     	
-    	if (MoreCommands.getPlayerUUID() != null) {
+    	if (MoreCommands.getMoreCommands().getPlayerUUID() != null) {
     		C03PacketOutput packet = new C03PacketOutput();
-    		packet.playerUUID = MoreCommands.getPlayerUUID();
+    		packet.playerUUID = MoreCommands.getMoreCommands().getPlayerUUID();
     		packet.output = output;
-    		MoreCommands.getNetwork().sendToServer(packet);
+    		MoreCommands.getMoreCommands().getNetwork().sendToServer(packet);
     	}
 	}
 	

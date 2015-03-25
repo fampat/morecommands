@@ -40,6 +40,6 @@ public class S02PacketClimb implements IMessage, IMessageHandler<S02PacketClimb,
 	 * Registers the packet to the network system
 	 */
 	public static void register(int discriminator) {
-		MoreCommands.getNetwork().registerMessage(S02PacketClimb.class, S02PacketClimb.class, discriminator, Side.CLIENT);
+		MoreCommands.getMoreCommands().getNetwork().registerMessage(S02PacketClimb.class, S02PacketClimb.class, discriminator, Side.CLIENT);
 	}
 }

@@ -38,7 +38,7 @@ public class CommandReach extends ServerCommand {
 				
 				S08PacketReach packet = new S08PacketReach();
 				packet.reachDistance = distance;
-				MoreCommands.getNetwork().sendTo(packet, playerEntity);
+				MoreCommands.getMoreCommands().getNetwork().sendTo(packet, playerEntity);
 				
 				playerEntity.theItemInWorldManager.setBlockReachDistance(distance);
 				sender.sendLangfileMessageToPlayer("command.reach.set", new Object[] {params[0]});
@@ -47,7 +47,7 @@ public class CommandReach extends ServerCommand {
 				if (params[0].toLowerCase().equals("reset")) {
 					S08PacketReach packet = new S08PacketReach();
 					packet.reachDistance = 5.0F;
-					MoreCommands.getNetwork().sendTo(packet, playerEntity);
+					MoreCommands.getMoreCommands().getNetwork().sendTo(packet, playerEntity);
 					
 					playerEntity.theItemInWorldManager.setBlockReachDistance(5.0F);
 					sender.sendLangfileMessageToPlayer("command.reach.reset", new Object[0]);

@@ -21,7 +21,9 @@ import cpw.mods.fml.common.eventhandler.Event;
  */
 public abstract class ClientCommand extends CommandBase {
 	public final void processCommand(ICommandSender sender, String[] params) {
-    	if (MoreCommands.isModEnabled() && this.isEnabled(Minecraft.getMinecraft().thePlayer)) {
+		MoreCommands mod = MoreCommands.getMoreCommands();
+		
+    	if (mod.isModEnabled() && this.isEnabled(Minecraft.getMinecraft().thePlayer)) {
         	try{
         		this.execute(new CommandSender(Minecraft.getMinecraft().thePlayer), params);
         	}
@@ -30,21 +32,23 @@ public abstract class ClientCommand extends CommandBase {
         	}
     	}
     	else {
-    		if (!MoreCommands.isModEnabled())
-    			sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(MoreCommands.getCurrentLang(sender), "command.generic.notEnabled", new Object[0])));
+    		if (!mod.isModEnabled())
+    			sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(sender), "command.generic.notEnabled", new Object[0])));
     	}
     }
 	
     @Override
     public final boolean isEnabled(EntityPlayer player) {
+		MoreCommands mod = MoreCommands.getMoreCommands();
+		
     	if (!(player instanceof net.minecraft.client.entity.EntityClientPlayerMP)) {
-    		player.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(MoreCommands.getCurrentLang(player), "command.generic.notClient", new Object[0])));
+    		player.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(player), "command.generic.notClient", new Object[0])));
     		return false;
     	}
     	
-    	if (!(this.getAllowedServerType() == ServerType.ALL || this.getAllowedServerType() == MoreCommands.getRunningServer())) {
-    		if (this.getAllowedServerType() == ServerType.INTEGRATED) player.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(MoreCommands.getCurrentLang(player), "command.generic.notIntegrated", new Object[0])));
-    		if (this.getAllowedServerType() == ServerType.DEDICATED) player.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(MoreCommands.getCurrentLang(player), "command.generic.notDedicated", new Object[0])));
+    	if (!(this.getAllowedServerType() == ServerType.ALL || this.getAllowedServerType() == mod.getRunningServer())) {
+    		if (this.getAllowedServerType() == ServerType.INTEGRATED) player.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(player), "command.generic.notIntegrated", new Object[0])));
+    		if (this.getAllowedServerType() == ServerType.DEDICATED) player.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(player), "command.generic.notDedicated", new Object[0])));
     		return false;
     	}
     	
@@ -53,14 +57,14 @@ public abstract class ClientCommand extends CommandBase {
     	for (Requirement requierement : requierements) {
     		if (requierement == Requirement.PATCH_ENTITYCLIENTPLAYERMP) {
     			if (!(Minecraft.getMinecraft().thePlayer instanceof EntityClientPlayerMP)) {
-    				player.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(MoreCommands.getCurrentLang(player), "command.generic.clientPlayerNotPatched", new Object[0])));
+    				player.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(player), "command.generic.clientPlayerNotPatched", new Object[0])));
     	    		return false;
     			}
     		}
     		
     		if (requierement == Requirement.PATCH_CLIENTCOMMANDHANDLER) {
     			if (!(ClientCommandHandler.instance instanceof com.mrnobody.morecommands.patch.ClientCommandManager)) {
-    				player.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(MoreCommands.getCurrentLang(player), "command.generic.clientCommandHandlerNotPatched", new Object[0])));
+    				player.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(player), "command.generic.clientCommandHandlerNotPatched", new Object[0])));
     	    		return false;
     			}
     		}

@@ -47,6 +47,6 @@ public class S05PacketXray implements IMessage, IMessageHandler<S05PacketXray, I
 	 * Registers the packet to the network system
 	 */
 	public static void register(int discriminator) {
-		MoreCommands.getNetwork().registerMessage(S05PacketXray.class, S05PacketXray.class, discriminator, Side.CLIENT);
+		MoreCommands.getMoreCommands().getNetwork().registerMessage(S05PacketXray.class, S05PacketXray.class, discriminator, Side.CLIENT);
 	}
 }

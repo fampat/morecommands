@@ -82,7 +82,7 @@ public class ClientPlayerSettings {
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();
-			MoreCommands.getLogger().warn("Failed to read player settings for player '" + Minecraft.getMinecraft().thePlayer.getCommandSenderName() + "'");
+			MoreCommands.getMoreCommands().getLogger().warn("Failed to read player settings for player '" + Minecraft.getMinecraft().thePlayer.getCommandSenderName() + "'");
 			return false;
 		}
 	}
@@ -121,7 +121,7 @@ public class ClientPlayerSettings {
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();
-			MoreCommands.getLogger().warn("Failed to write player settings for player '" + Minecraft.getMinecraft().thePlayer.getCommandSenderName() + "'");
+			MoreCommands.getMoreCommands().getLogger().warn("Failed to write player settings for player '" + Minecraft.getMinecraft().thePlayer.getCommandSenderName() + "'");
 			return false;
 		}
 	}

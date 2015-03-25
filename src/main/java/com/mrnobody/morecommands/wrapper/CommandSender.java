@@ -48,7 +48,7 @@ public class CommandSender {
 	}
 	
 	public void sendLangfileMessageToPlayer(String LangFileEntry, Object... formatArgs) {
-		String text = LanguageManager.getTranslation(MoreCommands.getCurrentLang(this.sender), LangFileEntry, formatArgs);
+		String text = LanguageManager.getTranslation(MoreCommands.getMoreCommands().getCurrentLang(this.sender), LangFileEntry, formatArgs);
 		if (CommandSender.output && !ServerPlayerSettings.playerSettingsMapping.containsKey(sender)) sender.addChatMessage(new ChatComponentText(text));
 		else if (CommandSender.output && ServerPlayerSettings.playerSettingsMapping.get(sender).output) sender.addChatMessage(new ChatComponentText(text));
 	}

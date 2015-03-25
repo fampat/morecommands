@@ -48,9 +48,9 @@ public class CommandBind extends ClientCommand implements Listener<KeyInputEvent
 		
 		if (Patcher.serverModded()) {
 			C02PacketKeyInput packet = new C02PacketKeyInput();
-			packet.playerUUID = MoreCommands.getPlayerUUID();
+			packet.playerUUID = MoreCommands.getMoreCommands().getPlayerUUID();
 			packet.key = org.lwjgl.input.Keyboard.getEventKey();
-			MoreCommands.getNetwork().sendToServer(packet);
+			MoreCommands.getMoreCommands().getNetwork().sendToServer(packet);
 		}
 		else {
 			if (ClientPlayerSettings.keybindMapping.containsKey(org.lwjgl.input.Keyboard.getEventKey()))

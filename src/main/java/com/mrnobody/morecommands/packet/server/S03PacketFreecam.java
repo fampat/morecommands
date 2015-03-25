@@ -36,6 +36,6 @@ public class S03PacketFreecam implements IMessage, IMessageHandler<S03PacketFree
 	 * Registers the packet to the network system
 	 */
 	public static void register(int discriminator) {
-		MoreCommands.getNetwork().registerMessage(S03PacketFreecam.class, S03PacketFreecam.class, discriminator, Side.CLIENT);
+		MoreCommands.getMoreCommands().getNetwork().registerMessage(S03PacketFreecam.class, S03PacketFreecam.class, discriminator, Side.CLIENT);
 	}
 }

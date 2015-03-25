@@ -73,7 +73,7 @@ public class CommandXray extends ServerCommand {
 		packet.blockRadius = blockRadius;
 		packet.xrayEnabled = enable;
 		
-		MoreCommands.getNetwork().sendTo(packet, player);
+		MoreCommands.getMoreCommands().getNetwork().sendTo(packet, player);
 	}
 	
 	@Override

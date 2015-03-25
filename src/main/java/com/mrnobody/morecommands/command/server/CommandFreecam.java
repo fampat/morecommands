@@ -39,14 +39,14 @@ public class CommandFreecam extends ServerCommand {
 		
 		if (ability.freecam) {
     		S03PacketFreecam packet = new S03PacketFreecam();
-    		MoreCommands.getNetwork().sendTo(packet, (EntityPlayerMP) sender.toPlayer().getMinecraftPlayer());
+    		MoreCommands.getMoreCommands().getNetwork().sendTo(packet, (EntityPlayerMP) sender.toPlayer().getMinecraftPlayer());
 			
 			ability.freecam = false;
 			sender.sendLangfileMessageToPlayer("command.freecam.off", new Object[0]);
 		}
 		else {
     		S03PacketFreecam packet = new S03PacketFreecam();
-    		MoreCommands.getNetwork().sendTo(packet, (EntityPlayerMP) sender.toPlayer().getMinecraftPlayer());
+    		MoreCommands.getMoreCommands().getNetwork().sendTo(packet, (EntityPlayerMP) sender.toPlayer().getMinecraftPlayer());
 			
 			ability.freecam = true;
             sender.sendLangfileMessageToPlayer("command.freecam.on", new Object[0]);

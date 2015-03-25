@@ -56,7 +56,7 @@ public class LanguageManager {
 				}
 				
 				reader.close();
-				MoreCommands.getLogger().info("Language '" + filename.split("\\.")[0] + "' successfully loaded");
+				MoreCommands.getMoreCommands().getLogger().info("Language '" + filename.split("\\.")[0] + "' successfully loaded");
 			}
 			catch (Exception ex) {ex.printStackTrace();}
 		}

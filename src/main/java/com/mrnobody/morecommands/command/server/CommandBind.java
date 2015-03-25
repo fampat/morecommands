@@ -37,7 +37,7 @@ public class CommandBind extends ServerCommand implements Listener<KeyEvent> {
 		else if (settings.clientKeybindMapping.containsKey(event.key)) {
 			S09PacketExecuteClientCommand packet = new S09PacketExecuteClientCommand();
 			packet.command = settings.clientKeybindMapping.get(event.key);
-			MoreCommands.getNetwork().sendTo(packet, event.player);
+			MoreCommands.getMoreCommands().getNetwork().sendTo(packet, event.player);
 		}
 	}
 

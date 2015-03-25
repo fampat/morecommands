@@ -30,7 +30,7 @@ public class CommandRide extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		MoreCommands.getNetwork().sendTo(new S12PacketRide(), (EntityPlayerMP) sender.getMinecraftISender());
+		MoreCommands.getMoreCommands().getNetwork().sendTo(new S12PacketRide(), (EntityPlayerMP) sender.getMinecraftISender());
 	}
 	
 	@Override

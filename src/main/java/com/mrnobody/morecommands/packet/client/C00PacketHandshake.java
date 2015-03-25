@@ -51,6 +51,6 @@ public class C00PacketHandshake implements IMessage, IMessageHandler<C00PacketHa
 	 * Registers the packet to the network system
 	 */
 	public static void register(int discriminator) {
-		MoreCommands.getNetwork().registerMessage(C00PacketHandshake.class, C00PacketHandshake.class, discriminator, Side.SERVER);
+		MoreCommands.getMoreCommands().getNetwork().registerMessage(C00PacketHandshake.class, C00PacketHandshake.class, discriminator, Side.SERVER);
 	}
 }

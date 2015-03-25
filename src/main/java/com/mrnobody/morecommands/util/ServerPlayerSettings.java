@@ -144,7 +144,7 @@ public class ServerPlayerSettings {
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();
-			MoreCommands.getLogger().warn("Failed to read player settings for player '" + player.getCommandSenderName() + "'");
+			MoreCommands.getMoreCommands().getLogger().warn("Failed to read player settings for player '" + player.getCommandSenderName() + "'");
 			return settings;
 		}
 	}
@@ -271,7 +271,7 @@ public class ServerPlayerSettings {
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();
-			MoreCommands.getLogger().warn("Failed to write player settings for player '" + player.getCommandSenderName() + "'");
+			MoreCommands.getMoreCommands().getLogger().warn("Failed to write player settings for player '" + player.getCommandSenderName() + "'");
 			return false;
 		}
 	}

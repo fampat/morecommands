@@ -51,7 +51,7 @@ public class CommandJumpheight extends ServerCommand {
 			
 			S10PacketGravity packet = new S10PacketGravity();
 			packet.gravity = gravity;
-			MoreCommands.getNetwork().sendTo(packet, CommandBase.getCommandSenderAsPlayer(sender.getMinecraftISender()));
+			MoreCommands.getMoreCommands().getNetwork().sendTo(packet, CommandBase.getCommandSenderAsPlayer(sender.getMinecraftISender()));
 		}
 		else {
 			sender.sendLangfileMessageToPlayer("command.jumpheight.invalidUsage", new Object[0]);

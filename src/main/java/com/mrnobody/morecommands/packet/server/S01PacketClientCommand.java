@@ -34,6 +34,6 @@ public class S01PacketClientCommand implements IMessage, IMessageHandler<S01Pack
 	 * Registers the packet to the network system
 	 */
 	public static void register(int discriminator) {
-		MoreCommands.getNetwork().registerMessage(S01PacketClientCommand.class, S01PacketClientCommand.class, discriminator, Side.CLIENT);
+		MoreCommands.getMoreCommands().getNetwork().registerMessage(S01PacketClientCommand.class, S01PacketClientCommand.class, discriminator, Side.CLIENT);
 	}
 }

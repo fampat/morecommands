@@ -34,6 +34,6 @@ public class S12PacketRide implements IMessage, IMessageHandler<S12PacketRide, I
 	 * Registers the packet to the network system
 	 */
 	public static void register(int discriminator) {
-		MoreCommands.getNetwork().registerMessage(S12PacketRide.class, S12PacketRide.class, discriminator, Side.CLIENT);
+		MoreCommands.getMoreCommands().getNetwork().registerMessage(S12PacketRide.class, S12PacketRide.class, discriminator, Side.CLIENT);
 	}
 }

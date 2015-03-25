@@ -34,6 +34,6 @@ public class S07PacketLight implements IMessage, IMessageHandler<S07PacketLight,
 	 * Registers the packet to the network system
 	 */
 	public static void register(int discriminator) {
-		MoreCommands.getNetwork().registerMessage(S07PacketLight.class, S07PacketLight.class, discriminator, Side.CLIENT);
+		MoreCommands.getMoreCommands().getNetwork().registerMessage(S07PacketLight.class, S07PacketLight.class, discriminator, Side.CLIENT);
 	}
 }

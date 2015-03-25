@@ -51,6 +51,6 @@ public class C03PacketOutput implements IMessage, IMessageHandler<C03PacketOutpu
 	 * Registers the packet to the network system
 	 */
 	public static void register(int discriminator) {
-		MoreCommands.getNetwork().registerMessage(C03PacketOutput.class, C03PacketOutput.class, discriminator, Side.SERVER);
+		MoreCommands.getMoreCommands().getNetwork().registerMessage(C03PacketOutput.class, C03PacketOutput.class, discriminator, Side.SERVER);
 	}
 }

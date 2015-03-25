@@ -40,6 +40,6 @@ public class S06PacketNoclip implements IMessage, IMessageHandler<S06PacketNocli
 	 * Registers the packet to the network system
 	 */
 	public static void register(int discriminator) {
-		MoreCommands.getNetwork().registerMessage(S06PacketNoclip.class, S06PacketNoclip.class, discriminator, Side.CLIENT);
+		MoreCommands.getMoreCommands().getNetwork().registerMessage(S06PacketNoclip.class, S06PacketNoclip.class, discriminator, Side.CLIENT);
 	}
 }

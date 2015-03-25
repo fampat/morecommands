@@ -32,6 +32,12 @@ import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 
 public class ServerPatcher extends Patcher {
+	private MoreCommands mod;
+	
+	public ServerPatcher() {
+		this.mod = MoreCommands.getMoreCommands();
+	}
+	
 	/**
 	 * Registers the Patcher to the event buses to receive events determining when patches shall be applied
 	 */
@@ -59,7 +65,7 @@ public class ServerPatcher extends Patcher {
 		if (commandManager != null) {
 			try {
 				commandManager.set(MinecraftServer.getServer(), new ServerCommandManager());
-				MoreCommands.getLogger().info("Command Manager Patches applied");
+				this.mod.getLogger().info("Command Manager Patches applied");
 				Patcher.setServerCommandManagerPatched(true);
 			}
 			catch (Exception ex) {
@@ -69,7 +75,7 @@ public class ServerPatcher extends Patcher {
 		
 		if (event.getServer() instanceof DedicatedServer) {
 			event.getServer().func_152361_a(new ServerConfigurationManagerDedicated((DedicatedServer) event.getServer()));
-			MoreCommands.getLogger().info("Server Configuration Manager Patches applied");
+			this.mod.getLogger().info("Server Configuration Manager Patches applied");
 			Patcher.setServerConfigManagerPatched(true);
 		}
 	}
@@ -90,7 +96,7 @@ public class ServerPatcher extends Patcher {
 			if (player.playerNetServerHandler.playerEntity == event.entity) {
 				NetHandlerPlayServer handler = player.playerNetServerHandler;
 				player.playerNetServerHandler = new com.mrnobody.morecommands.patch.NetHandlerPlayServer(MinecraftServer.getServer(), handler.netManager, handler.playerEntity);
-				MoreCommands.getLogger().info("Server Play Handler Patches applied for Player " + player.getCommandSenderName());
+				this.mod.getLogger().info("Server Play Handler Patches applied for Player " + player.getCommandSenderName());
 				patches.setServerPlayHandlerPatched(true);
 			}
 			
@@ -126,13 +132,13 @@ public class ServerPatcher extends Patcher {
 		if (!(event.player instanceof EntityPlayerMP)) return;
 		EntityPlayerMP player = (EntityPlayerMP) event.player;
 		
-		MoreCommands.getLogger().info("Requesting Client Handshake");
+		this.mod.getLogger().info("Requesting Client Handshake");
 		if (!Patcher.playerPatchMapping.containsKey(player)) 
 			Patcher.playerPatchMapping.put(player, new PlayerPatches());
 		ServerPlayerSettings.playerUUIDMapping.put(event.player.getUniqueID(), player);
 		S00PacketHandshake packet = new S00PacketHandshake();
 		packet.playerUUID = player.getUniqueID();
-		MoreCommands.getNetwork().sendTo(packet, player);
+		this.mod.getNetwork().sendTo(packet, player);
 		
 		if (GlobalSettings.welcome_message)
 			event.player.addChatMessage((new ChatComponentText("More Commands Mod (v" + Reference.VERSION + ") loaded")).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.DARK_AQUA)));

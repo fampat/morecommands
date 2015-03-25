@@ -40,7 +40,7 @@ public class CommandLight extends ServerCommand {
     	ability.lightWorld = !ability.lightWorld;
     		
     	S07PacketLight packet = new S07PacketLight();
-    	MoreCommands.getNetwork().sendTo(packet, player);
+    	MoreCommands.getMoreCommands().getNetwork().sendTo(packet, player);
     		
     	if (!ability.lightWorld) sender.sendLangfileMessageToPlayer("command.light.restore", new Object[0]);
     	else sender.sendLangfileMessageToPlayer("command.light.lightup", new Object[0]);

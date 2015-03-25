@@ -40,6 +40,6 @@ public class S08PacketReach implements IMessage,  IMessageHandler<S08PacketReach
 	 * Registers the packet to the network system
 	 */
 	public static void register(int discriminator) {
-		MoreCommands.getNetwork().registerMessage(S08PacketReach.class, S08PacketReach.class, discriminator, Side.CLIENT);
+		MoreCommands.getMoreCommands().getNetwork().registerMessage(S08PacketReach.class, S08PacketReach.class, discriminator, Side.CLIENT);
 	}
 }

@@ -55,6 +55,6 @@ public class C04PacketWorld implements IMessage, IMessageHandler<C04PacketWorld,
 	 * Registers the packet to the network system
 	 */
 	public static void register(int discriminator) {
-		MoreCommands.getNetwork().registerMessage(C04PacketWorld.class, C04PacketWorld.class, discriminator, Side.SERVER);
+		MoreCommands.getMoreCommands().getNetwork().registerMessage(C04PacketWorld.class, C04PacketWorld.class, discriminator, Side.SERVER);
 	}
 }

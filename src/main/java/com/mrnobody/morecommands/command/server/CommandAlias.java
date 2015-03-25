@@ -47,7 +47,7 @@ public class CommandAlias extends ServerCommand implements Listener<CommandEvent
 				if (cmd.getSenderSideMapping().get(event.sender)) {
 					S09PacketExecuteClientCommand packet = new S09PacketExecuteClientCommand();
 					packet.command = command;
-					MoreCommands.getNetwork().sendTo(packet, (EntityPlayerMP) event.sender);
+					MoreCommands.getMoreCommands().getNetwork().sendTo(packet, (EntityPlayerMP) event.sender);
 				}
 				else {commandHandler.executeCommand(event.sender, command);}
 			}

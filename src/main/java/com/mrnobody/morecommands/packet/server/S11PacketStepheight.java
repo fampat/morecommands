@@ -40,6 +40,6 @@ public class S11PacketStepheight implements IMessage, IMessageHandler<S11PacketS
 	 * Registers the packet to the network system
 	 */
 	public static void register(int discriminator) {
-		MoreCommands.getNetwork().registerMessage(S11PacketStepheight.class, S11PacketStepheight.class, discriminator, Side.CLIENT);
+		MoreCommands.getMoreCommands().getNetwork().registerMessage(S11PacketStepheight.class, S11PacketStepheight.class, discriminator, Side.CLIENT);
 	}
 }

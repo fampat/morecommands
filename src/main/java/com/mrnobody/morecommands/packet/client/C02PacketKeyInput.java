@@ -51,6 +51,6 @@ public class C02PacketKeyInput implements IMessage, IMessageHandler<C02PacketKey
 	 * Registers the packet to the network system
 	 */
 	public static void register(int discriminator) {
-		MoreCommands.getNetwork().registerMessage(C02PacketKeyInput.class, C02PacketKeyInput.class, discriminator, Side.SERVER);
+		MoreCommands.getMoreCommands().getNetwork().registerMessage(C02PacketKeyInput.class, C02PacketKeyInput.class, discriminator, Side.SERVER);
 	}
 }

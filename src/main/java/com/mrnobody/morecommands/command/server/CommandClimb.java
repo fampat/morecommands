@@ -57,7 +57,7 @@ public class CommandClimb extends ServerCommand {
         	ability.climb = allowClimb;
         	S02PacketClimb packet = new S02PacketClimb();
         	packet.allowClimb = allowClimb;
-        	MoreCommands.getNetwork().sendTo(packet, player);
+        	MoreCommands.getMoreCommands().getNetwork().sendTo(packet, player);
         }
         	
         sender.sendLangfileMessageToPlayer(success ? allowClimb ? "command.climb.on" : "command.climb.off" : "command.climb.failure", new Object[0]);

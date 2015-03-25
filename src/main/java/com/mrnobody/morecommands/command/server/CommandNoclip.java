@@ -73,7 +73,7 @@ public class CommandNoclip extends ServerCommand implements Listener<LivingAttac
 			
 		S06PacketNoclip packet = new S06PacketNoclip();
 		packet.allowNoclip = player.getMinecraftPlayer().noClip;
-		MoreCommands.getNetwork().sendTo(packet, (EntityPlayerMP) player.getMinecraftPlayer()); 
+		MoreCommands.getMoreCommands().getNetwork().sendTo(packet, (EntityPlayerMP) player.getMinecraftPlayer()); 
 			
 		sender.sendLangfileMessageToPlayer(player.getMinecraftPlayer().noClip ? "command.noclip.enabled" : "command.noclip.disabled", new Object[0]);
 	}
@@ -84,7 +84,7 @@ public class CommandNoclip extends ServerCommand implements Listener<LivingAttac
 			
 			S06PacketNoclip packet = new S06PacketNoclip();
 			packet.allowNoclip = false;
-			MoreCommands.getNetwork().sendTo(packet, player); 
+			MoreCommands.getMoreCommands().getNetwork().sendTo(packet, player); 
 			
 			(new CommandSender(player)).sendLangfileMessageToPlayer("command.noclip.autodisable", new Object[0]);
 			ascendPlayer(new Player(player));

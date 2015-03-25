@@ -48,6 +48,6 @@ public class S00PacketHandshake implements IMessage, IMessageHandler<S00PacketHa
 	 * Registers the packet to the network system
 	 */
 	public static void register(int discriminator) {
-		MoreCommands.getNetwork().registerMessage(S00PacketHandshake.class, S00PacketHandshake.class, discriminator, Side.CLIENT);
+		MoreCommands.getMoreCommands().getNetwork().registerMessage(S00PacketHandshake.class, S00PacketHandshake.class, discriminator, Side.CLIENT);
 	}
 }

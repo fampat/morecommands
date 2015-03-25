@@ -27,12 +27,12 @@ public class PacketHandlerServer {
 	 * Is called if the server receives a handshake packet
 	 */
 	public void handshake(UUID uuid, boolean patched) {
-		MoreCommands.getLogger().info("Client handshake received");
+		MoreCommands.getMoreCommands().getLogger().info("Client handshake received");
 		
 		Patcher.playerPatchMapping.get(ServerPlayerSettings.playerUUIDMapping.get(uuid)).setClientModded(true);
 		Patcher.playerPatchMapping.get(ServerPlayerSettings.playerUUIDMapping.get(uuid)).setClientPlayerPatched(patched);
 		
-		MoreCommands.getNetwork().sendTo(new S01PacketClientCommand(), ServerPlayerSettings.playerUUIDMapping.get(uuid));
+		MoreCommands.getMoreCommands().getNetwork().sendTo(new S01PacketClientCommand(), ServerPlayerSettings.playerUUIDMapping.get(uuid));
 	}
 
 	/**
@@ -60,7 +60,7 @@ public class PacketHandlerServer {
 	 */
 	public void clientCommand(UUID uuid, String command) {
 		ServerPlayerSettings.playerSettingsMapping.get(ServerPlayerSettings.playerUUIDMapping.get(uuid)).clientCommands.add(command);
-		MoreCommands.getLogger().info("Server took note of client Command '" + command + "'");
+		MoreCommands.getMoreCommands().getLogger().info("Server took note of client Command '" + command + "'");
 	}
 
 	/**

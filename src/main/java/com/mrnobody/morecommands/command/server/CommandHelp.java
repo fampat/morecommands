@@ -55,7 +55,7 @@ public class CommandHelp extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		String langCode = "en_US";
-		langCode = MoreCommands.proxy.getLang(sender.getMinecraftISender());
+		langCode = MoreCommands.getProxy().getLang(sender.getMinecraftISender());
 		this.resetMessages(langCode);
 		
 		Map<String, ICommand> commands = MinecraftServer.getServer().getCommandManager().getCommands();
