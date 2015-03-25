@@ -58,6 +58,7 @@ public class CommandDoDrops extends ServerCommand implements Listener<BreakEvent
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
 		if (settings != null) settings.dodrops = !settings.dodrops;
+		sender.sendLangfileMessageToPlayer(settings.dodrops ? "command.dodrops.enabled" : "command.dodrops.disabled", new Object[0]);
 	}
 	
 	/**
