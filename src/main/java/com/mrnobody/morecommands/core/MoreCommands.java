@@ -43,7 +43,7 @@ import cpw.mods.fml.relauncher.Side;
  */
 @Mod(modid = Reference.MODID, version = Reference.VERSION, name = Reference.NAME, acceptableRemoteVersions = "*")
 public class MoreCommands {
-	@Instance
+	@Instance(Reference.MODID)
 	private static MoreCommands instance;
 	
 	@SidedProxy(clientSide="com.mrnobody.morecommands.core.ClientProxy", serverSide="com.mrnobody.morecommands.core.ServerProxy", modId=Reference.MODID)
