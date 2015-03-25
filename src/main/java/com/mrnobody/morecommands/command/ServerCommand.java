@@ -26,9 +26,7 @@ public abstract class ServerCommand extends CommandBase {
 	public abstract void unregisterFromHandler();
     
     public final void processCommand(ICommandSender sender, String[] params) {
-    	MoreCommands mod = MoreCommands.getMoreCommands();
-    	
-    	if (mod.isModEnabled() && sender instanceof EntityPlayerMP && this.isEnabled((EntityPlayerMP) sender)) {
+    	if (MoreCommands.isModEnabled() && sender instanceof EntityPlayerMP && this.isEnabled((EntityPlayerMP) sender)) {
         	try{
         		if (!ServerPlayerSettings.playerSettingsMapping.containsKey(sender))
         			ServerPlayerSettings.playerSettingsMapping.put((EntityPlayerMP) sender, ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender));
@@ -39,10 +37,10 @@ public abstract class ServerCommand extends CommandBase {
         	}
     	}
     	else {
-    		if (!mod.isModEnabled())
-    			sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(sender), "command.generic.notEnabled", new Object[0])));
+    		if (!MoreCommands.isModEnabled())
+    			sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(MoreCommands.getMoreCommands().getCurrentLang(sender), "command.generic.notEnabled", new Object[0])));
     		else if (!(sender instanceof EntityPlayerMP))
-    			sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(sender), "command.generic.notServer", new Object[0])));
+    			sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(MoreCommands.getMoreCommands().getCurrentLang(sender), "command.generic.notServer", new Object[0])));
     	}
     }
     

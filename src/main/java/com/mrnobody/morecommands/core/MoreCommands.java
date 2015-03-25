@@ -91,6 +91,13 @@ public class MoreCommands {
 	}
 	
 	/**
+	 * @return Whether the mod is enabled
+	 */
+	public static boolean isModEnabled() {
+		return MoreCommands.proxy.commandsLoaded() && MoreCommands.instance.handlersLoaded && MoreCommands.instance.packetsLoaded;
+	}
+	
+	/**
 	 * @return The UUID for the server side player or null if the mod isn't installed server side
 	 */
 	public UUID getPlayerUUID() {
@@ -167,13 +174,6 @@ public class MoreCommands {
 	 */
 	public List<Class<? extends ServerCommand>> getServerCommandClasses() {
 		return this.serverCommandClasses;
-	}
-	
-	/**
-	 * @return Whether the mod is enabled
-	 */
-	public boolean isModEnabled() {
-		return MoreCommands.proxy.commandsLoaded() && this.handlersLoaded && this.packetsLoaded;
 	}
 	
 	/**

@@ -21,9 +21,7 @@ import cpw.mods.fml.common.eventhandler.Event;
  */
 public abstract class ClientCommand extends CommandBase {
 	public final void processCommand(ICommandSender sender, String[] params) {
-		MoreCommands mod = MoreCommands.getMoreCommands();
-		
-    	if (mod.isModEnabled() && this.isEnabled(Minecraft.getMinecraft().thePlayer)) {
+    	if (MoreCommands.isModEnabled() && this.isEnabled(Minecraft.getMinecraft().thePlayer)) {
         	try{
         		this.execute(new CommandSender(Minecraft.getMinecraft().thePlayer), params);
         	}
@@ -32,8 +30,8 @@ public abstract class ClientCommand extends CommandBase {
         	}
     	}
     	else {
-    		if (!mod.isModEnabled())
-    			sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(sender), "command.generic.notEnabled", new Object[0])));
+    		if (!MoreCommands.isModEnabled())
+    			sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(MoreCommands.getMoreCommands().getCurrentLang(sender), "command.generic.notEnabled", new Object[0])));
     	}
     }
 	
