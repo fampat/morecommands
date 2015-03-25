@@ -1,0 +1,60 @@
+package com.mrnobody.morecommands.command.server;
+
+import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.wrapper.CommandException;
+import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.wrapper.Player;
+
+@Command(
+		name = "heal",
+		description = "command.heal.description",
+		example = "command.heal.example",
+		syntax = "command.heal.syntax",
+		videoURL = "command.heal.videoURL"
+		)
+public class CommandHeal extends ServerCommand {
+	private final float MAX_HEALTH = 20.0f;
+
+	@Override
+	public String getName() {
+		return "heal";
+	}
+
+	@Override
+	public String getUsage() {
+		return "command.heal.syntax";
+	}
+
+	@Override
+	public void execute(CommandSender sender, String[] params)throws CommandException {
+		Player player = sender.toPlayer();
+		
+		if (params.length > 0) {
+			try {player.heal(Float.parseFloat(params[0])); sender.sendLangfileMessageToPlayer("command.heal.success", new Object[0]);}
+			catch (NumberFormatException e) {sender.sendLangfileMessageToPlayer("command.heal.NAN", new Object[0]);}
+		}
+		else {
+			player.heal(MAX_HEALTH - player.getHealth());
+			sender.sendLangfileMessageToPlayer("command.heal.success", new Object[0]);
+		}
+	}
+	
+	@Override
+	public Requirement[] getRequirements() {
+		return new Requirement[0];
+	}
+	
+	@Override
+	public void unregisterFromHandler() {}
+
+	@Override
+	public ServerType getAllowedServerType() {
+		return ServerType.ALL;
+	}
+	
+	@Override
+	public int getPermissionLevel() {
+		return 2;
+	}
+}
