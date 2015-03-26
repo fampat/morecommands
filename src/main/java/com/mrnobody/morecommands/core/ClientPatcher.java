@@ -45,6 +45,12 @@ import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 
+/**
+ * The Patcher used by the Client proxy
+ * 
+ * @author MrNobody98
+ *
+ */
 public class ClientPatcher extends Patcher {
 	private MoreCommands mod;
 	

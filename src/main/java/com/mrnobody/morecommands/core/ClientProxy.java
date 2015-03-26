@@ -65,7 +65,7 @@ public class ClientProxy extends CommonProxy {
 		this.clientPatcher.applyModStatePatch(event);
 		if (this.clientCommandsRegistered = this.registerClientCommands()) 
 			this.mod.getLogger().info("Client Commands successfully registered");
-		PacketHandlerClient.INSTANCE.xrayHelper = new XrayHelper();
+		XrayHelper.init();
 	}
 
 	@Override

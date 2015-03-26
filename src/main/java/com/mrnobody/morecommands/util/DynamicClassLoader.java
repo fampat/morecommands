@@ -123,7 +123,7 @@ public class DynamicClassLoader {
 	}
 	
 	/**
-	 * Loads classes from a packet
+	 * Loads classes from a package
 	 * 
 	 * @param pkg The package
 	 * @return A list of the loaded classes
@@ -156,7 +156,7 @@ public class DynamicClassLoader {
 	}
 	
 	/**
-	 * Loads resources from a packet. Must be text files
+	 * Loads resources from a package. Must be text files
 	 * 
 	 * @param pkg The package
 	 * @param extension The file extension
@@ -225,7 +225,7 @@ public class DynamicClassLoader {
 	}
 	
 	/**
-	 * Loads resources from a packet. Must be text files
+	 * Loads resources from a package. Must be text files
 	 * 
 	 * @param jar The jar file
 	 * @param pkg The package
@@ -261,7 +261,7 @@ public class DynamicClassLoader {
 	}
 	
 	/**
-	 * Loads resources from a packet. Must be text files
+	 * Loads resources from a package. Must be text files
 	 * 
 	 * @param directory The directory
 	 * @param pkg The package

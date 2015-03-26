@@ -180,7 +180,7 @@ public class XrayConfGui extends GuiScreen {
 
 		@Override
 		protected int getSize() {
-			return PacketHandlerClient.INSTANCE.xrayHelper.blockList.size();
+			return XrayConfGui.this.xray.blockList.size();
 		}
 
 		@Override
@@ -190,8 +190,8 @@ public class XrayConfGui extends GuiScreen {
 			XrayConfGui.this.guiButtonConfigure.enabled = buttonsEnabled;
 			
 			if (doubleClick && buttonsEnabled) {
-				if (PacketHandlerClient.INSTANCE.xrayHelper.blockList.get(XrayConfGui.this.elementSelected) != null)
-					XrayConfGui.this.loadConfigGUI(PacketHandlerClient.INSTANCE.xrayHelper.blockMapping.get(PacketHandlerClient.INSTANCE.xrayHelper.blockList.get(XrayConfGui.this.elementSelected)).draw);
+				if (XrayConfGui.this.xray.blockList.get(XrayConfGui.this.elementSelected) != null)
+					XrayConfGui.this.loadConfigGUI(XrayConfGui.this.xray.blockMapping.get(XrayConfGui.this.xray.blockList.get(XrayConfGui.this.elementSelected)).draw);
 			}
 		}
 
@@ -202,7 +202,7 @@ public class XrayConfGui extends GuiScreen {
 		
 		@Override
 		protected int getContentHeight() {
-			return PacketHandlerClient.INSTANCE.xrayHelper.blockList.size() * (XrayConfGui.this.mc.fontRenderer.FONT_HEIGHT + 10);
+			return XrayConfGui.this.xray.blockList.size() * (XrayConfGui.this.mc.fontRenderer.FONT_HEIGHT + 10);
 		}
 
 		@Override
@@ -215,10 +215,10 @@ public class XrayConfGui extends GuiScreen {
 
 		@Override
 		protected void drawSlot(int index, int left, int top, int p_148126_4_, Tessellator p_148126_5_, int p_148126_6_, int p_148126_7_) {
-			if (PacketHandlerClient.INSTANCE.xrayHelper.blockList.get(index) == null) return;
+			if (XrayConfGui.this.xray.blockList.get(index) == null) return;
 			
-			String blockName = PacketHandlerClient.INSTANCE.xrayHelper.blockList.get(index).getLocalizedName();
-			Item blockItem = Item.getItemFromBlock(PacketHandlerClient.INSTANCE.xrayHelper.blockList.get(index));
+			String blockName = XrayConfGui.this.xray.blockList.get(index).getLocalizedName();
+			Item blockItem = Item.getItemFromBlock(XrayConfGui.this.xray.blockList.get(index));
 			
 			if (blockItem != null) {
 		        itemRender.zLevel = 100.0F;
@@ -229,17 +229,21 @@ public class XrayConfGui extends GuiScreen {
 		        GL11.glDisable(GL11.GL_LIGHTING);
 		        itemRender.zLevel = 0.0F;
 			}
-			XrayConfGui.this.drawString(this.fontRenderer, blockName + " - " + (PacketHandlerClient.INSTANCE.xrayHelper.blockMapping.get(PacketHandlerClient.INSTANCE.xrayHelper.blockList.get(index)).draw ? "ENABLED" : "DISABLED"), left + 20, top + 3, 16777215);
+			XrayConfGui.this.drawString(this.fontRenderer, blockName + " - " + (XrayConfGui.this.xray.blockMapping.get(XrayConfGui.this.xray.blockList.get(index)).draw ? "ENABLED" : "DISABLED"), left + 20, top + 3, 16777215);
 		}
 	}
 	
 	private Minecraft mc;
+	private XrayHelper xray;
 	private String heading = "MrNobody CommandsMod: Xray Configuration";
 	private int elementSelected;
 	private GuiList guiList;
 	private GuiButton guiButtonConfigure;
 	
-	public XrayConfGui(Minecraft mc) {this.mc = mc;}
+	public XrayConfGui(Minecraft mc, XrayHelper xray) {
+		this.mc = mc;
+		this.xray = xray;
+	}
 	
 	@Override
 	public void initGui() {
@@ -255,8 +259,8 @@ public class XrayConfGui extends GuiScreen {
 	protected void actionPerformed(GuiButton button) {
 		if (button.enabled) {
 			if (button.id == 1) {
-				if (PacketHandlerClient.INSTANCE.xrayHelper.blockList.get(this.elementSelected) != null)
-					this.loadConfigGUI(PacketHandlerClient.INSTANCE.xrayHelper.blockMapping.get(PacketHandlerClient.INSTANCE.xrayHelper.blockList.get(this.elementSelected)).draw);
+				if (XrayConfGui.this.xray.blockList.get(this.elementSelected) != null)
+					this.loadConfigGUI(XrayConfGui.this.xray.blockMapping.get(XrayConfGui.this.xray.blockList.get(this.elementSelected)).draw);
 			}
 			else if (button.id == 0) {
 				this.mc.thePlayer.closeScreen();
@@ -276,10 +280,10 @@ public class XrayConfGui extends GuiScreen {
 	}
 	
 	public void setBlockInfo(float red, float green, float blue, boolean draw) {
-		Block block = PacketHandlerClient.INSTANCE.xrayHelper.blockList.get(this.elementSelected);
+		Block block = XrayConfGui.this.xray.blockList.get(this.elementSelected);
 		
-		if (block != null && PacketHandlerClient.INSTANCE.xrayHelper.blockMapping.get(block) != null) {
-			PacketHandlerClient.INSTANCE.xrayHelper.blockMapping.put(block, new XrayHelper.xrayBlockInfo(block, new Color(red, green, blue), draw));
+		if (block != null && XrayConfGui.this.xray.blockMapping.get(block) != null) {
+			XrayConfGui.this.xray.blockMapping.put(block, new XrayHelper.BlockSettings(block, new Color(red, green, blue), draw));
 		}
 	}
 	

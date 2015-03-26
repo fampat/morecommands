@@ -6,7 +6,6 @@ package com.mrnobody.morecommands.wrapper;
  * @author MrNobody98
  */
 public class Coordinate {
-   
 	private final double x;
 	private final double y;
 	private final double z;

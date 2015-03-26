@@ -31,6 +31,12 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 
+/**
+ * The Patcher used by the Server proxy
+ * 
+ * @author MrNobody98
+ *
+ */
 public class ServerPatcher extends Patcher {
 	private MoreCommands mod;
 	

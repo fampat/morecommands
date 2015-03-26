@@ -22,6 +22,11 @@ public class ClientPlayerSettings {
 	public static Map<Integer, String> keybindMapping = new HashMap<Integer, String>();
 	public static Map<String, String> aliasMapping = new HashMap<String, String>();
 	
+	/**
+	 * Read settings
+	 * 
+	 * @return Whether the settings were read successfully
+	 */
 	public static boolean readSettings(String socketAddress) {
 		File playerSettings = new File(Reference.getClientPlayerDir(), "localplayer.dat");
 		NBTTagCompound playerData;
@@ -87,6 +92,11 @@ public class ClientPlayerSettings {
 		}
 	}
 	
+	/**
+	 * Saves settings
+	 * 
+	 * @return Whether the settings were saved successfully
+	 */
 	public static boolean saveSettings() {
 		try{
 			NBTTagCompound data = new NBTTagCompound();

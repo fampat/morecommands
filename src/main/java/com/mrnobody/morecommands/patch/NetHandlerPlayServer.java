@@ -5,28 +5,41 @@ import java.lang.reflect.Field;
 import com.mrnobody.morecommands.command.server.CommandNoclip;
 import com.mrnobody.morecommands.util.ReflectionHelper;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.client.C03PacketPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldServer;
 
+/**
+ * The patched class of {@link net.minecraft.network.NetHandlerPlayServer} <br>
+ * It controls incoming packets from the client. The patch is needed to allow <br>
+ * noclipping
+ * 
+ * @author MrNobody98
+ *
+ */
 public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlayServer
 {
-    private static String FIELD_LASTPOSZ = "lastPosZ"; //Obfuscated Name: "field_147381_q"; //ReflectionHelper.getField fetches obfuscated name from ObfuscationResolver automatically
-    private static String FIELD_LASTPOSX = "lastPosX"; //Obfuscated Name: "field_147373_o"; //ReflectionHelper.getField fetches obfuscated name from ObfuscationResolver automatically
-    private static String FIELD_LASTPOSY = "lastPosY"; //Obfuscated Name: "field_147382_p"; //ReflectionHelper.getField fetches obfuscated name from ObfuscationResolver automatically
-    private static String FIELD_HASMOVED = "hasMoved"; //Obfuscated Name: "field_147380_r"; //ReflectionHelper.getField fetches obfuscated name from ObfuscationResolver automatically
-    private MinecraftServer mcServer;
+	private static final Field FIELD_LASTPOSZ = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, "lastPosZ");
+	private static final Field FIELD_LASTPOSY = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, "lastPosY");
+	private static final Field FIELD_LASTPOSX = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, "lastPosX");
+	private static final Field FIELD_HASMOVED = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, "hasMoved");
+    
+	private MinecraftServer mcServer;
+	private boolean enabled;
 
     public NetHandlerPlayServer(MinecraftServer par1, NetworkManager par2, EntityPlayerMP par3) {
         super(par1, par2, par3);
         this.mcServer = par1;
+        this.enabled =  FIELD_HASMOVED != null && FIELD_LASTPOSX != null && FIELD_LASTPOSY != null && FIELD_LASTPOSZ != null;
     }
 
     @Override
     public void processPlayer(C03PacketPlayer packet) {
-        if (this.playerEntity.noClip) {
+        if (this.enabled && this.playerEntity.noClip) {
             handleNoclip(packet);
         } else {
             super.processPlayer(packet);
@@ -38,13 +51,13 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
     	
         WorldServer var2 = this.mcServer.worldServerForDimension(this.playerEntity.dimension);
         if (!this.playerEntity.playerConqueredTheEnd) {
-            if (!getBoolField(FIELD_HASMOVED)) {
-                double var3 = packet.func_149467_d() - getDoubleField(FIELD_LASTPOSY);
-                if ((packet.func_149464_c() == getDoubleField(FIELD_LASTPOSX)) && (var3 * var3 < 0.01D) && (packet.func_149472_e() == getDoubleField(FIELD_LASTPOSZ))) {
-                    setBoolField(FIELD_HASMOVED, true);
+            if (!this.getBoolean(FIELD_HASMOVED)) {
+                double var3 = packet.func_149467_d() - this.getDouble(FIELD_LASTPOSY);
+                if ((packet.func_149464_c() == this.getDouble(FIELD_LASTPOSX)) && (var3 * var3 < 0.01D) && (packet.func_149472_e() == this.getDouble(FIELD_LASTPOSZ))) {
+                    this.setBoolean(FIELD_HASMOVED, true);
                 }
             }
-            if (getBoolField(FIELD_HASMOVED)) {
+            if (this.getBoolean(FIELD_HASMOVED)) {
                 if (this.playerEntity.ridingEntity != null) {
                     float var34 = this.playerEntity.rotationYaw;
                     float var4 = this.playerEntity.rotationPitch;
@@ -77,22 +90,22 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
                         this.playerEntity.ridingEntity.updateRiderPosition();
                     }
                     this.mcServer.getConfigurationManager().updatePlayerPertinentChunks(this.playerEntity);
-                    setDoubleField(FIELD_LASTPOSX, this.playerEntity.posX);
-                    setDoubleField(FIELD_LASTPOSY, this.playerEntity.posY);
-                    setDoubleField(FIELD_LASTPOSZ, this.playerEntity.posZ);
+                    this.setDouble(FIELD_LASTPOSX, this.playerEntity.posX);
+                    this.setDouble(FIELD_LASTPOSY, this.playerEntity.posY);
+                    this.setDouble(FIELD_LASTPOSZ, this.playerEntity.posZ);
                     var2.updateEntity(this.playerEntity);
                         return;
                     }
                 if (this.playerEntity.isPlayerSleeping()) {
                     this.playerEntity.onUpdateEntity();
-                    this.playerEntity.setPositionAndRotation(getDoubleField(FIELD_LASTPOSX), getDoubleField(FIELD_LASTPOSY), getDoubleField(FIELD_LASTPOSZ), this.playerEntity.rotationYaw, this.playerEntity.rotationPitch);
+                    this.playerEntity.setPositionAndRotation(this.getDouble(FIELD_LASTPOSX), this.getDouble(FIELD_LASTPOSY), this.getDouble(FIELD_LASTPOSZ), this.playerEntity.rotationYaw, this.playerEntity.rotationPitch);
                     var2.updateEntity(this.playerEntity);
                     return;
                 }
                 double var3 = this.playerEntity.posY;
-                setDoubleField(FIELD_LASTPOSX, this.playerEntity.posX);
-                setDoubleField(FIELD_LASTPOSY, this.playerEntity.posY);
-                setDoubleField(FIELD_LASTPOSZ, this.playerEntity.posZ);
+                this.setDouble(FIELD_LASTPOSX, this.playerEntity.posX);
+                this.setDouble(FIELD_LASTPOSY, this.playerEntity.posY);
+                this.setDouble(FIELD_LASTPOSZ, this.playerEntity.posZ);
                 double var5 = this.playerEntity.posX;
                 double var7 = this.playerEntity.posY;
                 double var9 = this.playerEntity.posZ;
@@ -122,8 +135,8 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
                 }
                 this.playerEntity.onUpdateEntity();
                 this.playerEntity.ySize = 0.0F;
-                this.playerEntity.setPositionAndRotation(getDoubleField(FIELD_LASTPOSX), getDoubleField(FIELD_LASTPOSY), getDoubleField(FIELD_LASTPOSZ), var11, var12);
-                if (!getBoolField(FIELD_HASMOVED)) {
+                this.playerEntity.setPositionAndRotation(this.getDouble(FIELD_LASTPOSX), this.getDouble(FIELD_LASTPOSY), this.getDouble(FIELD_LASTPOSZ), var11, var12);
+                if (!this.getBoolean(FIELD_HASMOVED)) {
                     return;
                 }
                 double var13 = var5 - this.playerEntity.posX;
@@ -143,39 +156,39 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
         }
     }
 
-    private boolean getBoolField(String fieldName) {
-    	Field field = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, fieldName);
-    	
-    	if (field != null) {try {return field.getBoolean(this);} catch (Exception ex) {ex.printStackTrace();}}
+    private boolean getBoolean(Field field) {
+    	try {return field.getBoolean(this);} catch (Exception ex) {ex.printStackTrace();}
     	return false;
     }
 
-    private void setBoolField(String fieldName, boolean value) {
-    	Field field = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, fieldName);
+    private void setBoolean(Field field, boolean value) {
     	try {field.setBoolean(this, value);} catch (Exception ex) {ex.printStackTrace();}
     }
 
-    private double getDoubleField(String fieldName) {
-    	Field field = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, fieldName);
-    	
-    	if (field != null) {try {return field.getDouble(this);} catch (Exception ex) {ex.printStackTrace();}}
+    private double getDouble(Field field) {
+    	try {return field.getDouble(this);} catch (Exception ex) {ex.printStackTrace();}
     	return 0.0D;
     }
 
-    private void setDoubleField(String fieldName, double value) {
-    	Field field = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, fieldName);
+    private void setDouble(Field field, double value) {
     	try {field.setDouble(this, value);} catch (Exception ex) {ex.printStackTrace();}
     }
 
-    private float getFloatField(String fieldName) {
-    	Field field = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, fieldName);
-    	
-    	if (field != null) {try {return field.getFloat(this);} catch (Exception ex) {ex.printStackTrace();}}
+    private float getFloat(Field field) {
+    	try {return field.getFloat(this);} catch (Exception ex) {ex.printStackTrace();}
     	return 0.0F;
     }
 
-    private void setFloatField(String fieldName, float value) {
-    	Field field = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, fieldName);
+    private void setFloat(Field field, float value) {
     	try {field.setFloat(this, value);} catch (Exception ex) {ex.printStackTrace();}
+    }
+    
+    private int getInt(Field field) {
+    	try {return field.getInt(this);} catch (Exception ex) {ex.printStackTrace();}
+    	return 0;
+    }
+
+    private void setInt(Field field, int value) {
+    	try {field.setInt(this, value);} catch (Exception ex) {ex.printStackTrace();}
     }
 }

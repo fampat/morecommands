@@ -43,7 +43,7 @@ public abstract class Patcher {
 		}
 		
 		/**
-		 * @return Whether the players {@link net.minecraft.client.entity.EntityPlayerSP} was patched
+		 * @return Whether the players {@link net.minecraft.client.entity.EntityClientPlayerMP} was patched
 		 */
 		public boolean clientPlayerPatched() {
 			return this.clientPlayerPatched;
@@ -64,7 +64,7 @@ public abstract class Patcher {
 		}
 		
 		/**
-		 * Sets whether the players {@link net.minecraft.client.entity.EntityPlayerSP} was patched
+		 * Sets whether the players {@link net.minecraft.client.entity.EntityClientPlayerMP} was patched
 		 */
 		public void setClientPlayerPatched(boolean patched) {
 			this.clientPlayerPatched = patched;
@@ -98,7 +98,6 @@ public abstract class Patcher {
 	public static boolean serverCommandManagerPatched() {
 		return Patcher.serverCommandManagerPatched;
 	}
-	
 	
 	/**
 	 * @return Whether the server has this mod installed

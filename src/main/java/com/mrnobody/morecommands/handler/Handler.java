@@ -22,14 +22,23 @@ public class Handler<T extends Event> {
 		this.clientOnly = clientOnly;
 	}
 	
+	/**
+	 * @return Whether this handler is for use on client side only
+	 */
 	public boolean isClientOnly() {
 		return this.clientOnly;
 	}
 	
+	/**
+	 * @return The event class
+	 */
 	public Class<? extends Event> getEventClass() {
 		return this.eventClass;
 	}
 	
+	/**
+	 * Called when the event is fired
+	 */
 	@SubscribeEvent
 	public final void onEvent(T event) {
 		Iterator<Listener<T>> listenerIterator = this.listener.iterator();
@@ -39,14 +48,23 @@ public class Handler<T extends Event> {
 		}
 	}
 
+	/**
+	 * Registers a listener to the handler
+	 */
 	public void register(Listener<T> listener) {
 		if (!this.listener.contains(listener)) this.listener.add(listener);
 	}
 	
+	/**
+	 * Unregisters a listener from the handler
+	 */
 	public void unregister(Listener<T> listener) {
 		if (this.listener.contains(listener)) this.listener.remove(listener);
 	}
 	
+	/**
+	 * @return Whether this listener is already registered
+	 */
 	public boolean isRegistered(Listener<T> listener) {
 		if (this.listener.contains(listener)) return true;
 		else return false;

@@ -175,14 +175,6 @@ public class Player {
 	}
    
 	/**
-	 * @return whether this block exists
-	 */
-	public boolean isValidBlockType(int id) {
-		Item ret = (Item) Item.itemRegistry.getObjectById(id);
-		return ret != null;
-	}
-   
-	/**
 	 * Sets an inventory slot
 	 */
 	public boolean setInventorySlot(int slot, int id, int quantity, int damage) {
@@ -342,8 +334,8 @@ public class Player {
 	/**
 	 * @return the players current item
 	 */
-	public int getCurrentItem() {
-		return Item.itemRegistry.getIDForObject(player.getCurrentEquippedItem());
+	public Item getCurrentItem() {
+		return player.getCurrentEquippedItem().getItem();
 	}
    
 	/**

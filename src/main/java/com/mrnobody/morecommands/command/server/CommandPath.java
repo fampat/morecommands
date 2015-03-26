@@ -118,9 +118,8 @@ public class CommandPath extends ServerCommand implements Listener<TickEvent> {
 			if (ServerPlayerSettings.playerSettingsMapping.containsKey(event.player)) {
 				int[] plrData = ServerPlayerSettings.playerSettingsMapping.get(event.player).pathData;
 				this.makePath(new Player(event.player), plrData);
-			} else {
-			return;
-			}
+			} 
+			else return;
 		}
 	}
 	

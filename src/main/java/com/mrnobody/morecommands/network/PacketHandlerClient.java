@@ -70,9 +70,6 @@ public class PacketHandlerClient {
 	public boolean isEnlightened = false;
 	public int lightenedWorld = 0;
 	
-	//The xray helper singleton, which will be set from the client proxy
-	public XrayHelper xrayHelper;
-	
 	/**
 	 * Is called if the client receives a handshake packet
 	 */
@@ -194,8 +191,8 @@ public class PacketHandlerClient {
 	 * Enables/Disables xray
 	 */
 	public void handleXray(boolean showConfig, boolean xrayEnabled, int blockRadius) {
-		if (showConfig) this.xrayHelper.showConfig();
-		else this.xrayHelper.changeSettings(blockRadius, xrayEnabled);
+		if (showConfig) XrayHelper.getInstance().showConfig();
+		else XrayHelper.getInstance().changeSettings(blockRadius, xrayEnabled);
 	}
 
 	/**

@@ -24,6 +24,16 @@ import cpw.mods.fml.common.registry.GameData;
  *
  */
 public class XrayHelper {
+	private static XrayHelper xrayHelper;
+	
+	public static XrayHelper getInstance() {
+		return XrayHelper.xrayHelper;
+	}
+	
+	public static void init() {
+		XrayHelper.xrayHelper = new XrayHelper();
+	}
+	
 	private class TickListener implements Listener<TickEvent> {
 		@Override
 		public void onEvent(TickEvent event) {
@@ -40,22 +50,22 @@ public class XrayHelper {
 		}
 	}
 	
-	public static int localPlayerX, localPlayerY, localPlayerZ;
-	public static boolean xrayEnabled = false;
-	public static int blockRadius = 32;
-	public static List<Block> blockList = new ArrayList<Block>();
-	public static Map<Block, xrayBlockInfo> blockMapping = new HashMap<Block, xrayBlockInfo>();
+	public int localPlayerX, localPlayerY, localPlayerZ;
+	public boolean xrayEnabled = false;
+	public int blockRadius = 32;
+	public List<Block> blockList = new ArrayList<Block>();
+	public Map<Block, BlockSettings> blockMapping = new HashMap<Block, BlockSettings>();
 	
 	private XrayClientTick clTick;
 	private XrayRenderTick rTick;
-	private XrayConfGui confGUI = new XrayConfGui(Minecraft.getMinecraft());
+	private XrayConfGui confGUI = new XrayConfGui(Minecraft.getMinecraft(), this);
 	
-	public static class xrayBlockInfo {
+	public static class BlockSettings {
 		public Block block;
 		public Color color;
 		public boolean draw;
 		
-		public xrayBlockInfo(Block block, Color color, boolean draw){
+		public BlockSettings(Block block, Color color, boolean draw){
 			this.block = block;
 			this.color = color;
 			this.draw = draw;
@@ -66,11 +76,11 @@ public class XrayHelper {
 		public void enable() {this.draw = true;}
 	}
 	
-	public static class BlockInfo {
+	public static class BlockPosition {
 		public int x, y, z;
 		public Color color;
 		
-		public BlockInfo(int bx, int by, int bz, Color c){
+		public BlockPosition(int bx, int by, int bz, Color c){
 			this.x = bx;
 			this.y = by;
 			this.z = bz;
@@ -78,18 +88,20 @@ public class XrayHelper {
 		}
 	}
 	
-	public XrayHelper() {
+	private XrayHelper() {
+		this.clTick = new XrayClientTick(this);
+		this.rTick = new XrayRenderTick(this);
+		
 		EventHandler.TICK.getHandler().register(new TickListener());
 		EventHandler.RENDERWORLD.getHandler().register(new RenderListener());
-		this.clTick = new XrayClientTick();
-		this.rTick = new XrayRenderTick();
 		
 		Block block;
 		Iterator<Block> blocks = GameData.getBlockRegistry().iterator();
+		
 		while (blocks.hasNext()) {
 			block = blocks.next();
 			blockList.add(block);
-			this.blockMapping.put(block, new xrayBlockInfo(block, Color.WHITE, false));
+			this.blockMapping.put(block, new BlockSettings(block, Color.WHITE, false));
 		}
 	}
 	

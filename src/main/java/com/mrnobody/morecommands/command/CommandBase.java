@@ -15,6 +15,11 @@ import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.eventhandler.Event;
 import cpw.mods.fml.common.eventhandler.EventBus;
 
+/**
+ * Base class for all commands
+ * 
+ * @author MrNobody98
+ */
 public abstract class CommandBase extends net.minecraft.command.CommandBase {
 	/**
 	 * An enum of requirements for a command to be executed properly
