@@ -10,8 +10,6 @@ import net.minecraftforge.client.event.RenderWorldLastEvent;
 
 import org.lwjgl.opengl.GL11;
 
-import com.mrnobody.morecommands.network.PacketHandlerClient;
-
 /**
  * Class to render block highlighting used for xray
  * 
@@ -19,18 +17,23 @@ import com.mrnobody.morecommands.network.PacketHandlerClient;
  *
  */
 public class XrayRenderTick {
+	private XrayHelper xray;
 	private final Minecraft mc = Minecraft.getMinecraft();
-	public static List<XrayHelper.BlockInfo> ores = new ArrayList();
+	public static List<XrayHelper.BlockPosition> blocks = new ArrayList();
+	
+	public XrayRenderTick(XrayHelper xray) {
+		this.xray = xray;
+	}
 
 	public void onRenderEvent(RenderWorldLastEvent event){
-		if (mc.theWorld != null && PacketHandlerClient.INSTANCE.xrayHelper.xrayEnabled) {
+		if (this.mc.theWorld != null && this.xray.xrayEnabled) {
 			float f = event.partialTicks;
-			float px = (float) mc.thePlayer.posX;
-			float py = (float) mc.thePlayer.posY;
-			float pz = (float) mc.thePlayer.posZ;
-			float mx = (float) mc.thePlayer.prevPosX;
-			float my = (float) mc.thePlayer.prevPosY;
-			float mz = (float) mc.thePlayer.prevPosZ;
+			float px = (float) this.mc.thePlayer.posX;
+			float py = (float) this.mc.thePlayer.posY;
+			float pz = (float) this.mc.thePlayer.posZ;
+			float mx = (float) this.mc.thePlayer.prevPosX;
+			float my = (float) this.mc.thePlayer.prevPosY;
+			float mz = (float) this.mc.thePlayer.prevPosZ;
 			float dx = mx + (px - mx) * f;
 			float dy = my + (py - my) * f;
 			float dz = mz + (pz - mz) * f;
@@ -50,10 +53,10 @@ public class XrayRenderTick {
 		GL11.glLineWidth(1f);
 		WorldRenderer w = Tessellator.getInstance().getWorldRenderer();
 		
-		List<XrayHelper.BlockInfo> temp = new ArrayList();
-		temp.addAll(this.ores);
+		List<XrayHelper.BlockPosition> temp = new ArrayList();
+		temp.addAll(this.blocks);
 		
-		for (XrayHelper.BlockInfo b : temp){
+		for (XrayHelper.BlockPosition b : temp){
 			bx = b.x;
 			by = b.y;
 			bz = b.z;
