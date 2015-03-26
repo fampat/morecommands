@@ -6,9 +6,6 @@ import java.util.List;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.MathHelper;
-
-import com.mrnobody.morecommands.network.PacketHandlerClient;
-
 import cpw.mods.fml.common.gameevent.TickEvent;
 
 /**
@@ -44,12 +41,11 @@ public class XrayClientTick implements Runnable {
 		}
 	}
 
-
 	@Override
 	public void run() {
 		try{
 			while(!this.thread.isInterrupted()){
-				if (this.xray.xrayEnabled && !this.xray.blockList.isEmpty() && (this.mc != null) && (this.mc.theWorld != null) && (this.mc.thePlayer != null)) {
+				if (this.xray.xrayEnabled && !this.xray.blockList.isEmpty() && this.mc != null && this.mc.theWorld != null && this.mc.thePlayer != null) {
 					if (this.nextTimeMs > System.currentTimeMillis()) continue;
 					List temp = new ArrayList();
 					int radius = this.xray.blockRadius;
@@ -72,7 +68,7 @@ public class XrayClientTick implements Runnable {
 					}
 					XrayRenderTick.blocks.clear();
 					XrayRenderTick.blocks.addAll(temp);
-					nextTimeMs = System.currentTimeMillis() + delayMs;
+					this.nextTimeMs = System.currentTimeMillis() + this.delayMs;
 				} else {
 					this.thread.interrupt();
 				}

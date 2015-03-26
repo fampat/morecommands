@@ -9,9 +9,6 @@ import net.minecraftforge.client.event.RenderWorldLastEvent;
 
 import org.lwjgl.opengl.GL11;
 
-import com.mrnobody.morecommands.command.server.CommandXray;
-import com.mrnobody.morecommands.network.PacketHandlerClient;
-
 /**
  * Class to render block highlighting used for xray
  * 

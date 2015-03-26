@@ -16,8 +16,6 @@ import net.minecraft.item.ItemStack;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
-import com.mrnobody.morecommands.network.PacketHandlerClient;
-
 import cpw.mods.fml.client.config.GuiCheckBox;
 
 /**
