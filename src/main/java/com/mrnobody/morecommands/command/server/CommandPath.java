@@ -11,6 +11,7 @@ import net.minecraft.world.World;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.handler.EventHandler;
 import com.mrnobody.morecommands.handler.Listener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
@@ -129,6 +130,7 @@ public class CommandPath extends ServerCommand implements Listener<TickEvent> {
 			int x = MathHelper.floor_double(position.getX());
 			int y = MathHelper.floor_double(position.getY());
 			int z = MathHelper.floor_double(position.getZ());
+			int diff = MoreCommands.getMoreCommands().isClientSide() ? -1 : 0;
 			if (x != data[3] || y != data[4] || z != data[5]) {
 				int start = data[2] * -1 + 1;
 
@@ -136,9 +138,9 @@ public class CommandPath extends ServerCommand implements Listener<TickEvent> {
 					for (int j = -1; j < data[2]; j++) {
 						for (int k = start; k < data[2]; k++) {
 							if (j == -1) {
-								this.setBlock(player, x + i, y + j - 1, z + k, data[0], data[1]);
+								this.setBlock(player, x + i, y + j + diff, z + k, data[0], data[1]);
 							} else {
-								this.setBlock(player, x + i, y + j - 1, z + k, 0, 0);
+								this.setBlock(player, x + i, y + j + diff, z + k, 0, 0);
 							}
 						}
 					}
