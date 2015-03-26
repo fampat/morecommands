@@ -1,6 +1,9 @@
 package com.mrnobody.morecommands.patch;
 
 import static net.minecraft.util.EnumChatFormatting.RED;
+
+import com.mrnobody.morecommands.util.DummyCommand;
+
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
@@ -57,8 +60,8 @@ public class ClientCommandManager extends ClientCommandHandler {
                     {
                         throw event.exception;
                     }
-                    return 1;
-                    //return 0;
+                    if (icommand instanceof DummyCommand) return 1;
+                    else return 0;
                 }
 
                 icommand.execute(sender, args);
