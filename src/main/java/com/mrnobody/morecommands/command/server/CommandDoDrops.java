@@ -22,7 +22,7 @@ public class CommandDoDrops extends ServerCommand implements Listener<EntityJoin
 	public CommandDoDrops() {
 		EventHandler.ENTITYJOIN.getHandler().register(this);
 	}
-	
+	//:D:D
 	@Override
 	public void onEvent(EntityJoinWorldEvent event) {
 		if (event.entity instanceof EntityItem && !GlobalSettings.dodrops) event.setCanceled(true);
