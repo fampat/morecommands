@@ -15,12 +15,12 @@ import net.minecraft.entity.player.EntityPlayer;
 public class GlobalSettings {
 	public static boolean welcome_message = true;
 	
-	public static boolean creeperExplosion = true;
-	//public static boolean dodrops = true;
-	public static boolean endermanpickup = true;
-	public static boolean explosions = true;
-	public static boolean clearwater = false;
+	//public static boolean creeperExplosion = true;
 	//public static boolean freezeEntities = false;
+	public static boolean dodrops = true;
+	public static boolean explosions = true;
+	public static boolean endermanpickup = true;
+	public static boolean clearwater = false;
 	public static boolean itemdamage = true;
 	
 	/**

@@ -22,7 +22,7 @@ import com.mrnobody.morecommands.wrapper.Player;
 		videoURL = "command.clearwater.videoURL"
 		)
 public class CommandClearwater extends ServerCommand {
-	private Map<Block, Integer> lightOpacities = new HashMap<Block, Integer>();;
+	private Map<Block, Integer> lightOpacities = new HashMap<Block, Integer>();
 	
 	public CommandClearwater() {
 		this.lightOpacities.put(Blocks.water, Blocks.water.getLightOpacity());

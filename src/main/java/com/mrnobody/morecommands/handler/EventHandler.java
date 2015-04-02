@@ -44,6 +44,7 @@ public enum EventHandler {
 	PLAYER_ATTACK(MinecraftForge.EVENT_BUS, new Handler<AttackEntityEvent>(AttackEntityEvent.class, false)),
 	INTERACT(MinecraftForge.EVENT_BUS, new Handler<PlayerInteractEvent>(PlayerInteractEvent.class, false)),
 	RENDERWORLD(MinecraftForge.EVENT_BUS, new Handler<RenderWorldLastEvent>(RenderWorldLastEvent.class, true)),
+	HARVEST(MinecraftForge.EVENT_BUS, new Handler<HarvestDropsEvent>(HarvestDropsEvent.class, true)),
 	TICK(FMLCommonHandler.instance().bus(), new Handler<TickEvent>(TickEvent.class, false));
 	
 	private EventBus bus;

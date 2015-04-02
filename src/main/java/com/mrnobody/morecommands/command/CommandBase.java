@@ -1,7 +1,9 @@
 package com.mrnobody.morecommands.command;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.command.server.CommandBlockLogic;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -84,4 +86,8 @@ public abstract class CommandBase extends net.minecraft.command.CommandBase {
 	 * @return The permission level
 	 */
     public abstract int getPermissionLevel();
+    
+    public static final EntityPlayerMP parseCommandBlockPlayer(CommandBlockLogic logic) {
+    	return null;
+    }
 }

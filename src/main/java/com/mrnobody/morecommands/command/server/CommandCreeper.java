@@ -28,8 +28,6 @@ public class CommandCreeper extends ServerCommand implements Listener<ExplosionE
 	@Override
 	public void onEvent(ExplosionEvent event) {
 		if (event instanceof ExplosionEvent.Start && event.explosion.getExplosivePlacedBy() instanceof EntityCreeper) {
-			if (!GlobalSettings.creeperExplosion) {event.setCanceled(true); return;}
-			
 			EntityCreeper creeper = (EntityCreeper) event.explosion.getExplosivePlacedBy();
 			
 			if (creeper.getAttackTarget() instanceof EntityPlayerMP) {
