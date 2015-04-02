@@ -14,7 +14,7 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
  */
 public class Handler<T extends Event> {
 	private List<Listener<T>> listener = new ArrayList<Listener<T>>();
-	private Class<? extends Event> eventClass;
+	private Class<T> eventClass;
 	private boolean clientOnly;
 	
 	public Handler(Class<T> eventClass, boolean clientOnly) {
@@ -32,7 +32,7 @@ public class Handler<T extends Event> {
 	/**
 	 * @return The event class
 	 */
-	public Class<? extends Event> getEventClass() {
+	public Class<T> getEventClass() {
 		return this.eventClass;
 	}
 	
