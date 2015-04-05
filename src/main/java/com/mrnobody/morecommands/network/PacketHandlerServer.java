@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.common.DimensionManager;
 
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.command.server.CommandWorld;

@@ -11,6 +11,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.inventory.ContainerPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.scoreboard.IScoreObjectiveCriteria;
 import net.minecraft.scoreboard.Score;
@@ -28,6 +29,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 
 import com.mojang.authlib.GameProfile;
+import com.mrnobody.morecommands.core.MoreCommands;
 
 /**
  * The patched class of {@link net.minecraft.entity.player.EntityPlayerMP} <br>

@@ -77,9 +77,10 @@ public class CommandWorld extends ClientCommand {
 						String time = format.format(new Date());
 						copyDirectory(new File(Minecraft.getMinecraft().mcDataDir, "saves/" + MinecraftServer.getServer().getFolderName()), new File(Minecraft.getMinecraft().mcDataDir, "backup/" + MinecraftServer.getServer().getFolderName() + "/" + time), l);
 					}
+					else sender.sendLangfileMessageToPlayer("command.world.saved", new Object[0]);
 				}
 				else if (params[0].equalsIgnoreCase("exit")) {
-					MinecraftServer.getServer().stopServer();
+					Minecraft.getMinecraft().theWorld.sendQuittingDisconnectingPacket();
 					Minecraft.getMinecraft().loadWorld(null);
 					Minecraft.getMinecraft().displayGuiScreen(new GuiMainMenu());
 				}

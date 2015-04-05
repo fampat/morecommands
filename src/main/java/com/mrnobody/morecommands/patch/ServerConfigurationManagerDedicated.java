@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.S05PacketSpawnPosition;
 import net.minecraft.network.play.server.S07PacketRespawn;
 import net.minecraft.network.play.server.S1FPacketSetExperience;
@@ -21,6 +22,7 @@ import net.minecraft.world.demo.DemoWorldManager;
 
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
+import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
 /**

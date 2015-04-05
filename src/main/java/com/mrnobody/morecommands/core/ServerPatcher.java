@@ -6,6 +6,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
+import net.minecraft.server.management.ServerConfigurationManager;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
@@ -20,7 +21,6 @@ import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 
 import com.mrnobody.morecommands.command.server.CommandAlias;
-import com.mrnobody.morecommands.core.Patcher.PlayerPatches;
 import com.mrnobody.morecommands.packet.server.S00PacketHandshake;
 import com.mrnobody.morecommands.patch.ServerCommandManager;
 import com.mrnobody.morecommands.patch.ServerConfigurationManagerDedicated;
