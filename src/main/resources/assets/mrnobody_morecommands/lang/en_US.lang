@@ -171,7 +171,7 @@ command.unbind.success=Key successfully removed
 command.unbind.bindingNotFound=Key binding not found
 command.unbind.invalidUsage=Invalid Usage. Type 'help unbind' to get help
 
-command.world.description=Performs several operations on worlds (works only partially in multiplayer)
+command.world.description=Performs several operations on worlds
 command.world.example=/world new test 0123456789
 command.world.syntax=/world <LOAD NAME|BACKUP|SAVE|EXIT|NEW NAME [SEED]|LIST|SEED|NAME>
 command.world.videoURL=youtu.be/iHC0ZuhZc_M
@@ -185,6 +185,11 @@ command.world.currentseed=The current world seed is %s
 command.world.setname=World name successfully set to %s
 command.world.currentname=The current world name is %s
 command.world.notLoadable=Can't load world %s
+command.world.backupsuccess=Backup succeeded
+command.world.backupfailed=Backup failed
+command.world.saved=World saved
+command.world.saves=World Saves: 
+command.world.loaderNotFound=Could not find the save loader
 
 command.achievement.description=Unlocks or lists achievements
 command.achievement.example=/achievement unlockAll

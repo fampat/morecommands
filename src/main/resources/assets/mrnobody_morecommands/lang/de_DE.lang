@@ -171,7 +171,7 @@ command.unbind.success=Tastenbelegung erfolgreich entfernt
 command.unbind.bindingNotFound=Tastenbelegung nicht gefunden
 command.unbind.invalidUsage=Falsche Benutzung. Benutze 'help unbind' um Hilfe zu bekommen.
 
-command.world.description=Fuehrt diverse Aktionen an Welten aus (funktioniert nur teilweise im Mehrspieler-Modus)
+command.world.description=Fuehrt diverse Aktionen an Welten aus
 command.world.example=/world new test 0123456789
 command.world.syntax=/world <LOAD NAME|BACKUP|SAVE|EXIT|NEW NAME [SEED]|LIST|SEED|NAME>
 command.world.videoURL=youtu.be/iHC0ZuhZc_M
@@ -185,6 +185,11 @@ command.world.currentseed=Der aktuelle Seed ist %s
 command.world.setname=Welt-Name erfolgreich auf %s gesetzt
 command.world.currentname=Der aktuelle Welt-Name wurde erfolgreich auf %s gesetzt
 command.world.notLoadable=Konnte Welt %s nicht laden
+command.world.backupsuccess=Backup erfolgreich erstellt
+command.world.backupfailed=Backup fehlgeschlagen
+command.world.saved=Welt gespeichert
+command.world.saves=Spielstaende: 
+command.world.loaderNotFound=Konnte den Save-Loader nicht finden
 
 command.achievement.description=Schaltet Erfolge frei oder listet diese auf
 command.achievement.example=/achievement unlockAll
