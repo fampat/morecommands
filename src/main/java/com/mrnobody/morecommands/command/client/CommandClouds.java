@@ -33,19 +33,21 @@ public class CommandClouds extends ClientCommand {
     	boolean success = false;
     		
         if (params.length >= 1) {
-        	if (params[0].toLowerCase().equals("true")) {clouds = true; success = true;}
-        	else if (params[0].toLowerCase().equals("false")) {clouds = false; success = true;}
-        	else if (params[0].toLowerCase().equals("0")) {clouds = false; success = true;}
-        	else if (params[0].toLowerCase().equals("1")) {clouds = true; success = true;}
-        	else if (params[0].toLowerCase().equals("on")) {clouds = true; success = true;}
-        	else if (params[0].toLowerCase().equals("off")) {clouds = false; success = true;}
+        	if (params[0].equalsIgnoreCase("true")) {clouds = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("false")) {clouds = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("0")) {clouds = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("1")) {clouds = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("on")) {clouds = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("off")) {clouds = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {clouds = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {clouds = false; success = true;}
         	else {success = false;}
         }
         else {clouds = !this.clouds; success = true;}
         	
         if (success) {this.clouds = clouds; Minecraft.getMinecraft().gameSettings.clouds = clouds;}
         	
-        sender.sendLangfileMessageToPlayer(success ? clouds ? "command.clouds.on" : "command.clouds.off" : "command.clouds.failure", new Object[0]);
+        sender.sendLangfileMessage(success ? clouds ? "command.clouds.on" : "command.clouds.off" : "command.clouds.failure", new Object[0]);
 	}
 	
 	@Override

@@ -1,16 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.command.CommandBase.Requirement;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
 import com.mrnobody.morecommands.wrapper.Player;
 import com.mrnobody.morecommands.wrapper.World;
-
-import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "weather",
@@ -33,41 +32,42 @@ public class CommandWeather extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
-		World world = player.getWorld();
+		World world = sender.getWorld();
 		
 		if (params.length > 0) {
 			boolean state = false;
 			boolean entered = false;
 			
 	    	if (params.length > 1) {
-	    		if (params[1].toLowerCase().equals("true")) {state = true; entered = true;}
-	    		else if (params[1].toLowerCase().equals("false")) {state = false; entered = true;}
-	    		else if (params[1].toLowerCase().equals("0")) {state = false; entered = true;}
-	    		else if (params[1].toLowerCase().equals("1")) {state = true; entered = true;}
-	    		else if (params[1].toLowerCase().equals("on")) {state = true; entered = true;}
-	    		else if (params[1].toLowerCase().equals("off")) {state = false; entered = true;}
+	    		if (params[1].equalsIgnoreCase("true")) {state = true; entered = true;}
+	    		else if (params[1].equalsIgnoreCase("false")) {state = false; entered = true;}
+	    		else if (params[1].equalsIgnoreCase("0")) {state = false; entered = true;}
+	    		else if (params[1].equalsIgnoreCase("1")) {state = true; entered = true;}
+	    		else if (params[1].equalsIgnoreCase("on")) {state = true; entered = true;}
+	    		else if (params[1].equalsIgnoreCase("off")) {state = false; entered = true;}
+	    		else if (params[0].equalsIgnoreCase("enable")) {state = true; entered = true;}
+	    		else if (params[0].equalsIgnoreCase("disable")) {state = false; entered = true;}
 	    	}
 	    	
-	    	if (params[0].toLowerCase().equals("rain")) {
+	    	if (params[0].equalsIgnoreCase("rain")) {
 	    		if (entered) world.setRaining(state);
 	    		else world.setRaining(!world.isRaining());
-	    		sender.sendLangfileMessageToPlayer("command.weather.rainSuccess", new Object[0]);
+	    		sender.sendLangfileMessage("command.weather.rainSuccess", new Object[0]);
 	    	}
 	    	
-	    	if (params[0].toLowerCase().equals("thunder")) {
+	    	if (params[0].equalsIgnoreCase("thunder")) {
 	    		if (entered) world.setThunder(state);
 	    		else world.setThunder(!world.isThunder());
-	    		sender.sendLangfileMessageToPlayer("command.weather.thunderSuccess", new Object[0]);
+	    		sender.sendLangfileMessage("command.weather.thunderSuccess", new Object[0]);
 	    	}
 	    	
-	    	if (params[0].toLowerCase().equals("lightning")) {
-	    		Coordinate hit = player.trace(128);
-	    		if (hit != null) {world.useLightning(hit); sender.sendLangfileMessageToPlayer("command.weather.lightningSuccess", new Object[0]);}
-	    		else {sender.sendLangfileMessageToPlayer("command.weather.notInSight", new Object[0]);}
+	    	if (params[0].equalsIgnoreCase("lightning") && sender.getMinecraftISender() instanceof EntityPlayerMP) {
+	    		Coordinate hit = (new Player((EntityPlayerMP) sender.getMinecraftISender())).traceBlock(128);
+	    		if (hit != null) {world.useLightning(hit); sender.sendLangfileMessage("command.weather.lightningSuccess", new Object[0]);}
+	    		else {sender.sendLangfileMessage("command.weather.notInSight", new Object[0]);}
 	    	}
 		}
-		else {sender.sendLangfileMessageToPlayer("command.weather.invalidUsage", new Object[0]);}
+		else {sender.sendLangfileMessage("command.weather.invalidUsage", new Object[0]);}
 	}
 
 	@Override
@@ -86,5 +86,10 @@ public class CommandWeather extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return true;
 	}
 }

@@ -1,5 +1,8 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.command.CommandBase.Requirement;
@@ -32,14 +35,14 @@ public class CommandJump extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		com.mrnobody.morecommands.wrapper.Player player = sender.toPlayer();
-		Coordinate hit = player.trace(128);
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		Coordinate hit = player.traceBlock(128);
 		
-		if (hit == null) {sender.sendLangfileMessageToPlayer("command.jump.notInSight", new Object[0]);}
+		if (hit == null) {sender.sendLangfileMessage("command.jump.notInSight", new Object[0]);}
 		else {
 			int y = hit.getBlockY() + 1;
 			while (y < 260) {
-				if (player.isClear(new Coordinate(hit.getBlockX(), y++, hit.getBlockZ()))) {
+				if (player.getWorld().isClear(new Coordinate(hit.getBlockX(), y++, hit.getBlockZ()))) {
 					player.setPosition(new Coordinate(hit.getBlockX() + 0.5F, --y, hit.getBlockZ() + 0.5F));
 					break;
 				}
@@ -63,5 +66,10 @@ public class CommandJump extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

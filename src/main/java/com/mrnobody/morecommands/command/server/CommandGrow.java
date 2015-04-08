@@ -1,35 +1,26 @@
 package com.mrnobody.morecommands.command.server;
 
-import static net.minecraftforge.common.util.ForgeDirection.UP;
-
 import java.lang.reflect.Field;
 import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockCactus;
-import net.minecraft.block.BlockCarrot;
 import net.minecraft.block.BlockCrops;
 import net.minecraft.block.BlockReed;
 import net.minecraft.block.BlockSapling;
 import net.minecraft.block.BlockStem;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.init.Blocks;
-import net.minecraft.world.gen.feature.WorldGenBigTree;
-import net.minecraft.world.gen.feature.WorldGenTrees;
-import net.minecraft.world.gen.feature.WorldGenerator;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.command.CommandBase.Requirement;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.util.ReflectionHelper;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
 import com.mrnobody.morecommands.wrapper.Player;
 import com.mrnobody.morecommands.wrapper.World;
-
-import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "grow",
@@ -56,12 +47,11 @@ public class CommandGrow extends ServerCommand {
 		
 		if (params.length > 0) {
 			try {radius = Integer.parseInt(params[0]);}
-			catch (NumberFormatException nfe) {sender.sendLangfileMessageToPlayer("command.grow.invalidArg", new Object[0]); return;}
+			catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.grow.invalidArg", new Object[0]); return;}
 		}
 		
-		Player player = sender.toPlayer();
-		Coordinate pos = player.getPosition();
-		World world = player.getWorld();
+		Coordinate pos = sender.getPosition();
+		World world = sender.getWorld();
 		Random rand = new Random();
 		
 		for (int i = 0; i < radius; i++) {
@@ -81,7 +71,7 @@ public class CommandGrow extends ServerCommand {
 			}
 		}
 		
-		sender.sendLangfileMessageToPlayer("command.grow.grown", new Object[0]);
+		sender.sendLangfileMessage("command.grow.grown", new Object[0]);
 	}
 	
 	private void growPlant(World world, int x, int y, int z, Random rand) {
@@ -161,5 +151,10 @@ public class CommandGrow extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return true;
 	}
 }

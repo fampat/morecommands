@@ -1,62 +1,28 @@
 package com.mrnobody.morecommands.wrapper;
 
-import java.util.List;
-
-import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.World;
-
-import net.minecraft.stats.Achievement;
-import net.minecraft.world.WorldSettings.GameType;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.command.CommandBase;
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItemFrame;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.potion.PotionEffect;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.stats.Achievement;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChunkCoordinates;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.MovingObjectPosition.MovingObjectType;
-import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.Vec3;
+import net.minecraft.world.WorldSettings.GameType;
 
 /**
  * A wrapper for the {@link EntityPlayer} class
  * 
  * @author MrNobody98
  */
-public class Player {
-	private final EntityPlayer player;
+public class Player extends com.mrnobody.morecommands.wrapper.Entity {
+	private final EntityPlayerMP player;
 	
-	public Player(CommandSender sender, String name) {
-		this(CommandBase.getPlayer(sender.getMinecraftISender(), name));
-	}
-	
-	public Player(CommandSender sender) {
-		this(CommandBase.getCommandSenderAsPlayer(sender.getMinecraftISender()));
-	}
-
-	public Player(EntityPlayer player) {
+	public Player(EntityPlayerMP player) {
+		super(player);
 		this.player = player;
-	}
-
-	/**
-	 * Sets the players position
-	 */
-	public void setPosition(Coordinate c) {
-		player.setPositionAndUpdate(c.getX(), c.getY(), c.getZ());
-	}
-
-	/**
-	 * @return the players position
-	 */
-	public Coordinate getPosition() {
-		return new Coordinate(player.posX, player.posY, player.posZ);
 	}
    
 	/**
@@ -85,13 +51,6 @@ public class Player {
 	 */
 	public void setPitch(float pitch) {
 		player.rotationPitch = pitch;
-	}
-   
-	/**
-	 * @return the players world
-	 */
-	public World getWorld() {
-		return new World(player.worldObj);
 	}
    
 	/**
@@ -190,120 +149,6 @@ public class Player {
 		player.inventory.mainInventory[slot] = new ItemStack(Item.getItemById(id), quantity, damage);
 		return true;
 	}
-	
-	/**
-	 * traces an entity in the direction the player is looking
-	 * 
-	 * @return the traced entity
-	 */
-	public Entity traceEntity(double distance) {
-		return this.tracePath(distance, 0.0D, 1.0F).entityHit;
-	}
-	
-	/**
-	 * Performs a full raytrace
-	 * 
-	 * @return a {@link MovingObjectPosition} with the trace results
-	 */
-	public MovingObjectPosition tracePath(double distance, double borderSize, float partialTickTime) {
-		Vec3 startVec = getPositionVec(partialTickTime);
-		Vec3 lookVec = player.getLook(partialTickTime);
-		Vec3 endVec = startVec.addVector(lookVec.xCoord * distance, lookVec.yCoord * distance, lookVec.zCoord * distance);
-	  
-		double minX = startVec.xCoord < endVec.xCoord ? startVec.xCoord : endVec.xCoord;
-		double minY = startVec.yCoord < endVec.yCoord ? startVec.yCoord : endVec.yCoord;
-		double minZ = startVec.zCoord < endVec.zCoord ? startVec.zCoord : endVec.zCoord;
-		double maxX = startVec.xCoord > endVec.xCoord ? startVec.xCoord : endVec.xCoord;
-		double maxY = startVec.yCoord > endVec.yCoord ? startVec.yCoord : endVec.yCoord;
-		double maxZ = startVec.zCoord > endVec.zCoord ? startVec.zCoord : endVec.zCoord;
-		
-		AxisAlignedBB bb = AxisAlignedBB.getBoundingBox(minX, minY, minZ, maxX, maxY, maxZ).expand(borderSize, borderSize, borderSize);
-		List<Entity> allEntities = this.player.worldObj.getEntitiesWithinAABBExcludingEntity(this.player, bb);  
-		MovingObjectPosition blockHit = this.player.worldObj.rayTraceBlocks(startVec, endVec);
-		
-		startVec = getPositionVec(partialTickTime);
-		lookVec = player.getLook(partialTickTime);
-		endVec = startVec.addVector(lookVec.xCoord * distance, lookVec.yCoord * distance, lookVec.zCoord * distance);
-		
-		double maxDistance = endVec.distanceTo(startVec);
-	  
-		if (blockHit != null) {
-			maxDistance = blockHit.hitVec.distanceTo(startVec);
-		} 
-		
-		Entity closestHitEntity = null;
-		double closestHit = maxDistance;
-		double currentHit = 0.D;
-		AxisAlignedBB entityBb;
-		MovingObjectPosition intercept;
-		
-		for (Entity ent : allEntities) {
-			if (ent.canBeCollidedWith()) {
-				double entBorder = ent.getCollisionBorderSize();
-				entityBb = ent.boundingBox;
-				
-				if (entityBb != null) {
-					entityBb = entityBb.expand(entBorder, entBorder, entBorder);
-					intercept = entityBb.calculateIntercept(startVec, endVec);
-					
-					if(intercept != null) {
-						currentHit = intercept.hitVec.distanceTo(startVec);
-						
-						if(currentHit < closestHit || currentHit==0) {            
-							closestHit = currentHit;
-							closestHitEntity = ent;
-						}
-					}
-				}
-			}
-		}  
-	  
-		if(closestHitEntity != null) {
-			blockHit = new MovingObjectPosition(closestHitEntity);
-		}
-		
-		return blockHit;
-	}
-   
-	/**
-	 * traces the block the player is looking at
-	 * 
-	 * @return the traced coordinate or null
-	 */
-	public Coordinate trace(double distance) {
-		MovingObjectPosition m = rayTrace(distance, 1.0F);
-		if (m == null) return null;
-		return new Coordinate(m.blockX, m.blockY, m.blockZ);
-	}
-
-	/**
-	 * raytraces a block
-	 * 
-	 * @return a {@link MovingObjectPosition} with the coordinates
-	 */
-	public MovingObjectPosition rayTrace(double distance, float partialTickTime) {
-		Vec3 positionVec = getPositionVec(partialTickTime);
-		Vec3 lookVec = player.getLook(partialTickTime);
-		Vec3 hitVec = positionVec.addVector(lookVec.xCoord * distance, lookVec.yCoord * distance, lookVec.zCoord * distance);
-		return player.worldObj.rayTraceBlocks(positionVec, hitVec, false);
-	}
-   
-	/**
-	 * Gets the players position vector
-	 * 
-	 * @return the position vector
-	 */
-	public Vec3 getPositionVec(float partialTickTime) {
-		double offsetY = player.posY + player.getEyeHeight();
-		if (partialTickTime == 1.0F) {
-			return Vec3.createVectorHelper(player.posX, offsetY, player.posZ);
-		} else {
-			double var2 = player.prevPosX + (player.posX - player.prevPosX) * partialTickTime;
-			double var4 = player.prevPosY + (offsetY - (player.prevPosY + player.getEyeHeight())) * partialTickTime;
-			double var6 = player.prevPosZ + (player.posZ - player.prevPosZ) * partialTickTime;
-			return Vec3.createVectorHelper(var2, var4, var6);
-		}
-	}
 
 	/**
 	 * @return the current game type
@@ -388,24 +233,6 @@ public class Player {
 	}
    
 	/**
-	 * @return whether the blocks around are air blocks
-	 */
-	public boolean isClear(Coordinate location) {
-		return getWorld().isAirBlock(location.getBlockX(), location.getBlockY(), location.getBlockZ())
-		&& getWorld().isAirBlock(location.getBlockX(), location.getBlockY() + 1, location.getBlockZ())
-		&& !(getWorld().isAirBlock(location.getBlockX(), location.getBlockY() - 1, location.getBlockZ()));
-	}
-   
-	/**
-	 * @return whether the blocks below are air blocks
-	 */
-	public boolean isClearBelow(Coordinate location) {
-		return getWorld().isAirBlock(location.getBlockX(), location.getBlockY(), location.getBlockZ())
-		&& getWorld().isAirBlock(location.getBlockX(), location.getBlockY() + 1, location.getBlockZ())
-		&& getWorld().isAirBlock(location.getBlockX(), location.getBlockY() - 1, location.getBlockZ());
-	}
-   
-	/**
 	 * @return the players forward movement
 	 */
 	public float getMovementForward() {
@@ -436,7 +263,7 @@ public class Player {
 	/**
 	 * @return the {@link EntityPlayer} object
 	 */
-	public EntityPlayer getMinecraftPlayer() {
+	public EntityPlayerMP getMinecraftPlayer() {
 		return player;
 	}
    

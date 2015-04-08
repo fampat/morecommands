@@ -2,16 +2,15 @@ package com.mrnobody.morecommands.command.server;
 
 import java.util.List;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.command.CommandBase.Requirement;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Entity;
 import com.mrnobody.morecommands.wrapper.Player;
-
-import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "killall",
@@ -34,7 +33,7 @@ public class CommandKillall extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		double radius = 128.0D;
 		String entityType = "mob";
 		
@@ -46,21 +45,21 @@ public class CommandKillall extends ServerCommand {
 					radius = Double.parseDouble(params[0]);
 					entityType = "mob";
 				}
-				catch (NumberFormatException e) {sender.sendLangfileMessageToPlayer("command.killall.unknownEntity", new Object[0]);}
+				catch (NumberFormatException e) {sender.sendLangfileMessage("command.killall.unknownEntity", new Object[0]);}
 			}
 			
 			if (params.length > 1) {
 				try {radius = Double.parseDouble(params[1]);}
-				catch (NumberFormatException e) {sender.sendLangfileMessageToPlayer("command.killall.NAN", new Object[0]);}
+				catch (NumberFormatException e) {sender.sendLangfileMessage("command.killall.NAN", new Object[0]);}
 			}
 			
-			if (radius <= 0 || radius > 256) {sender.sendLangfileMessageToPlayer("command.killall.invalidRadius", new Object[0]);}
+			if (radius <= 0 || radius > 256) {sender.sendLangfileMessage("command.killall.invalidRadius", new Object[0]);}
 			else {
 				List<net.minecraft.entity.Entity> removedEntities = Entity.killEntities(entityType, player.getPosition(), player.getWorld(), radius);
-				sender.sendLangfileMessageToPlayer("command.killall.killed", new Object[] {removedEntities.size()});
+				sender.sendLangfileMessage("command.killall.killed", new Object[] {removedEntities.size()});
 			}
 		}
-		else sender.sendLangfileMessageToPlayer("command.killall.invalidUsage", new Object[0]);
+		else sender.sendLangfileMessage("command.killall.invalidUsage", new Object[0]);
 	}
 	
 	@Override
@@ -79,5 +78,10 @@ public class CommandKillall extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

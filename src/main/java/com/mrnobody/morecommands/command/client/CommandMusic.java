@@ -48,7 +48,7 @@ public class CommandMusic extends ClientCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-        sender.sendStringMessageToPlayer("Currently not working properly. Please wait for a fix");
+        sender.sendStringMessage("Currently not working properly. Please wait for a fix");
 		/*if (params.length > 0) {
 			if (params[0].equalsIgnoreCase("play")) {
 				this.playRandomMusic();

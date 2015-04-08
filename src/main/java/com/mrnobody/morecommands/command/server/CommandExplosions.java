@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraftforge.event.world.ExplosionEvent;
 
 import com.mrnobody.morecommands.command.Command;
@@ -24,7 +25,6 @@ public class CommandExplosions extends ServerCommand implements Listener<Explosi
 
 	@Override
 	public void onEvent(ExplosionEvent event) {
-		//Use event.explosion.getExplosivePlacedBy() to customize command for players, not only global
 		if (!GlobalSettings.explosions) event.setCanceled(true);
 	}
 	
@@ -44,19 +44,21 @@ public class CommandExplosions extends ServerCommand implements Listener<Explosi
     	boolean success = false;
     	
     	if (params.length >= 1) {
-    		if (params[0].toLowerCase().equals("true")) {explosions = true; success = true;}
-    		else if (params[0].toLowerCase().equals("false")) {explosions = false; success = true;}
-    		else if (params[0].toLowerCase().equals("0")) {explosions = false; success = true;}
-    		else if (params[0].toLowerCase().equals("1")) {explosions = true; success = true;}
-    		else if (params[0].toLowerCase().equals("on")) {explosions = true; success = true;}
-    		else if (params[0].toLowerCase().equals("off")) {explosions = false; success = true;}
+    		if (params[0].equalsIgnoreCase("true")) {explosions = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("false")) {explosions = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("0")) {explosions = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("1")) {explosions = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("on")) {explosions = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("off")) {explosions = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {explosions = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {explosions = false; success = true;}
     		else {success = false;}
     	}
     	else {explosions = !GlobalSettings.explosions; success = true;}
     	
     	if (success) GlobalSettings.explosions = explosions;
     	
-    	sender.sendLangfileMessageToPlayer(success ? explosions ? "command.explosions.on" : "command.explosions.off" : "command.explosions.failure", new Object[0]);
+    	sender.sendLangfileMessage(success ? explosions ? "command.explosions.on" : "command.explosions.off" : "command.explosions.failure", new Object[0]);
 	}
 	
 	@Override
@@ -77,5 +79,10 @@ public class CommandExplosions extends ServerCommand implements Listener<Explosi
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return true;
 	}
 }

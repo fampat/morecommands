@@ -2,6 +2,7 @@ package com.mrnobody.morecommands.command.server;
 
 import net.minecraft.command.CommandHandler;
 import net.minecraft.command.ICommand;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 
@@ -33,8 +34,6 @@ public class CommandUnalias extends ServerCommand {
 		return "command.unalias.syntax";
 	}
 	
-	//ADD REMOVE ALL !!!!!!!!
-
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
@@ -51,9 +50,9 @@ public class CommandUnalias extends ServerCommand {
 					cmd.getSenderCommandMapping().remove(sender.getMinecraftISender());
 					cmd.getSenderSideMapping().remove(sender.getMinecraftISender());
 			}
-			else {sender.sendLangfileMessageToPlayer("command.unalias.notFound", new Object[0]);}
+			else {sender.sendLangfileMessage("command.unalias.notFound", new Object[0]);}
 		}
-		else {sender.sendLangfileMessageToPlayer("command.alias.invalidUsage", new Object[0]);}
+		else {sender.sendLangfileMessage("command.alias.invalidUsage", new Object[0]);}
 	}
 	
 	@Override
@@ -72,5 +71,10 @@ public class CommandUnalias extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 0;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

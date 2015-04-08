@@ -231,6 +231,25 @@ public class World {
 	public void setSpawn(Coordinate coordinate) {
 		this.world.setSpawnLocation(coordinate.getBlockX(), coordinate.getBlockY(), coordinate.getBlockZ());
 	}
+	
+	   
+	/**
+	 * @return whether the blocks around are air blocks
+	 */
+	public boolean isClear(Coordinate location) {
+		return this.isAirBlock(location.getBlockX(), location.getBlockY(), location.getBlockZ())
+			&& this.isAirBlock(location.getBlockX(), location.getBlockY() + 1, location.getBlockZ())
+			&& !(this.isAirBlock(location.getBlockX(), location.getBlockY() - 1, location.getBlockZ()));
+	}
+	   
+	/**
+	 * @return whether the blocks below are air blocks
+	 */
+	public boolean isClearBelow(Coordinate location) {
+		return this.isAirBlock(location.getBlockX(), location.getBlockY(), location.getBlockZ())
+			&& this.isAirBlock(location.getBlockX(), location.getBlockY() + 1, location.getBlockZ())
+			&& this.isAirBlock(location.getBlockX(), location.getBlockY() - 1, location.getBlockZ());
+	}
    
 	/**
 	 * Generates a big tree at the given coordinates
@@ -270,8 +289,8 @@ public class World {
 	/**
 	 * Creates an explosion at the given coordinates
 	 */
-	public void createExplosion(Player player, Coordinate coordinate, int size) {
-		this.world.createExplosion(player.getMinecraftPlayer(), coordinate.getX(), coordinate.getY(), coordinate.getZ(), size, true);
+	public void createExplosion(net.minecraft.entity.Entity cause, Coordinate coordinate, int size) {
+		this.world.createExplosion(cause, coordinate.getX(), coordinate.getY(), coordinate.getZ(), size, true);
 	}
    
 	/**

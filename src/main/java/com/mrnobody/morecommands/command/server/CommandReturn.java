@@ -2,11 +2,15 @@ package com.mrnobody.morecommands.command.server;
 
 import java.text.DecimalFormat;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
 		name = "return",
@@ -31,16 +35,17 @@ public class CommandReturn extends ServerCommand {
 		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
 		
 		if (settings.lastPos == null) {
-			sender.sendLangfileMessageToPlayer("command.return.noLastPos", new Object[0]);
+			sender.sendLangfileMessage("command.return.noLastPos", new Object[0]);
 			return;
 		}
 		
-		sender.toPlayer().setPosition(settings.lastPos);
-		settings.lastPos = sender.toPlayer().getPosition();
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		player.setPosition(settings.lastPos);
+		settings.lastPos = player.getPosition();
 		
 		DecimalFormat f = new DecimalFormat("#.##");
 				
-		sender.sendStringMessageToPlayer("Successfully returned to:"
+		sender.sendStringMessage("Successfully returned to:"
 				+ " X = " + f.format(settings.lastPos.getX())
 				+ "; Y = " + f.format(settings.lastPos.getY())
 				+ "; Z = " + f.format(settings.lastPos.getZ()));
@@ -62,5 +67,10 @@ public class CommandReturn extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

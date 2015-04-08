@@ -2,6 +2,8 @@ package com.mrnobody.morecommands.command.server;
 
 import java.lang.reflect.Field;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.FoodStats;
 
 import com.mrnobody.morecommands.command.Command;
@@ -32,16 +34,16 @@ public class CommandHunger extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		int foodLevel;
 		
 		if (params.length > 0) {
 			try {foodLevel = Integer.parseInt(params[0]);}
 			catch (NumberFormatException e) {
-				if (params[0].toLowerCase().equals("min")) {foodLevel = 0;}
-				else if (params[0].toLowerCase().equals("max")) {foodLevel = 20;}
-				else if (params[0].toLowerCase().equals("get")) {sender.sendLangfileMessageToPlayer("command.hunger.get", new Object[] {player.getHunger()}); return;}
-				else {sender.sendLangfileMessageToPlayer("command.hunger.invalidParam", new Object[0]); return;}
+				if (params[0].equalsIgnoreCase("min")) {foodLevel = 0;}
+				else if (params[0].equalsIgnoreCase("max")) {foodLevel = 20;}
+				else if (params[0].equalsIgnoreCase("get")) {sender.sendLangfileMessage("command.hunger.get", new Object[] {player.getHunger()}); return;}
+				else {sender.sendLangfileMessage("command.hunger.invalidParam", new Object[0]); return;}
 			}
 			
 			Field foodStats = ReflectionHelper.getField(FoodStats.class, "foodLevel");
@@ -49,15 +51,15 @@ public class CommandHunger extends ServerCommand {
 			if (foodStats != null) {
 				try {
 					foodStats.setInt(player.getMinecraftPlayer().getFoodStats(), foodLevel);
-					sender.sendLangfileMessageToPlayer("command.hunger.success", new Object[0]);
+					sender.sendLangfileMessage("command.hunger.success", new Object[0]);
 				}
 				catch (Exception ex) {
-					sender.sendLangfileMessageToPlayer("command.hunger.error", new Object[0]);
+					sender.sendLangfileMessage("command.hunger.error", new Object[0]);
 				}
 			}
-			else sender.sendLangfileMessageToPlayer("command.hunger.error", new Object[0]);
+			else sender.sendLangfileMessage("command.hunger.error", new Object[0]);
 		}
-		else {sender.sendLangfileMessageToPlayer("command.hunger.invalidUsage", new Object[0]);}
+		else {sender.sendLangfileMessage("command.hunger.invalidUsage", new Object[0]);}
 	}
 	
 	@Override
@@ -76,5 +78,10 @@ public class CommandHunger extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

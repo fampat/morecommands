@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.DamageSource;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
@@ -43,27 +44,29 @@ public class CommandNoclip extends ServerCommand implements Listener<LivingAttac
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		boolean allowNoclip = false;
 		
 		if(!player.getMinecraftPlayer().capabilities.isFlying && !player.getMinecraftPlayer().noClip) {
-			sender.sendLangfileMessageToPlayer("command.noclip.mustBeFlying", new Object[0]); return;
+			sender.sendLangfileMessage("command.noclip.mustBeFlying", new Object[0]); return;
 		}
     	
 		if (params.length >= 1) {
-			if (params[0].toLowerCase().equals("true")) {player.getMinecraftPlayer().noClip = true;}
-			else if (params[0].toLowerCase().equals("false")) {player.getMinecraftPlayer().noClip = false;}
-			else if (params[0].toLowerCase().equals("0")) {player.getMinecraftPlayer().noClip = false;}
-			else if (params[0].toLowerCase().equals("1")) {player.getMinecraftPlayer().noClip = true;}
-			else if (params[0].toLowerCase().equals("on")) {player.getMinecraftPlayer().noClip = true;}
-			else if (params[0].toLowerCase().equals("off")) {player.getMinecraftPlayer().noClip = false;}
-			else {sender.sendLangfileMessageToPlayer("command.noclip.failure", new Object[0]); return;}
+			if (params[0].equalsIgnoreCase("true")) {player.getMinecraftPlayer().noClip = true;}
+			else if (params[0].equalsIgnoreCase("false")) {player.getMinecraftPlayer().noClip = false;}
+			else if (params[0].equalsIgnoreCase("0")) {player.getMinecraftPlayer().noClip = false;}
+			else if (params[0].equalsIgnoreCase("1")) {player.getMinecraftPlayer().noClip = true;}
+			else if (params[0].equalsIgnoreCase("on")) {player.getMinecraftPlayer().noClip = true;}
+			else if (params[0].equalsIgnoreCase("off")) {player.getMinecraftPlayer().noClip = false;}
+    		else if (params[0].equalsIgnoreCase("enable")) {player.getMinecraftPlayer().noClip = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {player.getMinecraftPlayer().noClip = false;}
+			else {sender.sendLangfileMessage("command.noclip.failure", new Object[0]); return;}
 		}
 		else {player.getMinecraftPlayer().noClip = !player.getMinecraftPlayer().noClip;}
     	
 		if(!(player.getMinecraftPlayer() instanceof EntityPlayerMP)) {
 			player.getMinecraftPlayer().noClip = false;
-			sender.sendLangfileMessageToPlayer("command.noclip.failure", new Object[0]);
+			sender.sendLangfileMessage("command.noclip.failure", new Object[0]);
 			return;
 		}
     	
@@ -75,7 +78,7 @@ public class CommandNoclip extends ServerCommand implements Listener<LivingAttac
 		packet.allowNoclip = player.getMinecraftPlayer().noClip;
 		MoreCommands.getMoreCommands().getNetwork().sendTo(packet, (EntityPlayerMP) player.getMinecraftPlayer()); 
 			
-		sender.sendLangfileMessageToPlayer(player.getMinecraftPlayer().noClip ? "command.noclip.enabled" : "command.noclip.disabled", new Object[0]);
+		sender.sendLangfileMessage(player.getMinecraftPlayer().noClip ? "command.noclip.enabled" : "command.noclip.disabled", new Object[0]);
 	}
 
 	public static void checkSafe(EntityPlayerMP player) {
@@ -86,19 +89,19 @@ public class CommandNoclip extends ServerCommand implements Listener<LivingAttac
 			packet.allowNoclip = false;
 			MoreCommands.getMoreCommands().getNetwork().sendTo(packet, player); 
 			
-			(new CommandSender(player)).sendLangfileMessageToPlayer("command.noclip.autodisable", new Object[0]);
+			(new CommandSender(player)).sendLangfileMessage("command.noclip.autodisable", new Object[0]);
 			ascendPlayer(new Player(player));
 		}
 	}
 
 	private static boolean ascendPlayer(Player player) {
 		Coordinate playerPos = player.getPosition();
-		if(player.isClearBelow(playerPos) && playerPos.getY() > 0) {
+		if(player.getWorld().isClearBelow(playerPos) && playerPos.getY() > 0) {
 			return false;
 		}
 		double y = playerPos.getY() - 1; // in case player was standing on ground
 		while (y < 260) {
-			if(player.isClear(new Coordinate(playerPos.getX(), y++, playerPos.getZ()))) {
+			if(player.getWorld().isClear(new Coordinate(playerPos.getX(), y++, playerPos.getZ()))) {
 				final double newY;
 				if(playerPos.getY() > 0) {
 					newY = y - 1;
@@ -131,5 +134,10 @@ public class CommandNoclip extends ServerCommand implements Listener<LivingAttac
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

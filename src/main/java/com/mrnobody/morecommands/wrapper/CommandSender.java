@@ -1,10 +1,7 @@
 package com.mrnobody.morecommands.wrapper;
 
-import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.IChatComponent;
 
 import com.mrnobody.morecommands.core.MoreCommands;
@@ -37,17 +34,17 @@ public class CommandSender {
 		return sender.canCommandSenderUseCommand(4, command);
 	}
 	
-	public void sendChatComponentToPlayer(IChatComponent component) {
+	public void sendChatComponent(IChatComponent component) {
 		if (CommandSender.output && !ServerPlayerSettings.playerSettingsMapping.containsKey(sender)) sender.addChatMessage(component);
 		else if (CommandSender.output && ServerPlayerSettings.playerSettingsMapping.get(sender).output) sender.addChatMessage(component);
 	}
 	
-	public void sendStringMessageToPlayer(String message) {
+	public void sendStringMessage(String message) {
 		if (CommandSender.output && !ServerPlayerSettings.playerSettingsMapping.containsKey(sender)) sender.addChatMessage(new ChatComponentText(message));
 		else if (CommandSender.output && ServerPlayerSettings.playerSettingsMapping.get(sender).output) sender.addChatMessage(new ChatComponentText(message));
 	}
 	
-	public void sendLangfileMessageToPlayer(String LangFileEntry, Object... formatArgs) {
+	public void sendLangfileMessage(String LangFileEntry, Object... formatArgs) {
 		String text = LanguageManager.getTranslation(MoreCommands.getMoreCommands().getCurrentLang(this.sender), LangFileEntry, formatArgs);
 		if (CommandSender.output && !ServerPlayerSettings.playerSettingsMapping.containsKey(sender)) sender.addChatMessage(new ChatComponentText(text));
 		else if (CommandSender.output && ServerPlayerSettings.playerSettingsMapping.get(sender).output) sender.addChatMessage(new ChatComponentText(text));
@@ -57,11 +54,11 @@ public class CommandSender {
 		return sender;
 	}
 	
-	public boolean isPlayer() {
-		return sender instanceof EntityPlayerMP;
+	public Coordinate getPosition() {
+		return new Coordinate(sender.getPlayerCoordinates().posX, sender.getPlayerCoordinates().posY, sender.getPlayerCoordinates().posZ);
 	}
 	
-	public Player toPlayer() {
-		return new Player(CommandBase.getCommandSenderAsPlayer(sender));
+	public World getWorld() {
+		return new World(sender.getEntityWorld());
 	}
 }

@@ -1,49 +1,31 @@
 package com.mrnobody.morecommands.network;
 
-import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.client.ClientCommandHandler;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
 
 import com.mrnobody.morecommands.command.ClientCommand;
-import com.mrnobody.morecommands.core.ClientProxy;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.Patcher;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listener;
 import com.mrnobody.morecommands.packet.client.C00PacketHandshake;
 import com.mrnobody.morecommands.packet.client.C01PacketClientCommand;
 import com.mrnobody.morecommands.patch.EntityClientPlayerMP;
 import com.mrnobody.morecommands.patch.PlayerControllerMP;
-import com.mrnobody.morecommands.util.XrayClientTick;
 import com.mrnobody.morecommands.util.Reference;
-import com.mrnobody.morecommands.util.XrayRenderTick;
-import com.mrnobody.morecommands.util.XrayConfGui;
 import com.mrnobody.morecommands.util.XrayHelper;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.EntityCamera;
-import com.mrnobody.morecommands.wrapper.Player;
 import com.mrnobody.morecommands.wrapper.World;
-
-import cpw.mods.fml.common.gameevent.TickEvent;
-import cpw.mods.fml.common.registry.GameData;
 
 /**
  * This class handles all incoming packets from the server
@@ -279,10 +261,10 @@ public class PacketHandlerClient {
 	public void ride() {
 		EntityPlayer player = Minecraft.getMinecraft().thePlayer;
 		CommandSender sender = new CommandSender(player);
-		Entity hit = (new Player(player)).traceEntity(128.0D);
+		Entity hit = (new com.mrnobody.morecommands.wrapper.Entity(player)).traceEntity(128.0D);
 		
 		if (player.ridingEntity != null) {
-			sender.sendLangfileMessageToPlayer("command.ride.dismounted", new Object[0]);
+			sender.sendLangfileMessage("command.ride.dismounted", new Object[0]);
 			player.mountEntity(null);
 			return;
 		}
@@ -290,10 +272,10 @@ public class PacketHandlerClient {
 		if (hit != null) {
 			if (hit instanceof EntityLiving) {
 				player.mountEntity(hit);
-				sender.sendLangfileMessageToPlayer("command.ride.mounted", new Object[0]);
+				sender.sendLangfileMessage("command.ride.mounted", new Object[0]);
 			}
-			else sender.sendLangfileMessageToPlayer("command.ride.notLiving", new Object[0]);
+			else sender.sendLangfileMessage("command.ride.notLiving", new Object[0]);
 		}
-		else sender.sendLangfileMessageToPlayer("command.ride.notFound", new Object[0]);
+		else sender.sendLangfileMessage("command.ride.notFound", new Object[0]);
 	}
 }

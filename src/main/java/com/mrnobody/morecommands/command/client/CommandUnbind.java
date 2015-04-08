@@ -46,19 +46,19 @@ public class CommandUnbind extends ClientCommand {
 			if (keyid != Keyboard.KEY_NONE && ClientPlayerSettings.keybindMapping.containsKey(keyid)) {
 				ClientPlayerSettings.keybindMapping.remove(keyid);
 				ClientPlayerSettings.saveSettings();
-				sender.sendLangfileMessageToPlayer("command.unbind.success", new Object[0]);
+				sender.sendLangfileMessage("command.unbind.success", new Object[0]);
 			}
 			else if (params[0].equalsIgnoreCase("all")) {
 				ClientPlayerSettings.keybindMapping.clear();
 				ClientPlayerSettings.saveSettings();
-				sender.sendLangfileMessageToPlayer("command.unbind.success", new Object[0]);
+				sender.sendLangfileMessage("command.unbind.success", new Object[0]);
 			}
 			else if (!ClientPlayerSettings.keybindMapping.containsKey(keyid)) {
-				sender.sendLangfileMessageToPlayer("command.unbind.bindingNotFound", new Object[0]);
+				sender.sendLangfileMessage("command.unbind.bindingNotFound", new Object[0]);
 				return;
 			}
 		}
-		else {sender.sendLangfileMessageToPlayer("command.unbind.invalidUsage", new Object[0]);}
+		else {sender.sendLangfileMessage("command.unbind.invalidUsage", new Object[0]);}
 	}
 
 	@Override

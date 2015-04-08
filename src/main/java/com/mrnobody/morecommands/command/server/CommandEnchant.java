@@ -1,16 +1,14 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.enchantment.Enchantment;
+import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.command.CommandBase.Requirement;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
-
-import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "enchant",
@@ -33,7 +31,7 @@ public class CommandEnchant extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		
 		if (params.length > 0) {
     		if(params[0].equals("list")) {
@@ -51,16 +49,16 @@ public class CommandEnchant extends ServerCommand {
     				int from = to - PAGE_MAX;
     				
     				for (int index = from; index < to; index++) {
-    					if (Enchantment.enchantmentsList[index] != null) sender.sendStringMessageToPlayer(" - '" + Enchantment.enchantmentsList[index].getName().substring(12) + "' (" + String.valueOf(Enchantment.enchantmentsList[index].effectId) + ")");
+    					if (Enchantment.enchantmentsList[index] != null) sender.sendStringMessage(" - '" + Enchantment.enchantmentsList[index].getName().substring(12) + "' (" + String.valueOf(Enchantment.enchantmentsList[index].effectId) + ")");
     				}
-    				sender.sendLangfileMessageToPlayer("command.enchant.more", new Object[0]);
+    				sender.sendLangfileMessage("command.enchant.more", new Object[0]);
     			}
-    			else {sender.sendLangfileMessageToPlayer("command.enchant.invalidUsage", new Object[0]);}
+    			else {sender.sendLangfileMessage("command.enchant.invalidUsage", new Object[0]);}
     		}
     		
     		else if (params[0].equals("remove")) {
     			player.removeEnchantment(); 
-    			sender.sendLangfileMessageToPlayer("command.enchant.removeSuccess", new Object[0]);
+    			sender.sendLangfileMessage("command.enchant.removeSuccess", new Object[0]);
     		}
 		
     		else if (params[0].equals("add")) {
@@ -69,20 +67,20 @@ public class CommandEnchant extends ServerCommand {
     				
     				for (Enchantment e : Enchantment.enchantmentsList) {
     					if (e != null) {
-    						if (params[1].toLowerCase().equals(e.getName().substring(12).toLowerCase()) || String.valueOf(e.effectId).equals(params[1])) {
-    							try {player.addEnchantment(e, Integer.parseInt(params[2])); broken = true; sender.sendLangfileMessageToPlayer("command.enchant.addSuccess", new Object[0]);}
-    							catch (NumberFormatException ex) {sender.sendLangfileMessageToPlayer("command.enchant.NAN", new Object[0]); broken = true;}
+    						if (params[1].equalsIgnoreCase(e.getName().substring(12)) || String.valueOf(e.effectId).equals(params[1])) {
+    							try {player.addEnchantment(e, Integer.parseInt(params[2])); broken = true; sender.sendLangfileMessage("command.enchant.addSuccess", new Object[0]);}
+    							catch (NumberFormatException ex) {sender.sendLangfileMessage("command.enchant.NAN", new Object[0]); broken = true;}
     							break;
     						}
     					}
     				}
-    				if (!broken) sender.sendLangfileMessageToPlayer("command.enchant.notFound", new Object[0]);
+    				if (!broken) sender.sendLangfileMessage("command.enchant.notFound", new Object[0]);
     			}
-    			else {sender.sendLangfileMessageToPlayer("command.enchant.invalidUsage", new Object[0]);}
+    			else {sender.sendLangfileMessage("command.enchant.invalidUsage", new Object[0]);}
     		}
-    		else {sender.sendLangfileMessageToPlayer("command.enchant.invalidUsage", new Object[0]);}
+    		else {sender.sendLangfileMessage("command.enchant.invalidUsage", new Object[0]);}
 		}
-		else {sender.sendLangfileMessageToPlayer("command.enchant.invalidUsage", new Object[0]);}
+		else {sender.sendLangfileMessage("command.enchant.invalidUsage", new Object[0]);}
 	}
 	
 	@Override
@@ -101,5 +99,10 @@ public class CommandEnchant extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

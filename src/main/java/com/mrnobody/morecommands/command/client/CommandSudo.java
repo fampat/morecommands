@@ -1,10 +1,7 @@
 package com.mrnobody.morecommands.command.client;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
-import net.minecraft.command.CommandHandler;
 import net.minecraft.command.ICommandManager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
@@ -12,13 +9,8 @@ import net.minecraft.server.integrated.IntegratedServer;
 
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.CommandBase.Requirement;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
-
-import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "sudo",
@@ -42,7 +34,7 @@ public class CommandSudo extends ClientCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 1 && MinecraftServer.getServer() instanceof IntegratedServer && ((IntegratedServer) MinecraftServer.getServer()).getPublic()) {
-			Player player = null;
+			EntityPlayer player = null;
 			Object playerEntity;
 			Iterator players = MinecraftServer.getServer().getConfigurationManager().playerEntityList.iterator();
 			
@@ -51,14 +43,14 @@ public class CommandSudo extends ClientCommand {
 				
 				if (playerEntity instanceof EntityPlayer) {
 					if (((EntityPlayer) playerEntity).getCommandSenderName().equalsIgnoreCase(params[0])) {
-						player = new Player((EntityPlayer) playerEntity);
+						player = (EntityPlayer) playerEntity;
 						break;
 					}
 				}
 			}
 			
 			if (player == null) {
-				sender.sendLangfileMessageToPlayer("command.sudo.playerNotFound", new Object[0]);
+				sender.sendLangfileMessage("command.sudo.playerNotFound", new Object[0]);
 				return;
 			}
 			
@@ -76,11 +68,11 @@ public class CommandSudo extends ClientCommand {
 			}
 			
 			manager.executeCommand((new CommandSender(player)).getMinecraftISender(), command + parameters);
-			sender.sendLangfileMessageToPlayer("command.sudo.executed", new Object[] {command + parameters, player.getPlayerName()});
+			sender.sendLangfileMessage("command.sudo.executed", new Object[] {command + parameters, player.getCommandSenderName()});
 		}
-		else if (!(MinecraftServer.getServer() instanceof IntegratedServer)) {sender.sendLangfileMessageToPlayer("command.sudo.notInLAN", new Object[0]);}
-		else if (!((IntegratedServer) MinecraftServer.getServer()).getPublic()) {sender.sendLangfileMessageToPlayer("command.sudo.notInLAN", new Object[0]);}
-		else {sender.sendLangfileMessageToPlayer("command.sudo.invalidArgs", new Object[0]);}
+		else if (!(MinecraftServer.getServer() instanceof IntegratedServer)) {sender.sendLangfileMessage("command.sudo.notInLAN", new Object[0]);}
+		else if (!((IntegratedServer) MinecraftServer.getServer()).getPublic()) {sender.sendLangfileMessage("command.sudo.notInLAN", new Object[0]);}
+		else {sender.sendLangfileMessage("command.sudo.invalidArgs", new Object[0]);}
 	}
 	
 	@Override

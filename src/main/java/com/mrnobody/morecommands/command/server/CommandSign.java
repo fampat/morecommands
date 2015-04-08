@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
@@ -45,8 +46,8 @@ public class CommandSign extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-		Player player = sender.toPlayer();
-		MovingObjectPosition hit = player.rayTrace(128.0D, 1.0F);
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		MovingObjectPosition hit = player.rayTraceBlock(128.0D, 1.0F);
 
 		if (hit != null && params.length > 1) {
 			Coordinate trace = new Coordinate(hit.blockX, hit.blockY, hit.blockZ);
@@ -56,7 +57,7 @@ public class CommandSign extends ServerCommand {
 			args = args.trim();
 			
 			if (!args.startsWith("\"") && !args.endsWith("\""))
-				{sender.sendLangfileMessageToPlayer("command.sign.invalidUsage", new Object[0]); return;}
+				{sender.sendLangfileMessage("command.sign.invalidUsage", new Object[0]); return;}
 			args = args.substring(1, args.length() - 1);
 			
 			String[] lines = args.split("\" \"");
@@ -74,10 +75,10 @@ public class CommandSign extends ServerCommand {
 				Packet update = sign.getDescriptionPacket();
 				((EntityPlayerMP) sender.getMinecraftISender()).playerNetServerHandler.sendPacket(update);
 			
-				sender.sendLangfileMessageToPlayer("command.sign.editsuccess", new Object[0]);
+				sender.sendLangfileMessage("command.sign.editsuccess", new Object[0]);
 			}
 			else if (params[0].equalsIgnoreCase("add")) {
-				if (hit.sideHit == 0) {sender.sendLangfileMessageToPlayer("command.sign.bottom", new Object[0]); return;}
+				if (hit.sideHit == 0) {sender.sendLangfileMessage("command.sign.bottom", new Object[0]); return;}
 				
 				if (hit.sideHit == 1) hit.blockY += 1;
 				else if (hit.sideHit == 4) hit.blockX -= 1;
@@ -99,12 +100,12 @@ public class CommandSign extends ServerCommand {
 					sign.signText[2] = newLines[2];
 					sign.signText[3] = newLines[3];
 				
-					sender.sendLangfileMessageToPlayer("command.sign.addsuccess", new Object[0]);
+					sender.sendLangfileMessage("command.sign.addsuccess", new Object[0]);
 				}
 			}
-			else sender.sendLangfileMessageToPlayer("command.sign.invalidUsage", new Object[0]);
+			else sender.sendLangfileMessage("command.sign.invalidUsage", new Object[0]);
 		}
-		else sender.sendLangfileMessageToPlayer("command.sign.noBlockInSight", new Object[0]);
+		else sender.sendLangfileMessage("command.sign.noBlockInSight", new Object[0]);
 	}
 
 	@Override
@@ -122,4 +123,8 @@ public class CommandSign extends ServerCommand {
 		return 2;
 	}
 
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
+	}
 }

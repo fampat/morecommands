@@ -1,15 +1,13 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.EnumDifficulty;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-
-import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "difficulty",
@@ -40,10 +38,10 @@ public class CommandDifficulty extends ServerCommand {
 			else if (params[0].equalsIgnoreCase("easy")|| params[0].equalsIgnoreCase("1")) diff = EnumDifficulty.EASY;
 			else if (params[0].equalsIgnoreCase("normal")|| params[0].equalsIgnoreCase("2")) diff = EnumDifficulty.NORMAL;
 			else if (params[0].equalsIgnoreCase("hard")|| params[0].equalsIgnoreCase("3")) diff = EnumDifficulty.HARD;
-			else {sender.sendLangfileMessageToPlayer("command.difficulty.invalidDifficulty", new Object[0]); return;}
+			else {sender.sendLangfileMessage("command.difficulty.invalidDifficulty", new Object[0]); return;}
 			
 			server.func_147139_a(diff);
-			sender.toPlayer().getMinecraftPlayer().worldObj.difficultySetting = diff;
+			sender.getWorld().getMinecraftWorld().difficultySetting = diff;
 			String difficulty = "";
 			
 			switch(diff) {
@@ -53,9 +51,9 @@ public class CommandDifficulty extends ServerCommand {
 				case HARD: difficulty = "hard"; break;
 			}
 			
-			sender.sendLangfileMessageToPlayer("command.difficulty.setto", new Object[] {difficulty});
+			sender.sendLangfileMessage("command.difficulty.setto", new Object[] {difficulty});
 		}
-		else {sender.sendLangfileMessageToPlayer("command.difficulty.invalidUsage", new Object[0]);}
+		else {sender.sendLangfileMessage("command.difficulty.invalidUsage", new Object[0]);}
 	}
 	
 	@Override
@@ -74,5 +72,10 @@ public class CommandDifficulty extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return true;
 	}
 }

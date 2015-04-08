@@ -1,15 +1,14 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.command.CommandBase.Requirement;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
 import com.mrnobody.morecommands.wrapper.Player;
-
-import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "move",
@@ -32,7 +31,7 @@ public class CommandMove extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		
 		if (params.length > 1) {
 			try {
@@ -50,10 +49,10 @@ public class CommandMove extends ServerCommand {
 					player.setPosition(new Coordinate(player.getPosition().getX(), player.getPosition().getY() + distance, player.getPosition().getZ()));
 				} else if (params[1].toUpperCase().startsWith("D")) {
 					player.setPosition(new Coordinate(player.getPosition().getX(), player.getPosition().getY() - distance, player.getPosition().getZ()));
-				} else {sender.sendLangfileMessageToPlayer("command.move.invalidDirection", new Object[0]);}
-			} catch (NumberFormatException e) {sender.sendLangfileMessageToPlayer("command.move.NAN", new Object[0]);}
+				} else {sender.sendLangfileMessage("command.move.invalidDirection", new Object[0]);}
+			} catch (NumberFormatException e) {sender.sendLangfileMessage("command.move.NAN", new Object[0]);}
 		}
-		else {sender.sendLangfileMessageToPlayer("command.move.invalidUsage", new Object[0]);}
+		else {sender.sendLangfileMessage("command.move.invalidUsage", new Object[0]);}
 	}
 	
 	@Override
@@ -72,5 +71,10 @@ public class CommandMove extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

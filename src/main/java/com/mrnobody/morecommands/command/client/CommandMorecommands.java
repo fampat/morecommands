@@ -57,11 +57,11 @@ public class CommandMorecommands extends ClientCommand {
 		ChatComponentText textBuildDate = new ChatComponentText("BUILD_DATE:     "); textBuildDate.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.DARK_AQUA));
 		ChatComponentText builDate = new ChatComponentText(df.format(Reference.BUILD)); builDate.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY));
 	
-		sender.sendChatComponentToPlayer(textModid.appendSibling(modid));
-		sender.sendChatComponentToPlayer(textVersion.appendSibling(version));
-		sender.sendChatComponentToPlayer(textName.appendSibling(name));
-		sender.sendChatComponentToPlayer(textModDir.appendSibling(modDir));
-		sender.sendChatComponentToPlayer(textBuildDate.appendSibling(builDate));
+		sender.sendChatComponent(textModid.appendSibling(modid));
+		sender.sendChatComponent(textVersion.appendSibling(version));
+		sender.sendChatComponent(textName.appendSibling(name));
+		sender.sendChatComponent(textModDir.appendSibling(modDir));
+		sender.sendChatComponent(textBuildDate.appendSibling(builDate));
 	}
 	
 	@Override

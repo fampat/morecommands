@@ -1,6 +1,8 @@
 package com.mrnobody.morecommands.command.server;
 
 import net.minecraft.block.Block;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
@@ -26,7 +28,6 @@ import cpw.mods.fml.relauncher.Side;
 		videoURL = "command.chest.videoURL"
 		)
 public class CommandChest extends ServerCommand {
-
 	@Override
 	public String getCommandName() {
 		return "chest";
@@ -40,15 +41,15 @@ public class CommandChest extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
 		if (params.length < 1) {
-			sender.sendLangfileMessageToPlayer("command.chest.invalidUsage", new Object[0]);
+			sender.sendLangfileMessage("command.chest.invalidUsage", new Object[0]);
 			return;
 		}
 		
-		Player player = sender.toPlayer();
-		Coordinate coord = player.trace(128.0D);
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		Coordinate coord = player.traceBlock(128.0D);
 		
 		if (coord == null) {
-			sender.sendLangfileMessageToPlayer("command.chest.noBlockInSight", new Object[0]);
+			sender.sendLangfileMessage("command.chest.noBlockInSight", new Object[0]);
 			return;
 		}
 		
@@ -75,7 +76,7 @@ public class CommandChest extends ServerCommand {
 				else y2 = -1;
 			}
 			else {
-				sender.sendLangfileMessageToPlayer("command.chest.noChest", new Object[0]);
+				sender.sendLangfileMessage("command.chest.noChest", new Object[0]);
 				return;
 			}
 		}
@@ -147,5 +148,10 @@ public class CommandChest extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

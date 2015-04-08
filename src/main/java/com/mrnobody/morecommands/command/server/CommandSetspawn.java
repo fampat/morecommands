@@ -2,6 +2,8 @@ package com.mrnobody.morecommands.command.server;
 
 import java.text.DecimalFormat;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChunkCoordinates;
 
 import com.mrnobody.morecommands.command.Command;
@@ -36,17 +38,17 @@ public class CommandSetspawn extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		Coordinate coord = player.getPosition();
 		DecimalFormat f = new DecimalFormat("#.##");
 		
 		if (params.length > 2) {
 			try {coord = new Coordinate(Double.parseDouble(params[0]), Double.parseDouble(params[1]), Double.parseDouble(params[2]));}
-			catch (NumberFormatException nfe) {sender.sendLangfileMessageToPlayer("command.setspawn.invalidPos", new Object[0]); return;}
+			catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.setspawn.invalidPos", new Object[0]); return;}
 		}
 		
 		player.setSpawn(coord);
-		sender.sendStringMessageToPlayer("Spawn point set to:"
+		sender.sendStringMessage("Spawn point set to:"
 				+ " X = " + f.format(coord.getX())
 				+ "; Y = " + f.format(coord.getY())
 				+ "; Z = " + f.format(coord.getZ()));
@@ -68,5 +70,10 @@ public class CommandSetspawn extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

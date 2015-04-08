@@ -2,6 +2,7 @@ package com.mrnobody.morecommands.command.server;
 
 import java.util.List;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.util.AxisAlignedBB;
@@ -35,9 +36,8 @@ public class CommandClearDrops extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
-		Coordinate pos = player.getPosition();
-		World world = player.getWorld().getMinecraftWorld();
+		Coordinate pos = sender.getPosition();
+		World world = sender.getWorld().getMinecraftWorld();
 		int radius = 128;
 		int removedDrops = 0;
 		
@@ -45,7 +45,7 @@ public class CommandClearDrops extends ServerCommand {
 				pos.getX() - radius, pos.getY() - radius, pos.getZ() - radius,
 				pos.getX() + radius, pos.getY() + radius, pos.getZ() + radius);
 		
-		List<?> nearbyEntities = world.getEntitiesWithinAABBExcludingEntity(player.getMinecraftPlayer(), boundingBox);
+		List<?> nearbyEntities = world.getEntitiesWithinAABB(EntityItem.class, boundingBox);
 		
 		for (int entityIndex = 0; entityIndex < nearbyEntities.size(); entityIndex++) {
 			Entity entity = (Entity) nearbyEntities.get(entityIndex);
@@ -60,7 +60,7 @@ public class CommandClearDrops extends ServerCommand {
 			}
 		}
 		
-		sender.sendLangfileMessageToPlayer("command.cleardrops.removed", new Object[] {removedDrops});
+		sender.sendLangfileMessage("command.cleardrops.removed", new Object[] {removedDrops});
 	}
 	
 	@Override
@@ -79,5 +79,10 @@ public class CommandClearDrops extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return true;
 	}
 }

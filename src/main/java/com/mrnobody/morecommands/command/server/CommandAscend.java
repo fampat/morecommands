@@ -1,15 +1,14 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.EntityLivingBase;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.command.CommandBase.Requirement;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.Player;
-
-import cpw.mods.fml.relauncher.Side;
+import com.mrnobody.morecommands.wrapper.Entity;
 
 @Command(
 		name = "ascend",
@@ -30,14 +29,14 @@ public class CommandAscend extends ServerCommand {
     }
     
     public void execute(CommandSender sender, String[] params) throws CommandException {
-    	Player player = sender.toPlayer();
-    	Coordinate coord = player.getPosition();
+    	Entity entity = new Entity((net.minecraft.entity.EntityLivingBase) sender.getMinecraftISender());
+    	Coordinate coord = entity.getPosition();
     	int y = coord.getBlockY() + 1;
     	
     	while (y < 260) {
-    		if (player.isClear(new Coordinate(coord.getBlockX(), y++, coord.getBlockZ()))) {
-    			player.setPosition(new Coordinate(coord.getBlockX() + 0.5F, --y, coord.getBlockZ() + 0.5F));
-    			sender.sendLangfileMessageToPlayer("command.ascend.ascended", new Object[] {Math.abs((y - coord.getBlockY()))});
+    		if (entity.getWorld().isClear(new Coordinate(coord.getBlockX(), y++, coord.getBlockZ()))) {
+    			entity.setPosition(new Coordinate(coord.getBlockX() + 0.5F, --y, coord.getBlockZ() + 0.5F));
+    			sender.sendLangfileMessage("command.ascend.ascended", new Object[] {Math.abs((y - coord.getBlockY()))});
     			break;
     		}
     	}
@@ -58,5 +57,10 @@ public class CommandAscend extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityLivingBase;
 	}
 }

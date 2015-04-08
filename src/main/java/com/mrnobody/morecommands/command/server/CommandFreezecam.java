@@ -1,19 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.command.CommandBase.Requirement;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.core.Patcher;
 import com.mrnobody.morecommands.packet.server.S04PacketFreezecam;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-
-import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "freezecam",
@@ -39,17 +35,17 @@ public class CommandFreezecam extends ServerCommand {
 		
 		if (ability.freeezecam) {
     		S04PacketFreezecam packet = new S04PacketFreezecam();
-    		MoreCommands.getMoreCommands().getNetwork().sendTo(packet, (EntityPlayerMP) sender.toPlayer().getMinecraftPlayer());
+    		MoreCommands.getMoreCommands().getNetwork().sendTo(packet, (EntityPlayerMP) sender.getMinecraftISender());
 			
 			ability.freeezecam = false;
-			sender.sendLangfileMessageToPlayer("command.freezecam.off", new Object[0]);
+			sender.sendLangfileMessage("command.freezecam.off", new Object[0]);
 		}
 		else {
     		S04PacketFreezecam packet = new S04PacketFreezecam();
-    		MoreCommands.getMoreCommands().getNetwork().sendTo(packet, (EntityPlayerMP) sender.toPlayer().getMinecraftPlayer());
+    		MoreCommands.getMoreCommands().getNetwork().sendTo(packet, (EntityPlayerMP) sender.getMinecraftISender());
 			
 			ability.freeezecam = true;
-			sender.sendLangfileMessageToPlayer("command.freezecam.on", new Object[0]);
+			sender.sendLangfileMessage("command.freezecam.on", new Object[0]);
 		}
 	}
 	
@@ -69,5 +65,10 @@ public class CommandFreezecam extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

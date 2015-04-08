@@ -1,5 +1,8 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.command.CommandBase.Requirement;
@@ -34,18 +37,18 @@ public class CommandHealth extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		
 		if (params.length > 0) {
-			try {player.setHealth(Float.parseFloat(params[0])); sender.sendLangfileMessageToPlayer("command.health.success", new Object[0]);}
+			try {player.setHealth(Float.parseFloat(params[0])); sender.sendLangfileMessage("command.health.success", new Object[0]);}
 			catch (NumberFormatException e) {
-				if (params[0].toLowerCase().equals("min")) {player.setHealth(MIN_HEALTH); sender.sendLangfileMessageToPlayer("command.health.success", new Object[0]);}
-				else if (params[0].toLowerCase().equals("max")) {player.setHealth(MAX_HEALTH); sender.sendLangfileMessageToPlayer("command.health.success", new Object[0]);}
-				else if (params[0].toLowerCase().equals("get")) {sender.sendLangfileMessageToPlayer("command.health.get", new Object[] {player.getHealth()});}
-				else {sender.sendLangfileMessageToPlayer("command.health.invalidParam", new Object[0]);}
+				if (params[0].equalsIgnoreCase("min")) {player.setHealth(MIN_HEALTH); sender.sendLangfileMessage("command.health.success", new Object[0]);}
+				else if (params[0].equalsIgnoreCase("max")) {player.setHealth(MAX_HEALTH); sender.sendLangfileMessage("command.health.success", new Object[0]);}
+				else if (params[0].equalsIgnoreCase("get")) {sender.sendLangfileMessage("command.health.get", new Object[] {player.getHealth()});}
+				else {sender.sendLangfileMessage("command.health.invalidParam", new Object[0]);}
 			}
 		}
-		else {sender.sendLangfileMessageToPlayer("command.health.invalidUsage", new Object[0]);}
+		else {sender.sendLangfileMessage("command.health.invalidUsage", new Object[0]);}
 	}
 	
 	@Override
@@ -64,5 +67,10 @@ public class CommandHealth extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

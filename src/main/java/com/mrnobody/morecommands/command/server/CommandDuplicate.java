@@ -1,19 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlockWithMetadata;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.command.CommandBase.Requirement;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-
-import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "duplicate",
@@ -36,7 +32,7 @@ public class CommandDuplicate extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		EntityPlayer player = sender.toPlayer().getMinecraftPlayer();
+		EntityPlayer player = (EntityPlayer) sender.getMinecraftISender();
 		
 		if (params.length > 0 && params[0].equalsIgnoreCase("all")) {
 			for (int i = 0; i < player.inventory.mainInventory.length; i++) {
@@ -63,7 +59,7 @@ public class CommandDuplicate extends ServerCommand {
 		}
 		else {
 			if (player.inventory.mainInventory[player.inventory.currentItem] == null) {
-				sender.sendLangfileMessageToPlayer("command.duplicate.notSelected", new Object[0]);
+				sender.sendLangfileMessage("command.duplicate.notSelected", new Object[0]);
 				return;
 			}
 			
@@ -74,7 +70,7 @@ public class CommandDuplicate extends ServerCommand {
 			player.worldObj.spawnEntityInWorld(itemEntity);
 		}
 		
-		sender.sendLangfileMessageToPlayer("command.duplicate.duplicated", new Object[0]);
+		sender.sendLangfileMessage("command.duplicate.duplicated", new Object[0]);
 	}
 	
 	@Override
@@ -93,5 +89,10 @@ public class CommandDuplicate extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

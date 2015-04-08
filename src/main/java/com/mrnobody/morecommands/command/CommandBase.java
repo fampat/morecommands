@@ -81,7 +81,7 @@ public abstract class CommandBase extends net.minecraft.command.CommandBase {
 	/**
 	 * @return Whether this command is enabled
 	 */
-    public abstract boolean isEnabled(EntityPlayer player);
+    public abstract boolean isEnabled(ICommandSender sender);
     
 	/**
 	 * @return The Server Type on which this command can be executed

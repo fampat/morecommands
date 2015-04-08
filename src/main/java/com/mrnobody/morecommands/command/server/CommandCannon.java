@@ -1,17 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.item.EntityTNTPrimed;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.MathHelper;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.command.CommandBase.Requirement;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
-
-import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "cannon",
@@ -34,7 +32,7 @@ public class CommandCannon extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		
 		EntityTNTPrimed tnt = new EntityTNTPrimed(player.getWorld().getMinecraftWorld());
 		
@@ -47,7 +45,7 @@ public class CommandCannon extends ServerCommand {
 		double multiplier = 1;
 		if (params.length > 0) {
 			try {multiplier = Double.parseDouble(params[0]);} 
-			catch (NumberFormatException e) {sender.sendLangfileMessageToPlayer("command.cannon.NAN", new Object[0]); return;}
+			catch (NumberFormatException e) {sender.sendLangfileMessage("command.cannon.NAN", new Object[0]); return;}
 		}
 		
 		tnt.motionX *= multiplier;
@@ -55,7 +53,7 @@ public class CommandCannon extends ServerCommand {
 		tnt.motionZ *= multiplier;
 
 		player.getWorld().getMinecraftWorld().spawnEntityInWorld(tnt);
-		sender.sendLangfileMessageToPlayer("command.cannon.success", new Object[0]);
+		sender.sendLangfileMessage("command.cannon.success", new Object[0]);
 	}
 	
 	@Override
@@ -74,5 +72,10 @@ public class CommandCannon extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

@@ -4,7 +4,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
@@ -38,7 +40,7 @@ public class CommandStacksize extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		sender.sendStringMessageToPlayer("This command is currently not working properly, please wait for a fix");
+		sender.sendStringMessage("This command is currently not working properly, please wait for a fix");
 		return;
 		
 		/*if (!(sender.toPlayer().getMinecraftPlayer().inventory instanceof InventoryPlayer)) {
@@ -126,5 +128,10 @@ public class CommandStacksize extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.item.Item;
 
 import com.mrnobody.morecommands.command.Command;
@@ -11,7 +12,6 @@ import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.util.GlobalSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
 		name = "itemdamage",
@@ -45,18 +45,18 @@ public class CommandItemdamage extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-    	Player player = sender.toPlayer();
-    	
     	boolean damage = false;
     	boolean success = false;
     	
     	if (params.length >= 1) {
-    		if (params[0].toLowerCase().equals("true")) {damage = true; success = true;}
-    		else if (params[0].toLowerCase().equals("false")) {damage = false; success = true;}
-    		else if (params[0].toLowerCase().equals("0")) {damage = false; success = true;}
-    		else if (params[0].toLowerCase().equals("1")) {damage = true; success = true;}
-    		else if (params[0].toLowerCase().equals("on")) {damage = true; success = true;}
-    		else if (params[0].toLowerCase().equals("off")) {damage = false; success = true;}
+    		if (params[0].equalsIgnoreCase("true")) {damage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("false")) {damage = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("0")) {damage = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("1")) {damage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("on")) {damage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("off")) {damage = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {damage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {damage = false; success = true;}
     		else {success = false;}
     	}
     	else {damage = !GlobalSettings.itemdamage; success = true;}
@@ -80,7 +80,7 @@ public class CommandItemdamage extends ServerCommand {
     		}
     	}
     	
-    	sender.sendLangfileMessageToPlayer(success ? damage ? "command.itemdamage.on" : "command.itemdamage.off" : "command.itemdamage.failure", new Object[0]);
+    	sender.sendLangfileMessage(success ? damage ? "command.itemdamage.on" : "command.itemdamage.off" : "command.itemdamage.failure", new Object[0]);
 	}
 	
 	@Override
@@ -99,5 +99,10 @@ public class CommandItemdamage extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return true;
 	}
 }

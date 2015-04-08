@@ -1,5 +1,8 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
@@ -31,17 +34,17 @@ public class CommandStepheight extends ServerCommand {
 		float height;
 		
 		if (params.length > 0) {
-			try {height = Float.parseFloat(params[0]); sender.sendLangfileMessageToPlayer("command.stepheight.setto", new Object[] {height});}
+			try {height = Float.parseFloat(params[0]); sender.sendLangfileMessage("command.stepheight.setto", new Object[] {height});}
 			catch (NumberFormatException e) {
-				if (params[0].toLowerCase().equals("reset")) {height = 0.5F; sender.sendLangfileMessageToPlayer("command.stepheight.reset", new Object[0]);}
-				else {sender.sendLangfileMessageToPlayer("command.stepheight.invalidArg", new Object[0]); return;}
+				if (params[0].equalsIgnoreCase("reset")) {height = 0.5F; sender.sendLangfileMessage("command.stepheight.reset", new Object[0]);}
+				else {sender.sendLangfileMessage("command.stepheight.invalidArg", new Object[0]); return;}
 			}
 			
 			S11PacketStepheight packet = new S11PacketStepheight();
 			packet.stepheight = height;
-			MoreCommands.getMoreCommands().getNetwork().sendTo(packet, this.getCommandSenderAsPlayer(sender.getMinecraftISender()));
+			MoreCommands.getMoreCommands().getNetwork().sendTo(packet, (EntityPlayerMP) sender.getMinecraftISender());
 		}
-		else sender.sendLangfileMessageToPlayer("command.stepheight.invalidUsage", new Object[0]);
+		else sender.sendLangfileMessage("command.stepheight.invalidUsage", new Object[0]);
 	}
 	
 	@Override
@@ -60,5 +63,10 @@ public class CommandStepheight extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

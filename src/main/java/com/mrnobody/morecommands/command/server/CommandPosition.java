@@ -2,6 +2,8 @@ package com.mrnobody.morecommands.command.server;
 
 import java.text.DecimalFormat;
 
+import net.minecraft.command.ICommandSender;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.command.CommandBase.Requirement;
@@ -33,13 +35,12 @@ public class CommandPosition extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
 		DecimalFormat f = new DecimalFormat("#.##");
 		
-		sender.sendStringMessageToPlayer("Your current position is:"
-				+ " X = " + f.format(player.getPosition().getX())
-				+ "; Y = " + f.format(player.getPosition().getY())
-				+ "; Z = " + f.format(player.getPosition().getZ()));
+		sender.sendStringMessage("Your current position is:"
+				+ " X = " + f.format(sender.getPosition().getX())
+				+ "; Y = " + f.format(sender.getPosition().getY())
+				+ "; Z = " + f.format(sender.getPosition().getZ()));
 	}
 
 	@Override
@@ -58,5 +59,10 @@ public class CommandPosition extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 0;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return true;
 	}
 }

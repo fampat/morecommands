@@ -1,5 +1,8 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
@@ -50,19 +53,21 @@ public class CommandScuba extends ServerCommand implements Listener<TickEvent> {
         boolean success = false;
         	
         if (params.length >= 1) {
-        	if (params[0].toLowerCase().equals("true")) {allowBreathe = true; success = true;}
-        	else if (params[0].toLowerCase().equals("false")) {allowBreathe = false; success = true;}
-        	else if (params[0].toLowerCase().equals("0")) {allowBreathe = false; success = true;}
-        	else if (params[0].toLowerCase().equals("1")) {allowBreathe = true; success = true;}
-        	else if (params[0].toLowerCase().equals("on")) {allowBreathe = true; success = true;}
-        	else if (params[0].toLowerCase().equals("off")) {allowBreathe = false; success = true;}
+        	if (params[0].equalsIgnoreCase("true")) {allowBreathe = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("false")) {allowBreathe = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("0")) {allowBreathe = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("1")) {allowBreathe = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("on")) {allowBreathe = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("off")) {allowBreathe = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {allowBreathe = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {allowBreathe = false; success = true;}
         	else {success = false;}
         }
         else {allowBreathe = !ability.scuba; success = true;}
         	
         if (success) ability.scuba = allowBreathe;
         	
-        sender.sendLangfileMessageToPlayer(success ? allowBreathe ? "command.scuba.on" : "command.scuba.off" : "command.scuba.failure", new Object[0]);
+        sender.sendLangfileMessage(success ? allowBreathe ? "command.scuba.on" : "command.scuba.off" : "command.scuba.failure", new Object[0]);
 	}
 	
 	@Override
@@ -83,5 +88,10 @@ public class CommandScuba extends ServerCommand implements Listener<TickEvent> {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

@@ -2,6 +2,7 @@ package com.mrnobody.morecommands.command.server;
 
 import java.util.Map;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.CommandEvent;
@@ -100,7 +101,7 @@ public class CommandAlias extends ServerCommand implements Listener<CommandEvent
 						cmd.getSenderSideMapping().put(sender.getMinecraftISender(), clientSide);
 					}
 					else {
-						sender.sendLangfileMessageToPlayer("command.alias.overwrite", new Object[0]);
+						sender.sendLangfileMessage("command.alias.overwrite", new Object[0]);
 						return;
 					}
 					
@@ -108,13 +109,13 @@ public class CommandAlias extends ServerCommand implements Listener<CommandEvent
 					else settings.serverAliasMapping.put(alias, command + parameters);
 					settings.saveSettings();
 					
-					sender.sendLangfileMessageToPlayer("command.alias.success", new Object[0]);
+					sender.sendLangfileMessage("command.alias.success", new Object[0]);
 				}
-				else {sender.sendLangfileMessageToPlayer("command.generic.notFound", new Object[0]);}
+				else {sender.sendLangfileMessage("command.generic.notFound", new Object[0]);}
 			}
-			else {sender.sendLangfileMessageToPlayer("command.alias.infiniteRecursion", new Object[0]);}
+			else {sender.sendLangfileMessage("command.alias.infiniteRecursion", new Object[0]);}
 		}
-		else {sender.sendLangfileMessageToPlayer("command.alias.invalidUsage", new Object[0]);}
+		else {sender.sendLangfileMessage("command.alias.invalidUsage", new Object[0]);}
 	}
 	
 	@Override
@@ -181,5 +182,10 @@ public class CommandAlias extends ServerCommand implements Listener<CommandEvent
 	@Override
 	public int getPermissionLevel() {
 		return 0;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

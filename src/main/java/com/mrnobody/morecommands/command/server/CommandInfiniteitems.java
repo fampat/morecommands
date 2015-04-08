@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
@@ -77,26 +78,28 @@ public class CommandInfiniteitems extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		EntityPlayerMP player = (EntityPlayerMP) sender.toPlayer().getMinecraftPlayer();
+		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
 		ServerPlayerSettings ability = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
     		
         boolean infnite = false;
         boolean success = false;
         	
         if (params.length >= 1) {
-        	if (params[0].toLowerCase().equals("true")) {infnite = true; success = true;}
-        	else if (params[0].toLowerCase().equals("false")) {infnite = false; success = true;}
-        	else if (params[0].toLowerCase().equals("0")) {infnite = false; success = true;}
-        	else if (params[0].toLowerCase().equals("1")) {infnite = true; success = true;}
-        	else if (params[0].toLowerCase().equals("on")) {infnite = true; success = true;}
-        	else if (params[0].toLowerCase().equals("off")) {infnite = false; success = true;}
+        	if (params[0].equalsIgnoreCase("true")) {infnite = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("false")) {infnite = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("0")) {infnite = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("1")) {infnite = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("on")) {infnite = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("off")) {infnite = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {infnite = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {infnite = false; success = true;}
         	else {success = false;}
         }
         else {infnite = !ability.infiniteitems; success = true;}
         	
         if (success) ability.infiniteitems = infnite;
         	
-        sender.sendLangfileMessageToPlayer(success ? infnite ? "command.infiniteitems.on" : "command.infiniteitems.off" : "command.infiniteitems.failure", new Object[0]);
+        sender.sendLangfileMessage(success ? infnite ? "command.infiniteitems.on" : "command.infiniteitems.off" : "command.infiniteitems.failure", new Object[0]);
 	}
 	
 	@Override
@@ -118,5 +121,10 @@ public class CommandInfiniteitems extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

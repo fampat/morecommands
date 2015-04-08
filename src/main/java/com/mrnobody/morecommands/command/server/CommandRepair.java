@@ -1,5 +1,7 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 
 import com.mrnobody.morecommands.command.Command;
@@ -34,9 +36,9 @@ public class CommandRepair extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		String repair = "this";
-		if (params.length > 0 && params[0].toLowerCase().equals("all")) repair = "all";
+		if (params.length > 0 && params[0].equalsIgnoreCase("all")) repair = "all";
 		
-		Player player = sender.toPlayer();
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		
 		if (repair.equals("this")) {this.resetDamageOnItem(player, player.getCurrentSlot());}
 		else if (repair.equals("all")) {
@@ -76,5 +78,10 @@ public class CommandRepair extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

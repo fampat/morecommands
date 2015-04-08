@@ -4,7 +4,7 @@ command.generic.notIntegrated=Dieser Befehl ist nur auf dem integrierten Server 
 command.generic.notDedicated=Dieser Befehl ist nur auf einem dedizierten Server (Mehrspieler) erlaubt.
 command.generic.clientPlayerNotPatched=Der Patch fuer den client-seitigen Spieler (EntityClientPlayerMP) wurde nicht angewendet, weshalb dieser Befehl nicht ausgefuehrt werden kann.
 command.generic.clientCommandHandlerNotPatched=Der Patch fuer den client-seitigen Commands Handler (ClientCommandHandler) wurde nicht angewendet, weshalb dieser Befehl nicht ausgefuehrt werden kann.
-command.generic.notServer=Du hast diesen Befehl nicht als server-seitiger Spieler ausgefuehrt.
+command.generic.notServer=Dieser Befehl muss als Spieler ausgefuehrt werden oder es muss ein Spieler angegeben werden, indem man "@p[name=BLABLA,name=BLABLA2,...]" als letztes Argument angibt
 command.generic.noPlayerInfoAvailable=Fuer diesen Spieler sind keine Einstellungs-Informationen verfuegbar. Da dies die Voraussetzung fuer diesen Befehl ist, kann dieser nicht ausgefuehrt werden.
 command.generic.serverConfigManagerNotPatched=Der Patch fuer den Serverkonfigurationsmanager (ServerConfigurationManager) wurde nicht angewendet, weshalb dieser Befehl nicht ausgefuehrt werden kann.
 command.generic.clientNotModded=Du hast den More Commands Mod nicht auf deinem PC installiert (client-setige Installation), dies ist fuer diesen Befehl aber Voraussetzung. Deshalb kann dieser Befehl nicht ausgefuehrt werden.
@@ -71,7 +71,7 @@ command.clientcommands.failure=Uengultiges Argument.
 
 command.clouds.description=Schaltet Wolken an/aus
 command.clouds.example=/clouds off
-command.clouds.syntax=/clouds [TRUE|FALSE|ON|OFF|0|1]
+command.clouds.syntax=/clouds [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.clouds.videoURL=youtu.be/oSwIETW_trU
 command.clouds.on=Wolken erfolgreich eingeschaltet
 command.clouds.off=Wolken erfolgreich ausgeschaltet
@@ -130,7 +130,7 @@ command.music.playedrandom=Zufaelliger Track wird abgespielt
 
 command.output.description=Schaltet die Chat-Ausgabe dieses Mods an/aus
 command.output.example=/output off
-command.output.syntax=/output [TRUE|FALSE|ON|OFF|0|1]
+command.output.syntax=/output [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.output.videoURL=youtu.be/-8HxUQg-yDU
 command.output.on=Chat Ausgabe erfolgreich eingeschaltet
 command.output.off=Chat Ausgabe erfolgreich ausgeschaltet
@@ -259,7 +259,7 @@ command.cannon.success=Feuer!
 
 command.cheats.description=Schaltet Cheats an/aus (nur Singleplayer)
 command.cheats.example=/cheats on
-command.cheats.syntax=/cheats [TRUE|FALSE|ON|OFF|0|1]
+command.cheats.syntax=/cheats [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.cheats.videoURL=youtu.be/NBJvqfeSQXk
 command.cheats.on=Cheats erfolgreich eingeschaltet
 command.cheats.off=Cheats erfolgreich ausgeschaltet
@@ -281,7 +281,7 @@ command.cleardrops.removed=%s Item(s) entfernt
 
 command.clearwater.description=Schaltet klares Wasser an/aus
 command.clearwater.example=/clearwater on
-command.clearwater.syntax=/clearwater [TRUE|FALSE|ON|OFF|0|1]
+command.clearwater.syntax=/clearwater [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.clearwater.videoURL=youtu.be/9BSIxKG7GEE
 command.clearwater.on=Klares Wasser eingeschaltet
 command.clearwater.off=Klares Wasser ausgeschaltet
@@ -289,7 +289,7 @@ command.clearwater.failure=Ungueltiges Argument
 
 command.climb.description=Erlaubt es, jeden Block hochzuklettern
 command.climb.example=/climb on
-command.climb.syntax=/climb [TRUE|FALSE|ON|OFF|0|1]
+command.climb.syntax=/climb [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.climb.videoURL=youtu.be/oJG4DvemZhg
 command.climb.on=Klettermodus eingeschaltet
 command.climb.off=Klettermodus ausgeschaltet
@@ -321,7 +321,7 @@ command.confusesuicide.confused=%d Entities im Radius %f verwirrt
 
 command.creeper.description=Creeper werden dich nicht in die Luft jagen (aber sterben)
 command.creeper.example=/creeper off
-command.creeper.syntax=/creeper [TRUE|FALSE|ON|OFF|0|1]
+command.creeper.syntax=/creeper [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.creeper.videoURL=youtu.be/1T7bxY72H1A
 command.creeper.on=Creeper Explosionen eingeschaltet
 command.creeper.off=Creeper Explosionen ausgeschaltet
@@ -329,7 +329,7 @@ command.creeper.failure=Ungueltiges Argument
 
 command.criticalhit.description=Du wirst immer kritische Treffer machen
 command.criticalhit.example=/criticalhit on
-command.criticalhit.syntax=/criticalhit [TRUE|FALSE|ON|OFF|0|1]
+command.criticalhit.syntax=/criticalhit [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.criticalhit.videoURL=youtu.be/yRmIplVE1Vw
 command.criticalhit.on=Krititsche Treffer eingeschaltet
 command.criticalhit.off=Krititsche Treffer ausgeschaltet
@@ -344,7 +344,7 @@ command.cyclepainting.noMoreArts=Keine weiteren Bilder gefunden
 
 command.damage.description=Schaltet Schaden an/aus
 command.damage.example=/damage off
-command.damage.syntax=/damage [TRUE|FALSE|ON|OFF|0|1]
+command.damage.syntax=/damage [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.damage.videoURL=youtu.be/-4ybChnBffA
 command.damage.on=Schaden eingeschaltet
 command.damage.off=Schaden ausgeschaltet
@@ -440,7 +440,7 @@ command.endercrystal.notFound=Kein Block in Sicht
 
 command.enderman.description=Schaltet die Enderman-Block-Aufnahme an/aus
 command.enderman.example=/enderman off
-command.enderman.syntax=/enderman [TRUE|FALSE|ON|OFF|0|1]
+command.enderman.syntax=/enderman [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.enderman.videoURL=youtu.be/H8FqPoWyNR4
 command.enderman.on=Endermen werden Bloecke aufnehmen
 command.enderman.off=Endermen werden keine Bloecke aufnehmen
@@ -456,7 +456,7 @@ command.explode.notInSight=Kein Block in Sicht
 
 command.explosions.description=Schaltet Explosionen an/aus
 command.explosions.example=/explosions off
-command.explosions.syntax=/explosions [TRUE|FALSE|ON|OFF|0|1]
+command.explosions.syntax=/explosions [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.explosions.videoURL=youtu.be/0DjjgfKZr2M
 command.explosions.on=Explosionen eingeschaltet
 command.explosions.off=Explosionen ausgeschaltet
@@ -480,7 +480,7 @@ command.extinguish.extinguished=Feuer geloescht
 
 command.falldamage.description=Schaltet Fallschaden an/aus
 command.falldamage.example=/falldamage off
-command.falldamage.syntax=/falldamage [TRUE|FALSE|ON|OFF|0|1]
+command.falldamage.syntax=/falldamage [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.falldamage.videoURL=youtu.be/s7xlFROC3iI
 command.falldamage.on=Du wirst Fallschaden nehmen
 command.falldamage.off=Du wirst keine Fallschaden nehmen
@@ -488,7 +488,7 @@ command.falldamage.failure=Ungueltiges Argument
 
 command.firedamage.description=Schaltet Feuerschaden an/aus
 command.firedamage.example=/firedamage off
-command.firedamage.syntax=/firedamage [TRUE|FALSE|ON|OFF|0|1]
+command.firedamage.syntax=/firedamage [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.firedamage.videoURL=youtu.be/IfzdzbC_OlI
 command.firedamage.on=Du wirst Feuerschaden nehmen
 command.firedamage.off=Du wirst keine Feuerschaden nehmen
@@ -513,7 +513,7 @@ command.flammable.invalidUsage=Falsche Benutzung. Benutze 'help flammable' um Hi
 
 command.fly.description=Erlaubt es, zu fliegen
 command.fly.example=/fly on
-command.fly.syntax=/fly [TRUE|FALSE|ON|OFF|0|1]
+command.fly.syntax=/fly [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.fly.videoURL=youtu.be/40oaWSR3g4A
 command.fly.on=Flugmodus erfolgreich eingeschaltet
 command.fly.off=Flugmodus erfolgreich ausgeschaltet
@@ -534,8 +534,8 @@ command.freezecam.off=Freezecam erfolgreich ausgeschaltet
 command.freezecam.on=Freezecam erfolgreich eingeschaltet
 
 command.give.description=Gibt dem Spieler Items
-command.give.example=/give me stone 64
-command.give.syntax=/give <PLAYER|ME <ITEM [ANZAHL] [METADATEN]>>
+command.give.example=/give stone 64
+command.give.syntax=/give <ITEM [ANZAHL] [METADATEN]>
 command.give.videoURL=youtu.be/k884_3P5v2A
 command.give.notFound=Item nicht gefunden
 command.give.noMeta=Das angegebene Item hat keine Metadaten
@@ -551,7 +551,7 @@ command.grow.grown=Pflanzen gewachsen
 
 command.hardcore.description=Schaltet Hardcore an/aus
 command.hardcore.example=/hardcore off
-command.hardcore.syntax=/hardcore [TRUE|FALSE|ON|OFF|0|1]
+command.hardcore.syntax=/hardcore [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.hardcore.videoURL=youtu.be/5dkbCKnyQzA
 command.hardcore.on=Hardcoremodus erfolgreich eingeschaltet
 command.hardcore.off=Hardcoremodus erfolgreich ausgeschaltet
@@ -602,7 +602,7 @@ command.ignite.notInSight=Kein Block in Sicht
 
 command.infiniteitems.description=Schaltet unendliche Items an/aus
 command.infiniteitems.example=/infiniteitems on
-command.infiniteitems.syntax=/infiniteitems [TRUE|FALSE|ON|OFF|0|1]
+command.infiniteitems.syntax=/infiniteitems [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.infiniteitems.videoURL=youtu.be/mt9vCnsdhWY
 command.infiniteitems.on=Unendliche Items erfolgreich eingeschaltet
 command.infiniteitems.off=Unendliche Items erfolgreich ausgeschaltet
@@ -610,7 +610,7 @@ command.infiniteitems.failure=Ungueltiges Argument
 
 command.instantgrow.description=Laesst Pflanzen sofort wachsen
 command.instantgrow.example=/instantgrow on
-command.instantgrow.syntax=/instantgrow [TRUE|FALSE|ON|OFF|0|1]
+command.instantgrow.syntax=/instantgrow [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.instantgrow.videoURL=youtu.be/NvGkqc6pVm0
 command.instantgrow.on=Sofortiges Pflanzenwachstum erfolgreich eingeschaltet
 command.instantgrow.off=Sofortiges Pflanzenwachstum erfolgreich ausgeschaltet
@@ -618,7 +618,7 @@ command.instantgrow.failure=Ungueltiges Argument
 
 command.instantkill.description=Toetet Gegner sofort
 command.instantkill.example=/instantkill on
-command.instantkill.syntax=/instantkill [TRUE|FALSE|ON|OFF|0|1]
+command.instantkill.syntax=/instantkill [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.instantkill.videoURL=youtu.be/Uv4c_E1Jiak
 command.instantkill.on=Sofortiger Kill erfolgreich eingeschaltet
 command.instantkill.off=Sofortiger Kill erfolgreich ausgeschaltet
@@ -626,7 +626,7 @@ command.instantkill.failure=Ungueltiges Argument
 
 command.instantmine.description=Baut Bloecke sofort ab
 command.instantmine.example=/instantmine on
-command.instantmine.syntax=/instantmine [TRUE|FALSE|ON|OFF|0|1]
+command.instantmine.syntax=/instantmine [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.instantmine.videoURL=youtu.be/CbeCeGoJA1A
 command.instantmine.on=Sofortiger Abbau erfolgreich eingeschaltet
 command.instantmine.off=Sofortiger Abbau erfolgreich ausgeschaltet
@@ -644,7 +644,7 @@ command.inventory.loadSuccess=Inventar %s erfolgreich geladen
 
 command.invisible.description=Schaltet Unsichtbarkeit an/aus
 command.invisible.example=/invisible off
-command.invisible.syntax=/invisible [TRUE|FALSE|ON|OFF|0|1]
+command.invisible.syntax=/invisible [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.invisible.videoURL=youtu.be/_33DoK-QIuU
 command.invisible.on=Du bist unsichtbar
 command.invisible.off=Du bist nicht mehr unsichtbar
@@ -652,7 +652,7 @@ command.invisible.failure=Ungueltiges Argument
 
 command.itemdamage.description=Schaltet Itemschaden an/aus
 command.itemdamage.example=/itemdamage off
-command.itemdamage.syntax=/itemdamage [TRUE|FALSE|ON|OFF|0|1]
+command.itemdamage.syntax=/itemdamage [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.itemdamage.videoURL=youtu.be/kLwgzlMlF4s
 command.itemdamage.on=Itemschaden erfolgreich eingeschaltet
 command.itemdamage.off=Itemschaden erfolgreich ausgeschaltet
@@ -682,7 +682,7 @@ command.jumpheight.invalidUsage=Keine Sprunghoehe angegeben
 
 command.keepinventory.description=Laesst dich dein Inventar behalten wenn du stirbst
 command.keepinventory.example=/keepinventory on
-command.keepinventory.syntax=/keepinventory [TRUE|FALSE|ON|OFF|0|1]
+command.keepinventory.syntax=/keepinventory [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.keepinventory.videoURL=youtu.be/VM2gL2g2wUU
 command.keepinventory.on=Du wirst dein Inventar beim Sterben behalten
 command.keepinventory.off=YDu wirst dein Inventar beim Sterben nicht behalten
@@ -700,7 +700,7 @@ command.killall.invalidUsage=Falsche Benutzung. Benutze 'help killall' um Hilfe 
 
 command.killattacker.description=Toetet jeden Gegner, der dich angreift
 command.killattacker.example=/killattacker on
-command.killattacker.syntax=/killattacker [TRUE|FALSE|ON|OFF|0|1]
+command.killattacker.syntax=/killattacker [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.killattacker.videoURL=youtu.be/YUA0vBX32LA
 command.killattacker.on=Angreifer werden sterben
 command.killattacker.off=Angreifer werden nicht sterben
@@ -721,7 +721,7 @@ command.melt.molten=%d Items geschmolzen
 
 command.mobdamage.description=Schaltet Mobschaden an/aus
 command.mobdamage.example=/mobdamage off
-command.mobdamage.syntax=/mobdamage [TRUE|FALSE|ON|OFF|0|1]
+command.mobdamage.syntax=/mobdamage [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.mobdamage.videoURL=youtu.be/waanv_z_AD4
 command.mobdamage.on=Du wirst Mobschaden nehmen
 command.mobdamage.off=Du wirst keine Mobschaden nehmen
@@ -737,7 +737,7 @@ command.move.invalidUsage=Falsche Benutzung. Benutze 'help move' um Hilfe zu bek
 
 command.noclip.description=Schaltet Clipping an/aus
 command.noclip.example=/noclip off
-command.noclip.syntax=/noclip [TRUE|FALSE|ON|OFF|0|1]
+command.noclip.syntax=/noclip [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.noclip.videoURL=youtu.be/mA5WYb-IOMU
 command.noclip.mustBeFlying=Du musst fliegen, um noclip zu nutzen
 command.noclip.enabled=Noclip eingeschaltet
@@ -793,7 +793,7 @@ command.return.noLastPos=Du hast letztlich keinen Teleport durchgefuehrt
 
 command.scuba.description=Erlaubt es, unter Wasser zu atmen
 command.scuba.example=/scuba on
-command.scuba.syntax=/scuba [TRUE|FALSE|ON|OFF|0|1]
+command.scuba.syntax=/scuba [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.scuba.videoURL=youtu.be/3EopjW4GU0c
 command.scuba.on=Scuba aktiviert
 command.scuba.off=Scuba deaktiviert
@@ -869,7 +869,7 @@ command.speed.invalidUsage=Falsche Benutzung. Benutze 'help speed' um Hilfe zu b
 
 command.sprint.description=Erlaubt es, unendlich lange zu sprinten
 command.sprint.example=/sprint on
-command.sprint.syntax=/sprint [TRUE|FALSE|ON|OFF|0|1]
+command.sprint.syntax=/sprint [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.sprint.videoURL=youtu.be/qvOaMaUxNbY
 command.sprint.on=Unendliches Sprinten eingeschaltet
 command.sprint.off=Unendliches Sprinten ausgeschaltet
@@ -916,7 +916,7 @@ command.teleport.invalidParams=Es fehlen Koordinaten
 
 command.waterdamage.description=Schaltet Wasserschaden an/aus
 command.waterdamage.example=/waterdamage off
-command.waterdamage.syntax=/waterdamage [TRUE|FALSE|ON|OFF|0|1]
+command.waterdamage.syntax=/waterdamage [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.waterdamage.videoURL=youtu.be/H86RthQZrAs
 command.waterdamage.on=Du wirst Wasserschaden nehmen
 command.waterdamage.off=Du wirst keine Wasserschaden nehmen

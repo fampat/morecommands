@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -59,19 +60,21 @@ public class CommandKillattacker extends ServerCommand implements Listener<Livin
         boolean success = false;
         	
         if (params.length >= 1) {
-        	if (params[0].toLowerCase().equals("true")) {killattacker = true; success = true;}
-        	else if (params[0].toLowerCase().equals("false")) {killattacker = false; success = true;}
-        	else if (params[0].toLowerCase().equals("0")) {killattacker = false; success = true;}
-        	else if (params[0].toLowerCase().equals("1")) {killattacker = true; success = true;}
-        	else if (params[0].toLowerCase().equals("on")) {killattacker = true; success = true;}
-        	else if (params[0].toLowerCase().equals("off")) {killattacker = false; success = true;}
+        	if (params[0].equalsIgnoreCase("true")) {killattacker = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("false")) {killattacker = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("0")) {killattacker = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("1")) {killattacker = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("on")) {killattacker = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("off")) {killattacker = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {killattacker = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {killattacker = false; success = true;}
         	else {success = false;}
         }
         else {killattacker = !ability.killattacker; success = true;}
         	
         if (success) ability.killattacker = killattacker;
         	
-        sender.sendLangfileMessageToPlayer(success ? killattacker ? "command.killattacker.on" : "command.killattacker.off" : "command.killattacker.failure", new Object[0]);
+        sender.sendLangfileMessage(success ? killattacker ? "command.killattacker.on" : "command.killattacker.off" : "command.killattacker.failure", new Object[0]);
 	}
 	
 	@Override
@@ -92,5 +95,10 @@ public class CommandKillattacker extends ServerCommand implements Listener<Livin
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

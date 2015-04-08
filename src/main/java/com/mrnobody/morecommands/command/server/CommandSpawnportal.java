@@ -2,6 +2,7 @@ package com.mrnobody.morecommands.command.server;
 
 import java.lang.reflect.Method;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.boss.EntityDragon;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.MathHelper;
@@ -9,15 +10,11 @@ import net.minecraft.world.Teleporter;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.command.CommandBase.Requirement;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.util.ObfuscationHelper;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
 import com.mrnobody.morecommands.wrapper.Player;
-
-import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "spawnportal",
@@ -40,7 +37,7 @@ public class CommandSpawnportal extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		
 		if (params.length > 0) {
 			if (params[0].equalsIgnoreCase("end")) {
@@ -65,18 +62,18 @@ public class CommandSpawnportal extends ServerCommand {
 		         }
 		         catch (Throwable t) {
 		        	 t.printStackTrace();
-		        	 sender.sendLangfileMessageToPlayer("command.spawnportal.endError", new Object[0]);
+		        	 sender.sendLangfileMessage("command.spawnportal.endError", new Object[0]);
 		         }
 			}
 			else if (params[0].equalsIgnoreCase("nether")) {
 				(new Teleporter(((EntityPlayerMP) player.getMinecraftPlayer()).getServerForPlayer())).makePortal((EntityPlayerMP) player.getMinecraftPlayer());
 			}
 			else {
-				sender.sendLangfileMessageToPlayer("command.spawnportal.unknownPortal", new Object[0]);
+				sender.sendLangfileMessage("command.spawnportal.unknownPortal", new Object[0]);
 			}
 		}
 		else {
-			sender.sendLangfileMessageToPlayer("command.spawnportal.noArgs", new Object[0]);
+			sender.sendLangfileMessage("command.spawnportal.noArgs", new Object[0]);
 		}
 	}
 	
@@ -96,5 +93,10 @@ public class CommandSpawnportal extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

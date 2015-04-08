@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 
 import com.mrnobody.morecommands.command.Command;
@@ -34,7 +35,7 @@ public class CommandInstantkill extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-		EntityPlayerMP player = (EntityPlayerMP) sender.toPlayer().getMinecraftPlayer();
+		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
 		
 		ServerPlayerSettings ability = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
     		
@@ -42,19 +43,21 @@ public class CommandInstantkill extends ServerCommand {
         boolean success = false;
         	
         if (params.length >= 1) {
-        	if (params[0].toLowerCase().equals("true")) {instant = true; success = true;}
-        	else if (params[0].toLowerCase().equals("false")) {instant = false; success = true;}
-        	else if (params[0].toLowerCase().equals("0")) {instant = false; success = true;}
-        	else if (params[0].toLowerCase().equals("1")) {instant = true; success = true;}
-        	else if (params[0].toLowerCase().equals("on")) {instant = true; success = true;}
-        	else if (params[0].toLowerCase().equals("off")) {instant = false; success = true;}
+        	if (params[0].equalsIgnoreCase("true")) {instant = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("false")) {instant = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("0")) {instant = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("1")) {instant = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("on")) {instant = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("off")) {instant = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {instant = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {instant = false; success = true;}
         	else {success = false;}
         }
         else {instant = !player.getInstantkill(); success = true;}
         	
         if (success) player.setInstantkill(instant);
         	
-        sender.sendLangfileMessageToPlayer(success ? instant ? "command.instantkill.on" : "command.instantkill.off" : "command.instantkill.failure", new Object[0]);
+        sender.sendLangfileMessage(success ? instant ? "command.instantkill.on" : "command.instantkill.off" : "command.instantkill.failure", new Object[0]);
 	}
 	
 	@Override
@@ -73,5 +76,10 @@ public class CommandInstantkill extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

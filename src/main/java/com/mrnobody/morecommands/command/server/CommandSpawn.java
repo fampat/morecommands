@@ -1,18 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityLivingBase;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.command.CommandBase.Requirement;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
 import com.mrnobody.morecommands.wrapper.Entity;
-import com.mrnobody.morecommands.wrapper.Player;
-
-import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "spawn",
@@ -42,7 +39,7 @@ public class CommandSpawn extends ServerCommand {
 					list += name + " (" + Entity.getNameToIdEntityList().get(name) + "), ";
 				}
 				list = list.substring(0, list.length() - 2);
-				sender.sendStringMessageToPlayer(list);
+				sender.sendStringMessage(list);
 				return;
 			}
 			else if (params[0].equalsIgnoreCase("random")) {
@@ -52,37 +49,38 @@ public class CommandSpawn extends ServerCommand {
 				try {
 					params[0] = EntityList.getStringFromID(Integer.parseInt(params[0]));
 					if (params[0] == null) {
-						sender.sendLangfileMessageToPlayer("command.spawn.unknownEntityID", new Object[0]);
+						sender.sendLangfileMessage("command.spawn.unknownEntityID", new Object[0]);
 						return;
 					}
-				} catch (NumberFormatException nfe) {sender.sendLangfileMessageToPlayer("command.spawn.unknownEntity", new Object[0]); return;}
+				} catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.spawn.unknownEntity", new Object[0]); return;}
 			}
 			
 			int quantity = 1;
-			if (params.length > 1) {try {quantity = Integer.parseInt(params[1]);} catch (NumberFormatException nfe) {sender.sendLangfileMessageToPlayer("command.spawn.NAN", new Object[0]);}}
-			Player player = sender.toPlayer();
+			if (params.length > 1) {try {quantity = Integer.parseInt(params[1]);} catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.spawn.NAN", new Object[0]);}}
 			Coordinate coord;
 			
 			if (params.length > 4) {
 				try {coord = new Coordinate(Double.parseDouble(params[2]), Double.parseDouble(params[3]), Double.parseDouble(params[4]));}
-				catch (NumberFormatException nfe) {sender.sendLangfileMessageToPlayer("command.spawn.invalidPos", new Object[0]); return;}
+				catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.spawn.invalidPos", new Object[0]); return;}
 			}
 			else {
-				coord = player.trace(128);
+				if (sender.getMinecraftISender() instanceof EntityLivingBase)
+					coord = new Entity((EntityLivingBase) sender.getMinecraftISender()).traceBlock(128);
+				else coord = sender.getPosition();
 			
 				if (coord == null) {
-					coord = player.getPosition();
+					coord = sender.getPosition();
 					coord = new Coordinate(coord.getX() + (Math.random() * 10) - 5, coord.getY(), coord.getZ() + (Math.random() * 10) - 5);
 				}
 			}
 			
 			for (int i = 0; i < quantity; i++) {
-				if (!Entity.spawnEntity(params[0], coord, player.getWorld())) {
-					sender.sendLangfileMessageToPlayer("command.spawn.couldNotSpawn", new Object[] {params[0]});
+				if (!Entity.spawnEntity(params[0], coord, sender.getWorld())) {
+					sender.sendLangfileMessage("command.spawn.couldNotSpawn", new Object[] {params[0]});
 				}
 			}
 		}
-		else {sender.sendLangfileMessageToPlayer("command.spawn.invalidUsage", new Object[0]);}
+		else {sender.sendLangfileMessage("command.spawn.invalidUsage", new Object[0]);}
 	}
 	
 	@Override
@@ -101,5 +99,10 @@ public class CommandSpawn extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return true;
 	}
 }

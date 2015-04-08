@@ -1,6 +1,8 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
@@ -32,7 +34,7 @@ public class CommandRefill extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-		EntityPlayer player = sender.toPlayer().getMinecraftPlayer();
+		EntityPlayer player = (EntityPlayer) sender.getMinecraftISender();
 		
 		if (params.length > 0 && params[0].equalsIgnoreCase("all")) {
 			for (int i = 0; i < player.inventory.mainInventory.length; i++) {
@@ -44,10 +46,10 @@ public class CommandRefill extends ServerCommand {
 			if (player.inventory.mainInventory[player.inventory.currentItem] != null) 
 				player.inventory.mainInventory[player.inventory.currentItem].stackSize = player.inventory.mainInventory[player.inventory.currentItem].getMaxStackSize();
 			else
-				{sender.sendLangfileMessageToPlayer("command.refill.noSelection", new Object[0]); return;}
+				{sender.sendLangfileMessage("command.refill.noSelection", new Object[0]); return;}
 		}
 		
-		sender.sendLangfileMessageToPlayer("command.refill.refilled", new Object[0]);
+		sender.sendLangfileMessage("command.refill.refilled", new Object[0]);
 	}
 	
 	@Override
@@ -66,5 +68,10 @@ public class CommandRefill extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

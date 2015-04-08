@@ -1,14 +1,14 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.wrapper.Achievements;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
-
-import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "achievement",
@@ -29,7 +29,7 @@ public class CommandAchievement extends ServerCommand {
     }
     
     public void execute(CommandSender sender, String[] params) throws CommandException {
-    	Player player = sender.toPlayer();
+    	Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
     	
     	if (params.length > 0) {
     		if(params[0].equals("list")) {
@@ -47,10 +47,10 @@ public class CommandAchievement extends ServerCommand {
     				int to = PAGE_MAX * page <= nameList.length ? PAGE_MAX * page : nameList.length;
     				int from = to - PAGE_MAX;
     				
-    				for (int index = from; index < to; index++) {sender.sendStringMessageToPlayer(" - '" + nameList[index] + "'");}
-    				sender.sendLangfileMessageToPlayer("command.achievement.more", new Object[0]);
+    				for (int index = from; index < to; index++) {sender.sendStringMessage(" - '" + nameList[index] + "'");}
+    				sender.sendLangfileMessage("command.achievement.more", new Object[0]);
     			}
-    			else {sender.sendLangfileMessageToPlayer("command.achievement.invalidUsage", new Object[0]);}
+    			else {sender.sendLangfileMessage("command.achievement.invalidUsage", new Object[0]);}
     		}
     		
     		else if (params[0].equals("unlockAll")) {
@@ -60,7 +60,7 @@ public class CommandAchievement extends ServerCommand {
     					player.addAchievement((String) ach);
     				}
     			}
-    			sender.sendLangfileMessageToPlayer("command.achievement.unlockAllSuccess", new Object[0]);
+    			sender.sendLangfileMessage("command.achievement.unlockAllSuccess", new Object[0]);
     		}
     		
     		else if (params[0].equals("unlock")) {
@@ -69,18 +69,18 @@ public class CommandAchievement extends ServerCommand {
     				
     				for (Object ach : Achievements.getAchievementNameList()) {
     					if (ach instanceof String && params[1].equalsIgnoreCase((String) ach)) {
-    						if (player.addAchievement((String) (ach))) {sender.sendLangfileMessageToPlayer("command.achievement.unlockSuccess", new Object[0]);}
-    						else {sender.sendLangfileMessageToPlayer("command.achievement.parent", Achievements.getAchievementRequirement(params[1]));}
+    						if (player.addAchievement((String) (ach))) {sender.sendLangfileMessage("command.achievement.unlockSuccess", new Object[0]);}
+    						else {sender.sendLangfileMessage("command.achievement.parent", Achievements.getAchievementRequirement(params[1]));}
     						broken = true; break;
     					}
     				}
-    				if (!broken) sender.sendLangfileMessageToPlayer("command.achievement.unlockFailure", new Object[0]);
+    				if (!broken) sender.sendLangfileMessage("command.achievement.unlockFailure", new Object[0]);
     			}
-    			else {sender.sendLangfileMessageToPlayer("command.achievement.invalidUsage", new Object[0]);}
+    			else {sender.sendLangfileMessage("command.achievement.invalidUsage", new Object[0]);}
     		}
-    		else {sender.sendLangfileMessageToPlayer("command.achievement.invalidUsage", new Object[0]);}
+    		else {sender.sendLangfileMessage("command.achievement.invalidUsage", new Object[0]);}
     	}
-    	else {sender.sendLangfileMessageToPlayer("command.achievement.invalidUsage", new Object[0]);}
+    	else {sender.sendLangfileMessage("command.achievement.invalidUsage", new Object[0]);}
     }
 
 	@Override
@@ -98,5 +98,10 @@ public class CommandAchievement extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

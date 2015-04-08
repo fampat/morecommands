@@ -2,18 +2,15 @@ package com.mrnobody.morecommands.command.server;
 
 import java.util.List;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.Vec3;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.command.CommandBase.Requirement;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Entity;
-import com.mrnobody.morecommands.wrapper.Player;
-
-import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "bring",
@@ -36,39 +33,39 @@ public class CommandBring extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-		Player player = sender.toPlayer();
+		Entity entity = new Entity((net.minecraft.entity.EntityLivingBase) sender.getMinecraftISender());
 		double radius = 128.0D;
 		String entityType = "item";
 		
 		if (params.length > 1) {
 			try {radius = Double.parseDouble(params[1]);}
-			catch (NumberFormatException e) {sender.sendLangfileMessageToPlayer("command.bring.NAN", new Object[0]); return;}
+			catch (NumberFormatException e) {sender.sendLangfileMessage("command.bring.NAN", new Object[0]); return;}
 		}
 		
 		if (params.length > 0) {
 			if (Entity.getEntityClass(params[0]) == null) {
 				try {radius = Double.parseDouble(params[0]);}
-				catch (NumberFormatException e) {sender.sendLangfileMessageToPlayer("command.bring.unknownEntity", new Object[0]); return;}
+				catch (NumberFormatException e) {sender.sendLangfileMessage("command.bring.unknownEntity", new Object[0]); return;}
 			}
 			else entityType = params[0];
 		}
 				
 		if (radius > 0 && radius < 256) {
-			List<net.minecraft.entity.Entity> foundEntities = Entity.findEntities(entityType, player.getPosition(), player.getWorld(), radius);
-			Vec3 vec3D = player.getMinecraftPlayer().getLook(1.0F);
+			List<net.minecraft.entity.Entity> foundEntities = Entity.findEntities(entityType, entity.getPosition(), entity.getWorld(), radius);
+			Vec3 vec3D = entity.getMinecraftEntity().getLook(1.0F);
 					
 			double d = 5.0D;
-			double offsetY = player.getMinecraftPlayer().posY + player.getMinecraftPlayer().getEyeHeight();
-			double d1 = player.getMinecraftPlayer().posX + vec3D.xCoord * d;
+			double offsetY = entity.getMinecraftEntity().posY + entity.getMinecraftEntity().getEyeHeight();
+			double d1 = entity.getMinecraftEntity().posX + vec3D.xCoord * d;
 			double d2 = offsetY  + vec3D.yCoord * d;
-			double d3 = player.getMinecraftPlayer().posZ + vec3D.zCoord * d;
+			double d3 = entity.getMinecraftEntity().posZ + vec3D.zCoord * d;
 					
-			for (net.minecraft.entity.Entity entity : foundEntities) {
-				if (entity == player.getMinecraftPlayer()) continue;
-				entity.setPosition(d1, d2 + 0.5D, d3);
+			for (net.minecraft.entity.Entity foundEntity : foundEntities) {
+				if (foundEntity == entity.getMinecraftEntity()) continue;
+				foundEntity.setPosition(d1, d2 + 0.5D, d3);
 			}
 		}
-		else {sender.sendLangfileMessageToPlayer("command.bring.invalidRadius", new Object[0]);}
+		else {sender.sendLangfileMessage("command.bring.invalidRadius", new Object[0]);}
 	}
 	
 	@Override
@@ -87,5 +84,10 @@ public class CommandBring extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityLivingBase;
 	}
 }

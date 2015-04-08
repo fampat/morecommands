@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 
@@ -54,20 +55,21 @@ public class CommandFly extends ServerCommand implements Listener<LivingFallEven
     
 	@Override
     public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
-		
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		ServerPlayerSettings ability = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
     		
         boolean allowFly = false;
         boolean success = false;
         	
         if (params.length >= 1) {
-        	if (params[0].toLowerCase().equals("true")) {allowFly = true; success = true;}
-        	else if (params[0].toLowerCase().equals("false")) {allowFly = false; success = true;}
-        	else if (params[0].toLowerCase().equals("0")) {allowFly = false; success = true;}
-        	else if (params[0].toLowerCase().equals("1")) {allowFly = true; success = true;}
-        	else if (params[0].toLowerCase().equals("on")) {allowFly = true; success = true;}
-        	else if (params[0].toLowerCase().equals("off")) {allowFly = false; success = true;}
+        	if (params[0].equalsIgnoreCase("true")) {allowFly = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("false")) {allowFly = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("0")) {allowFly = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("1")) {allowFly = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("on")) {allowFly = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("off")) {allowFly = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {allowFly = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {allowFly = false; success = true;}
         	else {success = false;}
         }
         else {allowFly = !player.getAllowFlying(); success = true;}
@@ -79,7 +81,7 @@ public class CommandFly extends ServerCommand implements Listener<LivingFallEven
         	player.setAllowFlying(allowFly);
         }
         	
-        sender.sendLangfileMessageToPlayer(success ? player.getAllowFlying() ? "command.fly.on" : "command.fly.off" : "command.fly.failure", new Object[0]);
+        sender.sendLangfileMessage(success ? player.getAllowFlying() ? "command.fly.on" : "command.fly.off" : "command.fly.failure", new Object[0]);
     }
 	
 	@Override
@@ -100,5 +102,10 @@ public class CommandFly extends ServerCommand implements Listener<LivingFallEven
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

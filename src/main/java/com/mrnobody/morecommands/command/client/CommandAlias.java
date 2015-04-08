@@ -87,20 +87,20 @@ public class CommandAlias extends ClientCommand implements Listener<CommandEvent
 						cmd.setOriginalCommandName(command + parameters);
 					}
 					else {
-						sender.sendLangfileMessageToPlayer("command.alias.overwrite", new Object[0]);
+						sender.sendLangfileMessage("command.alias.overwrite", new Object[0]);
 						return;
 					}
 					
 					ClientPlayerSettings.aliasMapping.put(alias, command + parameters);
 					ClientPlayerSettings.saveSettings();
 					
-					sender.sendLangfileMessageToPlayer("command.alias.success", new Object[0]);
+					sender.sendLangfileMessage("command.alias.success", new Object[0]);
 				}
-				else {sender.sendLangfileMessageToPlayer("command.generic.notFound", new Object[0]);}
+				else {sender.sendLangfileMessage("command.generic.notFound", new Object[0]);}
 			}
-			else {sender.sendLangfileMessageToPlayer("command.alias.infiniteRecursion", new Object[0]);}
+			else {sender.sendLangfileMessage("command.alias.infiniteRecursion", new Object[0]);}
 		}
-		else {sender.sendLangfileMessageToPlayer("command.alias.invalidUsage", new Object[0]);}
+		else {sender.sendLangfileMessage("command.alias.invalidUsage", new Object[0]);}
 	}
 	
 	@Override

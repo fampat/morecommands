@@ -7,7 +7,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
@@ -46,7 +48,7 @@ public class CommandWaypoint extends ServerCommand {
 		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
 		
 		if (params.length > 1) {
-			Player player = sender.toPlayer();
+			Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 			
 			if (params[0].equalsIgnoreCase("set")) {
 				double x = player.getPosition().getX();
@@ -59,7 +61,7 @@ public class CommandWaypoint extends ServerCommand {
 						y = Double.parseDouble(params[3]);
 						z = Double.parseDouble(params[4]);
 					}
-					catch (NumberFormatException nfe) {sender.sendLangfileMessageToPlayer("command.waypoint.NAN", new Object[0]); return;}
+					catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.waypoint.NAN", new Object[0]); return;}
 				}
 				String name = params[1];
 				double[] data = new double[] {x, y, z, (double) player.getYaw(), (double) player.getPitch()};
@@ -67,27 +69,27 @@ public class CommandWaypoint extends ServerCommand {
 				settings.saveSettings();
 				DecimalFormat f = new DecimalFormat("#.##");
 					
-				sender.sendStringMessageToPlayer("Waypoint '" + name + "' successfully set at: "
+				sender.sendStringMessage("Waypoint '" + name + "' successfully set at: "
 						+ " X = " + f.format(x)
 						+ "; Y = " + f.format(y)
 						+ "; Z = " + f.format(z));
 			}
 			else if (params[0].equalsIgnoreCase("rem") || params[0].equalsIgnoreCase("remove") || params[0].equalsIgnoreCase("del") || params[0].equalsIgnoreCase("delete")) {
-				try {this.deleteWaypoint(settings.waypoints, params[1]); settings.saveSettings(); sender.sendLangfileMessageToPlayer("command.waypoint.removed", new Object[] {params[1]});}
-				catch (NotFoundException nfe) {sender.sendLangfileMessageToPlayer("command.waypoint.notFound", new Object[] {params[1]});}
+				try {this.deleteWaypoint(settings.waypoints, params[1]); settings.saveSettings(); sender.sendLangfileMessage("command.waypoint.removed", new Object[] {params[1]});}
+				catch (NotFoundException nfe) {sender.sendLangfileMessage("command.waypoint.notFound", new Object[] {params[1]});}
 			}
 			else if (params[0].equalsIgnoreCase("goto")) {
 				double[] data;
 				try {data = this.getWaypoint(settings.waypoints, params[1]);}
-				catch (NotFoundException nfe) {sender.sendLangfileMessageToPlayer("command.waypoint.notFound", new Object[] {params[1]}); return;}
+				catch (NotFoundException nfe) {sender.sendLangfileMessage("command.waypoint.notFound", new Object[] {params[1]}); return;}
 				
 				player.setPosition(new Coordinate(data[0], data[1], data[2]));
 				player.setYaw((float) data[3]);
 				player.setPitch((float) data[4]);
 				
-				sender.sendLangfileMessageToPlayer("command.waypoint.teleported", new Object[] {params[1]});
+				sender.sendLangfileMessage("command.waypoint.teleported", new Object[] {params[1]});
 			}
-			else {sender.sendLangfileMessageToPlayer("command.waypoint.invalidArgs", new Object[0]);}
+			else {sender.sendLangfileMessage("command.waypoint.invalidArgs", new Object[0]);}
 		}
 		else if (params.length > 0 && params[0].equalsIgnoreCase("list")) {
 			if (settings.waypoints == null) return;
@@ -99,10 +101,10 @@ public class CommandWaypoint extends ServerCommand {
 				String name = names.next();
 				double[] data = settings.waypoints.get(name);
 				
-				sender.sendStringMessageToPlayer("- '" + name + "' (X = " + f.format(data[0]) + "; Y = " + f.format(data[1]) + "; Z = " + f.format(data[2]) + ")");
+				sender.sendStringMessage("- '" + name + "' (X = " + f.format(data[0]) + "; Y = " + f.format(data[1]) + "; Z = " + f.format(data[2]) + ")");
 			}
 		}
-		else {sender.sendLangfileMessageToPlayer("command.waypoint.invalidArgs", new Object[0]);}
+		else {sender.sendLangfileMessage("command.waypoint.invalidArgs", new Object[0]);}
 	}
 
 	private void setWaypoint(Map<String, double[]> waypoints, String name, double[] data) {
@@ -135,5 +137,10 @@ public class CommandWaypoint extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }
