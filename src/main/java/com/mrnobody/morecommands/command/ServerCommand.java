@@ -33,7 +33,6 @@ public abstract class ServerCommand extends CommandBase {
 	public abstract boolean canSenderUse(ICommandSender sender);
     
     public final void execute(ICommandSender sender, String[] params) {
-    	System.out.println("sender: " + sender.getClass().getName());
     	if (MoreCommands.isModEnabled() && this.isEnabled(sender)) {
         	try{
         		if (!ServerPlayerSettings.playerSettingsMapping.containsKey(sender) && sender instanceof EntityPlayerMP)
