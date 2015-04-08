@@ -90,26 +90,4 @@ public abstract class CommandBase extends net.minecraft.command.CommandBase {
 	 * @return The permission level
 	 */
     public abstract int getPermissionLevel();
-    
-    public static final List<EntityPlayerMP> parseCommandBlockArgs(String[] args) {
-    	List<EntityPlayerMP> players = new ArrayList<EntityPlayerMP>();
-    	
-    	for (String arg : args) {
-    		if (arg.startsWith("@p[") && arg.endsWith("]")) {
-    			arg = arg.substring(3, arg.length() - 1);
-    			String[] playerNames = arg.split(",");
-    			
-    			for (String playerName : playerNames) {
-        			for (Object player : MinecraftServer.getServer().getConfigurationManager().playerEntityList) {
-        				if (!(player instanceof EntityPlayerMP)) continue;
-        				if (((EntityPlayerMP) player).getName().equals(playerName)) {
-        					players.add((EntityPlayerMP) player);
-        					break;
-        				}
-        			}
-    			}
-    		}
-    	}
-    	return players;
-    }
 }
