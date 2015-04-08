@@ -1,9 +1,11 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.item.Item;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
@@ -29,36 +31,35 @@ public class CommandGive extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-		if (params.length > 1) {
-			Player player = params[0].toLowerCase().equals("me") ? sender.toPlayer() : new Player(sender, params[0]);
-			
-			Item item = (Item)Item.itemRegistry.getObject(params[1].toLowerCase().startsWith("minecraft:") ? params[1].toLowerCase() : "minecraft:" + params[1].toLowerCase());
+		if (params.length > 0) {
+			Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+			Item item = (Item)Item.itemRegistry.getObject(params[0].toLowerCase().startsWith("minecraft:") ? params[0].toLowerCase() : "minecraft:" + params[0].toLowerCase());
 			
 			if (item == null) {
-				try {item = Item.getItemById(Integer.parseInt(params[1]));}
+				try {item = Item.getItemById(Integer.parseInt(params[0]));}
 				catch (NumberFormatException e) {}
 			}
 			
 			if (item != null) {
-				if (params.length > 2) {
-					if (params.length > 3) {
+				if (params.length > 1) {
+					if (params.length > 2) {
 						if (item.getHasSubtypes()) {
-							try {player.givePlayerItem(item, Integer.parseInt(params[2]), Integer.parseInt(params[3]));}
-							catch(NumberFormatException e) {sender.sendLangfileMessageToPlayer("command.give.notFound", new Object[0]);}
+							try {player.givePlayerItem(item, Integer.parseInt(params[1]), Integer.parseInt(params[2]));}
+							catch(NumberFormatException e) {sender.sendLangfileMessage("command.give.notFound", new Object[0]);}
 						}
-						else {sender.sendLangfileMessageToPlayer("command.give.noMeta", new Object[0]);}
+						else {sender.sendLangfileMessage("command.give.noMeta", new Object[0]);}
 					}
 					else {
-						try {player.givePlayerItem(item, Integer.parseInt(params[2])); sender.sendLangfileMessageToPlayer("command.give.success", new Object[0]);}
-						catch (NumberFormatException e) {sender.sendLangfileMessageToPlayer("command.give.notFound", new Object[0]);}
+						try {player.givePlayerItem(item, Integer.parseInt(params[1])); sender.sendLangfileMessage("command.give.success", new Object[0]);}
+						catch (NumberFormatException e) {sender.sendLangfileMessage("command.give.notFound", new Object[0]);}
 					}
 				}
-				else {player.givePlayerItem(item); sender.sendLangfileMessageToPlayer("command.give.success", new Object[0]);}
+				else {player.givePlayerItem(item); sender.sendLangfileMessage("command.give.success", new Object[0]);}
 			}
-			else {sender.sendLangfileMessageToPlayer("command.give.notFound", new Object[0]);}
+			else {sender.sendLangfileMessage("command.give.notFound", new Object[0]);}
 		}
 		else {
-			sender.sendLangfileMessageToPlayer("command.give.invalidUsage", new Object[0]);
+			sender.sendLangfileMessage("command.give.invalidUsage", new Object[0]);
 		}
 	}
 	
@@ -78,5 +79,10 @@ public class CommandGive extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

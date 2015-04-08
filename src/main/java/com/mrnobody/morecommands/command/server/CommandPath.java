@@ -2,7 +2,9 @@ package com.mrnobody.morecommands.command.server;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockAir;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -14,7 +16,6 @@ import com.mrnobody.morecommands.handler.Listener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
 import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
@@ -39,7 +40,7 @@ public class CommandPath extends ServerCommand implements Listener<TickEvent> {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		EntityPlayer playerEntity = sender.toPlayer().getMinecraftPlayer();
+		EntityPlayer playerEntity = (EntityPlayer) sender.getMinecraftISender();
 		
 		if (params.length > 0) {
 			if (params[0].toLowerCase().startsWith("minecraft:")) params[0] = params[0].substring("minecraft:".length());
@@ -57,7 +58,7 @@ public class CommandPath extends ServerCommand implements Listener<TickEvent> {
 				if (Block.getBlockFromName("minecraft:" + blockID) != null) 
 					block = Block.getBlockFromName("minecraft:" + blockID);
 				else {
-					sender.sendLangfileMessageToPlayer("command.path.unknownBlock", new Object[] {block});
+					sender.sendLangfileMessage("command.path.unknownBlock", new Object[] {block});
 					return;
 				}
 			}
@@ -65,13 +66,13 @@ public class CommandPath extends ServerCommand implements Listener<TickEvent> {
 			if (metaID != null) {
 				try {meta = Integer.parseInt(metaID);} 
 				catch (NumberFormatException nfe) {
-					sender.sendLangfileMessageToPlayer("command.path.invalidMeta", new Object[0]);
+					sender.sendLangfileMessage("command.path.invalidMeta", new Object[0]);
 					return;
 				}
 			}
 			
 			if (block == null || block instanceof BlockAir) {
-				sender.sendLangfileMessageToPlayer("command.path.unknownBlock", new Object[] {block.getUnlocalizedName()});
+				sender.sendLangfileMessage("command.path.unknownBlock", new Object[] {block.getUnlocalizedName()});
 				return;
 			}
 			
@@ -80,9 +81,9 @@ public class CommandPath extends ServerCommand implements Listener<TickEvent> {
 			if (params.length > 1)  {
 				try {
 					if (Integer.parseInt(params[1]) > 0 && Integer.parseInt(params[1]) <= 50) size = Integer.parseInt(params[1]);
-					else sender.sendLangfileMessageToPlayer("command.path.invalidRadius", new Object[0]);}
+					else sender.sendLangfileMessage("command.path.invalidRadius", new Object[0]);}
 				catch (NumberFormatException nfe) {
-					sender.sendLangfileMessageToPlayer("command.path.invalidRadius", new Object[0]);
+					sender.sendLangfileMessage("command.path.invalidRadius", new Object[0]);
 					return;
 				}
 			}
@@ -91,17 +92,17 @@ public class CommandPath extends ServerCommand implements Listener<TickEvent> {
 				ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(playerEntity);
 				int[] plrData = settings.pathData;
 				if(plrData[0] == Block.getIdFromBlock(block) && plrData[1] == meta && plrData[2] == size) {
-					sender.sendLangfileMessageToPlayer("command.path.noChange", new Object[0]);
+					sender.sendLangfileMessage("command.path.noChange", new Object[0]);
 					return;
 				}
-				sender.sendLangfileMessageToPlayer("command.path.enabled", new Object[0]);
+				sender.sendLangfileMessage("command.path.enabled", new Object[0]);
 				settings.pathData = new int[] {Block.getIdFromBlock(block), meta, size, -1, -1, -1};
 			}
 		} else if (ServerPlayerSettings.playerSettingsMapping.containsKey(playerEntity) && ServerPlayerSettings.playerSettingsMapping.get(playerEntity).pathData[0] > -1) {
-			sender.sendLangfileMessageToPlayer("command.path.disabled", new Object[0]);
+			sender.sendLangfileMessage("command.path.disabled", new Object[0]);
 			ServerPlayerSettings.playerSettingsMapping.get(playerEntity).pathData[0] = -1;
 		} else {
-			sender.sendLangfileMessageToPlayer("command.path.invalidUsage", new Object[0]);
+			sender.sendLangfileMessage("command.path.invalidUsage", new Object[0]);
 			return;
 		}
 	}
@@ -111,9 +112,9 @@ public class CommandPath extends ServerCommand implements Listener<TickEvent> {
 		if (e instanceof TickEvent.PlayerTickEvent) {
 			TickEvent.PlayerTickEvent event = (TickEvent.PlayerTickEvent) e;
 			
-			if (ServerPlayerSettings.playerSettingsMapping.containsKey(event.player)) {
+			if (event.player instanceof EntityPlayerMP && ServerPlayerSettings.playerSettingsMapping.containsKey(event.player)) {
 				int[] plrData = ServerPlayerSettings.playerSettingsMapping.get(event.player).pathData;
-				this.makePath(new Player(event.player), plrData);
+				this.makePath(new Player((EntityPlayerMP) event.player), plrData);
 			}
 			else return;
 		}
@@ -121,7 +122,7 @@ public class CommandPath extends ServerCommand implements Listener<TickEvent> {
 	
 	private void makePath(Player player, int[] data) {
 		if (data[0] >= 0) {
-			Coordinate position = player.getPosition();
+			BlockPos position = player.getPosition();
 			int x = MathHelper.floor_double(position.getX());
 			int y = MathHelper.floor_double(position.getY());
 			int z = MathHelper.floor_double(position.getZ());
@@ -170,5 +171,10 @@ public class CommandPath extends ServerCommand implements Listener<TickEvent> {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

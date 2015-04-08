@@ -1,12 +1,13 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.util.BlockPos;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
 import com.mrnobody.morecommands.wrapper.Entity;
-import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
 		name = "endercrystal",
@@ -29,11 +30,11 @@ public class CommandEndercrystal extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
-		Coordinate spawn = player.trace(128.0D);
+		Entity entity = new Entity((net.minecraft.entity.Entity) sender.getMinecraftISender());
+		BlockPos spawn = entity.traceBlock(128.0D);
 		
-		if (spawn == null) sender.sendLangfileMessageToPlayer("command.endercrystal.notFound", new Object[0]);
-		else Entity.spawnEntity("EnderCrystal", spawn, player.getWorld());
+		if (spawn == null) sender.sendLangfileMessage("command.endercrystal.notFound", new Object[0]);
+		else Entity.spawnEntity("EnderCrystal", spawn, entity.getWorld());
 	}
 	
 	@Override
@@ -52,5 +53,10 @@ public class CommandEndercrystal extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof net.minecraft.entity.Entity;
 	}
 }

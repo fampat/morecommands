@@ -1,12 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.world.biome.BiomeGenBase;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
 		name = "biome",
@@ -29,12 +29,10 @@ public class CommandBiome extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
-		
-		BiomeGenBase biome = player.getWorld().getMinecraftWorld().getBiomeGenForCoords(player.getPosition().toBlockPos());
+		BiomeGenBase biome = sender.getWorld().getMinecraftWorld().getBiomeGenForCoords(sender.getPosition());
 	
 		if (params.length > 0) {
-			if (params[0].equalsIgnoreCase("info")) sender.sendLangfileMessageToPlayer("command.biome.info", new Object[] {biome.biomeName, biome.biomeID});
+			if (params[0].equalsIgnoreCase("info")) sender.sendLangfileMessage("command.biome.info", new Object[] {biome.biomeName, biome.biomeID});
 			else if (params[0].equalsIgnoreCase("list")) {
 				BiomeGenBase[] biomeList = BiomeGenBase.getBiomeGenArray();
     			int page = 1;
@@ -50,15 +48,15 @@ public class CommandBiome extends ServerCommand {
     				int to = PAGE_MAX * page <= biomeList.length ? PAGE_MAX * page : biomeList.length;
     				int from = to - PAGE_MAX;
     				
-    				try{for (int index = from; index < to; index++) {sender.sendStringMessageToPlayer(" - '" + biomeList[index].biomeName + "' " + " (ID " + biomeList[index].biomeID + ")");}}
+    				try{for (int index = from; index < to; index++) {sender.sendStringMessage(" - '" + biomeList[index].biomeName + "' " + " (ID " + biomeList[index].biomeID + ")");}}
     				catch (Exception ex) {}
-    				sender.sendLangfileMessageToPlayer("command.biome.more", new Object[0]);
+    				sender.sendLangfileMessage("command.biome.more", new Object[0]);
     			}
-    			else {sender.sendLangfileMessageToPlayer("command.biome.invalidUsage", new Object[0]);}
+    			else {sender.sendLangfileMessage("command.biome.invalidUsage", new Object[0]);}
 			}
-			else {sender.sendLangfileMessageToPlayer("command.biome.invalidUsage", new Object[0]);}
+			else {sender.sendLangfileMessage("command.biome.invalidUsage", new Object[0]);}
 		}
-		else {sender.sendLangfileMessageToPlayer("command.biome.invalidUsage", new Object[0]);}
+		else {sender.sendLangfileMessage("command.biome.invalidUsage", new Object[0]);}
 	}
 	
 	@Override
@@ -77,5 +75,10 @@ public class CommandBiome extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 0;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return true;
 	}
 }

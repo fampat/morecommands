@@ -1,11 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChatComponentText;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.core.Patcher;
 import com.mrnobody.morecommands.util.LanguageManager;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
@@ -38,12 +39,14 @@ public class CommandOutput extends ServerCommand {
     	boolean success = false;
     	
     	if (params.length >= 1) {
-    		if (params[0].toLowerCase().equals("true")) {output = true; success = true;}
-    		else if (params[0].toLowerCase().equals("false")) {output = false; success = true;}
-    		else if (params[0].toLowerCase().equals("0")) {output = false; success = true;}
-    		else if (params[0].toLowerCase().equals("1")) {output = true; success = true;}
-    		else if (params[0].toLowerCase().equals("on")) {output = true; success = true;}
-    		else if (params[0].toLowerCase().equals("off")) {output = false; success = true;}
+    		if (params[0].equalsIgnoreCase("true")) {output = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("false")) {output = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("0")) {output = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("1")) {output = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("on")) {output = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("off")) {output = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {output = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {output = false; success = true;}
     		else {success = false;}
     	}
     	else {output = !settings.output; success = true;}
@@ -69,5 +72,10 @@ public class CommandOutput extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 0;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

@@ -5,12 +5,13 @@ import java.util.Iterator;
 import java.util.Map;
 
 import net.minecraft.block.Block;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
 		name = "slippery",
@@ -43,8 +44,6 @@ public class CommandSlippery extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
-		
 		if (params.length > 1) {
 			Block block = (Block) Block.blockRegistry.getObject(params[0].toLowerCase().startsWith("minecraft:") ? params[0].toLowerCase() : "minecraft:" + params[0].toLowerCase());
 			
@@ -60,21 +59,21 @@ public class CommandSlippery extends ServerCommand {
 				if (params[1].equalsIgnoreCase("reset")) reset = true;
 				else {
 					try {slipperiness = Float.parseFloat(params[1]);}
-					catch (NumberFormatException nfe) {sender.sendLangfileMessageToPlayer("command.slippery.invalidArg", new Object[0]); return;}
+					catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.slippery.invalidArg", new Object[0]); return;}
 				}
 				
 				if (!reset) {
 					block.slipperiness = slipperiness;
-					sender.sendLangfileMessageToPlayer("command.slippery.success", new Object[0]);
+					sender.sendLangfileMessage("command.slippery.success", new Object[0]);
 				}
 				else {
 					block.slipperiness = this.slipperies.get(block);
-					sender.sendLangfileMessageToPlayer("command.slippery.reset", new Object[0]);
+					sender.sendLangfileMessage("command.slippery.reset", new Object[0]);
 				}
 			}
-			else sender.sendLangfileMessageToPlayer("command.slippery.notFound", new Object[0]);
+			else sender.sendLangfileMessage("command.slippery.notFound", new Object[0]);
 		}
-		else sender.sendLangfileMessageToPlayer("command.slippery.invalidUsage", new Object[0]);
+		else sender.sendLangfileMessage("command.slippery.invalidUsage", new Object[0]);
 	}
 	
 	@Override
@@ -93,5 +92,10 @@ public class CommandSlippery extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return true;
 	}
 }

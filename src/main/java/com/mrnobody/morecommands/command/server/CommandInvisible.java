@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
@@ -31,19 +32,21 @@ public class CommandInvisible extends ServerCommand {
     	boolean success = false;
     	
     	if (params.length >= 1) {
-    		if (params[0].toLowerCase().equals("true")) {invisible = true; success = true;}
-    		else if (params[0].toLowerCase().equals("false")) {invisible = false; success = true;}
-    		else if (params[0].toLowerCase().equals("0")) {invisible = false; success = true;}
-    		else if (params[0].toLowerCase().equals("1")) {invisible = true; success = true;}
-    		else if (params[0].toLowerCase().equals("on")) {invisible = true; success = true;}
-    		else if (params[0].toLowerCase().equals("off")) {invisible = false; success = true;}
+    		if (params[0].equalsIgnoreCase("true")) {invisible = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("false")) {invisible = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("0")) {invisible = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("1")) {invisible = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("on")) {invisible = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("off")) {invisible = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {invisible = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {invisible = false; success = true;}
     		else {success = false;}
     	}
     	else {invisible = !((EntityPlayerMP) sender.getMinecraftISender()).isInvisible(); success = true;}
     	
     	if (success) ((EntityPlayerMP) sender.getMinecraftISender()).setInvisible(invisible);
     	
-    	sender.sendLangfileMessageToPlayer(success ? invisible ? "command.invisible.on" : "command.invisible.off" : "command.invisible.failure", new Object[0]);
+    	sender.sendLangfileMessage(success ? invisible ? "command.invisible.on" : "command.invisible.off" : "command.invisible.failure", new Object[0]);
 	}
 	
 	@Override
@@ -62,5 +65,10 @@ public class CommandInvisible extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

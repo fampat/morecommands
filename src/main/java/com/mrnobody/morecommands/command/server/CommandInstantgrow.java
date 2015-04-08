@@ -9,6 +9,7 @@ import net.minecraft.block.BlockCrops;
 import net.minecraft.block.BlockReed;
 import net.minecraft.block.BlockSapling;
 import net.minecraft.block.BlockStem;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
@@ -18,6 +19,7 @@ import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
 import com.mrnobody.morecommands.handler.Listener;
+import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.util.ReflectionHelper;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
@@ -35,7 +37,6 @@ public class CommandInstantgrow extends ServerCommand implements Listener<PlaceE
 	public CommandInstantgrow() {
 		EventHandler.BLOCK_PLACEMENT.getHandler().register(this);
 	}
-	
 
 	@Override
 	public void onEvent(PlaceEvent event) {
@@ -61,19 +62,21 @@ public class CommandInstantgrow extends ServerCommand implements Listener<PlaceE
         boolean success = false;
         	
         if (params.length >= 1) {
-        	if (params[0].toLowerCase().equals("true")) {instant = true; success = true;}
-        	else if (params[0].toLowerCase().equals("false")) {instant = false; success = true;}
-        	else if (params[0].toLowerCase().equals("0")) {instant = false; success = true;}
-        	else if (params[0].toLowerCase().equals("1")) {instant = true; success = true;}
-        	else if (params[0].toLowerCase().equals("on")) {instant = true; success = true;}
-        	else if (params[0].toLowerCase().equals("off")) {instant = false; success = true;}
+        	if (params[0].equalsIgnoreCase("true")) {instant = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("false")) {instant = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("0")) {instant = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("1")) {instant = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("on")) {instant = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("off")) {instant = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {instant = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {instant = false; success = true;}
         	else {success = false;}
         }
         else {instant = !ability.instantgrow; success = true;}
         	
         if (success) ability.instantgrow = instant;
         	
-        sender.sendLangfileMessageToPlayer(success ? instant ? "command.instantgrow.on" : "command.instantgrow.off" : "command.instantgrow.failure", new Object[0]);
+        sender.sendLangfileMessage(success ? instant ? "command.instantgrow.on" : "command.instantgrow.off" : "command.instantgrow.failure", new Object[0]);
 	}
 	
 	private void growPlant(World world, int x, int y, int z, Random rand) {
@@ -155,5 +158,10 @@ public class CommandInstantgrow extends ServerCommand implements Listener<PlaceE
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

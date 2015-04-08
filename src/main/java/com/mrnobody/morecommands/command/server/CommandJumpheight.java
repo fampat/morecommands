@@ -1,6 +1,7 @@
 package com.mrnobody.morecommands.command.server;
 
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
@@ -18,7 +19,6 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		videoURL = "command.jumpheight.videoURL"
 		)
 public class CommandJumpheight extends ServerCommand {
-
 	@Override
 	public void unregisterFromHandler() {}
 
@@ -37,14 +37,14 @@ public class CommandJumpheight extends ServerCommand {
 		double gravity;
 		
 		if (params.length > 0) {
-			if (params[0].equalsIgnoreCase("reset")) {gravity = 1.0D; sender.sendLangfileMessageToPlayer("command.jumpheight.reset", new Object[0]);}
+			if (params[0].equalsIgnoreCase("reset")) {gravity = 1.0D; sender.sendLangfileMessage("command.jumpheight.reset", new Object[0]);}
 			else {
 				try {
 					gravity = Double.parseDouble(params[0]);
-					sender.sendLangfileMessageToPlayer("command.jumpheight.success", new Object[0]);
+					sender.sendLangfileMessage("command.jumpheight.success", new Object[0]);
 				}
 				catch (NumberFormatException nfe) {
-					sender.sendLangfileMessageToPlayer("command.jumpheight.NAN", new Object[0]);
+					sender.sendLangfileMessage("command.jumpheight.NAN", new Object[0]);
 					return;
 				}
 			}
@@ -54,7 +54,7 @@ public class CommandJumpheight extends ServerCommand {
 			MoreCommands.getMoreCommands().getNetwork().sendTo(packet, (EntityPlayerMP) sender.getMinecraftISender());
 		}
 		else {
-			sender.sendLangfileMessageToPlayer("command.jumpheight.invalidUsage", new Object[0]);
+			sender.sendLangfileMessage("command.jumpheight.invalidUsage", new Object[0]);
 		}
 	}
 
@@ -71,5 +71,10 @@ public class CommandJumpheight extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

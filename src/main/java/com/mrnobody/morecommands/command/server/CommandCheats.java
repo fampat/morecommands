@@ -1,6 +1,7 @@
 package com.mrnobody.morecommands.command.server;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
@@ -16,7 +17,6 @@ import com.mrnobody.morecommands.wrapper.Player;
 		videoURL = "command.cheats.videoURL"
 		)
 public class CommandCheats extends ServerCommand {
-
 	@Override
 	public boolean canCommandSenderUse(ICommandSender sender) {return true;}
 	
@@ -32,25 +32,25 @@ public class CommandCheats extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-    	Player player = sender.toPlayer();
-    	
     	boolean allowCheats = false;
     	boolean success = false;
     	
     	if (params.length >= 1) {
-    		if (params[0].toLowerCase().equals("true")) {allowCheats = true; success = true;}
-    		else if (params[0].toLowerCase().equals("false")) {allowCheats = false; success = true;}
-    		else if (params[0].toLowerCase().equals("0")) {allowCheats = false; success = true;}
-    		else if (params[0].toLowerCase().equals("1")) {allowCheats = true; success = true;}
-    		else if (params[0].toLowerCase().equals("on")) {allowCheats = true; success = true;}
-    		else if (params[0].toLowerCase().equals("off")) {allowCheats = false; success = true;}
+    		if (params[0].equalsIgnoreCase("true")) {allowCheats = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("false")) {allowCheats = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("0")) {allowCheats = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("1")) {allowCheats = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("on")) {allowCheats = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("off")) {allowCheats = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {allowCheats = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {allowCheats = false; success = true;}
     		else {success = false;}
     	}
-    	else {allowCheats = !player.getWorld().isCheats(); success = true;}
+    	else {allowCheats = !sender.getWorld().isCheats(); success = true;}
     	
-    	if (success) {player.getWorld().setCheats(allowCheats);}
+    	if (success) {sender.getWorld().setCheats(allowCheats);}
     	
-    	sender.sendLangfileMessageToPlayer(success ? player.getWorld().isCheats() ? "command.cheats.on" : "command.cheats.off" : "command.cheats.failure", new Object[0]);
+    	sender.sendLangfileMessage(success ? sender.getWorld().isCheats() ? "command.cheats.on" : "command.cheats.off" : "command.cheats.failure", new Object[0]);
 	}
 	
 	@Override
@@ -69,5 +69,10 @@ public class CommandCheats extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 0;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return true;
 	}
 }

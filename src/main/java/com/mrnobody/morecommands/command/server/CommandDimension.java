@@ -1,5 +1,8 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
@@ -31,7 +34,7 @@ public class CommandDimension extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
 		if (params.length > 0) {
-			Player player = sender.toPlayer();
+			Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 			boolean error = false;
 		
 			if (params[0].equalsIgnoreCase("normal") || params[0].equalsIgnoreCase("surface") || params[0].equalsIgnoreCase(String.valueOf(this.DIMENSION_SURFACE))) player.changeDimension(this.DIMENSION_SURFACE);
@@ -39,9 +42,9 @@ public class CommandDimension extends ServerCommand {
 			else if (params[0].equalsIgnoreCase("end") || params[0].equalsIgnoreCase(String.valueOf(this.DIMENSION_END))) player.changeDimension(this.DIMENSION_END);
 			else error = true;
 			
-			if (!error) sender.sendLangfileMessageToPlayer("command.dimension.changed", new Object[0]);
-			else sender.sendLangfileMessageToPlayer("command.dimension.unknown", new Object[0]);
-		} else sender.sendLangfileMessageToPlayer("command.dimension.notSpecified", new Object[0]);
+			if (!error) sender.sendLangfileMessage("command.dimension.changed", new Object[0]);
+			else sender.sendLangfileMessage("command.dimension.unknown", new Object[0]);
+		} else sender.sendLangfileMessage("command.dimension.notSpecified", new Object[0]);
 	}
 	
 	@Override
@@ -60,5 +63,10 @@ public class CommandDimension extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

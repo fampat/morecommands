@@ -1,14 +1,16 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.InventoryLargeChest;
 import net.minecraft.tileentity.TileEntityChest;
+import net.minecraft.util.BlockPos;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
 import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
@@ -32,12 +34,12 @@ public class CommandDropstore extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-		Player player = sender.toPlayer();
-		Coordinate coord1 = new Coordinate(player.getPosition().getX() + 1, player.getPosition().getY(), player.getPosition().getZ());
-		Coordinate coord2 = new Coordinate(player.getPosition().getX() + 1, player.getPosition().getY(), player.getPosition().getZ() + 1);
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		BlockPos coord1 = new BlockPos(player.getPosition().getX() + 1, player.getPosition().getY(), player.getPosition().getZ());
+		BlockPos coord2 = new BlockPos(player.getPosition().getX() + 1, player.getPosition().getY(), player.getPosition().getZ() + 1);
 		
-		player.getWorld().setBlock(coord1.toBlockPos(), Blocks.chest);
-		player.getWorld().setBlock(coord2.toBlockPos(), Blocks.chest);
+		player.getWorld().setBlock(coord1, Blocks.chest);
+		player.getWorld().setBlock(coord2, Blocks.chest);
 		
 		InventoryLargeChest chestInv = new InventoryLargeChest("Large chest", (TileEntityChest) player.getWorld().getTileEntity(coord1), (TileEntityChest) player.getWorld().getTileEntity(coord2));
 	
@@ -52,7 +54,7 @@ public class CommandDropstore extends ServerCommand {
            player.getMinecraftPlayer().inventory.armorInventory[i] = null;
         }
         
-        sender.sendLangfileMessageToPlayer("command.dropstore.stored", new Object[0]);
+        sender.sendLangfileMessage("command.dropstore.stored", new Object[0]);
 	}
 	
 	@Override
@@ -71,5 +73,10 @@ public class CommandDropstore extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

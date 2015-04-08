@@ -2,7 +2,9 @@ package com.mrnobody.morecommands.command.server;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFlowerPot;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -10,8 +12,6 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.fml.common.registry.GameData;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
@@ -39,20 +39,20 @@ public class CommandPick extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
-		MovingObjectPosition pick = player.tracePath(128.0D, 0.0D, 1.0F);
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		MovingObjectPosition pick = player.rayTrace(128.0D, 0.0D, 1.0F);
 		int amount = 64;
 		
 		if (params.length > 0) {
 			try {amount = Integer.parseInt(params[0]);}
-			catch (NumberFormatException nfe) {sender.sendLangfileMessageToPlayer("command.pick.NAN", new Object[0]); return;}
+			catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.pick.NAN", new Object[0]); return;}
 		}
 		
 		if (pick != null) {
-			if (!this.onPickBlock(pick, player.getMinecraftPlayer(), player.getMinecraftPlayer().worldObj, amount))
-				sender.sendLangfileMessageToPlayer("command.pick.cantgive", new Object[0]);
+			if (!this.onPickBlock(pick, player.getMinecraftPlayer(), player.getWorld().getMinecraftWorld(), amount))
+				sender.sendLangfileMessage("command.pick.cantgive", new Object[0]);
 		}
-		else sender.sendLangfileMessageToPlayer("command.pick.notInSight", new Object[0]);
+		else sender.sendLangfileMessage("command.pick.notInSight", new Object[0]);
 	}
 	
 	@Override
@@ -144,4 +144,9 @@ public class CommandPick extends ServerCommand {
         Block result = item instanceof ItemBlock && !(block instanceof BlockFlowerPot) ? Block.getBlockFromItem(item) : block;
         return new ItemStack(item, 1, result.getDamageValue(world, pos));
     }
+    
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
+	}
 }

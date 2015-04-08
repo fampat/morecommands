@@ -49,7 +49,7 @@ public class CommandMacro extends ClientCommand {
 				for (File f : macroDir.listFiles()) {
 					if (f.getName().equalsIgnoreCase(name) && f.isFile()) {
 						f.delete();
-						sender.sendLangfileMessageToPlayer("command.macro.deleteSuccess", f.getName());
+						sender.sendLangfileMessage("command.macro.deleteSuccess", f.getName());
 						break;
 					}
 				}
@@ -77,23 +77,23 @@ public class CommandMacro extends ClientCommand {
 						
 						br.close();
 					}
-					catch (IOException ex) {ex.printStackTrace(); sender.sendLangfileMessageToPlayer("command.macro.executeError", new Object[0]);}
+					catch (IOException ex) {ex.printStackTrace(); sender.sendLangfileMessage("command.macro.executeError", new Object[0]);}
 				}
-				else sender.sendLangfileMessageToPlayer("command.macro.notFound", params[1]);
+				else sender.sendLangfileMessage("command.macro.notFound", params[1]);
 			}
 			else if ((params[0].equalsIgnoreCase("add") || params[0].equalsIgnoreCase("new") || params[0].equalsIgnoreCase("create") || params[0].equalsIgnoreCase("edit")) && params.length > 1) {
 				File macro = new File(Reference.getMacroDir(), params[1] + ".cfg");
 				
 				if (macro.exists() && macro.isFile()) {
 					if (params[0].equalsIgnoreCase("add") || params[0].equalsIgnoreCase("new") || params[0].equalsIgnoreCase("create") || params[0].equalsIgnoreCase("add")) {
-						sender.sendLangfileMessageToPlayer("command.macro.exists", params[1]);
+						sender.sendLangfileMessage("command.macro.exists", params[1]);
 						return;
 					}
 					macro.delete();
 				}
 				
 				try {macro.createNewFile();}
-				catch (IOException ex) {ex.printStackTrace(); sender.sendLangfileMessageToPlayer("command.macro.writeError", new Object[0]); return;}
+				catch (IOException ex) {ex.printStackTrace(); sender.sendLangfileMessage("command.macro.writeError", new Object[0]); return;}
 				
 				if (params.length > 2) {
 					String commandlist = "";
@@ -110,14 +110,14 @@ public class CommandMacro extends ClientCommand {
 						
 						bw.close();
 					}
-					catch (IOException ex) {ex.printStackTrace(); sender.sendLangfileMessageToPlayer("command.macro.writeError", new Object[0]);}
+					catch (IOException ex) {ex.printStackTrace(); sender.sendLangfileMessage("command.macro.writeError", new Object[0]);}
 				}
 				
-				sender.sendLangfileMessageToPlayer("command.macro.createSuccess", macro.getName());
+				sender.sendLangfileMessage("command.macro.createSuccess", macro.getName());
 			}
-			else sender.sendLangfileMessageToPlayer("command.macro.invalidUsage", new Object[0]);
+			else sender.sendLangfileMessage("command.macro.invalidUsage", new Object[0]);
 		}
-		else sender.sendLangfileMessageToPlayer("command.macro.invalidUsage", new Object[0]);
+		else sender.sendLangfileMessage("command.macro.invalidUsage", new Object[0]);
 	}
 
 	@Override

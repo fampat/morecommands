@@ -1,9 +1,11 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
@@ -28,7 +30,7 @@ public class CommandDestroy extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		EntityPlayer player = sender.toPlayer().getMinecraftPlayer();
+		EntityPlayer player = (EntityPlayer) sender.getMinecraftISender();
 		
 		if (params.length > 0 && params[0].equalsIgnoreCase("all")) {
 			for (int i = 0; i < player.inventory.mainInventory.length; i++) {
@@ -39,7 +41,7 @@ public class CommandDestroy extends ServerCommand {
 			player.inventory.mainInventory[player.inventory.currentItem] = null;
 		}
 		
-		sender.sendLangfileMessageToPlayer("command.destroy.destroyed", new Object[0]);
+		sender.sendLangfileMessage("command.destroy.destroyed", new Object[0]);
 	}
 	
 	@Override
@@ -58,5 +60,10 @@ public class CommandDestroy extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 0;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

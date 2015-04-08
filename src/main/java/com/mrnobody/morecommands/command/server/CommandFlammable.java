@@ -6,13 +6,13 @@ import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFire;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.init.Blocks;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
 		name = "flammable",
@@ -56,8 +56,6 @@ public class CommandFlammable extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
-		
 		if (params.length > 0) {
 			Block block = (Block) Block.blockRegistry.getObject(params[0].toLowerCase().startsWith("minecraft:") ? params[0].toLowerCase() : "minecraft:" + params[0].toLowerCase());
 			
@@ -74,27 +72,27 @@ public class CommandFlammable extends ServerCommand {
 					if (params[1].equalsIgnoreCase("reset")) reset = true;
 					else {
 						try {encouragement = Integer.parseInt(params[1]);}
-						catch (NumberFormatException nfe) {sender.sendLangfileMessageToPlayer("command.flammable.invalidArg", new Object[0]); return;}
+						catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.flammable.invalidArg", new Object[0]); return;}
 					}
 				}
 				
 				if (!reset && params.length > 2) {
 					try {flammibility = Integer.parseInt(params[2]);}
-					catch (NumberFormatException nfe) {sender.sendLangfileMessageToPlayer("command.flammable.invalidArg", new Object[0]); return;}
+					catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.flammable.invalidArg", new Object[0]); return;}
 				}
 				
 				if (!reset) {
 					Blocks.fire.setFireInfo(block, encouragement, flammibility);
-					sender.sendLangfileMessageToPlayer("command.flammable.success", new Object[0]);
+					sender.sendLangfileMessage("command.flammable.success", new Object[0]);
 				}
 				else {
 					Blocks.fire.setFireInfo(block, this.flammables.get(block).encouragement, this.flammables.get(block).flammibility);
-					sender.sendLangfileMessageToPlayer("command.flammable.reset", new Object[0]);
+					sender.sendLangfileMessage("command.flammable.reset", new Object[0]);
 				}
 			}
-			else sender.sendLangfileMessageToPlayer("command.flammable.notFound", new Object[0]);
+			else sender.sendLangfileMessage("command.flammable.notFound", new Object[0]);
 		}
-		else sender.sendLangfileMessageToPlayer("command.flammable.invalidUsage", new Object[0]);
+		else sender.sendLangfileMessage("command.flammable.invalidUsage", new Object[0]);
 	}
 	
 	@Override
@@ -113,5 +111,10 @@ public class CommandFlammable extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return true;
 	}
 }

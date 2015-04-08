@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.event.world.ExplosionEvent;
@@ -8,7 +9,6 @@ import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
 import com.mrnobody.morecommands.handler.Listener;
-import com.mrnobody.morecommands.util.GlobalSettings;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -58,19 +58,21 @@ public class CommandCreeper extends ServerCommand implements Listener<ExplosionE
         boolean success = false;
     		
         if (params.length >= 1) {
-        	if (params[0].toLowerCase().equals("true")) {allowExplosion = true; success = true;}
-        	else if (params[0].toLowerCase().equals("false")) {allowExplosion = false; success = true;}
-        	else if (params[0].toLowerCase().equals("0")) {allowExplosion = false; success = true;}
-        	else if (params[0].toLowerCase().equals("1")) {allowExplosion = true; success = true;}
-        	else if (params[0].toLowerCase().equals("on")) {allowExplosion = true; success = true;}
-        	else if (params[0].toLowerCase().equals("off")) {allowExplosion = false; success = true;}
+        	if (params[0].equalsIgnoreCase("true")) {allowExplosion = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("false")) {allowExplosion = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("0")) {allowExplosion = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("1")) {allowExplosion = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("on")) {allowExplosion = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("off")) {allowExplosion = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {allowExplosion = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {allowExplosion = false; success = true;}
         	else {success = false;}
         }
         else {allowExplosion = !ability.creeperExplosion; success = true;}
         	
         if (success) ability.creeperExplosion = allowExplosion;
         	
-        sender.sendLangfileMessageToPlayer(success ? allowExplosion ? "command.creeper.on" : "command.creeper.off" : "command.creeper.failure", new Object[0]);
+        sender.sendLangfileMessage(success ? allowExplosion ? "command.creeper.on" : "command.creeper.off" : "command.creeper.failure", new Object[0]);
 	}
 	
 	@Override
@@ -91,5 +93,10 @@ public class CommandCreeper extends ServerCommand implements Listener<ExplosionE
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

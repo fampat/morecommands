@@ -1,15 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.EntityList;
 import net.minecraft.tileentity.TileEntityMobSpawner;
+import net.minecraft.util.BlockPos;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
 import com.mrnobody.morecommands.wrapper.Entity;
-import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
 		description = "command.spawner.description",
@@ -35,30 +35,30 @@ public class CommandSpawner extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-		Player player = sender.toPlayer();
-		Coordinate trace = player.trace(128.0D);
+		Entity entity = new Entity((net.minecraft.entity.Entity) sender.getMinecraftISender());
+		BlockPos trace = entity.traceBlock(128.0D);
 
 		if (trace != null && params.length > 0) {
-			if (player.getWorld().getTileEntity(trace) instanceof TileEntityMobSpawner) {
-				TileEntityMobSpawner spawner = (TileEntityMobSpawner) player.getWorld().getTileEntity(trace);
+			if (entity.getWorld().getTileEntity(trace) instanceof TileEntityMobSpawner) {
+				TileEntityMobSpawner spawner = (TileEntityMobSpawner) entity.getWorld().getTileEntity(trace);
 				
 				if (Entity.getEntityClass(params[0]) == null) {
 					try {
 						params[0] = EntityList.getStringFromID(Integer.parseInt(params[0]));
 						if (params[0] == null) {
-							sender.sendLangfileMessageToPlayer("command.spawner.unknownEntityID", new Object[0]);
+							sender.sendLangfileMessage("command.spawner.unknownEntityID", new Object[0]);
 							return;
 						}
-					} catch (NumberFormatException nfe) {sender.sendLangfileMessageToPlayer("command.spawner.unknownEntity", new Object[0]); return;}
+					} catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.spawner.unknownEntity", new Object[0]); return;}
 				}
 				
 				spawner.getSpawnerBaseLogic().setEntityName(params[0]);
 				spawner.getSpawnerBaseLogic().updateSpawner();
-				sender.sendLangfileMessageToPlayer("command.spawner.success", new Object[0]);
+				sender.sendLangfileMessage("command.spawner.success", new Object[0]);
 			}
-			else sender.sendLangfileMessageToPlayer("command.spawner.notASpawner", new Object[0]);
+			else sender.sendLangfileMessage("command.spawner.notASpawner", new Object[0]);
 		}
-		else sender.sendLangfileMessageToPlayer("command.spawner.invalidUsage", new Object[0]);
+		else sender.sendLangfileMessage("command.spawner.invalidUsage", new Object[0]);
 	}
 
 	@Override
@@ -76,4 +76,8 @@ public class CommandSpawner extends ServerCommand {
 		return 2;
 	}
 
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof net.minecraft.entity.Entity;
+	}
 }

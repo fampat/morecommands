@@ -1,14 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
 import net.minecraft.block.Block;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.BlockPos;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.wrapper.Entity;
 
 @Command(
 		name = "ignite",
@@ -32,14 +33,14 @@ public class CommandIgnite extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
-		Coordinate ignite = player.trace(128.0D);
+		Entity entity = new Entity((net.minecraft.entity.Entity) sender.getMinecraftISender());
+		BlockPos ignite = entity.traceBlock(128.0D);
 		
 		if (ignite != null) {
-			Coordinate fire = new Coordinate(ignite.getBlockX(), ignite.getBlockY() + 1, ignite.getBlockZ());
-			if (player.getWorld().isAirBlock(fire)) player.getWorld().setBlock(fire.toBlockPos(), BLOCK_FIRE);
+			BlockPos fire = new BlockPos(ignite.getX(), ignite.getY() + 1, ignite.getZ());
+			if (entity.getWorld().isAirBlock(fire)) entity.getWorld().setBlock(fire, BLOCK_FIRE);
 		}
-		else sender.sendLangfileMessageToPlayer("command.ignite.notInSight", new Object[0]);
+		else sender.sendLangfileMessage("command.ignite.notInSight", new Object[0]);
 	}
 	
 	@Override
@@ -58,5 +59,10 @@ public class CommandIgnite extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof net.minecraft.entity.Entity;
 	}
 }

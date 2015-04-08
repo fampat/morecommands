@@ -1,13 +1,14 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
 import com.mrnobody.morecommands.wrapper.Player;
 import com.mrnobody.morecommands.wrapper.World;
 
@@ -32,7 +33,7 @@ public class CommandExtinguish extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		
 		if (params.length > 0) {
 			if (params[0].equalsIgnoreCase("me")) {
@@ -43,34 +44,34 @@ public class CommandExtinguish extends ServerCommand {
 				
 				if (params.length > 1) {
 					try {radius = Integer.parseInt(params[1]);}
-					catch (NumberFormatException nfe) {sender.sendLangfileMessageToPlayer("command.extinguish.invalidArg", new Object[0]); return;}
+					catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.extinguish.invalidArg", new Object[0]); return;}
 				}
 				
 				this.extinguish(player.getWorld(), player.getPosition(), radius);
 				player.getMinecraftPlayer().extinguish();
-				sender.sendLangfileMessageToPlayer("command.extinguish.extinguished", new Object[0]);
+				sender.sendLangfileMessage("command.extinguish.extinguished", new Object[0]);
 			}
 			else {
 				int radius;
 				
 				try {radius = Integer.parseInt(params[0]);}
-				catch (NumberFormatException nfe) {sender.sendLangfileMessageToPlayer("command.extinguish.invalidArg", new Object[0]); return;}
+				catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.extinguish.invalidArg", new Object[0]); return;}
 				
 				this.extinguish(player.getWorld(), player.getPosition(), radius);
-				sender.sendLangfileMessageToPlayer("command.extinguish.extinguished", new Object[0]);
+				sender.sendLangfileMessage("command.extinguish.extinguished", new Object[0]);
 			}
 		}
 		else {
 			this.extinguish(player.getWorld(), player.getPosition(), 16);
 			player.getMinecraftPlayer().extinguish();
-			sender.sendLangfileMessageToPlayer("command.extinguish.extinguished", new Object[0]);
+			sender.sendLangfileMessage("command.extinguish.extinguished", new Object[0]);
 		}
 	}
 	
-	private void extinguish(World world, Coordinate coord, int radius) {
-		int x = coord.getBlockX();
-		int y = coord.getBlockY();
-		int z = coord.getBlockZ();
+	private void extinguish(World world, BlockPos coord, int radius) {
+		int x = coord.getX();
+		int y = coord.getY();
+		int z = coord.getZ();
 		
 		for (int i = 0; i < radius; i++) {
 			for (int j = 0; j < radius; j++) {
@@ -106,5 +107,10 @@ public class CommandExtinguish extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

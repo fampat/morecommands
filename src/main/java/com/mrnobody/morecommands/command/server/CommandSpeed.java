@@ -1,5 +1,8 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
@@ -29,7 +32,7 @@ public class CommandSpeed extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		
 		if (params.length > 1) {
 			if (params[0].equalsIgnoreCase("walk") || params[0].equalsIgnoreCase("fly")) {
@@ -38,42 +41,42 @@ public class CommandSpeed extends ServerCommand {
 						float speed;
 						
 						try {speed = Float.parseFloat(params[2]);}
-						catch (NumberFormatException nfe) {sender.sendLangfileMessageToPlayer("command.speed.NAN", new Object[0]); return;}
+						catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.speed.NAN", new Object[0]); return;}
 						
 						if (params[0].equalsIgnoreCase("walk")) {
 							player.getMinecraftPlayer().capabilities.setPlayerWalkSpeed(speed / 10);
-							sender.sendLangfileMessageToPlayer("command.speed.walkSet", new Object[0]);
+							sender.sendLangfileMessage("command.speed.walkSet", new Object[0]);
 						}
 						else if (params[0].equalsIgnoreCase("fly")) {
 							player.getMinecraftPlayer().capabilities.setFlySpeed(speed / 10);
-							sender.sendLangfileMessageToPlayer("command.speed.flySet", new Object[0]);
+							sender.sendLangfileMessage("command.speed.flySet", new Object[0]);
 						}
 						
 						player.getMinecraftPlayer().sendPlayerAbilities();
 					}
-					else {sender.sendLangfileMessageToPlayer("command.speed.noArg", new Object[0]);}
+					else {sender.sendLangfileMessage("command.speed.noArg", new Object[0]);}
 				}
 				else if (params[1].equalsIgnoreCase("get")) {
-					if (params[0].equalsIgnoreCase("walk")) {sender.sendLangfileMessageToPlayer("command.speed.getWalk", new Object[] {(player.getMinecraftPlayer().capabilities.getWalkSpeed() * 10)});}
-					else if (params[0].equalsIgnoreCase("fly")) {sender.sendLangfileMessageToPlayer("command.speed.getFly", new Object[] {(player.getMinecraftPlayer().capabilities.getFlySpeed() * 10)});}
+					if (params[0].equalsIgnoreCase("walk")) {sender.sendLangfileMessage("command.speed.getWalk", new Object[] {(player.getMinecraftPlayer().capabilities.getWalkSpeed() * 10)});}
+					else if (params[0].equalsIgnoreCase("fly")) {sender.sendLangfileMessage("command.speed.getFly", new Object[] {(player.getMinecraftPlayer().capabilities.getFlySpeed() * 10)});}
 				}
 				else if (params[1].equalsIgnoreCase("reset")) {
 					if (params[0].equalsIgnoreCase("walk")) {
 						player.getMinecraftPlayer().capabilities.setPlayerWalkSpeed(this.walkSpeedDefault);
-						sender.sendLangfileMessageToPlayer("command.speed.walkReset", new Object[0]);
+						sender.sendLangfileMessage("command.speed.walkReset", new Object[0]);
 					}
 					else if (params[0].equalsIgnoreCase("fly")) {
 						player.getMinecraftPlayer().capabilities.setFlySpeed(this.flySpeedDefault);
-						sender.sendLangfileMessageToPlayer("command.speed.flyReset", new Object[0]);
+						sender.sendLangfileMessage("command.speed.flyReset", new Object[0]);
 					}
 					
 					player.getMinecraftPlayer().sendPlayerAbilities();
 				}
-				else {sender.sendLangfileMessageToPlayer("command.speed.invalidUsage", new Object[0]);}
+				else {sender.sendLangfileMessage("command.speed.invalidUsage", new Object[0]);}
 			}
-			else {sender.sendLangfileMessageToPlayer("command.speed.invalidUsage", new Object[0]);}
+			else {sender.sendLangfileMessage("command.speed.invalidUsage", new Object[0]);}
 		}
-		else {sender.sendLangfileMessageToPlayer("command.speed.invalidUsage", new Object[0]);}
+		else {sender.sendLangfileMessage("command.speed.invalidUsage", new Object[0]);}
 	}
 	
 	@Override
@@ -92,5 +95,10 @@ public class CommandSpeed extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

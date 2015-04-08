@@ -1,6 +1,8 @@
 package com.mrnobody.morecommands.command.server;
 
 import net.minecraft.block.Block;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
@@ -12,7 +14,6 @@ import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
 import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
@@ -37,31 +38,31 @@ public class CommandChest extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
 		if (params.length < 1) {
-			sender.sendLangfileMessageToPlayer("command.chest.invalidUsage", new Object[0]);
+			sender.sendLangfileMessage("command.chest.invalidUsage", new Object[0]);
 			return;
 		}
 		
-		Player player = sender.toPlayer();
-		Coordinate coord = player.trace(128.0D);
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		BlockPos coord = player.traceBlock(128.0D);
 		
 		if (coord == null) {
-			sender.sendLangfileMessageToPlayer("command.chest.noBlockInSight", new Object[0]);
+			sender.sendLangfileMessage("command.chest.noBlockInSight", new Object[0]);
 			return;
 		}
 		
 		Block block = player.getWorld().getBlock(coord);
 		
-        int x1 = coord.getBlockX();
-        int y1 = coord.getBlockY();
-        int z1 = coord.getBlockZ();
-        int x2 = coord.getBlockX() + 1;
-        int y2 = coord.getBlockY();
-        int z2 = coord.getBlockZ();
+        int x1 = coord.getX();
+        int y1 = coord.getY();
+        int z1 = coord.getZ();
+        int x2 = coord.getX() + 1;
+        int y2 = coord.getY();
+        int z2 = coord.getZ();
 		
 		if (params[0].equalsIgnoreCase("drop")) {
             y1 += 1; y2 += 1;
-			player.getWorld().setBlock(new BlockPos(x1, y1, z1), Blocks.chest);
-			player.getWorld().setBlock(new BlockPos(x2, y2, z2), Blocks.chest);
+            player.getWorld().setBlock(new BlockPos(x1, y1, z1), Blocks.chest);
+            player.getWorld().setBlock(new BlockPos(x2, y2, z2), Blocks.chest);
 		}
 		else if (params[0].equalsIgnoreCase("fill") || params[0].equalsIgnoreCase("get") || params[0].equalsIgnoreCase("swap") || params[0].equalsIgnoreCase("clear")) {
 			if (player.getWorld().getBlock(coord) == Blocks.chest) {
@@ -72,7 +73,7 @@ public class CommandChest extends ServerCommand {
 				else y2 = -1;
 			}
 			else {
-				sender.sendLangfileMessageToPlayer("command.chest.noChest", new Object[0]);
+				sender.sendLangfileMessage("command.chest.noChest", new Object[0]);
 				return;
 			}
 		}
@@ -144,5 +145,10 @@ public class CommandChest extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

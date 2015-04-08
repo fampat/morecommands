@@ -1,7 +1,10 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
@@ -28,15 +31,15 @@ public class CommandHeal extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-		Player player = sender.toPlayer();
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		
 		if (params.length > 0) {
-			try {player.heal(Float.parseFloat(params[0])); sender.sendLangfileMessageToPlayer("command.heal.success", new Object[0]);}
-			catch (NumberFormatException e) {sender.sendLangfileMessageToPlayer("command.heal.NAN", new Object[0]);}
+			try {player.heal(Float.parseFloat(params[0])); sender.sendLangfileMessage("command.heal.success", new Object[0]);}
+			catch (NumberFormatException e) {sender.sendLangfileMessage("command.heal.NAN", new Object[0]);}
 		}
 		else {
 			player.heal(MAX_HEALTH - player.getHealth());
-			sender.sendLangfileMessageToPlayer("command.heal.success", new Object[0]);
+			sender.sendLangfileMessage("command.heal.success", new Object[0]);
 		}
 	}
 	
@@ -56,5 +59,10 @@ public class CommandHeal extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

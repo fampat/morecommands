@@ -1,5 +1,7 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.patch.EntityPlayerMP;
@@ -27,25 +29,27 @@ public class CommandCriticalhit extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-	    EntityPlayerMP player = (EntityPlayerMP) sender.toPlayer().getMinecraftPlayer();
+	    EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
 	    	
 	    boolean criticalhit = false;
 	    boolean success = false;
 	    	
 	    if (params.length >= 1) {
-	    	if (params[0].toLowerCase().equals("true")) {criticalhit = true; success = true;}
-	    	else if (params[0].toLowerCase().equals("false")) {criticalhit = false; success = true;}
-	    	else if (params[0].toLowerCase().equals("0")) {criticalhit = false; success = true;}
-	    	else if (params[0].toLowerCase().equals("1")) {criticalhit = true; success = true;}
-	    	else if (params[0].toLowerCase().equals("on")) {criticalhit = true; success = true;}
-	    	else if (params[0].toLowerCase().equals("off")) {criticalhit = false; success = true;}
+	    	if (params[0].equalsIgnoreCase("true")) {criticalhit = true; success = true;}
+	    	else if (params[0].equalsIgnoreCase("false")) {criticalhit = false; success = true;}
+	    	else if (params[0].equalsIgnoreCase("0")) {criticalhit = false; success = true;}
+	    	else if (params[0].equalsIgnoreCase("1")) {criticalhit = true; success = true;}
+	    	else if (params[0].equalsIgnoreCase("on")) {criticalhit = true; success = true;}
+	    	else if (params[0].equalsIgnoreCase("off")) {criticalhit = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {criticalhit = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {criticalhit = false; success = true;}
 	    	else {success = false;}
 	    }
 	    else {criticalhit = !player.getCriticalHit(); success = true;}
 	    	
-	    if (success) ((EntityPlayerMP) sender.toPlayer().getMinecraftPlayer()).setCriticalhit(criticalhit);
+	    if (success) ((EntityPlayerMP) sender.getMinecraftISender()).setCriticalhit(criticalhit);
 	    	
-	    sender.sendLangfileMessageToPlayer(success ? player.getCriticalHit() ? "command.criticalhit.on" : "command.criticalhit.off" : "command.criticalhit.failure", new Object[0]);
+	    sender.sendLangfileMessage(success ? player.getCriticalHit() ? "command.criticalhit.on" : "command.criticalhit.off" : "command.criticalhit.failure", new Object[0]);
 	}
 	
 	@Override
@@ -64,5 +68,10 @@ public class CommandCriticalhit extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

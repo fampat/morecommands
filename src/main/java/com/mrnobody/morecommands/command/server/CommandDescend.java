@@ -1,11 +1,13 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.util.BlockPos;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.wrapper.Entity;
 
 @Command(
 		name = "descend",
@@ -28,14 +30,14 @@ public class CommandDescend extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-    	Player player = sender.toPlayer();
-    	Coordinate coord = player.getPosition();
-    	int y = coord.getBlockY() - 1;
+    	Entity entity = new Entity((net.minecraft.entity.Entity) sender.getMinecraftISender());
+    	BlockPos coord = entity.getPosition();
+    	int y = coord.getY() + 1;
     	
     	while (y > 0) {
-    		if (player.isClear(new Coordinate(coord.getBlockX(), y--, coord.getBlockZ()))) {
-    			player.setPosition(new Coordinate(coord.getBlockX() + 0.5F, ++y, coord.getBlockZ() + 0.5F));
-    			sender.sendLangfileMessageToPlayer("command.descend.descended", new Object[] {Math.abs((y - coord.getBlockY()))});
+    		if (entity.getWorld().isClear(new BlockPos(coord.getX(), y--, coord.getZ()))) {
+    			entity.setPosition(new BlockPos(coord.getX() + 0.5F, ++y, coord.getZ() + 0.5F));
+    			sender.sendLangfileMessage("command.descend.descended", new Object[] {Math.abs((y - coord.getY()))});
     			break;
     		}
     	}
@@ -57,5 +59,10 @@ public class CommandDescend extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof net.minecraft.entity.Entity;
 	}
 }

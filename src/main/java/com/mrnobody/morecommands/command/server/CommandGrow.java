@@ -19,8 +19,6 @@ import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.util.ReflectionHelper;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.Player;
 import com.mrnobody.morecommands.wrapper.World;
 
 @Command(
@@ -48,32 +46,31 @@ public class CommandGrow extends ServerCommand {
 		
 		if (params.length > 0) {
 			try {radius = Integer.parseInt(params[0]);}
-			catch (NumberFormatException nfe) {sender.sendLangfileMessageToPlayer("command.grow.invalidArg", new Object[0]); return;}
+			catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.grow.invalidArg", new Object[0]); return;}
 		}
 		
-		Player player = sender.toPlayer();
-		Coordinate pos = player.getPosition();
-		World world = player.getWorld();
+		BlockPos pos = sender.getPosition();
+		World world = sender.getWorld();
 		Random rand = new Random();
 		
 		for (int i = 0; i < radius; i++) {
 			for (int j = 0; j < radius; j++) {
-				if (pos.getBlockY() - j < 0 || pos.getBlockY() + j > 256) continue;
+				if (pos.getY() - j < 0 || pos.getY() + j > 256) continue;
 				
 				for (int k = 0; k < radius; k++) {
-					this.growPlant(world, pos.getBlockX() + i, pos.getBlockY() + j, pos.getBlockZ() + k, rand);
-					this.growPlant(world, pos.getBlockX() - i, pos.getBlockY() + j, pos.getBlockZ() + k, rand);
-					this.growPlant(world, pos.getBlockX() - i, pos.getBlockY() + j, pos.getBlockZ() - k, rand);
-					this.growPlant(world, pos.getBlockX() + i, pos.getBlockY() + j, pos.getBlockZ() - k, rand);
-					this.growPlant(world, pos.getBlockX() + i, pos.getBlockY() - j, pos.getBlockZ() + k, rand);
-					this.growPlant(world, pos.getBlockX() - i, pos.getBlockY() - j, pos.getBlockZ() + k, rand);
-					this.growPlant(world, pos.getBlockX() - i, pos.getBlockY() - j, pos.getBlockZ() - k, rand);
-					this.growPlant(world, pos.getBlockX() + i, pos.getBlockY() - j, pos.getBlockZ() - k, rand);
+					this.growPlant(world, pos.getX() + i, pos.getY() + j, pos.getZ() + k, rand);
+					this.growPlant(world, pos.getX() - i, pos.getY() + j, pos.getZ() + k, rand);
+					this.growPlant(world, pos.getX() - i, pos.getY() + j, pos.getZ() - k, rand);
+					this.growPlant(world, pos.getX() + i, pos.getY() + j, pos.getZ() - k, rand);
+					this.growPlant(world, pos.getX() + i, pos.getY() - j, pos.getZ() + k, rand);
+					this.growPlant(world, pos.getX() - i, pos.getY() - j, pos.getZ() + k, rand);
+					this.growPlant(world, pos.getX() - i, pos.getY() - j, pos.getZ() - k, rand);
+					this.growPlant(world, pos.getX() + i, pos.getY() - j, pos.getZ() - k, rand);
 				}
 			}
 		}
 		
-		sender.sendLangfileMessageToPlayer("command.grow.grown", new Object[0]);
+		sender.sendLangfileMessage("command.grow.grown", new Object[0]);
 	}
 	
 	private void growPlant(World world, int x, int y, int z, Random rand) {
@@ -153,5 +150,10 @@ public class CommandGrow extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return true;
 	}
 }

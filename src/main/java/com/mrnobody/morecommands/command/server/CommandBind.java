@@ -1,6 +1,8 @@
 package com.mrnobody.morecommands.command.server;
 
 import net.minecraft.command.CommandHandler;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 
 import com.mrnobody.morecommands.command.Command;
@@ -60,7 +62,7 @@ public class CommandBind extends ServerCommand implements Listener<KeyEvent> {
 			String command = params[1];
 			
 			if (!this.commandHandler.getCommands().containsKey(command) && !settings.clientCommands.contains(command)) {
-				sender.sendLangfileMessageToPlayer("command.generic.notFound", new Object[0]);
+				sender.sendLangfileMessage("command.generic.notFound", new Object[0]);
 				return;
 			}
 			
@@ -82,11 +84,11 @@ public class CommandBind extends ServerCommand implements Listener<KeyEvent> {
 				
 				settings.saveSettings();
 				
-				sender.sendLangfileMessageToPlayer("command.bind.success", new Object[0]);
+				sender.sendLangfileMessage("command.bind.success", new Object[0]);
 			}
-			else {sender.sendLangfileMessageToPlayer("command.bind.invalidChar", new Object[0]);}
+			else {sender.sendLangfileMessage("command.bind.invalidChar", new Object[0]);}
 		}
-		else {sender.sendLangfileMessageToPlayer("command.bind.invalidUsage", new Object[0]);}
+		else {sender.sendLangfileMessage("command.bind.invalidUsage", new Object[0]);}
 	}
 
 	@Override
@@ -106,5 +108,10 @@ public class CommandBind extends ServerCommand implements Listener<KeyEvent> {
 	@Override
 	public int getPermissionLevel() {
 		return 0;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

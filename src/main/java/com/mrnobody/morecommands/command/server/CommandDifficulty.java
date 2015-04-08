@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.EnumDifficulty;
 
@@ -37,10 +38,10 @@ public class CommandDifficulty extends ServerCommand {
 			else if (params[0].equalsIgnoreCase("easy")|| params[0].equalsIgnoreCase("1")) diff = EnumDifficulty.EASY;
 			else if (params[0].equalsIgnoreCase("normal")|| params[0].equalsIgnoreCase("2")) diff = EnumDifficulty.NORMAL;
 			else if (params[0].equalsIgnoreCase("hard")|| params[0].equalsIgnoreCase("3")) diff = EnumDifficulty.HARD;
-			else {sender.sendLangfileMessageToPlayer("command.difficulty.invalidDifficulty", new Object[0]); return;}
+			else {sender.sendLangfileMessage("command.difficulty.invalidDifficulty", new Object[0]); return;}
 			
 			server.setDifficultyForAllWorlds(diff);
-			sender.toPlayer().getMinecraftPlayer().worldObj.getWorldInfo().setDifficulty(diff);
+			sender.getWorld().getMinecraftWorld().getWorldInfo().setDifficulty(diff);
 			String difficulty = "";
 			
 			switch(diff) {
@@ -50,9 +51,9 @@ public class CommandDifficulty extends ServerCommand {
 				case HARD: difficulty = "hard"; break;
 			}
 			
-			sender.sendLangfileMessageToPlayer("command.difficulty.setto", new Object[] {difficulty});
+			sender.sendLangfileMessage("command.difficulty.setto", new Object[] {difficulty});
 		}
-		else {sender.sendLangfileMessageToPlayer("command.difficulty.invalidUsage", new Object[0]);}
+		else {sender.sendLangfileMessage("command.difficulty.invalidUsage", new Object[0]);}
 	}
 	
 	@Override
@@ -71,5 +72,10 @@ public class CommandDifficulty extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return true;
 	}
 }

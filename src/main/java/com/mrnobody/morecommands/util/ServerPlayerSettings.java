@@ -15,9 +15,9 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.BlockPos;
 
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.wrapper.Coordinate;
 
 /**
  * Reads and writes the settings for each player on a server
@@ -188,7 +188,7 @@ public class ServerPlayerSettings {
 	public boolean mobdamage = true;
 	public boolean scuba = false;
 	public boolean output = true;
-	public Coordinate lastPos = null;
+	public BlockPos lastPos = null;
 	public int superpunch = -1;
 	public boolean waterdamage = true;
 	

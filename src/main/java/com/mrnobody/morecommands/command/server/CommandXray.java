@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
@@ -31,7 +32,7 @@ public class CommandXray extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		EntityPlayerMP player = (EntityPlayerMP) sender.toPlayer().getMinecraftPlayer();
+		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
 		ServerPlayerSettings ability = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
 		
 		boolean showGUI = false;
@@ -42,21 +43,21 @@ public class CommandXray extends ServerCommand {
 			if (params[0].equalsIgnoreCase("config")) {showGUI = true;}
 			else if (params[0].equalsIgnoreCase("radius") && params.length > 1) {
 				try {blockRadius = Integer.parseInt(params[1]);}
-				catch (NumberFormatException nfe) {sender.sendLangfileMessageToPlayer("command.xray.invalidUsage", new Object[0]);}
+				catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.xray.invalidUsage", new Object[0]);}
 			}
 			else if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("1")) {
 				enable = true; 
-				sender.sendLangfileMessageToPlayer("command.xray.enabled", new Object[0]);
+				sender.sendLangfileMessage("command.xray.enabled", new Object[0]);
 			}
 			else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("0")) {
 				enable = false; 
-				sender.sendLangfileMessageToPlayer("command.xray.disabled", new Object[0]);
+				sender.sendLangfileMessage("command.xray.disabled", new Object[0]);
 			}
-			else {sender.sendLangfileMessageToPlayer("command.xray.invalidUsage", new Object[0]);}
+			else {sender.sendLangfileMessage("command.xray.invalidUsage", new Object[0]);}
 		}
 		else {
 			enable = !enable; 
-			sender.sendLangfileMessageToPlayer(enable ? "command.xray.enabled" : "command.xray.disabled", new Object[0]);
+			sender.sendLangfileMessage(enable ? "command.xray.enabled" : "command.xray.disabled", new Object[0]);
 		}
 		
 		ability.xrayBlockRadius = blockRadius;
@@ -87,5 +88,10 @@ public class CommandXray extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

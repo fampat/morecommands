@@ -3,7 +3,7 @@ package com.mrnobody.morecommands.command.client;
 import java.util.Iterator;
 
 import net.minecraft.command.ICommandManager;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.integrated.IntegratedServer;
 
@@ -42,16 +42,16 @@ public class CommandSudo extends ClientCommand {
 			while (players.hasNext()) {
 				playerEntity = players.next();
 				
-				if (playerEntity instanceof EntityPlayer) {
-					if (((EntityPlayer) playerEntity).getName().equalsIgnoreCase(params[0])) {
-						player = new Player((EntityPlayer) playerEntity);
+				if (playerEntity instanceof EntityPlayerMP) {
+					if (((EntityPlayerMP) playerEntity).getName().equalsIgnoreCase(params[0])) {
+						player = new Player((EntityPlayerMP) playerEntity);
 						break;
 					}
 				}
 			}
 			
 			if (player == null) {
-				sender.sendLangfileMessageToPlayer("command.sudo.playerNotFound", new Object[0]);
+				sender.sendLangfileMessage("command.sudo.playerNotFound", new Object[0]);
 				return;
 			}
 			
@@ -69,11 +69,11 @@ public class CommandSudo extends ClientCommand {
 			}
 			
 			manager.executeCommand((new CommandSender(player)).getMinecraftISender(), command + parameters);
-			sender.sendLangfileMessageToPlayer("command.sudo.executed", new Object[] {command + parameters, player.getPlayerName()});
+			sender.sendLangfileMessage("command.sudo.executed", new Object[] {command + parameters, player.getPlayerName()});
 		}
-		else if (!(MinecraftServer.getServer() instanceof IntegratedServer)) {sender.sendLangfileMessageToPlayer("command.sudo.notInLAN", new Object[0]);}
-		else if (!((IntegratedServer) MinecraftServer.getServer()).getPublic()) {sender.sendLangfileMessageToPlayer("command.sudo.notInLAN", new Object[0]);}
-		else {sender.sendLangfileMessageToPlayer("command.sudo.invalidArgs", new Object[0]);}
+		else if (!(MinecraftServer.getServer() instanceof IntegratedServer)) {sender.sendLangfileMessage("command.sudo.notInLAN", new Object[0]);}
+		else if (!((IntegratedServer) MinecraftServer.getServer()).getPublic()) {sender.sendLangfileMessage("command.sudo.notInLAN", new Object[0]);}
+		else {sender.sendLangfileMessage("command.sudo.invalidArgs", new Object[0]);}
 	}
 	
 	@Override

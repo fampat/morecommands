@@ -44,11 +44,11 @@ public class CommandUnalias extends ClientCommand {
 				this.commandHandler.getCommands().remove(alias);
 				ClientPlayerSettings.aliasMapping.remove(alias);
 				ClientPlayerSettings.saveSettings();
-				sender.sendLangfileMessageToPlayer("command.unalias.success", new Object[0]);
+				sender.sendLangfileMessage("command.unalias.success", new Object[0]);
 			}
-			else {sender.sendLangfileMessageToPlayer("command.unalias.notFound", new Object[0]);}
+			else {sender.sendLangfileMessage("command.unalias.notFound", new Object[0]);}
 		}
-		else {sender.sendLangfileMessageToPlayer("command.unalias.invalidUsage", new Object[0]);}
+		else {sender.sendLangfileMessage("command.unalias.invalidUsage", new Object[0]);}
 	}
 	
 	@Override

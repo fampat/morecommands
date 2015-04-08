@@ -1,5 +1,8 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.util.Keyboard;
@@ -43,17 +46,17 @@ public class CommandUnbind extends ServerCommand {
 				settings.clientKeybindMapping.remove(keyid);
 				settings.serverKeybindMapping.remove(keyid);
 				settings.saveSettings();
-				sender.sendLangfileMessageToPlayer("command.unbind.success", new Object[0]);
+				sender.sendLangfileMessage("command.unbind.success", new Object[0]);
 			}
-			else if (params[0].toLowerCase().equals("all")) {
+			else if (params[0].equalsIgnoreCase("all")) {
 				settings.serverKeybindMapping.clear();
 				settings.clientKeybindMapping.clear();
 				settings.saveSettings();
-				sender.sendLangfileMessageToPlayer("command.unbind.success", new Object[0]);
+				sender.sendLangfileMessage("command.unbind.success", new Object[0]);
 			}
-			else {sender.sendLangfileMessageToPlayer("command.unbind.bindingNotFound", new Object[0]);}
+			else {sender.sendLangfileMessage("command.unbind.bindingNotFound", new Object[0]);}
 		}
-		else {sender.sendLangfileMessageToPlayer("command.unbind.invalidUsage", new Object[0]);}
+		else {sender.sendLangfileMessage("command.unbind.invalidUsage", new Object[0]);}
 	}
 
 	@Override
@@ -72,5 +75,10 @@ public class CommandUnbind extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 0;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

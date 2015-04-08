@@ -1,9 +1,13 @@
 package com.mrnobody.morecommands.command;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.server.CommandBlockLogic;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
 
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -75,7 +79,7 @@ public abstract class CommandBase extends net.minecraft.command.CommandBase {
 	/**
 	 * @return Whether this command is enabled
 	 */
-    public abstract boolean isEnabled(EntityPlayer player);
+    public abstract boolean isEnabled(ICommandSender sender);
     
 	/**
 	 * @return The Server Type on which this command can be executed
@@ -87,7 +91,25 @@ public abstract class CommandBase extends net.minecraft.command.CommandBase {
 	 */
     public abstract int getPermissionLevel();
     
-    public static final EntityPlayerMP parseCommandBlockPlayer(CommandBlockLogic logic) {
-    	return null;
+    public static final List<EntityPlayerMP> parseCommandBlockArgs(String[] args) {
+    	List<EntityPlayerMP> players = new ArrayList<EntityPlayerMP>();
+    	
+    	for (String arg : args) {
+    		if (arg.startsWith("@p[") && arg.endsWith("]")) {
+    			arg = arg.substring(3, arg.length() - 1);
+    			String[] playerNames = arg.split(",");
+    			
+    			for (String playerName : playerNames) {
+        			for (Object player : MinecraftServer.getServer().getConfigurationManager().playerEntityList) {
+        				if (!(player instanceof EntityPlayerMP)) continue;
+        				if (((EntityPlayerMP) player).getName().equals(playerName)) {
+        					players.add((EntityPlayerMP) player);
+        					break;
+        				}
+        			}
+    			}
+    		}
+    	}
+    	return players;
     }
 }

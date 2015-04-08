@@ -68,25 +68,25 @@ public class CommandFreeze extends ClientCommand implements Listener<TickEvent> 
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = new Player(Minecraft.getMinecraft().thePlayer);
+		com.mrnobody.morecommands.wrapper.Entity player = new com.mrnobody.morecommands.wrapper.Entity(Minecraft.getMinecraft().thePlayer);
     	
     	boolean freeze = false;
     	boolean success = false;
     	
     	if (params.length >= 1) {
-    		if (params[0].toLowerCase().equals("true")) {freeze = true; success = true;}
-    		else if (params[0].toLowerCase().equals("false")) {freeze = false; success = true;}
-    		else if (params[0].toLowerCase().equals("0")) {freeze = false; success = true;}
-    		else if (params[0].toLowerCase().equals("1")) {freeze = true; success = true;}
-    		else if (params[0].toLowerCase().equals("on")) {freeze = true; success = true;}
-    		else if (params[0].toLowerCase().equals("off")) {freeze = false; success = true;}
+    		if (params[0].equalsIgnoreCase("true")) {freeze = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("false")) {freeze = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("0")) {freeze = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("1")) {freeze = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("on")) {freeze = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("off")) {freeze = false; success = true;}
     		else {success = false;}
     	}
     	else {freeze = !this.freeze; success = true;}
     	
     	if (success) this.freeze = freeze;
     	
-    	sender.sendLangfileMessageToPlayer(success ? freeze ? "command.freeze.on" : "command.freeze.off" : "command.freeze.failure", new Object[0]);
+    	sender.sendLangfileMessage(success ? freeze ? "command.freeze.on" : "command.freeze.off" : "command.freeze.failure", new Object[0]);
 	}
 	
 	@Override

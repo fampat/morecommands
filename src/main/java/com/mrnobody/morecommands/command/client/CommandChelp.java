@@ -77,49 +77,49 @@ public class CommandChelp extends ClientCommand {
 			page = params.length == 0 ? 0 : this.parseInt(params[0], 1, totalPages + 1) - 1;
 		}
 		catch (NumberInvalidException numberinvalidexception){
-			if (!names.contains(params[0])) {sender.sendLangfileMessageToPlayer("command.generic.notFound", new Object[0]); return;}
+			if (!names.contains(params[0])) {sender.sendLangfileMessage("command.generic.notFound", new Object[0]); return;}
 			else show = "commandhelp";
 		}
 		
 		if (show.equals("generalhelp")) {
 			IChatComponent text = new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.pageheader", new Object[] {Integer.valueOf(page + 1), Integer.valueOf(totalPages + 1)}));
 			this.MESSAGE_PAGEHEADING = text.setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.GREEN));
-			sender.sendChatComponentToPlayer(this.MESSAGE_PAGEHEADING);
+			sender.sendChatComponent(this.MESSAGE_PAGEHEADING);
 			
 			int max = Math.min((page + 1) * maxEntries, names.size());
 			
 			for (int index = page * maxEntries; index < max; ++index)
-				sender.sendStringMessageToPlayer("/" + names.get(index));
+				sender.sendStringMessage("/" + names.get(index));
 			
-			sender.sendChatComponentToPlayer(this.MESSAGE_INFO);
-			sender.sendChatComponentToPlayer(this.MESSAGE_FOOTER);
+			sender.sendChatComponent(this.MESSAGE_INFO);
+			sender.sendChatComponent(this.MESSAGE_FOOTER);
 		}
 		else if (show.equals("commandhelp")) {
 			if (commands.get(params[0]) instanceof ClientCommand && commands.get(params[0]).getClass().getAnnotation(Command.class) != null) {
 				Command info = commands.get(params[0]).getClass().getAnnotation(Command.class);
 				
-				sender.sendChatComponentToPlayer(this.MESSAGE_COMMANDHEADING);
+				sender.sendChatComponent(this.MESSAGE_COMMANDHEADING);
 				
-				sender.sendChatComponentToPlayer(this.MESSAGE_NAME.appendSibling((new ChatComponentText(info.name())).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
-				sender.sendChatComponentToPlayer(this.MESSAGE_DESCRIPTION.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, info.description(), new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
-				sender.sendChatComponentToPlayer(this.MESSAGE_SYNTAX.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, info.syntax(), new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
-				sender.sendChatComponentToPlayer(this.MESSAGE_EXAMPLE.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, info.example(), new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
-				sender.sendChatComponentToPlayer(this.MESSAGE_VIDEO.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, info.videoURL(), new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE).setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "http://" + LanguageManager.getTranslation(langCode, info.videoURL(), new Object[0]))))));
+				sender.sendChatComponent(this.MESSAGE_NAME.appendSibling((new ChatComponentText(info.name())).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
+				sender.sendChatComponent(this.MESSAGE_DESCRIPTION.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, info.description(), new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
+				sender.sendChatComponent(this.MESSAGE_SYNTAX.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, info.syntax(), new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
+				sender.sendChatComponent(this.MESSAGE_EXAMPLE.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, info.example(), new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
+				sender.sendChatComponent(this.MESSAGE_VIDEO.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, info.videoURL(), new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE).setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "http://" + LanguageManager.getTranslation(langCode, info.videoURL(), new Object[0]))))));
 				
-				sender.sendChatComponentToPlayer(this.MESSAGE_FOOTER);
+				sender.sendChatComponent(this.MESSAGE_FOOTER);
 			}
 			else if (!(commands.get(params[0]) instanceof DummyCommand)){
 				ICommand command = commands.get(params[0]);
 				
-				sender.sendChatComponentToPlayer(this.MESSAGE_COMMANDHEADING);
+				sender.sendChatComponent(this.MESSAGE_COMMANDHEADING);
 				
-				sender.sendChatComponentToPlayer(this.MESSAGE_NAME.appendSibling((new ChatComponentText(command.getName())).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
-				sender.sendChatComponentToPlayer(this.MESSAGE_DESCRIPTION.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.noDescription", new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
-				sender.sendChatComponentToPlayer(this.MESSAGE_SYNTAX.appendSibling((new ChatComponentTranslation(command.getCommandUsage(sender.getMinecraftISender()), new Object[0])).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
-				sender.sendChatComponentToPlayer(this.MESSAGE_EXAMPLE.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.noExample", new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
-				sender.sendChatComponentToPlayer(this.MESSAGE_VIDEO.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.noVideo", new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
+				sender.sendChatComponent(this.MESSAGE_NAME.appendSibling((new ChatComponentText(command.getName())).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
+				sender.sendChatComponent(this.MESSAGE_DESCRIPTION.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.noDescription", new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
+				sender.sendChatComponent(this.MESSAGE_SYNTAX.appendSibling((new ChatComponentTranslation(command.getCommandUsage(sender.getMinecraftISender()), new Object[0])).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
+				sender.sendChatComponent(this.MESSAGE_EXAMPLE.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.noExample", new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
+				sender.sendChatComponent(this.MESSAGE_VIDEO.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.noVideo", new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
 				
-				sender.sendChatComponentToPlayer(this.MESSAGE_FOOTER);
+				sender.sendChatComponent(this.MESSAGE_FOOTER);
 			}
 		}
 	}

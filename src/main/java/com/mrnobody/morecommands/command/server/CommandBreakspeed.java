@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 
@@ -48,26 +49,26 @@ public class CommandBreakspeed extends ServerCommand implements Listener<BreakSp
 		float speed = 0.0F;
 		
 		if (params.length > 0) {
-			if (params[0].toLowerCase().equals("reset")) {enable = false;}
-			else if (params[0].toLowerCase().equals("max")) {speed = Float.MAX_VALUE; enable = true; setspeed = true;}
-			else if (params[0].toLowerCase().equals("min")) {speed = 0.0F; enable = true; setspeed = true;}
+			if (params[0].equalsIgnoreCase("reset")) {enable = false;}
+			else if (params[0].equalsIgnoreCase("max")) {speed = Float.MAX_VALUE; enable = true; setspeed = true;}
+			else if (params[0].equalsIgnoreCase("min")) {speed = 0.0F; enable = true; setspeed = true;}
 			else {
 				try {speed = Float.parseFloat(params[0]); enable = true; setspeed = true;}
-				catch (NumberFormatException e) {sender.sendLangfileMessageToPlayer("command.breakspeed.invalidArg", new Object[0]);}
+				catch (NumberFormatException e) {sender.sendLangfileMessage("command.breakspeed.invalidArg", new Object[0]);}
 			}
 		}
-		else {sender.sendLangfileMessageToPlayer("command.breakspeed.invalidUsage", new Object[0]);}
+		else {sender.sendLangfileMessage("command.breakspeed.invalidUsage", new Object[0]);}
 		
 		if (enable) {
 			settings.breakSpeedEnabled = true;
 			if (setspeed) {
 				settings.breakspeed = speed;
-				sender.sendLangfileMessageToPlayer("command.breakspeed.setto", new Object[] {speed});
+				sender.sendLangfileMessage("command.breakspeed.setto", new Object[] {speed});
 			}
 		}
 		else {
 			settings.breakSpeedEnabled = false;
-			sender.sendLangfileMessageToPlayer("command.breakspeed.reset", new Object[0]);
+			sender.sendLangfileMessage("command.breakspeed.reset", new Object[0]);
 		}
 	}
 	
@@ -89,5 +90,10 @@ public class CommandBreakspeed extends ServerCommand implements Listener<BreakSp
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

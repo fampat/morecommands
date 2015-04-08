@@ -5,7 +5,6 @@ import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.effect.EntityLightningBolt;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockPos;
@@ -33,8 +32,8 @@ public class World {
 	/**
 	 * @return The block at the given coordinate
 	 */
-	public Block getBlock(Coordinate coord) {
-		return this.world.getBlockState(coord.toBlockPos()).getBlock();
+	public Block getBlock(BlockPos coord) {
+		return this.world.getBlockState(coord).getBlock();
 	}
    
 	/**
@@ -47,8 +46,8 @@ public class World {
 	/**
 	 * @return Whether the block at the given coordinate is an air block
 	 */
-	public boolean isAirBlock(Coordinate coord) {
-		return this.world.isAirBlock(coord.toBlockPos());
+	public boolean isAirBlock(BlockPos coord) {
+		return this.world.isAirBlock(coord);
 	}
 	
 	/**
@@ -181,11 +180,30 @@ public class World {
 	public void setThunder(boolean thunder) {
 		this.world.getWorldInfo().setThundering(thunder);
 	}
+	
+	   
+	/**
+	 * @return whether the blocks around are air blocks
+	 */
+	public boolean isClear(BlockPos location) {
+		return this.isAirBlock(location.getX(), location.getY(), location.getZ())
+			&& this.isAirBlock(location.getX(), location.getY() + 1, location.getZ())
+			&& !this.isAirBlock(location.getX(), location.getY() - 1, location.getZ());
+	}
+	   
+	/**
+	 * @return whether the blocks below are air blocks
+	 */
+	public boolean isClearBelow(BlockPos location) {
+		return this.isAirBlock(location.getX(), location.getY(), location.getZ())
+			&& this.isAirBlock(location.getX(), location.getY() + 1, location.getZ())
+			&& this.isAirBlock(location.getX(), location.getY() - 1, location.getZ());
+	}
    
 	/**
 	 * Spawns a lightning at the given coordinate
 	 */
-	public void useLightning(Coordinate coordinate) {
+	public void useLightning(BlockPos coordinate) {
 		EntityLightningBolt lightning = new EntityLightningBolt(this.world, coordinate.getX(),coordinate.getY(),coordinate.getZ());
 		this.world.addWeatherEffect(lightning);
 	}
@@ -200,64 +218,64 @@ public class World {
 	/**
 	 * @return the light level of the block at the given coordinate
 	 */
-	public int getBlockLightLevel(Coordinate coordinate) {
-		return this.world.getBlockLightOpacity(coordinate.toBlockPos());
+	public int getBlockLightLevel(BlockPos coordinate) {
+		return this.world.getBlockLightOpacity(coordinate);
 	}
    
 	/**
 	 * @return the world's spawn point
 	 */
-	public Coordinate getSpawn() {
-		return new Coordinate(this.world.getSpawnPoint().getX(), this.world.getSpawnPoint().getY() + 5, this.world.getSpawnPoint().getZ());
+	public BlockPos getSpawn() {
+		return new BlockPos(this.world.getSpawnPoint().getX(), this.world.getSpawnPoint().getY() + 5, this.world.getSpawnPoint().getZ());
 	}
    
 	/**
 	 * Sets the world's spawn point
 	 */
-	public void setSpawn(Coordinate coordinate) {
-		this.world.setSpawnPoint(coordinate.toBlockPos());
+	public void setSpawn(BlockPos coordinate) {
+		this.world.setSpawnPoint(coordinate);
 	}
    
 	/**
 	 * Generates a big tree at the given coordinates
 	 */
-	public boolean generateBigTree(Coordinate coordinate) {
-		return (new WorldGenBigTree(true)).generate(this.world, this.random, coordinate.toBlockPos());
+	public boolean generateBigTree(BlockPos coordinate) {
+		return (new WorldGenBigTree(true)).generate(this.world, this.random, coordinate);
 	}
    
 	/**
 	 * Generates a normal tree at the given coordinates
 	 */
-	public boolean generateTree(Coordinate coordinate) {
-		return (new WorldGenTrees(true)).generate(this.world, this.random, coordinate.toBlockPos());
+	public boolean generateTree(BlockPos coordinate) {
+		return (new WorldGenTrees(true)).generate(this.world, this.random, coordinate);
 	}
 	   
 	/**
 	 * Generates a birch tree at the given coordinates
 	 */
-	public boolean generateBirchTree(Coordinate coordinate) {
-		return (new WorldGenForest(true, true)).generate(this.world, this.random, coordinate.toBlockPos());
+	public boolean generateBirchTree(BlockPos coordinate) {
+		return (new WorldGenForest(true, true)).generate(this.world, this.random, coordinate);
 	}
    
 	/**
 	 * Generates a redwood tree at the given coordinates
 	 */
-	public boolean generateRedwoodTree(Coordinate coordinate) {
-		return (new WorldGenTaiga1()).generate(this.world, this.random, coordinate.toBlockPos());
+	public boolean generateRedwoodTree(BlockPos coordinate) {
+		return (new WorldGenTaiga1()).generate(this.world, this.random, coordinate);
 	}
    
 	/**
 	 * Generates a tall redwood tree at the given coordinates
 	 */
-	public boolean generateTallRedwoodTree(Coordinate coordinate) {
-		return (new WorldGenTaiga2(true)).generate(this.world, this.random, coordinate.toBlockPos());
+	public boolean generateTallRedwoodTree(BlockPos coordinate) {
+		return (new WorldGenTaiga2(true)).generate(this.world, this.random, coordinate);
 	}
    
 	/**
 	 * Creates an explosion at the given coordinates
 	 */
-	public void createExplosion(Player player, Coordinate coordinate, int size) {
-		this.world.createExplosion(player.getMinecraftPlayer(), coordinate.getX(), coordinate.getY(), coordinate.getZ(), size, true);
+	public void createExplosion(net.minecraft.entity.Entity cause, BlockPos coordinate, int size) {
+		this.world.createExplosion(cause, coordinate.getX(), coordinate.getY(), coordinate.getZ(), size, true);
 	}
    
 	/**
@@ -265,13 +283,6 @@ public class World {
 	 */
 	public TileEntity getTileEntity(BlockPos pos) {
 		return this.world.getTileEntity(pos);
-	}
-   
-	/**
-	 * Gets a tile entity at the given coordinate if there is one else null
-	 */
-	public TileEntity getTileEntity(Coordinate coord) {
-		return this.world.getTileEntity(coord.toBlockPos());
 	}
    
 	/**

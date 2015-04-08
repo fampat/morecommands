@@ -64,7 +64,7 @@ public class CommandBind extends ClientCommand implements Listener<KeyInputEvent
 			String command = params[1];
 			
 			if (this.commandHandler.getCommands().get(command) == null) {
-				sender.sendLangfileMessageToPlayer("command.generic.notFound", new Object[0]);
+				sender.sendLangfileMessage("command.generic.notFound", new Object[0]);
 				return;
 			}
 			
@@ -84,11 +84,11 @@ public class CommandBind extends ClientCommand implements Listener<KeyInputEvent
 				ClientPlayerSettings.keybindMapping.put(Keyboard.getKeyIndex(keycode), command);
 				ClientPlayerSettings.saveSettings();
 				
-				sender.sendLangfileMessageToPlayer("command.bind.success", new Object[0]);
+				sender.sendLangfileMessage("command.bind.success", new Object[0]);
 			}
-			else {sender.sendLangfileMessageToPlayer("command.bind.invalidChar", new Object[0]);}
+			else {sender.sendLangfileMessage("command.bind.invalidChar", new Object[0]);}
 		}
-		else {sender.sendLangfileMessageToPlayer("command.bind.invalidUsage", new Object[0]);}
+		else {sender.sendLangfileMessage("command.bind.invalidUsage", new Object[0]);}
 	}
 
 	@Override

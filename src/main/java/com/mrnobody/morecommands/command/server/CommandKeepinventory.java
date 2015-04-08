@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 
 import com.mrnobody.morecommands.command.Command;
@@ -18,7 +19,6 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		videoURL = "command.keepinventory.videoURL"
 		)
 public class CommandKeepinventory extends ServerCommand {
-
 	@Override
 	public String getName() {
 		return "keepinventory";
@@ -31,19 +31,21 @@ public class CommandKeepinventory extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-		EntityPlayerMP player = (EntityPlayerMP) sender.toPlayer().getMinecraftPlayer();
+		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
 		ServerPlayerSettings ability = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
 		
         boolean keepinventory = false;
         boolean success = false;
         	
         if (params.length >= 1) {
-        	if (params[0].toLowerCase().equals("true")) {keepinventory = true; success = true;}
-        	else if (params[0].toLowerCase().equals("false")) {keepinventory = false; success = true;}
-        	else if (params[0].toLowerCase().equals("0")) {keepinventory = false; success = true;}
-        	else if (params[0].toLowerCase().equals("1")) {keepinventory = true; success = true;}
-        	else if (params[0].toLowerCase().equals("on")) {keepinventory = true; success = true;}
-        	else if (params[0].toLowerCase().equals("off")) {keepinventory = false; success = true;}
+        	if (params[0].equalsIgnoreCase("true")) {keepinventory = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("false")) {keepinventory = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("0")) {keepinventory = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("1")) {keepinventory = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("on")) {keepinventory = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("off")) {keepinventory = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {keepinventory = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {keepinventory = false; success = true;}
         	else {success = false;}
         }
 	    else {keepinventory = !player.getKeepInventory(); success = true;}
@@ -54,7 +56,7 @@ public class CommandKeepinventory extends ServerCommand {
 	    	((ServerConfigurationManagerIntegrated) MinecraftServer.getServer().getConfigurationManager()).setKeepInventory(keepinventory);
 	    }
         	
-        sender.sendLangfileMessageToPlayer(success ? keepinventory ? "command.keepinventory.on" : "command.keepinventory.off" : "command.keepinventory.failure", new Object[0]);
+        sender.sendLangfileMessage(success ? keepinventory ? "command.keepinventory.on" : "command.keepinventory.off" : "command.keepinventory.failure", new Object[0]);
 	}
 	
 	@Override
@@ -73,5 +75,10 @@ public class CommandKeepinventory extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

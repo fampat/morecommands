@@ -1,67 +1,27 @@
 package com.mrnobody.morecommands.wrapper;
 
-import java.util.List;
-
-import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.World;
-
-import net.minecraft.stats.Achievement;
-import net.minecraft.world.WorldSettings.GameType;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.command.CommandBase;
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItemFrame;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.Vec3;
+import net.minecraft.stats.Achievement;
+import net.minecraft.util.BlockPos;
 
 /**
- * A wrapper for the {@link EntityPlayer} class
+ * A wrapper for the {@link EntityPlayerMP} class
  * 
  * @author MrNobody98
  */
-public class Player {
-	private final EntityPlayer player;
+public class Player extends com.mrnobody.morecommands.wrapper.Entity {
+	private final EntityPlayerMP player;
 	
-	public Player(CommandSender sender, String name) throws CommandException {
-		try {this.player = CommandBase.getPlayer(sender.getMinecraftISender(), name);}
-		catch (Exception ex) {throw new CommandException(ex.getMessage());}
-		
-	}
-	
-	public Player(CommandSender sender) throws CommandException {
-		try {this.player = CommandBase.getCommandSenderAsPlayer(sender.getMinecraftISender());}
-		catch (Exception ex) {throw new CommandException(ex.getMessage());}
-	}
-
-	public Player(EntityPlayer player) {
+	public Player(EntityPlayerMP player) {
+		super(player);
 		this.player = player;
 	}
 
-	/**
-	 * Sets the players position
-	 */
-	public void setPosition(Coordinate c) {
-		player.setPositionAndUpdate(c.getX(), c.getY(), c.getZ());
-	}
-
-	/**
-	 * @return the players position
-	 */
-	public Coordinate getPosition() {
-		return new Coordinate(player.posX, player.posY, player.posZ);
-	}
-   
 	/**
 	 * @return the players rotation yaw
 	 */
@@ -88,20 +48,6 @@ public class Player {
 	 */
 	public void setPitch(float pitch) {
 		player.rotationPitch = pitch;
-	}
-   
-	/**
-	 * @return the players world
-	 */
-	public World getWorld() {
-		return new World(player.worldObj);
-	}
-   
-	/**
-	 * Sends a chat message from this player
-	 */
-	public void sendChatMessage(String message) {
-		player.addChatMessage(new ChatComponentText(message));
 	}
 	
 	/**
@@ -193,141 +139,6 @@ public class Player {
 		player.inventory.mainInventory[slot] = new ItemStack(Item.getItemById(id), quantity, damage);
 		return true;
 	}
-	
-	/**
-	 * traces an entity in the direction the player is looking
-	 * 
-	 * @return the traced entity
-	 */
-	public Entity traceEntity(double distance) {
-		return this.tracePath(distance, 0.0D, 1.0F).entityHit;
-	}
-	
-	/**
-	 * Performs a full raytrace
-	 * 
-	 * @return a {@link MovingObjectPosition} with the trace results
-	 */
-	public MovingObjectPosition tracePath(double distance, double borderSize, float partialTickTime) {
-		Vec3 startVec = getPositionVec(partialTickTime);
-		Vec3 lookVec = player.getLook(partialTickTime);
-		Vec3 endVec = startVec.addVector(lookVec.xCoord * distance, lookVec.yCoord * distance, lookVec.zCoord * distance);
-	  
-		double minX = startVec.xCoord < endVec.xCoord ? startVec.xCoord : endVec.xCoord;
-		double minY = startVec.yCoord < endVec.yCoord ? startVec.yCoord : endVec.yCoord;
-		double minZ = startVec.zCoord < endVec.zCoord ? startVec.zCoord : endVec.zCoord;
-		double maxX = startVec.xCoord > endVec.xCoord ? startVec.xCoord : endVec.xCoord;
-		double maxY = startVec.yCoord > endVec.yCoord ? startVec.yCoord : endVec.yCoord;
-		double maxZ = startVec.zCoord > endVec.zCoord ? startVec.zCoord : endVec.zCoord;
-		
-		AxisAlignedBB bb = new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ).expand(borderSize, borderSize, borderSize);
-		List<Entity> allEntities = this.player.worldObj.getEntitiesWithinAABBExcludingEntity(this.player, bb);  
-		MovingObjectPosition blockHit = this.player.worldObj.rayTraceBlocks(startVec, endVec);
-		
-		startVec = getPositionVec(partialTickTime);
-		lookVec = player.getLook(partialTickTime);
-		endVec = startVec.addVector(lookVec.xCoord * distance, lookVec.yCoord * distance, lookVec.zCoord * distance);
-		
-		double maxDistance = endVec.distanceTo(startVec);
-	  
-		if (blockHit != null) {
-			maxDistance = blockHit.hitVec.distanceTo(startVec);
-		} 
-		
-		Entity closestHitEntity = null;
-		double closestHit = maxDistance;
-		double currentHit = 0.D;
-		AxisAlignedBB entityBb;
-		MovingObjectPosition intercept;
-		
-		for (Entity ent : allEntities) {
-			if (ent.canBeCollidedWith()) {
-				double entBorder = ent.getCollisionBorderSize();
-				entityBb = ent.getEntityBoundingBox();
-				
-				if (entityBb != null) {
-					entityBb = entityBb.expand(entBorder, entBorder, entBorder);
-					intercept = entityBb.calculateIntercept(startVec, endVec);
-					
-					if(intercept != null) {
-						currentHit = intercept.hitVec.distanceTo(startVec);
-						
-						if(currentHit < closestHit || currentHit==0) {            
-							closestHit = currentHit;
-							closestHitEntity = ent;
-						}
-					}
-				}
-			}
-		}  
-	  
-		if(closestHitEntity != null) {
-			blockHit = new MovingObjectPosition(closestHitEntity);
-		}
-		
-		return blockHit;
-	}
-   
-	/**
-	 * traces the block the player is looking at
-	 * 
-	 * @return the traced coordinate or null
-	 */
-	public Coordinate trace(double distance) {
-		MovingObjectPosition m = rayTrace(distance, 1.0F);
-		if (m == null) {
-			return null;
-		}
-		return new Coordinate(m.getBlockPos().getX(), m.getBlockPos().getY(), m.getBlockPos().getZ());
-	}
-
-	/**
-	 * raytraces a block
-	 * 
-	 * @return a {@link MovingObjectPosition} with the coordinates
-	 */
-	public MovingObjectPosition rayTrace(double distance, float partialTickTime) {
-		Vec3 positionVec = getPositionVec(partialTickTime);
-		Vec3 lookVec = player.getLook(partialTickTime);
-		Vec3 hitVec = positionVec.addVector(lookVec.xCoord * distance, lookVec.yCoord * distance, lookVec.zCoord * distance);
-		return player.worldObj.rayTraceBlocks(positionVec, hitVec, false);
-	}
-   
-	/**
-	 * Gets the players position vector
-	 * 
-	 * @return the position vector
-	 */
-	public Vec3 getPositionVec(float partialTickTime) {
-		double offsetY = player.posY + player.getEyeHeight();
-		if (partialTickTime == 1.0F) {
-			return new Vec3(player.posX, offsetY, player.posZ);
-		} else {
-			double var2 = player.prevPosX + (player.posX - player.prevPosX) * partialTickTime;
-			double var4 = player.prevPosY + (offsetY - (player.prevPosY + player.getEyeHeight())) * partialTickTime;
-			double var6 = player.prevPosZ + (player.posZ - player.prevPosZ) * partialTickTime;
-			return new Vec3(var2, var4, var6);
-		}
-	}
-
-	/**
-	 * @return the current game type
-	 */
-	public String getGameType() {
-		return MinecraftServer.getServer().getGameType().getName();
-	}
-   
-	/**
-	 * Sets the current game type
-	 */
-	public boolean setGameType(String gametype) {
-		GameType chosen = null;
-		if ((chosen = GameType.getByName(gametype)) == null) {
-			return false;
-		}
-		player.setGameType(chosen);
-		return true;
-	}
    
 	/**
 	 * @return the players name
@@ -377,40 +188,6 @@ public class Player {
 	}
    
 	/**
-	 * Sets the players motion
-	 */
-	public void setMotion(Coordinate motion) {
-		player.motionX = motion.getX();
-		player.motionY = motion.getY();
-		player.motionZ = motion.getZ();
-	}
-   
-	/**
-	 * @return the players motion
-	 */
-	public Coordinate getMotion() {
-		return new Coordinate(player.motionX, player.motionY, player.motionZ);
-	}
-   
-	/**
-	 * @return whether the blocks around are air blocks
-	 */
-	public boolean isClear(Coordinate location) {
-		return getWorld().isAirBlock(location.getBlockX(), location.getBlockY(), location.getBlockZ())
-		&& getWorld().isAirBlock(location.getBlockX(), location.getBlockY() + 1, location.getBlockZ())
-		&& !(getWorld().isAirBlock(location.getBlockX(), location.getBlockY() - 1, location.getBlockZ()));
-	}
-   
-	/**
-	 * @return whether the blocks below are air blocks
-	 */
-	public boolean isClearBelow(Coordinate location) {
-		return getWorld().isAirBlock(location.getBlockX(), location.getBlockY(), location.getBlockZ())
-		&& getWorld().isAirBlock(location.getBlockX(), location.getBlockY() + 1, location.getBlockZ())
-		&& getWorld().isAirBlock(location.getBlockX(), location.getBlockY() - 1, location.getBlockZ());
-	}
-   
-	/**
 	 * @return the players forward movement
 	 */
 	public float getMovementForward() {
@@ -441,7 +218,7 @@ public class Player {
 	/**
 	 * @return the {@link EntityPlayer} object
 	 */
-	public EntityPlayer getMinecraftPlayer() {
+	public EntityPlayerMP getMinecraftPlayer() {
 		return player;
 	}
    
@@ -504,22 +281,15 @@ public class Player {
 	/**
 	 * @return the player's spawn point
 	 */
-	public Coordinate getSpawn() {
-		return this.player.getBedLocation() != null ? new Coordinate(this.player.getBedLocation().getX(), this.player.getBedLocation().getY(), this.player.getBedLocation().getZ()) : null;
+	public BlockPos getSpawn() {
+		return this.player.getBedLocation();
 	}
 	
 	/**
 	 * Sets the players spawn point
 	 */
-	public void setSpawn(Coordinate coord) {
-		this.player.setSpawnChunk(new BlockPos(coord.getBlockX(), coord.getBlockY(), coord.getBlockZ()), true, player.dimension);
-	}
-	
-	/**
-	 * Sets the players spawn point
-	 */
-	public void setSpawn(int x, int y, int z) {
-		this.player.setSpawnChunk(new BlockPos(x, y, z), true, player.dimension);
+	public void setSpawn(BlockPos coord) {
+		this.player.setSpawnChunk(coord, true, player.dimension);
 	}
    
 	/**
@@ -543,12 +313,5 @@ public class Player {
 	 */
 	public boolean isCreativeMode() {
 		return player.capabilities.isCreativeMode;
-	}
-   
-	/**
-	 * @return The display name
-	 */
-	public String getDisplayName() {
-		return player.getDisplayName().getUnformattedText();
 	}
 }

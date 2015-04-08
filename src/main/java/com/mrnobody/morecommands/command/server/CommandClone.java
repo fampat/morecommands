@@ -1,13 +1,14 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.util.BlockPos;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
 import com.mrnobody.morecommands.wrapper.World;
 
 @Command(
@@ -35,28 +36,29 @@ public class CommandClone extends ServerCommand {
 		
 		if (params.length > 0) {
 			try {quantity = Integer.parseInt(params[0]);}
-			catch (NumberFormatException nfe) {sender.sendLangfileMessageToPlayer("command.clone.invalidArg", new Object[0]); return;}
+			catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.clone.invalidArg", new Object[0]); return;}
 		}
 		
-		Entity entity = sender.toPlayer().traceEntity(128.0D);
+		com.mrnobody.morecommands.wrapper.Entity player = new com.mrnobody.morecommands.wrapper.Entity((Entity) sender.getMinecraftISender());
+		Entity entity = player.traceEntity(128.0D);
 		
 		if (entity == null) {
-			sender.sendLangfileMessageToPlayer("command.clone.noNPCFound", new Object[0]);
+			sender.sendLangfileMessage("command.clone.noNPCFound", new Object[0]);
 			return;
 		}
 		
 		String name = EntityList.getEntityString(entity);
-		World world = sender.toPlayer().getWorld();
-		Coordinate coord = new Coordinate(entity.posX, entity.posY, entity.posZ);
+		World world = player.getWorld();
+		BlockPos coord = player.getPosition();
 		
 		for (int i = 0; i < quantity; i++) {
 			if (!com.mrnobody.morecommands.wrapper.Entity.spawnEntity(name, coord, world)) {
-				sender.sendStringMessageToPlayer("An Error occurred during cloning NPC '" + name + "'");
+				sender.sendStringMessage("An Error occurred during cloning NPC '" + name + "'");
 				return;
 			}
 		}
 		
-		sender.sendLangfileMessageToPlayer("command.clone.success", new Object[0]);
+		sender.sendLangfileMessage("command.clone.success", new Object[0]);
 	}
 	
 	@Override
@@ -75,5 +77,10 @@ public class CommandClone extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof Entity;
 	}
 }

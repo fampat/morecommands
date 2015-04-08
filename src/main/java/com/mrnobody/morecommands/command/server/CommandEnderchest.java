@@ -1,7 +1,10 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
@@ -27,8 +30,7 @@ public class CommandEnderchest extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
-		player.getMinecraftPlayer().displayGUIChest(player.getMinecraftPlayer().getInventoryEnderChest());
+		((EntityPlayerMP) sender.getMinecraftISender()).displayGUIChest(((EntityPlayerMP) sender.getMinecraftISender()).getInventoryEnderChest());
 	}
 
 	@Override
@@ -47,5 +49,10 @@ public class CommandEnderchest extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

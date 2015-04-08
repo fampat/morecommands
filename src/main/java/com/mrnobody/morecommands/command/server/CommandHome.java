@@ -1,10 +1,13 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.util.BlockPos;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
 import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
@@ -28,10 +31,10 @@ public class CommandHome extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
-		Coordinate spawn = player.getSpawn() == null ? player.getWorld().getSpawn() : player.getSpawn();
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		BlockPos spawn = player.getSpawn() == null ? player.getWorld().getSpawn() : player.getSpawn();
 		player.setPosition(spawn);
-		sender.sendLangfileMessageToPlayer("command.home.atHome", new Object[0]);
+		sender.sendLangfileMessage("command.home.atHome", new Object[0]);
 	}
 	
 	@Override
@@ -50,5 +53,10 @@ public class CommandHome extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

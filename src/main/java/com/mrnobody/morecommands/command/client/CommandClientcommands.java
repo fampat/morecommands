@@ -52,18 +52,18 @@ public class CommandClientcommands extends ClientCommand
         boolean success = false;
         	
         if (params.length >= 1) {
-        	if (params[0].toLowerCase().equals("enable")) {clientcommands = true; success = true;}
-        	else if (params[0].toLowerCase().equals("disable")) {clientcommands = false; success = true;}
-        	else if (params[0].toLowerCase().equals("0")) {clientcommands = false; success = true;}
-        	else if (params[0].toLowerCase().equals("1")) {clientcommands = true; success = true;}
-        	else if (params[0].toLowerCase().equals("on")) {clientcommands = true; success = true;}
-        	else if (params[0].toLowerCase().equals("off")) {clientcommands = false; success = true;}
+        	if (params[0].equalsIgnoreCase("enable")) {clientcommands = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("disable")) {clientcommands = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("0")) {clientcommands = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("1")) {clientcommands = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("on")) {clientcommands = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("off")) {clientcommands = false; success = true;}
         }
         	
         if (success && clientcommands) this.enableClientCommands();
         else if (success && !clientcommands) this.disableClientCommands();
         	
-        sender.sendLangfileMessageToPlayer(success ? clientcommands ? "command.clientcommands.on" : "command.clientcommands.off" : "command.clientcommands.failure", new Object[0]);
+        sender.sendLangfileMessage(success ? clientcommands ? "command.clientcommands.on" : "command.clientcommands.off" : "command.clientcommands.failure", new Object[0]);
     }
 	
 	private void enableClientCommands() {

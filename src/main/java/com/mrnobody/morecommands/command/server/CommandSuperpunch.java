@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -72,19 +73,19 @@ public class CommandSuperpunch extends ServerCommand implements Listener<AttackE
         if (params.length > 0) {
         	if (params[0].equalsIgnoreCase("reset")) {
         		settings.superpunch = -1;
-        		sender.sendLangfileMessageToPlayer("command.superpunch.reset", new Object[0]);
+        		sender.sendLangfileMessage("command.superpunch.reset", new Object[0]);
         	}
         	else {
         		try {
         			settings.superpunch = Integer.parseInt(params[0]);
-        			sender.sendLangfileMessageToPlayer("command.superpunch.success", new Object[0]);
+        			sender.sendLangfileMessage("command.superpunch.success", new Object[0]);
         		}
         		catch (NumberFormatException nfe) {
-        			sender.sendLangfileMessageToPlayer("command.superpunch.NAN", new Object[0]);
+        			sender.sendLangfileMessage("command.superpunch.NAN", new Object[0]);
         		}
         	}
         }
-        else sender.sendLangfileMessageToPlayer("command.superpunch.invalidUsage", new Object[0]);
+        else sender.sendLangfileMessage("command.superpunch.invalidUsage", new Object[0]);
 	}
 
 	@Override
@@ -100,6 +101,11 @@ public class CommandSuperpunch extends ServerCommand implements Listener<AttackE
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
     
     private void attackWithSuperpunch(EntityPlayer player, Entity target, int factor)

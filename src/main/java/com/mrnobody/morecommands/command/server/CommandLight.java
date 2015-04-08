@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
@@ -34,7 +35,7 @@ public class CommandLight extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		EntityPlayerMP player = (EntityPlayerMP) sender.toPlayer().getMinecraftPlayer();
+		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
 		
 		ServerPlayerSettings ability = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
     	ability.lightWorld = !ability.lightWorld;
@@ -42,8 +43,8 @@ public class CommandLight extends ServerCommand {
     	S07PacketLight packet = new S07PacketLight();
     	MoreCommands.getMoreCommands().getNetwork().sendTo(packet, player);
     		
-    	if (!ability.lightWorld) sender.sendLangfileMessageToPlayer("command.light.restore", new Object[0]);
-    	else sender.sendLangfileMessageToPlayer("command.light.lightup", new Object[0]);
+    	if (!ability.lightWorld) sender.sendLangfileMessage("command.light.restore", new Object[0]);
+    	else sender.sendLangfileMessage("command.light.lightup", new Object[0]);
 	}
 	
 	@Override
@@ -62,5 +63,10 @@ public class CommandLight extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

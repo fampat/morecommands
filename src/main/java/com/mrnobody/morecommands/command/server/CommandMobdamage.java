@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.projectile.EntityArrow;
@@ -57,19 +58,21 @@ public class CommandMobdamage extends ServerCommand implements Listener<LivingHu
         boolean success = false;
         	
         if (params.length >= 1) {
-        	if (params[0].toLowerCase().equals("true")) {mobdamage = true; success = true;}
-        	else if (params[0].toLowerCase().equals("false")) {mobdamage = false; success = true;}
-        	else if (params[0].toLowerCase().equals("0")) {mobdamage = false; success = true;}
-        	else if (params[0].toLowerCase().equals("1")) {mobdamage = true; success = true;}
-        	else if (params[0].toLowerCase().equals("on")) {mobdamage = true; success = true;}
-        	else if (params[0].toLowerCase().equals("off")) {mobdamage = false; success = true;}
+        	if (params[0].equalsIgnoreCase("true")) {mobdamage = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("false")) {mobdamage = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("0")) {mobdamage = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("1")) {mobdamage = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("on")) {mobdamage = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("off")) {mobdamage = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {mobdamage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {mobdamage = false; success = true;}
         	else {success = false;}
         }
         else {mobdamage = !ability.mobdamage; success = true;}
         	
         if (success) ability.mobdamage = mobdamage;
         	
-        sender.sendLangfileMessageToPlayer(success ? mobdamage ? "command.mobdamage.on" : "command.mobdamage.off" : "command.mobdamage.failure", new Object[0]);
+        sender.sendLangfileMessage(success ? mobdamage ? "command.mobdamage.on" : "command.mobdamage.off" : "command.mobdamage.failure", new Object[0]);
 	}
 	
 	@Override
@@ -90,5 +93,10 @@ public class CommandMobdamage extends ServerCommand implements Listener<LivingHu
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.item.EntityFireworkRocket;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.InventoryCrafting;
@@ -17,14 +17,13 @@ import net.minecraft.item.ItemFireworkCharge;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.RecipeFireworks;
+import net.minecraft.util.BlockPos;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
 import com.mrnobody.morecommands.wrapper.Entity;
-import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
 		name = "firework",
@@ -65,9 +64,9 @@ public class CommandFirework extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
-		Coordinate spawn = sender.toPlayer().trace(128.0D);
-		if (spawn == null) {sender.sendLangfileMessageToPlayer("command.firework.notFound", new Object[0]); return;}
+		Entity entity = new Entity((net.minecraft.entity.Entity) sender.getMinecraftISender());
+		BlockPos spawn = entity.traceBlock(128.0D);
+		if (spawn == null) {sender.sendLangfileMessage("command.firework.notFound", new Object[0]); return;}
 		
 		Random rand = new Random();
 		List recipes = CraftingManager.getInstance().getRecipeList();
@@ -121,8 +120,8 @@ public class CommandFirework extends ServerCommand {
 				if (output.getItem() instanceof ItemFirework) {
 					ItemFirework firework = (ItemFirework) output.getItem();
 					
-					EntityFireworkRocket rocket = new EntityFireworkRocket(player.getWorld().getMinecraftWorld(), spawn.getX(), spawn.getY(), spawn.getZ(), output);;
-					player.getWorld().getMinecraftWorld().spawnEntityInWorld(rocket);
+					EntityFireworkRocket rocket = new EntityFireworkRocket(entity.getWorld().getMinecraftWorld(), spawn.getX(), spawn.getY(), spawn.getZ(), output);;
+					entity.getWorld().getMinecraftWorld().spawnEntityInWorld(rocket);
 				}
 			}
 		}
@@ -144,5 +143,10 @@ public class CommandFirework extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof net.minecraft.entity.Entity;
 	}
 }

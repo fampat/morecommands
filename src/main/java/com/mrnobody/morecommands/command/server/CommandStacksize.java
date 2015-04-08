@@ -2,6 +2,7 @@ package com.mrnobody.morecommands.command.server;
 
 import java.util.Iterator;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.item.Item;
 
 import com.mrnobody.morecommands.command.Command;
@@ -30,7 +31,7 @@ public class CommandStacksize extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		sender.sendStringMessageToPlayer("This command is currently not working properly, please wait for a fix");
+		sender.sendStringMessage("This command is currently not working properly, please wait for a fix");
 		return;
 		
 		/*if (!(sender.toPlayer().getMinecraftPlayer().inventory instanceof InventoryPlayer)) {
@@ -118,5 +119,10 @@ public class CommandStacksize extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return false;
 	}
 }

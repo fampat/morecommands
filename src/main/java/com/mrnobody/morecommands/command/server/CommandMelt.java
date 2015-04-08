@@ -1,13 +1,14 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
 		name = "melt",
@@ -33,11 +34,10 @@ public class CommandMelt extends ServerCommand {
 		boolean all = false;
 		if (params.length > 0 && params[0].equalsIgnoreCase("all")) all = true;
 		
-		Player player = sender.toPlayer();
-		ItemStack[] mainInventory = player.getMinecraftPlayer().inventory.mainInventory;
+		ItemStack[] mainInventory = ((EntityPlayerMP) sender.getMinecraftISender()).inventory.mainInventory;
 		
 		int length = all ? mainInventory.length : 1;
-		int start = all ? 0 : player.getCurrentSlot();
+		int start = all ? 0 : ((EntityPlayerMP) sender.getMinecraftISender()).inventory.currentItem;
 		ItemStack result;
 		int smelt = 0;
 		
@@ -48,7 +48,7 @@ public class CommandMelt extends ServerCommand {
 			if (result != null) smelt++;
 		}
 		
-		sender.sendLangfileMessageToPlayer("command.melt.molten", new Object[] {smelt});
+		sender.sendLangfileMessage("command.melt.molten", new Object[] {smelt});
 	}
 	
 	@Override
@@ -67,5 +67,10 @@ public class CommandMelt extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

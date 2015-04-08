@@ -2,13 +2,14 @@ package com.mrnobody.morecommands.command.server;
 
 import java.util.Iterator;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.item.EntityTNTPrimed;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
 
 import com.mrnobody.morecommands.command.Command;
@@ -41,13 +42,13 @@ public class CommandDefuse extends ServerCommand {
 		
 		if (params.length > 0) {
 			try {radius = Double.parseDouble(params[0]);}
-			catch (NumberFormatException nfe) {sender.sendLangfileMessageToPlayer("command.defuse.invalidArg", new Object[0]); return;}
+			catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.defuse.invalidArg", new Object[0]); return;}
 		}
 		
-		World world = sender.toPlayer().getWorld().getMinecraftWorld();
-		EntityPlayer player = sender.toPlayer().getMinecraftPlayer();
+		World world = sender.getWorld().getMinecraftWorld();
+		BlockPos pos = sender.getPosition();
 		
-		Iterator<Entity> tntPrimedIterator = world.getEntitiesWithinAABB(EntityTNTPrimed.class, new AxisAlignedBB(player.posX - radius, player.posY - radius, player.posZ - radius, player.posX + radius, player.posY + radius, player.posZ + radius)).iterator();
+		Iterator<Entity> tntPrimedIterator = world.getEntitiesWithinAABB(EntityTNTPrimed.class, new AxisAlignedBB(pos.getX() - radius, pos.getY() - radius, pos.getZ() - radius, pos.getX() + radius, pos.getY() + radius, pos.getZ() + radius)).iterator();
 	
 		while (tntPrimedIterator.hasNext()) {
 			Entity tntPrimed = tntPrimedIterator.next();
@@ -57,7 +58,7 @@ public class CommandDefuse extends ServerCommand {
 			world.spawnEntityInWorld(tnt);
 		}
 		
-		sender.sendLangfileMessageToPlayer("command.defuse.defused", new Object[0]);
+		sender.sendLangfileMessage("command.defuse.defused", new Object[0]);
 	}
 	
 	@Override
@@ -76,5 +77,10 @@ public class CommandDefuse extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return true;
 	}
 }

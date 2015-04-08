@@ -1,10 +1,13 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.util.BlockPos;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
+import com.mrnobody.morecommands.wrapper.Entity;
 
 @Command(
 		name = "jump",
@@ -27,15 +30,15 @@ public class CommandJump extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		com.mrnobody.morecommands.wrapper.Player player = sender.toPlayer();
-		Coordinate hit = player.trace(128);
+		Entity entity = new Entity((net.minecraft.entity.Entity) sender.getMinecraftISender());
+		BlockPos hit = entity.traceBlock(128);
 		
-		if (hit == null) {sender.sendLangfileMessageToPlayer("command.jump.notInSight", new Object[0]);}
+		if (hit == null) {sender.sendLangfileMessage("command.jump.notInSight", new Object[0]);}
 		else {
-			int y = hit.getBlockY() + 1;
+			int y = hit.getY() + 1;
 			while (y < 260) {
-				if (player.isClear(new Coordinate(hit.getBlockX(), y++, hit.getBlockZ()))) {
-					player.setPosition(new Coordinate(hit.getBlockX() + 0.5F, --y, hit.getBlockZ() + 0.5F));
+				if (entity.getWorld().isClear(new BlockPos(hit.getX(), y++, hit.getZ()))) {
+					entity.setPosition(new BlockPos(hit.getX() + 0.5F, --y, hit.getZ() + 0.5F));
 					break;
 				}
 			}
@@ -58,5 +61,10 @@ public class CommandJump extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof net.minecraft.entity.Entity;
 	}
 }

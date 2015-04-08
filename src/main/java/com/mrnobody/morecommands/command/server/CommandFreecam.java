@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
@@ -34,17 +35,17 @@ public class CommandFreecam extends ServerCommand {
 		
 		if (ability.freecam) {
     		S03PacketFreecam packet = new S03PacketFreecam();
-    		MoreCommands.getMoreCommands().getNetwork().sendTo(packet, (EntityPlayerMP) sender.toPlayer().getMinecraftPlayer());
+    		MoreCommands.getMoreCommands().getNetwork().sendTo(packet, (EntityPlayerMP) sender.getMinecraftISender());
 			
 			ability.freecam = false;
-			sender.sendLangfileMessageToPlayer("command.freecam.off", new Object[0]);
+			sender.sendLangfileMessage("command.freecam.off", new Object[0]);
 		}
 		else {
     		S03PacketFreecam packet = new S03PacketFreecam();
-    		MoreCommands.getMoreCommands().getNetwork().sendTo(packet, (EntityPlayerMP) sender.toPlayer().getMinecraftPlayer());
+    		MoreCommands.getMoreCommands().getNetwork().sendTo(packet, (EntityPlayerMP) sender.getMinecraftISender());
 			
 			ability.freecam = true;
-            sender.sendLangfileMessageToPlayer("command.freecam.on", new Object[0]);
+            sender.sendLangfileMessage("command.freecam.on", new Object[0]);
 		}
 	}
 	
@@ -64,5 +65,10 @@ public class CommandFreecam extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

@@ -1,25 +1,14 @@
 package com.mrnobody.morecommands.command.server;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-
-import net.minecraft.client.Minecraft;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraftforge.client.ClientCommandHandler;
 
-import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.util.Reference;
+import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.util.Settings;
 
 @Command(
 	name = "inventory",
@@ -43,23 +32,23 @@ public class CommandInventory extends ServerCommand {
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 1) {
 			ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
-			if (settings == null) {sender.sendLangfileMessageToPlayer("command.inventory.notSettingsFound", new Object[0]); return;}
+			if (settings == null) {sender.sendLangfileMessage("command.inventory.notSettingsFound", new Object[0]); return;}
 			
 			if ((params[0].equalsIgnoreCase("delete") || params[0].equalsIgnoreCase("del") || params[0].equalsIgnoreCase("remove") || params[0].equalsIgnoreCase("rem"))) {
 				NBTTagList inventory = settings.inventories.get(params[1]);
-				if (inventory == null) {sender.sendLangfileMessageToPlayer("command.inventory.notFound", new Object[] {params[1]}); return;}
+				if (inventory == null) {sender.sendLangfileMessage("command.inventory.notFound", new Object[] {params[1]}); return;}
 				
 				settings.inventories.remove(params[1]);
 				settings.saveSettings();
 				
-				sender.sendLangfileMessageToPlayer("command.inventory.removeSuccess", params[1]);
+				sender.sendLangfileMessage("command.inventory.removeSuccess", params[1]);
 			}
 			else if (params[0].equalsIgnoreCase("load")) {
 				NBTTagList inventory = settings.inventories.get(params[1]);
-				if (inventory == null) {sender.sendLangfileMessageToPlayer("command.inventory.notFound", new Object[] {params[1]}); return;}
+				if (inventory == null) {sender.sendLangfileMessage("command.inventory.notFound", new Object[] {params[1]}); return;}
 				
 				((EntityPlayerMP) sender.getMinecraftISender()).inventory.readFromNBT(inventory);
-				sender.sendLangfileMessageToPlayer("command.inventory.loadSuccess", new Object[] {params[1]});
+				sender.sendLangfileMessage("command.inventory.loadSuccess", new Object[] {params[1]});
 			}
 			else if (params[0].equalsIgnoreCase("save")) {
 				NBTTagList inventory = new NBTTagList();
@@ -68,11 +57,11 @@ public class CommandInventory extends ServerCommand {
 				settings.inventories.put(params[1], inventory);
 				settings.saveSettings();
 				
-				sender.sendLangfileMessageToPlayer("command.inventory.saveSuccess", new Object[] {params[1]});
+				sender.sendLangfileMessage("command.inventory.saveSuccess", new Object[] {params[1]});
 			}
-			else sender.sendLangfileMessageToPlayer("command.inventory.invalidUsage", new Object[0]);
+			else sender.sendLangfileMessage("command.inventory.invalidUsage", new Object[0]);
 		}
-		else sender.sendLangfileMessageToPlayer("command.inventory.invalidUsage", new Object[0]);
+		else sender.sendLangfileMessage("command.inventory.invalidUsage", new Object[0]);
 	}
 
 	@Override
@@ -92,4 +81,9 @@ public class CommandInventory extends ServerCommand {
 
 	@Override
 	public void unregisterFromHandler() {}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
+	}
 }

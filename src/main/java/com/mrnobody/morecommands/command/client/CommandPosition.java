@@ -34,7 +34,7 @@ public class CommandPosition extends ClientCommand {
 		EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
 		DecimalFormat f = new DecimalFormat("#.##");
 		
-		sender.sendStringMessageToPlayer("Your current position is:"
+		sender.sendStringMessage("Your current position is:"
 				+ " X = " + f.format(player.posX)
 				+ "; Y = " + f.format(player.posY)
 				+ "; Z = " + f.format(player.posZ));

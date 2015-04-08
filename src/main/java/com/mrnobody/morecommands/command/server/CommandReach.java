@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
@@ -29,7 +30,7 @@ public class CommandReach extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		EntityPlayerMP playerEntity = (EntityPlayerMP) sender.toPlayer().getMinecraftPlayer();
+		EntityPlayerMP playerEntity = (EntityPlayerMP) sender.getMinecraftISender();
 			
 		if (params.length > 0) {
 			try {
@@ -40,18 +41,18 @@ public class CommandReach extends ServerCommand {
 				MoreCommands.getMoreCommands().getNetwork().sendTo(packet, playerEntity);
 				
 				playerEntity.theItemInWorldManager.setBlockReachDistance(distance);
-				sender.sendLangfileMessageToPlayer("command.reach.set", new Object[] {params[0]});
+				sender.sendLangfileMessage("command.reach.set", new Object[] {params[0]});
 			}
 			catch (NumberFormatException e) {
-				if (params[0].toLowerCase().equals("reset")) {
+				if (params[0].equalsIgnoreCase("reset")) {
 					S08PacketReach packet = new S08PacketReach();
 					packet.reachDistance = 5.0F;
 					MoreCommands.getMoreCommands().getNetwork().sendTo(packet, playerEntity);
 					
 					playerEntity.theItemInWorldManager.setBlockReachDistance(5.0F);
-					sender.sendLangfileMessageToPlayer("command.reach.reset", new Object[0]);
+					sender.sendLangfileMessage("command.reach.reset", new Object[0]);
 				}
-				else {sender.sendLangfileMessageToPlayer("command.reach.invalidArg", new Object[0]);}
+				else {sender.sendLangfileMessage("command.reach.invalidArg", new Object[0]);}
 			}
 		}
 	}
@@ -72,5 +73,10 @@ public class CommandReach extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

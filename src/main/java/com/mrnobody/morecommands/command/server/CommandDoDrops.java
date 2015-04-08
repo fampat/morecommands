@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 
@@ -41,7 +42,7 @@ public class CommandDoDrops extends ServerCommand implements Listener<EntityJoin
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		GlobalSettings.dodrops = !GlobalSettings.dodrops;
-		sender.sendLangfileMessageToPlayer(GlobalSettings.dodrops ? "command.dodrops.enabled" : "command.dodrops.disabled", new Object[0]);
+		sender.sendLangfileMessage(GlobalSettings.dodrops ? "command.dodrops.enabled" : "command.dodrops.disabled", new Object[0]);
 	}
 	
 	@Override
@@ -62,5 +63,10 @@ public class CommandDoDrops extends ServerCommand implements Listener<EntityJoin
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return true;
 	}
 }

@@ -1,5 +1,7 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.patch.EntityPlayerMP;
@@ -36,19 +38,21 @@ public class CommandSprint extends ServerCommand {
     	boolean success = false;
     	
     	if (params.length >= 1) {
-    		if (params[0].toLowerCase().equals("true")) {sprinting = true; success = true;}
-    		else if (params[0].toLowerCase().equals("false")) {sprinting = false; success = true;}
-    		else if (params[0].toLowerCase().equals("0")) {sprinting = false; success = true;}
-    		else if (params[0].toLowerCase().equals("1")) {sprinting = true; success = true;}
-    		else if (params[0].toLowerCase().equals("on")) {sprinting = true; success = true;}
-    		else if (params[0].toLowerCase().equals("off")) {sprinting = false; success = true;}
+    		if (params[0].equalsIgnoreCase("true")) {sprinting = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("false")) {sprinting = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("0")) {sprinting = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("1")) {sprinting = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("on")) {sprinting = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("off")) {sprinting = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {sprinting = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {sprinting = false; success = true;}
     		else {success = false;}
     	}
     	else {sprinting = !player.getInfniteSprinting(); success = true;}
     	
     	if (success) {player.setInfniteSprinting(sprinting); player.setSprinting(sprinting);}
     	
-    	sender.sendLangfileMessageToPlayer(success ? sprinting ? "command.sprint.on" : "command.sprint.off" : "command.sprint.failure", new Object[0]);
+    	sender.sendLangfileMessage(success ? sprinting ? "command.sprint.on" : "command.sprint.off" : "command.sprint.failure", new Object[0]);
 	}
 
 	@Override
@@ -64,5 +68,10 @@ public class CommandSprint extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

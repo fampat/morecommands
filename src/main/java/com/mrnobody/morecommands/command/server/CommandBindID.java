@@ -1,6 +1,8 @@
 package com.mrnobody.morecommands.command.server;
 
 import net.minecraft.command.CommandHandler;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 
 import com.mrnobody.morecommands.command.Command;
@@ -40,7 +42,7 @@ public class CommandBindID extends ServerCommand {
 				String command = params[1];
 				
 				if (!this.commandHandler.getCommands().containsKey(command) && !settings.clientCommands.contains(command)) {
-					sender.sendLangfileMessageToPlayer("command.generic.notFound", new Object[0]);
+					sender.sendLangfileMessage("command.generic.notFound", new Object[0]);
 					return;
 				}
 				
@@ -62,12 +64,12 @@ public class CommandBindID extends ServerCommand {
 					
 					settings.saveSettings();
 					
-					sender.sendLangfileMessageToPlayer("command.bindid.success", new Object[0]);
+					sender.sendLangfileMessage("command.bindid.success", new Object[0]);
 				}
-				else {sender.sendLangfileMessageToPlayer("command.bindid.invalidChar", new Object[0]);}
-			} catch (NumberFormatException e) {sender.sendLangfileMessageToPlayer("command.bind.invalidID", new Object[0]);}
+				else {sender.sendLangfileMessage("command.bindid.invalidChar", new Object[0]);}
+			} catch (NumberFormatException e) {sender.sendLangfileMessage("command.bind.invalidID", new Object[0]);}
 		}
-		else {sender.sendLangfileMessageToPlayer("command.bindid.invalidUsage", new Object[0]);}
+		else {sender.sendLangfileMessage("command.bindid.invalidUsage", new Object[0]);}
 	}
 	
 	@Override
@@ -86,5 +88,10 @@ public class CommandBindID extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 0;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

@@ -6,10 +6,12 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
 
 import com.mrnobody.morecommands.command.Command;
@@ -43,14 +45,14 @@ public class CommandConfusesuicide extends ServerCommand {
 		
 		if (params.length > 0) {
 			try {radius = Double.parseDouble(params[0]);}
-			catch (NumberFormatException nfe) {sender.sendLangfileMessageToPlayer("command.confusesuicide.invalidArg", new Object[0]); return;}
-			if (radius > this.RADIUS_MAX) {sender.sendLangfileMessageToPlayer("command.confusesuicide.invalidRadius", new Object[0]); return;}
+			catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.confusesuicide.invalidArg", new Object[0]); return;}
+			if (radius > this.RADIUS_MAX) {sender.sendLangfileMessage("command.confusesuicide.invalidRadius", new Object[0]); return;}
 		}
 		
 		List<EntityCreature> entities = new ArrayList<EntityCreature>();
 		EntityCreature creature;
 		
-		entities = this.getEntitiesInRadius(sender.toPlayer().getMinecraftPlayer(), sender.toPlayer().getWorld().getMinecraftWorld(), EntityCreature.class, radius * radius);
+		entities = this.getEntitiesInRadius((EntityPlayerMP) sender.getMinecraftISender(), ((EntityPlayerMP) sender.getMinecraftISender()).worldObj, EntityCreature.class, radius * radius);
 		
 		Iterator<EntityCreature> entityIterator = entities.iterator();
 		
@@ -60,7 +62,7 @@ public class CommandConfusesuicide extends ServerCommand {
 			creature.setRevengeTarget(creature);
 		}
         
-		sender.sendLangfileMessageToPlayer("command.confusesuicide.confused", new Object[] {entities.size(), radius});
+		sender.sendLangfileMessage("command.confusesuicide.confused", new Object[] {entities.size(), radius});
 	}
 	
 	private <T extends EntityLivingBase> List<T> getEntitiesInRadius(final EntityPlayer player, World world, Class<T> class1, double d) {
@@ -100,5 +102,10 @@ public class CommandConfusesuicide extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

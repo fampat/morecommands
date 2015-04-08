@@ -3,16 +3,16 @@ package com.mrnobody.morecommands.command.server;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.entity.Entity;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.item.EntityPainting;
 import net.minecraft.entity.item.EntityPainting.EnumArt;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumFacing;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.wrapper.Entity;
 
 @Command(
 		name = "cyclepainting",
@@ -35,13 +35,13 @@ public class CommandCyclepainting extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		EntityPlayer playerEntity = sender.toPlayer().getMinecraftPlayer();
+		Entity entity = new Entity((net.minecraft.entity.Entity) sender.getMinecraftISender());
 		
-		boolean sneaking = playerEntity.isSneaking();
-		Entity hit = sender.toPlayer().traceEntity(128.0D);
+		boolean sneaking = entity.getMinecraftEntity().isSneaking();
+		net.minecraft.entity.Entity hit = entity.traceEntity(128.0D);
 		
 		if (!(hit instanceof EntityPainting) || hit.isDead) {
-        	sender.sendLangfileMessageToPlayer("command.cyclepainting.noPainting", new Object[0]);
+        	sender.sendLangfileMessage("command.cyclepainting.noPainting", new Object[0]);
             return;
         }
 		
@@ -62,17 +62,17 @@ public class CommandCyclepainting extends ServerCommand {
 		        
 		if (arts.size() <= 1) {
 			newPicture.art = oldArt;
-			sender.toPlayer().getMinecraftPlayer().worldObj.removeEntity(picture);
-			sender.toPlayer().getMinecraftPlayer().worldObj.spawnEntityInWorld(newPicture);
-			sender.sendLangfileMessageToPlayer("command.cyclepainting.noMoreArts", new Object[0]);
+			entity.getWorld().getMinecraftWorld().removeEntity(picture);
+			sender.getWorld().getMinecraftWorld().spawnEntityInWorld(newPicture);
+			sender.sendLangfileMessage("command.cyclepainting.noMoreArts", new Object[0]);
 			return;
 		}
 		        
 		int newArt = sneaking ? (current == 0 ? arts.size() - 1 : current - 1) : (current == arts.size() - 1 ? 0 : current + 1);
 
 		newPicture.art = arts.get(newArt);
-		sender.toPlayer().getMinecraftPlayer().worldObj.removeEntity(picture);
-		sender.toPlayer().getMinecraftPlayer().worldObj.spawnEntityInWorld(newPicture);
+		sender.getWorld().getMinecraftWorld().removeEntity(picture);
+		sender.getWorld().getMinecraftWorld().spawnEntityInWorld(newPicture);
 	}
 	
 	@Override
@@ -91,5 +91,10 @@ public class CommandCyclepainting extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 0;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof net.minecraft.entity.Entity;
 	}
 }

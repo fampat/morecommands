@@ -11,7 +11,6 @@ import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.client.ClientCommandHandler;
 
@@ -26,7 +25,6 @@ import com.mrnobody.morecommands.util.Reference;
 import com.mrnobody.morecommands.util.XrayHelper;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.EntityCamera;
-import com.mrnobody.morecommands.wrapper.Player;
 import com.mrnobody.morecommands.wrapper.World;
 
 /**
@@ -257,10 +255,10 @@ public class PacketHandlerClient {
 	public void ride() {
 		EntityPlayer player = Minecraft.getMinecraft().thePlayer;
 		CommandSender sender = new CommandSender(player);
-		Entity hit = (new Player(player)).traceEntity(128.0D);
+		Entity hit = (new com.mrnobody.morecommands.wrapper.Entity(player)).traceEntity(128.0D);
 		
 		if (player.ridingEntity != null) {
-			sender.sendLangfileMessageToPlayer("command.ride.dismounted", new Object[0]);
+			sender.sendLangfileMessage("command.ride.dismounted", new Object[0]);
 			player.mountEntity(null);
 			return;
 		}
@@ -268,10 +266,10 @@ public class PacketHandlerClient {
 		if (hit != null) {
 			if (hit instanceof EntityLiving) {
 				player.mountEntity(hit);
-				sender.sendLangfileMessageToPlayer("command.ride.mounted", new Object[0]);
+				sender.sendLangfileMessage("command.ride.mounted", new Object[0]);
 			}
-			else sender.sendLangfileMessageToPlayer("command.ride.notLiving", new Object[0]);
+			else sender.sendLangfileMessage("command.ride.notLiving", new Object[0]);
 		}
-		else sender.sendLangfileMessageToPlayer("command.ride.notFound", new Object[0]);
+		else sender.sendLangfileMessage("command.ride.notFound", new Object[0]);
 	}
 }

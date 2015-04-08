@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import net.minecraft.block.Block;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.init.Blocks;
 
 import com.mrnobody.morecommands.command.Command;
@@ -12,7 +13,6 @@ import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.util.GlobalSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
 		name = "clearwater",
@@ -41,18 +41,18 @@ public class CommandClearwater extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-    	Player player = sender.toPlayer();
-    	
     	boolean clearwater = !GlobalSettings.clearwater;
     	boolean success = true;
     	
     	if (params.length > 0) {
-    		if (params[0].toLowerCase().equals("true")) {clearwater = true; success = true;}
-    		else if (params[0].toLowerCase().equals("false")) {clearwater = false; success = true;}
-    		else if (params[0].toLowerCase().equals("0")) {clearwater = false; success = true;}
-    		else if (params[0].toLowerCase().equals("1")) {clearwater = true; success = true;}
-    		else if (params[0].toLowerCase().equals("on")) {clearwater = true; success = true;}
-    		else if (params[0].toLowerCase().equals("off")) {clearwater = false; success = true;}
+    		if (params[0].equalsIgnoreCase("true")) {clearwater = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("false")) {clearwater = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("0")) {clearwater = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("1")) {clearwater = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("on")) {clearwater = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("off")) {clearwater = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {clearwater = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {clearwater = false; success = true;}
     		else {success = false;}
     	}
     	
@@ -70,7 +70,7 @@ public class CommandClearwater extends ServerCommand {
     		}
     	}
     	
-    	sender.sendLangfileMessageToPlayer(success ? GlobalSettings.clearwater ? "command.clearwater.on" : "command.clearwater.off" : "command.clearwater.failure", new Object[0]);
+    	sender.sendLangfileMessage(success ? GlobalSettings.clearwater ? "command.clearwater.on" : "command.clearwater.off" : "command.clearwater.failure", new Object[0]);
 	}
 	
 	@Override
@@ -89,5 +89,10 @@ public class CommandClearwater extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return true;
 	}
 }

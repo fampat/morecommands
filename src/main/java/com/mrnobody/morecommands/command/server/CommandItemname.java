@@ -1,9 +1,11 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
@@ -29,7 +31,7 @@ public class CommandItemname extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
 		if (params.length > 0) {
-			EntityPlayer player = sender.toPlayer().getMinecraftPlayer();
+			EntityPlayer player = (EntityPlayer) sender.getMinecraftISender();
 			String name = "";
 			
 			for (String param : params) name += " " + param;
@@ -37,10 +39,10 @@ public class CommandItemname extends ServerCommand {
 			if (player.inventory.mainInventory[player.inventory.currentItem] != null)
 				player.inventory.mainInventory[player.inventory.currentItem].setStackDisplayName(name.trim());
 			else
-				sender.sendLangfileMessageToPlayer("command.itemname.noSelection", new Object[0]);
+				sender.sendLangfileMessage("command.itemname.noSelection", new Object[0]);
 		}
 		else
-			sender.sendLangfileMessageToPlayer("command.itemname.invalidUsage", new Object[0]);
+			sender.sendLangfileMessage("command.itemname.invalidUsage", new Object[0]);
 	}
 	
 	@Override
@@ -59,5 +61,10 @@ public class CommandItemname extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 
@@ -52,19 +53,21 @@ public class CommandFalldamage extends ServerCommand implements Listener<LivingF
     	boolean success = false;
     	
     	if (params.length >= 1) {
-    		if (params[0].toLowerCase().equals("true")) {dealDamage = true; success = true;}
-    		else if (params[0].toLowerCase().equals("false")) {dealDamage = false; success = true;}
-    		else if (params[0].toLowerCase().equals("0")) {dealDamage = false; success = true;}
-    		else if (params[0].toLowerCase().equals("1")) {dealDamage = true; success = true;}
-    		else if (params[0].toLowerCase().equals("on")) {dealDamage = true; success = true;}
-    		else if (params[0].toLowerCase().equals("off")) {dealDamage = false; success = true;}
+    		if (params[0].equalsIgnoreCase("true")) {dealDamage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("false")) {dealDamage = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("0")) {dealDamage = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("1")) {dealDamage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("on")) {dealDamage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("off")) {dealDamage = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {dealDamage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {dealDamage = false; success = true;}
     		else {success = false;}
     	}
     	else {dealDamage = !ability.falldamage; success = true;}
     	
     	if (success) ability.falldamage = dealDamage;
     	
-    	sender.sendLangfileMessageToPlayer(success ? dealDamage ? "command.falldamage.on" : "command.falldamage.off" : "command.falldamage.failure", new Object[0]);
+    	sender.sendLangfileMessage(success ? dealDamage ? "command.falldamage.on" : "command.falldamage.off" : "command.falldamage.failure", new Object[0]);
 	}
 	
 	@Override
@@ -85,5 +88,10 @@ public class CommandFalldamage extends ServerCommand implements Listener<LivingF
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

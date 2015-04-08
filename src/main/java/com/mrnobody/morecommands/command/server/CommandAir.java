@@ -1,5 +1,8 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
@@ -14,7 +17,6 @@ import com.mrnobody.morecommands.wrapper.Player;
 		videoURL = "command.air.videoURL"
 		)
 public class CommandAir extends ServerCommand {
-
 	private final int AIR_MIN = 1;
 	private final int AIR_MAX = 300;
 	
@@ -30,19 +32,19 @@ public class CommandAir extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		
 		if (params.length > 0 && player.getMinecraftPlayer().isInWater()) {
-			try {player.setAir(Integer.parseInt(params[0])); sender.sendLangfileMessageToPlayer("command.air.success", new Object[0]);}
+			try {player.setAir(Integer.parseInt(params[0])); sender.sendLangfileMessage("command.air.success", new Object[0]);}
 			catch (NumberFormatException e) {
-				if (params[0].toLowerCase().equals("min")) {player.setAir(this.AIR_MIN); sender.sendLangfileMessageToPlayer("command.air.success", new Object[0]);}
-				else if (params[0].toLowerCase().equals("max")) {player.setAir(this.AIR_MAX); sender.sendLangfileMessageToPlayer("command.air.success", new Object[0]);}
-				else if (params[0].toLowerCase().equals("get")) {sender.sendLangfileMessageToPlayer("command.air.get", new Object[] {player.getMinecraftPlayer().getAir()});}
-				else {sender.sendLangfileMessageToPlayer("command.air.invalidParam", new Object[0]);}
+				if (params[0].equalsIgnoreCase("min")) {player.setAir(this.AIR_MIN); sender.sendLangfileMessage("command.air.success", new Object[0]);}
+				else if (params[0].equalsIgnoreCase("max")) {player.setAir(this.AIR_MAX); sender.sendLangfileMessage("command.air.success", new Object[0]);}
+				else if (params[0].equalsIgnoreCase("get")) {sender.sendLangfileMessage("command.air.get", new Object[] {player.getMinecraftPlayer().getAir()});}
+				else {sender.sendLangfileMessage("command.air.invalidParam", new Object[0]);}
 			}
 		}
-		else if (!player.getMinecraftPlayer().isInWater()) {sender.sendLangfileMessageToPlayer("command.air.notInWater", new Object[0]);}
-		else {sender.sendLangfileMessageToPlayer("command.air.invalidUsage", new Object[0]);}
+		else if (!player.getMinecraftPlayer().isInWater()) {sender.sendLangfileMessage("command.air.notInWater", new Object[0]);}
+		else {sender.sendLangfileMessage("command.air.invalidUsage", new Object[0]);}
 	}
 	
 	@Override
@@ -60,5 +62,10 @@ public class CommandAir extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }

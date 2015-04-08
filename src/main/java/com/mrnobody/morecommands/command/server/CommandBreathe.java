@@ -1,5 +1,8 @@
 package com.mrnobody.morecommands.command.server;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
@@ -28,17 +31,17 @@ public class CommandBreathe extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = sender.toPlayer();
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		int air = 0;
 		
 		if (params.length > 0) {
 			try {air = Integer.parseInt(params[0]);}
-			catch (NumberFormatException e) {sender.sendLangfileMessageToPlayer("command.breathe.noNumber", new Object[0]);}
+			catch (NumberFormatException e) {sender.sendLangfileMessage("command.breathe.noNumber", new Object[0]);}
 		}
 		else air = this.AIR_MAX;
 		
 		if (player.getMinecraftPlayer().isInWater()) {player.setAir(player.getMinecraftPlayer().getAir() + air > this.AIR_MAX ? this.AIR_MAX : player.getMinecraftPlayer().getAir() + air);}
-		else {sender.sendLangfileMessageToPlayer("command.breathe.notInWater", new Object[0]);}
+		else {sender.sendLangfileMessage("command.breathe.notInWater", new Object[0]);}
 	}
 	
 	@Override
@@ -57,5 +60,10 @@ public class CommandBreathe extends ServerCommand {
 	@Override
 	public int getPermissionLevel() {
 		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return sender instanceof EntityPlayerMP;
 	}
 }
