@@ -1,9 +1,8 @@
 package com.mrnobody.morecommands.patch;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-
-import scala.actors.threadpool.Arrays;
 
 import com.mrnobody.morecommands.command.CommandBase;
 
