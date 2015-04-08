@@ -147,7 +147,7 @@ public class Entity {
 	}
    
 	/**
-	 * Gets the players position vector
+	 * Gets the entity's position vector
 	 * 
 	 * @return the position vector
 	 */

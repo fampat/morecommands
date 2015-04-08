@@ -80,6 +80,8 @@ public class CommandFreeze extends ClientCommand implements Listener<TickEvent> 
     		else if (params[0].equalsIgnoreCase("1")) {freeze = true; success = true;}
     		else if (params[0].equalsIgnoreCase("on")) {freeze = true; success = true;}
     		else if (params[0].equalsIgnoreCase("off")) {freeze = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {freeze = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {freeze = false; success = true;}
     		else {success = false;}
     	}
     	else {freeze = !this.freeze; success = true;}

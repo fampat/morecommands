@@ -1,14 +1,9 @@
 package com.mrnobody.morecommands.command;
 
-import java.util.UUID;
-
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 
-import com.mrnobody.morecommands.command.server.CommandFly;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.Patcher;
 import com.mrnobody.morecommands.util.LanguageManager;
@@ -116,10 +111,5 @@ public abstract class ServerCommand extends CommandBase {
     	}
     	
     	return true;
-    }
-    
-    @Override
-    public boolean isUsernameIndex(String[] args, int index) {
-    	return index == args.length - 1;
     }
 }

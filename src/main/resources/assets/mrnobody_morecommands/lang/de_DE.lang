@@ -537,8 +537,8 @@ command.freezecam.off=Freezecam erfolgreich ausgeschaltet
 command.freezecam.on=Freezecam erfolgreich eingeschaltet
 
 command.give.description=Gibt dem Spieler Items
-command.give.example=/give me stone 64
-command.give.syntax=/give <PLAYER|ME <ITEM [ANZAHL] [METADATEN]>>
+command.give.example=/give stone 64
+command.give.syntax=/give <ITEM [ANZAHL] [METADATEN]>
 command.give.videoURL=youtu.be/k884_3P5v2A
 command.give.notFound=Item nicht gefunden
 command.give.noMeta=Das angegebene Item hat keine Metadaten

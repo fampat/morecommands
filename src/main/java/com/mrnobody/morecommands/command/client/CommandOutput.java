@@ -46,6 +46,8 @@ public class CommandOutput extends ClientCommand {
     		else if (params[0].equalsIgnoreCase("1")) {output = true; success = true;}
     		else if (params[0].equalsIgnoreCase("on")) {output = true; success = true;}
     		else if (params[0].equalsIgnoreCase("off")) {output = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {output = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {output = false; success = true;}
     		else {success = false;}
     	}
     	else {output = !CommandSender.output; success = true;}

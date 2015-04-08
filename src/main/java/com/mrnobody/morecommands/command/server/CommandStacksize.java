@@ -3,6 +3,7 @@ package com.mrnobody.morecommands.command.server;
 import java.util.Iterator;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 
 import com.mrnobody.morecommands.command.Command;
@@ -123,6 +124,6 @@ public class CommandStacksize extends ServerCommand {
 	
 	@Override
 	public boolean canSenderUse(ICommandSender sender) {
-		return false;
+		return sender instanceof EntityPlayerMP;
 	}
 }

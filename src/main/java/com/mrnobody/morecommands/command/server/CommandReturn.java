@@ -11,6 +11,7 @@ import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Entity;
+import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
 		name = "return",
@@ -39,9 +40,9 @@ public class CommandReturn extends ServerCommand {
 			return;
 		}
 		
-		Entity entity = new Entity((net.minecraft.entity.Entity) sender.getMinecraftISender());
-		entity.setPosition(settings.lastPos);
-		settings.lastPos = entity.getPosition();
+		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		player.setPosition(settings.lastPos);
+		settings.lastPos = player.getPosition();
 		
 		DecimalFormat f = new DecimalFormat("#.##");
 				
@@ -71,6 +72,6 @@ public class CommandReturn extends ServerCommand {
 	
 	@Override
 	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof net.minecraft.entity.Entity;
+		return sender instanceof EntityPlayerMP;
 	}
 }

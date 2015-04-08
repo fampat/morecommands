@@ -537,8 +537,8 @@ command.freezecam.off=Freezecam successfully turned off
 command.freezecam.on=Freezecam successfully turned on
 
 command.give.description=Gives you items
-command.give.example=/give me stone 64
-command.give.syntax=/give <PLAYER|ME <ITEM [AMOUNT] [METADATA]>>
+command.give.example=/give stone 64
+command.give.syntax=/give <ITEM [AMOUNT] [METADATA]>
 command.give.videoURL=youtu.be/k884_3P5v2A
 command.give.notFound=Item not found
 command.give.noMeta=The specified item doesn't have subtypes

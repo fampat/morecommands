@@ -58,6 +58,8 @@ public class CommandClientcommands extends ClientCommand
         	else if (params[0].equalsIgnoreCase("1")) {clientcommands = true; success = true;}
         	else if (params[0].equalsIgnoreCase("on")) {clientcommands = true; success = true;}
         	else if (params[0].equalsIgnoreCase("off")) {clientcommands = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {clientcommands = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {clientcommands = false; success = true;}
         }
         	
         if (success && clientcommands) this.enableClientCommands();

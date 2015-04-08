@@ -63,8 +63,4 @@ public class CommandSender {
 	public ICommandSender getMinecraftISender() {
 		return sender;
 	}
-	
-	public boolean isPlayer() {
-		return sender instanceof EntityPlayerMP;
-	}
 }

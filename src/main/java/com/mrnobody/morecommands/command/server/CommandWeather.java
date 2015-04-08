@@ -48,19 +48,19 @@ public class CommandWeather extends ServerCommand {
 	    		else if (params[1].equalsIgnoreCase("disable")) {state = false; entered = true;}
 	    	}
 	    	
-	    	if (params[0].toLowerCase().equals("rain")) {
+	    	if (params[0].equalsIgnoreCase("rain")) {
 	    		if (entered) world.setRaining(state);
 	    		else world.setRaining(!world.isRaining());
 	    		sender.sendLangfileMessage("command.weather.rainSuccess", new Object[0]);
 	    	}
 	    	
-	    	if (params[0].toLowerCase().equals("thunder")) {
+	    	if (params[0].equalsIgnoreCase("thunder")) {
 	    		if (entered) world.setThunder(state);
 	    		else world.setThunder(!world.isThunder());
 	    		sender.sendLangfileMessage("command.weather.thunderSuccess", new Object[0]);
 	    	}
 	    	
-	    	if (params[0].toLowerCase().equals("lightning") && sender.getMinecraftISender() instanceof EntityPlayerMP) {
+	    	if (params[0].equalsIgnoreCase("lightning") && sender.getMinecraftISender() instanceof EntityPlayerMP) {
 	    		BlockPos hit = (new Player((EntityPlayerMP) sender.getMinecraftISender())).traceBlock(128);
 	    		if (hit != null) {world.useLightning(hit); sender.sendLangfileMessage("command.weather.lightningSuccess", new Object[0]);}
 	    		else {sender.sendLangfileMessage("command.weather.notInSight", new Object[0]);}

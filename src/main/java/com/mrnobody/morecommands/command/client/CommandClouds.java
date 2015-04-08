@@ -39,6 +39,8 @@ public class CommandClouds extends ClientCommand {
         	else if (params[0].equalsIgnoreCase("1")) {clouds = true; success = true;}
         	else if (params[0].equalsIgnoreCase("on")) {clouds = true; success = true;}
         	else if (params[0].equalsIgnoreCase("off")) {clouds = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {clouds = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {clouds = false; success = true;}
         	else {success = false;}
         }
         else {clouds = !this.clouds; success = true;}
