@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -17,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.network.PacketDispatcher;
 import com.mrnobody.morecommands.util.DynamicClassLoader;
 import com.mrnobody.morecommands.util.LanguageManager;
 import com.mrnobody.morecommands.util.Reference;
@@ -31,8 +31,6 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
-import cpw.mods.fml.common.network.NetworkRegistry;
-import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.relauncher.Side;
 
 /**
@@ -50,14 +48,11 @@ public class MoreCommands {
 	private static CommonProxy proxy;
 	
 	public static final DynamicClassLoader CLASSLOADER = new DynamicClassLoader(MoreCommands.class.getClassLoader());
-	public static final String CHANNEL = "mrnobody_cmd";
 	
-	private SimpleNetworkWrapper network;
+	private PacketDispatcher dispatcher;
 	private UUID playerUUID;
 	private Logger logger;
-	
 	private boolean handlersLoaded = false;
-	private boolean packetsLoaded = false;
 	
 	private final String clientCommandsPackage = "com.mrnobody.morecommands.command.client";
 	private List<Class<? extends ClientCommand>> clientCommandClasses = new ArrayList<Class<? extends ClientCommand>>();
@@ -94,7 +89,7 @@ public class MoreCommands {
 	 * @return Whether the mod is enabled
 	 */
 	public static boolean isModEnabled() {
-		return MoreCommands.proxy.commandsLoaded() && MoreCommands.instance.handlersLoaded && MoreCommands.instance.packetsLoaded;
+		return MoreCommands.proxy.commandsLoaded() && MoreCommands.instance.handlersLoaded;
 	}
 	
 	/**
@@ -158,8 +153,8 @@ public class MoreCommands {
 	/**
 	 * @return The Network Wrapper
 	 */
-	public SimpleNetworkWrapper getNetwork() {
-		return this.network;
+	public PacketDispatcher getPacketDispatcher() {
+		return this.dispatcher;
 	}
 	
 	/**
@@ -195,9 +190,7 @@ public class MoreCommands {
 		this.logger = event.getModLog();
 		Reference.init(event);
 		LanguageManager.readTranslations();
-		this.network = NetworkRegistry.INSTANCE.newSimpleChannel(MoreCommands.CHANNEL);
-		
-		if (this.packetsLoaded = this.registerPackets()) this.getLogger().info("Packets successfully registered");
+		this.dispatcher = new PacketDispatcher();
 		this.loadCommands();
 		this.disabledCommands = this.readDisabledCommands();
 		
@@ -254,34 +247,6 @@ public class MoreCommands {
 			try {
 				Class<? extends ServerCommand> handler = serverCommandIterator.next().asSubclass(ServerCommand.class);
 				this.serverCommandClasses.add(handler);
-			}
-			catch (Exception ex) {ex.printStackTrace(); return false;}
-		}
-		
-		return true;
-	}
-	
-	/**
-	 * Registers all Packets
-	 * 
-	 * @return Whether the packets were registered successfully
-	 */
-	private boolean registerPackets() {
-		List<Class<?>> packets = new ArrayList<Class<?>>();
-		packets.addAll(MoreCommands.CLASSLOADER.getPacketClasses(this.clientPacketPackage, Side.CLIENT));
-		packets.addAll(MoreCommands.CLASSLOADER.getPacketClasses(this.serverPacketPackage, Side.SERVER));
-		
-		int discriminator = 0;
-		Method register;
-		
-		for (Class<?> packet : packets) {
-			try {
-				register = packet.getMethod("register", int.class);
-				
-				if (register != null) {
-					register.invoke(null, discriminator);
-					discriminator++;
-				}
 			}
 			catch (Exception ex) {ex.printStackTrace(); return false;}
 		}

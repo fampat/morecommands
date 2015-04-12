@@ -14,8 +14,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 
 import com.mrnobody.morecommands.command.server.CommandAlias;
-import com.mrnobody.morecommands.core.Patcher.PlayerPatches;
-import com.mrnobody.morecommands.packet.server.S00PacketHandshake;
+import com.mrnobody.morecommands.network.PacketDispatcher;
 import com.mrnobody.morecommands.patch.ServerCommandManager;
 import com.mrnobody.morecommands.patch.ServerConfigurationManagerDedicated;
 import com.mrnobody.morecommands.util.GlobalSettings;
@@ -142,9 +141,7 @@ public class ServerPatcher extends Patcher {
 		if (!Patcher.playerPatchMapping.containsKey(player)) 
 			Patcher.playerPatchMapping.put(player, new PlayerPatches());
 		ServerPlayerSettings.playerUUIDMapping.put(event.player.getUniqueID(), player);
-		S00PacketHandshake packet = new S00PacketHandshake();
-		packet.playerUUID = player.getUniqueID();
-		this.mod.getNetwork().sendTo(packet, player);
+		this.mod.getPacketDispatcher().sendS00Handshake(player);
 		
 		if (GlobalSettings.welcome_message)
 			event.player.addChatMessage((new ChatComponentText("More Commands Mod (v" + Reference.VERSION + ") loaded")).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.DARK_AQUA)));

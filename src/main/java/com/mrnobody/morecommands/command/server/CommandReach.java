@@ -6,10 +6,9 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.packet.server.S08PacketReach;
+import com.mrnobody.morecommands.network.PacketDispatcher;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
 		name = "reach",
@@ -36,20 +35,13 @@ public class CommandReach extends ServerCommand {
 		if (params.length > 0) {
 			try {
 				float distance = Float.parseFloat(params[0]);
-				
-				S08PacketReach packet = new S08PacketReach();
-				packet.reachDistance = distance;
-				MoreCommands.getMoreCommands().getNetwork().sendTo(packet, playerEntity);
-				
+				MoreCommands.getMoreCommands().getPacketDispatcher().sendS08Reach(playerEntity, distance);
 				playerEntity.theItemInWorldManager.setBlockReachDistance(distance);
 				sender.sendLangfileMessage("command.reach.set", new Object[] {params[0]});
 			}
 			catch (NumberFormatException e) {
 				if (params[0].equalsIgnoreCase("reset")) {
-					S08PacketReach packet = new S08PacketReach();
-					packet.reachDistance = 5.0F;
-					MoreCommands.getMoreCommands().getNetwork().sendTo(packet, playerEntity);
-					
+					MoreCommands.getMoreCommands().getPacketDispatcher().sendS08Reach(playerEntity, 5.0F);
 					playerEntity.theItemInWorldManager.setBlockReachDistance(5.0F);
 					sender.sendLangfileMessage("command.reach.reset", new Object[0]);
 				}

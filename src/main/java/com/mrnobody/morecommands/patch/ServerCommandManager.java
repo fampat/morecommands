@@ -15,7 +15,12 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.CommandEvent;
 
+import com.google.common.base.Throwables;
 import com.mrnobody.morecommands.command.CommandBase;
+import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.network.PacketDispatcher;
+import com.mrnobody.morecommands.util.DummyCommand;
+import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
 /**
  * The patched class of {@link net.minecraft.command.ServerCommandManager} <br>
@@ -28,7 +33,7 @@ import com.mrnobody.morecommands.command.CommandBase;
  */
 public class ServerCommandManager extends net.minecraft.command.ServerCommandManager {
     @Override
-	public int executeCommand(ICommandSender p_71556_1_, String p_71556_2_)
+    public int executeCommand(ICommandSender p_71556_1_, String p_71556_2_)
     {
         p_71556_2_ = p_71556_2_.trim();
 
@@ -47,33 +52,39 @@ public class ServerCommandManager extends net.minecraft.command.ServerCommandMan
 
         try
         {
-            if (icommand == null)
-            {
-                throw new CommandNotFoundException();
-            }
-
-            if (icommand.canCommandSenderUseCommand(p_71556_1_))
-            {
-                CommandEvent event = new CommandEvent(icommand, p_71556_1_, astring);
-                if (MinecraftForge.EVENT_BUS.post(event))
+        	if (icommand == null || icommand instanceof CommandBase || icommand instanceof DummyCommand) {
+                if (astring.length > 0 && astring[astring.length - 1].startsWith("@"))
                 {
-                    if (event.exception != null)
+                    EntityPlayerMP[] aentityplayermp = PlayerSelector.matchPlayers(p_71556_1_, astring[astring.length - 1]);
+                    astring = (String[]) Arrays.copyOfRange(astring, 0, astring.length - 1);
+                    int showError = -1;
+                    
+                    for (int l = 0; l < aentityplayermp.length; ++l)
                     {
-                        throw event.exception;
-                    }
-                    return 1;
-                }
-                
-                if (icommand instanceof CommandBase) {
-                    if (astring.length > 0 && astring[astring.length - 1].startsWith("@"))
-                    {
-                        EntityPlayerMP[] aentityplayermp = PlayerSelector.matchPlayers(p_71556_1_, astring[astring.length - 1]);
-                        astring = (String[]) Arrays.copyOfRange(astring, 0, astring.length - 1);
-                        
-                        for (int l = 0; l < aentityplayermp.length; ++l)
-                        {
-                            EntityPlayerMP entityplayermp = aentityplayermp[l];
-
+                    	EntityPlayerMP entityplayermp = aentityplayermp[l];
+                    	
+                    	if (ServerPlayerSettings.playerSettingsMapping.containsKey(entityplayermp)) {
+                    		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(entityplayermp);
+                    		
+                    		if (settings.clientCommands.contains(s1)) {
+                    			MoreCommands.getMoreCommands().getPacketDispatcher().sendS09ExecuteClientCommand(entityplayermp, s1 + " " + String.join(" ", astring));
+                    			++j;
+                    			continue;
+                    		}
+                    	}
+                    	
+                    	if (icommand == null) showError = 0;
+                    	else if (icommand != null && icommand.canCommandSenderUseCommand(p_71556_1_)) {
+                            CommandEvent event = new CommandEvent(icommand, entityplayermp, astring);
+                            if (MinecraftForge.EVENT_BUS.post(event))
+                            {
+                                if (event.exception != null)
+                                {
+                                    Throwables.propagateIfPossible(event.exception);
+                                }
+                                continue;
+                            }
+                    		
                             try
                             {
                                 icommand.processCommand(entityplayermp, astring);
@@ -83,26 +94,64 @@ public class ServerCommandManager extends net.minecraft.command.ServerCommandMan
                             {
                                 ChatComponentTranslation chatcomponenttranslation1 = new ChatComponentTranslation(commandexception1.getMessage(), commandexception1.getErrorOjbects());
                                 chatcomponenttranslation1.getChatStyle().setColor(EnumChatFormatting.RED);
-                                p_71556_1_.addChatMessage(chatcomponenttranslation1);
+                                entityplayermp.addChatMessage(chatcomponenttranslation1);
                             }
-                        }
+                    	}
+                    	else showError = 1;
                     }
-                    else
-                    {
-                        try
+                    
+                    if (showError == 0) throw new CommandNotFoundException();
+                    else if (showError == 1) {
+                        ChatComponentTranslation chatcomponenttranslation2 = new ChatComponentTranslation("commands.generic.permission", new Object[0]);
+                        chatcomponenttranslation2.getChatStyle().setColor(EnumChatFormatting.RED);
+                        p_71556_1_.addChatMessage(chatcomponenttranslation2);
+                    }
+                }
+                else
+                {
+                    if (icommand == null) throw new CommandNotFoundException();
+                	else if (icommand.canCommandSenderUseCommand(p_71556_1_)) {
+                        net.minecraftforge.event.CommandEvent event = new net.minecraftforge.event.CommandEvent(icommand, p_71556_1_, astring);
+                        if (MinecraftForge.EVENT_BUS.post(event))
                         {
+                            if (event.exception != null)
+                            {
+                                throw event.exception;
+                            }
+                            return 1;
+                        }
+                        
+                        try {
                             icommand.processCommand(p_71556_1_, astring);
                             ++j;
                         }
-                        catch (CommandException commandexception)
-                        {
+                        catch (CommandException commandexception) {
                             chatcomponenttranslation = new ChatComponentTranslation(commandexception.getMessage(), commandexception.getErrorOjbects());
                             chatcomponenttranslation.getChatStyle().setColor(EnumChatFormatting.RED);
                             p_71556_1_.addChatMessage(chatcomponenttranslation);
                         }
+                	}
+                    else
+                    {
+                        ChatComponentTranslation chatcomponenttranslation2 = new ChatComponentTranslation("commands.generic.permission", new Object[0]);
+                        chatcomponenttranslation2.getChatStyle().setColor(EnumChatFormatting.RED);
+                        p_71556_1_.addChatMessage(chatcomponenttranslation2);
                     }
                 }
-                else {
+        	}
+        	else {
+                if (icommand.canCommandSenderUseCommand(p_71556_1_))
+                {
+                    CommandEvent event = new CommandEvent(icommand, p_71556_1_, astring);
+                    if (MinecraftForge.EVENT_BUS.post(event))
+                    {
+                        if (event.exception != null)
+                        {
+                            throw event.exception;
+                        }
+                        return 1;
+                    }
+
                     if (i > -1)
                     {
                         EntityPlayerMP[] aentityplayermp = PlayerSelector.matchPlayers(p_71556_1_, astring[i]);
@@ -145,13 +194,13 @@ public class ServerCommandManager extends net.minecraft.command.ServerCommandMan
                         }
                     }
                 }
-            }
-            else
-            {
-                ChatComponentTranslation chatcomponenttranslation2 = new ChatComponentTranslation("commands.generic.permission", new Object[0]);
-                chatcomponenttranslation2.getChatStyle().setColor(EnumChatFormatting.RED);
-                p_71556_1_.addChatMessage(chatcomponenttranslation2);
-            }
+                else
+                {
+                    ChatComponentTranslation chatcomponenttranslation2 = new ChatComponentTranslation("commands.generic.permission", new Object[0]);
+                    chatcomponenttranslation2.getChatStyle().setColor(EnumChatFormatting.RED);
+                    p_71556_1_.addChatMessage(chatcomponenttranslation2);
+                }
+        	}
         }
         catch (WrongUsageException wrongusageexception)
         {

@@ -1,9 +1,7 @@
 package com.mrnobody.morecommands.core;
 
-import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommandSender;
@@ -15,9 +13,6 @@ import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.network.PacketHandlerClient;
-import com.mrnobody.morecommands.packet.client.C00PacketHandshake;
-import com.mrnobody.morecommands.patch.EntityClientPlayerMP;
 import com.mrnobody.morecommands.util.GlobalSettings;
 import com.mrnobody.morecommands.util.Reference;
 import com.mrnobody.morecommands.util.XrayHelper;
@@ -30,7 +25,6 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
-import cpw.mods.fml.common.eventhandler.EventBus;
 
 /**
  * The proxy used for the client

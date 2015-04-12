@@ -10,7 +10,6 @@ import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.handler.Listener;
 import com.mrnobody.morecommands.handler.PacketHandler;
-import com.mrnobody.morecommands.packet.server.S09PacketExecuteClientCommand;
 import com.mrnobody.morecommands.util.KeyEvent;
 import com.mrnobody.morecommands.util.Keyboard;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
@@ -36,11 +35,8 @@ public class CommandBind extends ServerCommand implements Listener<KeyEvent> {
 		
 		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(event.player);
 		if (settings.serverKeybindMapping.containsKey(event.key)) this.commandHandler.executeCommand(event.player, settings.serverKeybindMapping.get(event.key));
-		else if (settings.clientKeybindMapping.containsKey(event.key)) {
-			S09PacketExecuteClientCommand packet = new S09PacketExecuteClientCommand();
-			packet.command = settings.clientKeybindMapping.get(event.key);
-			MoreCommands.getMoreCommands().getNetwork().sendTo(packet, event.player);
-		}
+		else if (settings.clientKeybindMapping.containsKey(event.key))
+			MoreCommands.getMoreCommands().getPacketDispatcher().sendS09ExecuteClientCommand(event.player, settings.clientKeybindMapping.get(event.key));
 	}
 
 	@Override

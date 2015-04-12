@@ -17,8 +17,6 @@ import net.minecraftforge.client.ClientCommandHandler;
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.Patcher;
-import com.mrnobody.morecommands.packet.client.C00PacketHandshake;
-import com.mrnobody.morecommands.packet.client.C01PacketClientCommand;
 import com.mrnobody.morecommands.patch.EntityClientPlayerMP;
 import com.mrnobody.morecommands.patch.PlayerControllerMP;
 import com.mrnobody.morecommands.util.Reference;
@@ -34,7 +32,6 @@ import com.mrnobody.morecommands.wrapper.World;
  *
  */
 public class PacketHandlerClient {
-	public static final PacketHandlerClient INSTANCE = new PacketHandlerClient();
 	public static List<ClientCommand> removedCmds = new ArrayList<ClientCommand>();
 	
 	//Data for the freecam command
@@ -75,11 +72,7 @@ public class PacketHandlerClient {
 		
 		//Let the server know that the mod is installed client side
 		MoreCommands.getMoreCommands().getLogger().info("Sending client handshake");
-		
-		C00PacketHandshake packet = new C00PacketHandshake();
-		packet.playerUUID = uuid;
-		packet.clientPlayerPatched = Minecraft.getMinecraft().thePlayer instanceof EntityClientPlayerMP;
-		MoreCommands.getMoreCommands().getNetwork().sendToServer(packet);
+		MoreCommands.getMoreCommands().getPacketDispatcher().sendC00Handshake(Minecraft.getMinecraft().thePlayer instanceof EntityClientPlayerMP);
 		
 		//Execute commands specified in the startup.cfg
 		try {
@@ -230,12 +223,8 @@ public class PacketHandlerClient {
 	 */
 	public void sendClientCommands() {
 		for (Object command : ClientCommandHandler.instance.getCommands().values()) {
-			if (command instanceof ClientCommand) {
-				C01PacketClientCommand packet = new C01PacketClientCommand();
-				packet.playerUUID = MoreCommands.getMoreCommands().getPlayerUUID();
-				packet.command = ((ClientCommand) command).getCommandName();
-				MoreCommands.getMoreCommands().getNetwork().sendToServer(packet);
-			}
+			if (command instanceof ClientCommand)
+				MoreCommands.getMoreCommands().getPacketDispatcher().sendC01ClientCommand(((ClientCommand) command).getCommandName());
 		}
 	}
 

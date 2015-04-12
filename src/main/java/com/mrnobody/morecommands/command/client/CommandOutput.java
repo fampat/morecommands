@@ -4,15 +4,10 @@ import net.minecraft.util.ChatComponentTranslation;
 
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.CommandBase.Requirement;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.packet.client.C03PacketOutput;
+import com.mrnobody.morecommands.network.PacketDispatcher;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
-
-import cpw.mods.fml.relauncher.Side;
 
 
 //MAKE COMMAND CLIENT SIDE TOO
@@ -57,12 +52,8 @@ public class CommandOutput extends ClientCommand {
     	if (success) CommandSender.output = output;
     	sender.getMinecraftISender().addChatMessage(new ChatComponentTranslation(success ? output ? "command.output.on" : "command.output.off"  : "command.output.failure", new Object[0]));
     	
-    	if (MoreCommands.getMoreCommands().getPlayerUUID() != null) {
-    		C03PacketOutput packet = new C03PacketOutput();
-    		packet.playerUUID = MoreCommands.getMoreCommands().getPlayerUUID();
-    		packet.output = output;
-    		MoreCommands.getMoreCommands().getNetwork().sendToServer(packet);
-    	}
+    	if (MoreCommands.getMoreCommands().getPlayerUUID() != null)
+    		MoreCommands.getMoreCommands().getPacketDispatcher().sendC03Output(output);
 	}
 	
 	@Override

@@ -13,7 +13,6 @@ import java.util.Random;
 import net.minecraft.client.LoadingScreenRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiMainMenu;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.WorldSettings.GameType;
@@ -23,7 +22,7 @@ import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.Patcher;
-import com.mrnobody.morecommands.packet.client.C04PacketWorld;
+import com.mrnobody.morecommands.network.PacketDispatcher;
 import com.mrnobody.morecommands.util.ReflectionHelper;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -118,30 +117,14 @@ public class CommandWorld extends ClientCommand {
 					sender.sendStringMessage(saves);
 				}
 				else if (params[0].equalsIgnoreCase("seed") && MoreCommands.getMoreCommands().getPlayerUUID() != null) {
-					C04PacketWorld packet = new C04PacketWorld();
-					packet.playerUUID = MoreCommands.getMoreCommands().getPlayerUUID();
-					
-					if (params.length > 2 && params[1].equalsIgnoreCase("set")) {
-						packet.params = "seed set " + params[2];
-					}
-					else {
-						packet.params = "seed";
-					}
-					
-					MoreCommands.getMoreCommands().getNetwork().sendToServer(packet);
+					if (params.length > 2 && params[1].equalsIgnoreCase("set"))
+						MoreCommands.getMoreCommands().getPacketDispatcher().sendC04World("seed set " + params[2]);
+					else MoreCommands.getMoreCommands().getPacketDispatcher().sendC04World("seed");
 				}
 				else if (params[0].equalsIgnoreCase("name") && MoreCommands.getMoreCommands().getPlayerUUID() != null) {
-					C04PacketWorld packet = new C04PacketWorld();
-					packet.playerUUID = MoreCommands.getMoreCommands().getPlayerUUID();
-					
-					if (params.length > 2 && params[1].equalsIgnoreCase("set")) {
-						packet.params = "name set " + params[2];
-					}
-					else {
-						packet.params = "name";
-					}
-					
-					MoreCommands.getMoreCommands().getNetwork().sendToServer(packet);
+					if (params.length > 2 && params[1].equalsIgnoreCase("set"))
+						MoreCommands.getMoreCommands().getPacketDispatcher().sendC04World("name set " + params[2]);
+					else MoreCommands.getMoreCommands().getPacketDispatcher().sendC04World("name");
 				}
 				else sender.sendLangfileMessage("command.world.invalidArg", new Object[0]);
 			}

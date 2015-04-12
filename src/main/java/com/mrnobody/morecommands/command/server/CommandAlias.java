@@ -12,7 +12,7 @@ import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.handler.EventHandler;
 import com.mrnobody.morecommands.handler.Listener;
-import com.mrnobody.morecommands.packet.server.S09PacketExecuteClientCommand;
+import com.mrnobody.morecommands.network.PacketDispatcher;
 import com.mrnobody.morecommands.util.DummyCommand;
 import com.mrnobody.morecommands.util.DummyCommand.DummyServerCommand;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
@@ -45,12 +45,9 @@ public class CommandAlias extends ServerCommand implements Listener<CommandEvent
 				
 				for (String p : event.parameters) command += " " + p;
 				
-				if (cmd.getSenderSideMapping().get(event.sender)) {
-					S09PacketExecuteClientCommand packet = new S09PacketExecuteClientCommand();
-					packet.command = command;
-					MoreCommands.getMoreCommands().getNetwork().sendTo(packet, (EntityPlayerMP) event.sender);
-				}
-				else {commandHandler.executeCommand(event.sender, command);}
+				if (cmd.getSenderSideMapping().get(event.sender))
+					MoreCommands.getMoreCommands().getPacketDispatcher().sendS09ExecuteClientCommand((EntityPlayerMP) event.sender, command);
+				else commandHandler.executeCommand(event.sender, command);
 			}
 		}
 	}

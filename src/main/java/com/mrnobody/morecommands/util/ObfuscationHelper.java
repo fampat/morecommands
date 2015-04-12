@@ -76,6 +76,8 @@ public class ObfuscationHelper {
 		input.put("loadAllWorlds", "func_71247_a");
 		input.put("foodLevel", "field_75127_a");
 		input.put("translator", "field_71148_cg");
+		input.put("flySpeed", "field_75096_f");
+		input.put("walkSpeed", "field_75097_g");
 		//Add more fields
 		
 		ObfuscationMap = Collections.unmodifiableMap(input);

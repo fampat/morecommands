@@ -6,7 +6,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.packet.server.S05PacketXray;
+import com.mrnobody.morecommands.network.PacketDispatcher;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -62,14 +62,7 @@ public class CommandXray extends ServerCommand {
 		
 		ability.xrayBlockRadius = blockRadius;
 		ability.xrayEnabled = enable;
-		
-		S05PacketXray packet = new S05PacketXray();
-		
-		packet.showConfig = showGUI;
-		packet.blockRadius = blockRadius;
-		packet.xrayEnabled = enable;
-		
-		MoreCommands.getMoreCommands().getNetwork().sendTo(packet, player);
+		MoreCommands.getMoreCommands().getPacketDispatcher().sendS05Xray(player, showGUI, enable, blockRadius);
 	}
 	
 	@Override

@@ -118,7 +118,7 @@ command.macro.invalidUsage=Invalid Usage. Type 'help macro' to get help
 
 command.music.description=Stops/Plays/Skips Music or sets the music volume
 command.music.example=/music play
-command.music.syntax=/music [PLAY|STOP|SKIP|VOLUME <VOLUME>]
+command.music.syntax=/music <PLAY|STOP|SKIP|VOLUME <VOLUME>>
 command.music.videoURL=Not yet available
 command.music.played=Music playing.
 command.music.stopped=Music stopped.
@@ -126,7 +126,7 @@ command.music.skipped=Current Track skipped.
 command.music.volumeset=Volume successfully set
 command.music.invalidArg=Invalid Argument.
 command.music.invalidUsage=Invalid Usage. Type 'help music' to get help
-command.music.playedrandom=Playing random Track.
+command.music.isplaying=Music is already playing
 
 command.output.description=Turns chat output from this mod on/off
 command.output.example=/output off
@@ -866,6 +866,7 @@ command.speed.getWalk=Your Walk Speed is %f
 command.speed.walkReset=Walk speed reseted
 command.speed.flyReset=Fly speed reseted
 command.speed.invalidUsage=Invalid Usage. Type 'help speed' to get help
+command.speed.error=An error occurred performing this command
 
 command.sprint.description=Allows you to sprint infinite
 command.sprint.example=/sprint on

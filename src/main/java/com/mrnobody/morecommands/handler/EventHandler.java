@@ -3,6 +3,7 @@ package com.mrnobody.morecommands.handler;
 import java.lang.reflect.Method;
 
 import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.client.event.sound.PlaySoundEvent17;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.CommandEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -44,7 +45,8 @@ public enum EventHandler {
 	PLAYER_ATTACK(MinecraftForge.EVENT_BUS, new Handler<AttackEntityEvent>(AttackEntityEvent.class, false)),
 	INTERACT(MinecraftForge.EVENT_BUS, new Handler<PlayerInteractEvent>(PlayerInteractEvent.class, false)),
 	RENDERWORLD(MinecraftForge.EVENT_BUS, new Handler<RenderWorldLastEvent>(RenderWorldLastEvent.class, true)),
-	TICK(FMLCommonHandler.instance().bus(), new Handler<TickEvent>(TickEvent.class, false));
+	TICK(FMLCommonHandler.instance().bus(), new Handler<TickEvent>(TickEvent.class, false)),
+	SOUND(MinecraftForge.EVENT_BUS, new Handler<PlaySoundEvent17>(PlaySoundEvent17.class, true));
 	
 	private EventBus bus;
 	private Handler handler;

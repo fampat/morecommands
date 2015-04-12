@@ -10,7 +10,6 @@ import com.mrnobody.morecommands.command.server.CommandWorld;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.Patcher;
 import com.mrnobody.morecommands.handler.PacketHandler;
-import com.mrnobody.morecommands.packet.server.S01PacketClientCommand;
 import com.mrnobody.morecommands.util.KeyEvent;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
@@ -21,8 +20,6 @@ import com.mrnobody.morecommands.util.ServerPlayerSettings;
  *
  */
 public class PacketHandlerServer {
-	public static final PacketHandlerServer INSTANCE = new PacketHandlerServer();
-	
 	/**
 	 * Is called if the server receives a handshake packet
 	 */
@@ -32,7 +29,7 @@ public class PacketHandlerServer {
 		Patcher.playerPatchMapping.get(ServerPlayerSettings.playerUUIDMapping.get(uuid)).setClientModded(true);
 		Patcher.playerPatchMapping.get(ServerPlayerSettings.playerUUIDMapping.get(uuid)).setClientPlayerPatched(patched);
 		
-		MoreCommands.getMoreCommands().getNetwork().sendTo(new S01PacketClientCommand(), ServerPlayerSettings.playerUUIDMapping.get(uuid));
+		MoreCommands.getMoreCommands().getPacketDispatcher().sendS01ClientCommand(ServerPlayerSettings.playerUUIDMapping.get(uuid));
 	}
 
 	/**

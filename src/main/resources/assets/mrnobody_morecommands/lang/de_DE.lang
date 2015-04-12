@@ -118,7 +118,7 @@ command.macro.invalidUsage=Falsche Benutzung. Benutze 'help macro' um Hilfe zu b
 
 command.music.description=Stoppt/Spielt/Ueberspringt Musik oder legt die Musik-Lautstaerke fest
 command.music.example=/music play
-command.music.syntax=/music [PLAY|STOP|SKIP|VOLUME <VOLUME>]
+command.music.syntax=/music <PLAY|STOP|SKIP|VOLUME <VOLUME>>
 command.music.videoURL=Noch nicht verfuegbar
 command.music.played=Musik wird abgespielt
 command.music.stopped=Musik gestoppt
@@ -126,7 +126,7 @@ command.music.skipped=Aktueller Track uebersprungen
 command.music.volumeset=Lautstaerke erfolreich festgelegt
 command.music.invalidArg=Uengultiges Argument.
 command.music.invalidUsage=Falsche Benutzung. Benutze 'help music' um Hilfe zu bekommen.
-command.music.playedrandom=Zufaelliger Track wird abgespielt
+command.music.isplaying=Musik wird bereits abgespielt
 
 command.output.description=Schaltet die Chat-Ausgabe dieses Mods an/aus
 command.output.example=/output off
@@ -866,6 +866,7 @@ command.speed.getWalk=Deine Laufgeschwindigkeit ist %f
 command.speed.walkReset=Laufgeschwindigkeit erfolgreich zurueckgesetzt
 command.speed.flyReset=Fluggeschwindigkeit erfolgreich zurueckgesetzt
 command.speed.invalidUsage=Falsche Benutzung. Benutze 'help speed' um Hilfe zu bekommen.
+command.speed.error=Ein Fehler ist bei der Ausfuehrung aufgetreten
 
 command.sprint.description=Erlaubt es, unendlich lange zu sprinten
 command.sprint.example=/sprint on

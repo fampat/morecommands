@@ -6,7 +6,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.packet.server.S03PacketFreecam;
+import com.mrnobody.morecommands.network.PacketDispatcher;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -34,19 +34,15 @@ public class CommandFreecam extends ServerCommand {
 		ServerPlayerSettings ability = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
 		
 		if (ability.freecam) {
-    		S03PacketFreecam packet = new S03PacketFreecam();
-    		MoreCommands.getMoreCommands().getNetwork().sendTo(packet, (EntityPlayerMP) sender.getMinecraftISender());
-			
 			ability.freecam = false;
 			sender.sendLangfileMessage("command.freecam.off", new Object[0]);
 		}
 		else {
-    		S03PacketFreecam packet = new S03PacketFreecam();
-    		MoreCommands.getMoreCommands().getNetwork().sendTo(packet, (EntityPlayerMP) sender.getMinecraftISender());
-			
 			ability.freecam = true;
             sender.sendLangfileMessage("command.freecam.on", new Object[0]);
 		}
+		
+		MoreCommands.getMoreCommands().getPacketDispatcher().sendS03Freecam((EntityPlayerMP) sender.getMinecraftISender());
 	}
 	
 	@Override

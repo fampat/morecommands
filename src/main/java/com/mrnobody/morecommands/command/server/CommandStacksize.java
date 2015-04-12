@@ -1,24 +1,16 @@
 package com.mrnobody.morecommands.command.server;
 
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.command.CommandBase.Requirement;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.patch.InventoryPlayer;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-
-import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "stacksize",
@@ -43,8 +35,8 @@ public class CommandStacksize extends ServerCommand {
 		sender.sendStringMessage("This command is currently not working properly, please wait for a fix");
 		return;
 		
-		/*if (!(sender.toPlayer().getMinecraftPlayer().inventory instanceof InventoryPlayer)) {
-			sender.sendLangfileMessageToPlayer("command.stacksize.invPlayerNotPatched", new Object[0]);
+		/*if (!(((EntityPlayerMP) sender.getMinecraftISender()).inventory instanceof InventoryPlayer)) {
+			sender.sendLangfileMessage("command.stacksize.invPlayerNotPatched", new Object[0]);
 			return;
 		}
 		
@@ -56,48 +48,48 @@ public class CommandStacksize extends ServerCommand {
 				
 				if (item == null) {
 					try {item = Item.getItemById(Integer.parseInt(params[1]));}
-					catch (NumberFormatException e) {sender.sendLangfileMessageToPlayer("command.stacksize.unknownItem", new Object[0]); return;}
+					catch (NumberFormatException e) {sender.sendLangfileMessage("command.stacksize.unknownItem", new Object[0]); return;}
 				}
 			}
 			else {
-				EntityPlayer player = sender.toPlayer().getMinecraftPlayer();
+				EntityPlayer player = (EntityPlayerMP) sender.getMinecraftISender();
 				
 				if (player.inventory.mainInventory[player.inventory.currentItem] != null)
 					item = player.inventory.mainInventory[player.inventory.currentItem].getItem();
 				else item = null;
 			}
 			
-			if (item == null) {sender.sendLangfileMessageToPlayer("command.stacksize.noSelection", new Object[0]); return;}
+			if (item == null) {sender.sendLangfileMessage("command.stacksize.noSelection", new Object[0]); return;}
 			
 			if (params[0].equalsIgnoreCase("get")) {
-				sender.sendStringMessageToPlayer("The current stack size for the item '" + (new ItemStack(item)).getDisplayName() + "' is " + item.getItemStackLimit());
+				sender.sendStringMessage("The current stack size for the item '" + (new ItemStack(item)).getDisplayName() + "' is " + item.getItemStackLimit());
 			}
 			else if (params[0].equalsIgnoreCase("reset")) {
 				if (InventoryPlayer.stackSizes.containsKey(item)) {
 					int stacksize = InventoryPlayer.stackSizes.get(item);
 					
 					item.setMaxStackSize(stacksize);
-					this.updateMaxInvStacksize((InventoryPlayer) sender.toPlayer().getMinecraftPlayer().inventory);
+					this.updateMaxInvStacksize((InventoryPlayer) ((EntityPlayerMP) sender.getMinecraftISender()).inventory);
 					
-					sender.sendLangfileMessageToPlayer("command.stacksize.resetted", new Object[0]);
+					sender.sendLangfileMessage("command.stacksize.resetted", new Object[0]);
 				}
-				else sender.sendLangfileMessageToPlayer("command.stacksize.resetError", new Object[0]);
+				else sender.sendLangfileMessage("command.stacksize.resetError", new Object[0]);
 			}
 			else if (params[0].equalsIgnoreCase("set") && params.length > 1) {
 				int index = params.length > 2 ? 2 : 1;
 				int stacksize;
 				
 				try {stacksize = Integer.parseInt(params[index]);}
-				catch (NumberFormatException e) {sender.sendLangfileMessageToPlayer("command.stacksize.invalidArg", new Object[0]); return;}
+				catch (NumberFormatException e) {sender.sendLangfileMessage("command.stacksize.invalidArg", new Object[0]); return;}
 				
 				item.setMaxStackSize(stacksize);
-				this.updateMaxInvStacksize((InventoryPlayer) sender.toPlayer().getMinecraftPlayer().inventory);
+				this.updateMaxInvStacksize((InventoryPlayer) ((EntityPlayerMP) sender.getMinecraftISender()).inventory);
 				
-				sender.sendLangfileMessageToPlayer("command.stacksize.success", new Object[0]);
+				sender.sendLangfileMessage("command.stacksize.success", new Object[0]);
 			}
-			else sender.sendLangfileMessageToPlayer("command.stacksize.invalidUsage", new Object[0]);
+			else sender.sendLangfileMessage("command.stacksize.invalidUsage", new Object[0]);
 		}
-		else sender.sendLangfileMessageToPlayer("command.stacksize.invalidUsage", new Object[0]);*/
+		else sender.sendLangfileMessage("command.stacksize.invalidUsage", new Object[0]);*/
 	}
 	
 	private void updateMaxInvStacksize(InventoryPlayer inventory) {
