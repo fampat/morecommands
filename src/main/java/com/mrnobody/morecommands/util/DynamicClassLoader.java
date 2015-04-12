@@ -38,12 +38,6 @@ public class DynamicClassLoader {
 	private ArrayList<Class<?>> clientCommandClasses = new ArrayList<Class<?>>();
 	private ArrayList<Class<?>> serverCommandClasses = new ArrayList<Class<?>>();
 	
-	/**
-	 * Lists of packet classes
-	 */
-	private ArrayList<Class<?>> clientPacketClasses = new ArrayList<Class<?>>();
-	private ArrayList<Class<?>> serverPacketClasses = new ArrayList<Class<?>>();
-	
 	private int rsrcWriteIndex = 0;
 	
 	public DynamicClassLoader(ClassLoader loader) {
