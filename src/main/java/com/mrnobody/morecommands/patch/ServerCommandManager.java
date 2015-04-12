@@ -4,18 +4,19 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import com.mrnobody.morecommands.command.CommandBase;
-
-import net.minecraft.command.CommandException;
 import net.minecraft.command.CommandResultStats;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerSelector;
-import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.Entity;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
+
+import com.mrnobody.morecommands.command.CommandBase;
+import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.util.DummyCommand;
+import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
 /**
  * The patched class of {@link net.minecraft.command.ServerCommandManager} <br>
@@ -26,8 +27,8 @@ import net.minecraft.util.EnumChatFormatting;
  * @author MrNobody98
  *
  */
-public class ServerCommandManager extends net.minecraft.command.ServerCommandManager {
-	@Override
+public class ServerCommandManager extends net.minecraft.command.ServerCommandManager {	
+    @Override
     public int executeCommand(ICommandSender sender, String rawCommand)
     {
         rawCommand = rawCommand.trim();
@@ -44,49 +45,103 @@ public class ServerCommandManager extends net.minecraft.command.ServerCommandMan
         int i = this.getUsernameIndex(icommand, astring);
         int j = 0;
         ChatComponentTranslation chatcomponenttranslation;
-
-        if (icommand == null)
-        {
-            chatcomponenttranslation = new ChatComponentTranslation("commands.generic.notFound", new Object[0]);
-            chatcomponenttranslation.getChatStyle().setColor(EnumChatFormatting.RED);
-            sender.addChatMessage(chatcomponenttranslation);
-        }
-        else if (icommand.canCommandSenderUse(sender))
-        {
-            net.minecraftforge.event.CommandEvent event = new net.minecraftforge.event.CommandEvent(icommand, sender, astring);
-            if (net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event))
+        
+        if (icommand == null || icommand instanceof CommandBase || icommand instanceof DummyCommand) {
+            if (astring.length > 0 && astring[astring.length - 1].startsWith("@"))
             {
-                if (event.exception != null)
-                {
-                    com.google.common.base.Throwables.propagateIfPossible(event.exception);
+                List list = PlayerSelector.matchEntities(sender, astring[astring.length - 1], Entity.class);
+                Iterator iterator = list.iterator();
+                astring = (String[]) Arrays.copyOfRange(astring, 0, astring.length - 1);
+                int showError = -1;
+                
+                while (iterator.hasNext()) {
+                	Entity entity = (Entity) iterator.next();
+                	
+                	if (entity instanceof EntityPlayerMP && ServerPlayerSettings.playerSettingsMapping.containsKey(entity)) {
+                		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(entity);
+                		
+                		if (settings.clientCommands.contains(s1)) {
+                			MoreCommands.getMoreCommands().getPacketDispatcher().sendS09ExecuteClientCommand((EntityPlayerMP) entity, s1 + " " + String.join(" ", astring));
+                			++j;
+                			continue;
+                		}
+                	}
+                	
+                	if (icommand == null) showError = 0;
+                	else if (icommand != null && icommand.canCommandSenderUse(sender)) {
+                        net.minecraftforge.event.CommandEvent event = new net.minecraftforge.event.CommandEvent(icommand, entity, astring);
+                        if (net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event))
+                        {
+                            if (event.exception != null)
+                            {
+                                com.google.common.base.Throwables.propagateIfPossible(event.exception);
+                            }
+                            continue;
+                        }
+                		
+                		if (this.tryExecute(entity, astring, icommand, rawCommand)) ++j;
+                	}
+                	else showError = 1;
                 }
-                return 1;
+                
+                if (showError == 0) {
+                    chatcomponenttranslation = new ChatComponentTranslation("commands.generic.notFound", new Object[0]);
+                    chatcomponenttranslation.getChatStyle().setColor(EnumChatFormatting.RED);
+                    sender.addChatMessage(chatcomponenttranslation);
+                }
+                else if (showError == 1) {
+                    chatcomponenttranslation = new ChatComponentTranslation("commands.generic.permission", new Object[0]);
+                    chatcomponenttranslation.getChatStyle().setColor(EnumChatFormatting.RED);
+                    sender.addChatMessage(chatcomponenttranslation);
+                }
+                
+                sender.setCommandStat(CommandResultStats.Type.AFFECTED_ENTITIES, j);
             }
-            
-            if (icommand instanceof CommandBase) {
-                if (astring.length > 0 && astring[astring.length - 1].startsWith("@"))
-                {
-                    List list = PlayerSelector.matchEntities(sender, astring[astring.length - 1], Entity.class);
-                    sender.setCommandStat(CommandResultStats.Type.AFFECTED_ENTITIES, list.size());
-                    Iterator iterator = list.iterator();
-                    astring = (String[]) Arrays.copyOfRange(astring, 0, astring.length - 1);
-
-                    while (iterator.hasNext())
+            else
+            {
+            	if (icommand == null) {
+                    chatcomponenttranslation = new ChatComponentTranslation("commands.generic.notFound", new Object[0]);
+                    chatcomponenttranslation.getChatStyle().setColor(EnumChatFormatting.RED);
+                    sender.addChatMessage(chatcomponenttranslation);
+            	}
+            	else if (icommand.canCommandSenderUse(sender)) {
+                    net.minecraftforge.event.CommandEvent event = new net.minecraftforge.event.CommandEvent(icommand, sender, astring);
+                    if (net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event))
                     {
-                        if (this.tryExecute((Entity)iterator.next(), astring, icommand, rawCommand)) ++j;
+                        if (event.exception != null)
+                        {
+                            com.google.common.base.Throwables.propagateIfPossible(event.exception);
+                        }
+                        return 1;
                     }
-                }
-                else
-                {
+            		
                     sender.setCommandStat(CommandResultStats.Type.AFFECTED_ENTITIES, 1);
 
                     if (this.tryExecute(sender, astring, icommand, rawCommand))
                     {
                         ++j;
                     }
-                }
+            	}
+            	else {
+                    chatcomponenttranslation = new ChatComponentTranslation("commands.generic.permission", new Object[0]);
+                    chatcomponenttranslation.getChatStyle().setColor(EnumChatFormatting.RED);
+                    sender.addChatMessage(chatcomponenttranslation);
+            	}
             }
-            else {
+        }
+        else {
+            if (icommand.canCommandSenderUse(sender))
+            {
+                net.minecraftforge.event.CommandEvent event = new net.minecraftforge.event.CommandEvent(icommand, sender, astring);
+                if (net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event))
+                {
+                    if (event.exception != null)
+                    {
+                        com.google.common.base.Throwables.propagateIfPossible(event.exception);
+                    }
+                    return 1;
+                }
+
                 if (i > -1)
                 {
                     List list = PlayerSelector.matchEntities(sender, astring[i], Entity.class);
@@ -117,12 +172,12 @@ public class ServerCommandManager extends net.minecraft.command.ServerCommandMan
                     }
                 }
             }
-        }
-        else
-        {
-            chatcomponenttranslation = new ChatComponentTranslation("commands.generic.permission", new Object[0]);
-            chatcomponenttranslation.getChatStyle().setColor(EnumChatFormatting.RED);
-            sender.addChatMessage(chatcomponenttranslation);
+            else
+            {
+                chatcomponenttranslation = new ChatComponentTranslation("commands.generic.permission", new Object[0]);
+                chatcomponenttranslation.getChatStyle().setColor(EnumChatFormatting.RED);
+                sender.addChatMessage(chatcomponenttranslation);
+            }
         }
 
         sender.setCommandStat(CommandResultStats.Type.SUCCESS_COUNT, j);

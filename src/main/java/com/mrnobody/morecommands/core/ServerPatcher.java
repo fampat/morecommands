@@ -21,7 +21,6 @@ import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 
 import com.mrnobody.morecommands.command.server.CommandAlias;
-import com.mrnobody.morecommands.packet.server.S00PacketHandshake;
 import com.mrnobody.morecommands.patch.ServerCommandManager;
 import com.mrnobody.morecommands.patch.ServerConfigurationManagerDedicated;
 import com.mrnobody.morecommands.util.GlobalSettings;
@@ -140,9 +139,7 @@ public class ServerPatcher extends Patcher {
 		if (!Patcher.playerPatchMapping.containsKey(player)) 
 			Patcher.playerPatchMapping.put(player, new PlayerPatches());
 		ServerPlayerSettings.playerUUIDMapping.put(event.player.getUniqueID(), player);
-		S00PacketHandshake packet = new S00PacketHandshake();
-		packet.playerUUID = player.getUniqueID();
-		this.mod.getNetwork().sendTo(packet, player);
+		this.mod.getPacketDispatcher().sendS00Handshake(player);
 		
 		if (GlobalSettings.welcome_message)
 			event.player.addChatMessage((new ChatComponentText("MrNobody Commands Mod (v" + Reference.VERSION + ") loaded")).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.DARK_AQUA)));

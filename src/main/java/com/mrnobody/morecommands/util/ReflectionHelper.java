@@ -81,40 +81,6 @@ public class ReflectionHelper {
 	}
 	
 	/**
-	 * Gets a boolean from a field
-	 */
-	public static boolean getBoolean(Field field, Object instance) {
-		if (field == null) {
-			System.err.println("Null field");
-			return false;
-		}
-		
-		try {
-			return field.getBoolean(instance);
-		} catch (Exception e) {
-			System.err.println(field.getType() + " not assignable from " + Boolean.TYPE);
-			return false;
-		}
-	}
-	
-	/**
-	 * Gets a double from a field
-	 */
-	public static double getDouble(Field field, Object instance) {
-		if (field == null) {
-			System.err.println("Null field");
-			return -1.0D;
-		}
-		
-		try {
-			return field.getDouble(instance);
-		} catch (Exception e) {
-			System.err.println(field.getType() + " not assignable from " + Double.TYPE);
-			return -1.0D;
-		}
-	}
-	
-	/**
 	 * @return the method or null
 	 */
 	public static Method getMethod(Class<?> clazz, String methodName, Class<?> ... params) {

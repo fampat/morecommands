@@ -2,7 +2,9 @@ package com.mrnobody.morecommands.handler;
 
 import java.lang.reflect.Method;
 
+import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.client.event.sound.PlaySoundEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.CommandEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -45,7 +47,9 @@ public enum EventHandler {
 	INTERACT(MinecraftForge.EVENT_BUS, new Handler<PlayerInteractEvent>(PlayerInteractEvent.class, false)),
 	RENDERWORLD(MinecraftForge.EVENT_BUS, new Handler<RenderWorldLastEvent>(RenderWorldLastEvent.class, true)),
 	HARVEST(MinecraftForge.EVENT_BUS, new Handler<HarvestDropsEvent>(HarvestDropsEvent.class, true)),
-	TICK(FMLCommonHandler.instance().bus(), new Handler<TickEvent>(TickEvent.class, false));
+	TICK(FMLCommonHandler.instance().bus(), new Handler<TickEvent>(TickEvent.class, false)),
+	SOUND(MinecraftForge.EVENT_BUS, new Handler<PlaySoundEvent>(PlaySoundEvent.class, true));
+	//GUIOPEN(MinecraftForge.EVENT_BUS, new Handler<GuiOpenEvent>(GuiOpenEvent.class, false));
 	
 	private EventBus bus;
 	private Handler handler;

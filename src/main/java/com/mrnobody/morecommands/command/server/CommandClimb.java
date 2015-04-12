@@ -1,15 +1,11 @@
 package com.mrnobody.morecommands.command.server;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.packet.server.S02PacketClimb;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -55,9 +51,7 @@ public class CommandClimb extends ServerCommand {
         	
         if (success) {
         	ability.climb = allowClimb;
-        	S02PacketClimb packet = new S02PacketClimb();
-        	packet.allowClimb = allowClimb;
-        	MoreCommands.getMoreCommands().getNetwork().sendTo(packet, player);
+        	MoreCommands.getMoreCommands().getPacketDispatcher().sendS02Climb(player, allowClimb);
         }
         	
         sender.sendLangfileMessage(success ? allowClimb ? "command.climb.on" : "command.climb.off" : "command.climb.failure", new Object[0]);

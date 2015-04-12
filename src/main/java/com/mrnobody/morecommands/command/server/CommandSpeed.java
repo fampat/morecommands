@@ -1,10 +1,14 @@
 package com.mrnobody.morecommands.command.server;
 
+import java.lang.reflect.Field;
+
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.PlayerCapabilities;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.util.ReflectionHelper;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
@@ -19,6 +23,9 @@ import com.mrnobody.morecommands.wrapper.Player;
 public class CommandSpeed extends ServerCommand {
 	private final float walkSpeedDefault = 0.1F;
 	private final float flySpeedDefault = 0.05F;
+	
+	private final Field walkSpeed = ReflectionHelper.getField(PlayerCapabilities.class, "walkSpeed");
+	private final Field flySpeed = ReflectionHelper.getField(PlayerCapabilities.class, "flySpeed");
 
 	@Override
 	public String getName() {
@@ -33,6 +40,10 @@ public class CommandSpeed extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		if (this.walkSpeed == null || this.flySpeed == null) {
+			sender.sendLangfileMessage("command.speed.error", new Object[0]);
+			return;
+		}
 		
 		if (params.length > 1) {
 			if (params[0].equalsIgnoreCase("walk") || params[0].equalsIgnoreCase("fly")) {
@@ -44,11 +55,13 @@ public class CommandSpeed extends ServerCommand {
 						catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.speed.NAN", new Object[0]); return;}
 						
 						if (params[0].equalsIgnoreCase("walk")) {
-							player.getMinecraftPlayer().capabilities.setPlayerWalkSpeed(speed / 10);
+							try {this.walkSpeed.setFloat(player.getMinecraftPlayer().capabilities, speed / 10);}
+							catch (Exception ex) {sender.sendLangfileMessage("command.speed.error", new Object[0]); return;}
 							sender.sendLangfileMessage("command.speed.walkSet", new Object[0]);
 						}
 						else if (params[0].equalsIgnoreCase("fly")) {
-							player.getMinecraftPlayer().capabilities.setFlySpeed(speed / 10);
+							try {this.flySpeed.setFloat(player.getMinecraftPlayer().capabilities, speed / 10);}
+							catch (Exception ex) {sender.sendLangfileMessage("command.speed.error", new Object[0]); return;}
 							sender.sendLangfileMessage("command.speed.flySet", new Object[0]);
 						}
 						
@@ -62,11 +75,13 @@ public class CommandSpeed extends ServerCommand {
 				}
 				else if (params[1].equalsIgnoreCase("reset")) {
 					if (params[0].equalsIgnoreCase("walk")) {
-						player.getMinecraftPlayer().capabilities.setPlayerWalkSpeed(this.walkSpeedDefault);
+						try {this.walkSpeed.setFloat(player.getMinecraftPlayer().capabilities, this.walkSpeedDefault);}
+						catch (Exception ex) {sender.sendLangfileMessage("command.speed.error", new Object[0]); return;}
 						sender.sendLangfileMessage("command.speed.walkReset", new Object[0]);
 					}
 					else if (params[0].equalsIgnoreCase("fly")) {
-						player.getMinecraftPlayer().capabilities.setFlySpeed(this.flySpeedDefault);
+						try {this.flySpeed.setFloat(player.getMinecraftPlayer().capabilities, this.flySpeedDefault);}
+						catch (Exception ex) {sender.sendLangfileMessage("command.speed.error", new Object[0]); return;}
 						sender.sendLangfileMessage("command.speed.flyReset", new Object[0]);
 					}
 					

@@ -6,7 +6,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.packet.server.S11PacketStepheight;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
@@ -40,9 +39,7 @@ public class CommandStepheight extends ServerCommand {
 				else {sender.sendLangfileMessage("command.stepheight.invalidArg", new Object[0]); return;}
 			}
 			
-			S11PacketStepheight packet = new S11PacketStepheight();
-			packet.stepheight = height;
-			MoreCommands.getMoreCommands().getNetwork().sendTo(packet, (EntityPlayerMP) sender.getMinecraftISender());
+			MoreCommands.getMoreCommands().getPacketDispatcher().sendS11Stepheight((EntityPlayerMP) sender.getMinecraftISender(), height);
 		}
 		else sender.sendLangfileMessage("command.stepheight.invalidUsage", new Object[0]);
 	}

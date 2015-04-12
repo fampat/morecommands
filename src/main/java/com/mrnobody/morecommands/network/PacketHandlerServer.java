@@ -4,14 +4,12 @@ import java.util.UUID;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.common.DimensionManager;
 
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.command.server.CommandWorld;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.Patcher;
 import com.mrnobody.morecommands.handler.PacketHandler;
-import com.mrnobody.morecommands.packet.server.S01PacketClientCommand;
 import com.mrnobody.morecommands.util.KeyEvent;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
@@ -34,7 +32,7 @@ public class PacketHandlerServer {
 		Patcher.playerPatchMapping.get(ServerPlayerSettings.playerUUIDMapping.get(uuid)).setClientPlayerPatched(patched);
 		Patcher.playerPatchMapping.get(ServerPlayerSettings.playerUUIDMapping.get(uuid)).setRenderGlobalPatched(renderGlobalPatched);
 		
-		MoreCommands.getMoreCommands().getNetwork().sendTo(new S01PacketClientCommand(), ServerPlayerSettings.playerUUIDMapping.get(uuid));
+		MoreCommands.getMoreCommands().getPacketDispatcher().sendS01ClientCommand(ServerPlayerSettings.playerUUIDMapping.get(uuid));
 	}
 
 	/**

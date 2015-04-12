@@ -1,13 +1,11 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.packet.server.S10PacketGravity;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
@@ -49,9 +47,7 @@ public class CommandJumpheight extends ServerCommand {
 				}
 			}
 			
-			S10PacketGravity packet = new S10PacketGravity();
-			packet.gravity = gravity;
-			MoreCommands.getMoreCommands().getNetwork().sendTo(packet, (EntityPlayerMP) sender.getMinecraftISender());
+			MoreCommands.getMoreCommands().getPacketDispatcher().sendS10Gravity((EntityPlayerMP) sender.getMinecraftISender(), gravity);
 		}
 		else {
 			sender.sendLangfileMessage("command.jumpheight.invalidUsage", new Object[0]);

@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.inventory.ContainerPlayer;
 import net.minecraft.potion.Potion;
+//import net.minecraft.inventory.ContainerPlayer;
 import net.minecraft.stats.StatFileWriter;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.MathHelper;

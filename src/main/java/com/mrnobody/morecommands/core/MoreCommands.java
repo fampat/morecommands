@@ -22,8 +22,6 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
 
 import org.apache.logging.log4j.Logger;
@@ -31,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.network.PacketDispatcher;
 import com.mrnobody.morecommands.util.DynamicClassLoader;
 import com.mrnobody.morecommands.util.LanguageManager;
 import com.mrnobody.morecommands.util.Reference;
@@ -44,14 +43,11 @@ public class MoreCommands {
 	private static CommonProxy proxy;
 	
 	public static final DynamicClassLoader CLASSLOADER = new DynamicClassLoader(MoreCommands.class.getClassLoader());
-	public static final String CHANNEL = "mrnobody_cmd";
 	
-	private SimpleNetworkWrapper network;
+	private PacketDispatcher dispatcher;
 	private UUID playerUUID;
 	private Logger logger;
-	
 	private boolean handlersLoaded = false;
-	private boolean packetsLoaded = false;
 	
 	private final String clientCommandsPackage = "com.mrnobody.morecommands.command.client";
 	private List<Class<? extends ClientCommand>> clientCommandClasses = new ArrayList<Class<? extends ClientCommand>>();
@@ -88,7 +84,7 @@ public class MoreCommands {
 	 * @return Whether the mod is enabled
 	 */
 	public static boolean isModEnabled() {
-		return MoreCommands.proxy.commandsLoaded() && MoreCommands.instance.handlersLoaded && MoreCommands.instance.packetsLoaded;
+		return MoreCommands.proxy.commandsLoaded() && MoreCommands.instance.handlersLoaded;
 	}
 	
 	/**
@@ -152,8 +148,8 @@ public class MoreCommands {
 	/**
 	 * @return The Network Wrapper
 	 */
-	public SimpleNetworkWrapper getNetwork() {
-		return this.network;
+	public PacketDispatcher getPacketDispatcher() {
+		return this.dispatcher;
 	}
 	
 	/**
@@ -189,9 +185,7 @@ public class MoreCommands {
 		this.logger = event.getModLog();
 		Reference.init(event);
 		LanguageManager.readTranslations();
-		this.network = NetworkRegistry.INSTANCE.newSimpleChannel(MoreCommands.CHANNEL);
-		
-		if (this.packetsLoaded = this.registerPackets()) this.getLogger().info("Packets successfully registered");
+		this.dispatcher = new PacketDispatcher();
 		this.loadCommands();
 		this.disabledCommands = this.readDisabledCommands();
 		

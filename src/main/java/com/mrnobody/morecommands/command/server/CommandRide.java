@@ -6,7 +6,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.packet.server.S12PacketRide;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
@@ -31,7 +30,7 @@ public class CommandRide extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		MoreCommands.getMoreCommands().getNetwork().sendTo(new S12PacketRide(), (EntityPlayerMP) sender.getMinecraftISender());
+		MoreCommands.getMoreCommands().getPacketDispatcher().sendS12Ride((EntityPlayerMP) sender.getMinecraftISender());
 	}
 	
 	@Override

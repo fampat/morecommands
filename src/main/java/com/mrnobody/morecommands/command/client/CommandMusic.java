@@ -3,14 +3,14 @@ package com.mrnobody.morecommands.command.client;
 import java.lang.reflect.Field;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.ISound;
 import net.minecraft.client.audio.MusicTicker;
-import net.minecraft.client.audio.MusicTicker.MusicType;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.audio.SoundCategory;
+import net.minecraftforge.client.event.sound.PlaySoundEvent;
 
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.handler.EventHandler;
+import com.mrnobody.morecommands.handler.Listener;
 import com.mrnobody.morecommands.util.ReflectionHelper;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -22,11 +22,25 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.music.syntax",
 		videoURL = "command.music.videoURL"
 		)
-public class CommandMusic extends ClientCommand {
+public class CommandMusic extends ClientCommand implements Listener<PlaySoundEvent> {
 	private Field musicTickerField = ReflectionHelper.getField(Minecraft.class, "mcMusicTicker");
 	private Field playingField = ReflectionHelper.getField(MusicTicker.class, "currentMusic");
 	private Field playingTimerField = ReflectionHelper.getField(MusicTicker.class, "timeUntilNextMusic");
+	
+	private boolean stopSound = false;
 
+	@Override
+	public void onEvent(PlaySoundEvent event) {
+		if (event.category == SoundCategory.MUSIC) {
+			if (this.stopSound) 
+				event.result = null;
+		}
+	}
+	
+	public CommandMusic() {
+		EventHandler.SOUND.getHandler().register(this);
+	}
+	
 	@Override
 	public String getName() {
 		return "music";
@@ -39,20 +53,39 @@ public class CommandMusic extends ClientCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		sender.sendStringMessage("Currently not working properly. Please wait for a fix");
-		/*if (params.length > 0) {
+		if (params.length > 0) {
 			if (params[0].equalsIgnoreCase("play")) {
-				this.playRandomMusic();
-				sender.sendLangfileMessageToPlayer("command.music.played", new Object[0]);
-			}
-			else if (params[0].equalsIgnoreCase("stop")) {
-				if (this.getPlayingMusic() != null) this.stopSound(this.getPlayingMusic());
-				sender.sendLangfileMessageToPlayer("command.music.stopped", new Object[0]);
+				if (!this.stopSound) {
+					sender.sendLangfileMessage("command.music.isplaying", new Object[0]);
+					return;
+				}
+				
+				this.stopSound = false;
+				
+				try {
+					MusicTicker musicTicker = (MusicTicker) this.musicTickerField.get(Minecraft.getMinecraft());
+					this.playingTimerField.setInt(musicTicker, 0);
+				}
+				catch (Exception ex) {ex.printStackTrace();}
+				
+				sender.sendLangfileMessage("command.music.played", new Object[0]);
 			}
 			else if (params[0].equalsIgnoreCase("next") || params[0].equalsIgnoreCase("skip")) {
-				if (this.getPlayingMusic() != null) this.stopSound(this.getPlayingMusic());
-				this.playRandomMusic();
-				sender.sendLangfileMessageToPlayer("command.music.skipped", new Object[0]);
+				Minecraft.getMinecraft().getSoundHandler().stopSounds();
+				this.stopSound = false;
+				
+				try {
+					MusicTicker musicTicker = (MusicTicker) this.musicTickerField.get(Minecraft.getMinecraft());
+					this.playingTimerField.setInt(musicTicker, 0);
+				}
+				catch (Exception ex) {ex.printStackTrace();}
+				
+				sender.sendLangfileMessage("command.music.skipped", new Object[0]);
+			}
+			else if (params[0].equalsIgnoreCase("stop")) {
+				Minecraft.getMinecraft().getSoundHandler().stopSounds();
+				this.stopSound = true;
+				sender.sendLangfileMessage("command.music.stopped", new Object[0]);
 			}
 			else if (params[0].equalsIgnoreCase("volume") && params.length > 1) {
 				try {
@@ -64,86 +97,11 @@ public class CommandMusic extends ClientCommand {
 					Minecraft.getMinecraft().gameSettings.setSoundLevel(SoundCategory.MUSIC, volume / 100.0F);
 					Minecraft.getMinecraft().getSoundHandler().setSoundLevel(SoundCategory.MUSIC, volume / 100.0F);
 					
-					sender.sendLangfileMessageToPlayer("command.music.volumeset", new Object[0]);
+					sender.sendLangfileMessage("command.music.volumeset", new Object[0]);
 				}
-				catch (NumberFormatException nfe) {sender.sendLangfileMessageToPlayer("command.music.invalidArg", new Object[0]);}
+				catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.music.invalidArg", new Object[0]);}
 			}
-			else sender.sendLangfileMessageToPlayer("command.music.invalidUsage", new Object[0]);
-		}
-		else {
-			this.playRandomMusic();
-			sender.sendLangfileMessageToPlayer("command.music.playedrandom", new Object[0]);
-		}*/
-	}
-	
-	private ISound getPlayingMusic() {
-		if (this.musicTickerField != null && this.playingField != null) {
-			try {
-				MusicTicker musicTicker = (MusicTicker) musicTickerField.get(Minecraft.getMinecraft());
-				ISound playing = (ISound) playingField.get(musicTicker);
-				
-				return playing;
-			}
-			catch (Exception ex) {ex.printStackTrace();}
-		}
-		return null;
-	}
-	
-	private void stopSound(ISound sound) {
-		if (sound != null && this.playingTimerField != null) {
-			try {
-				MusicTicker musicTicker = (MusicTicker) this.musicTickerField.get(Minecraft.getMinecraft());
-					
-				if (Minecraft.getMinecraft().getSoundHandler().isSoundPlaying(sound))
-					Minecraft.getMinecraft().getSoundHandler().stopSound(sound);
-				
-				System.out.println("playing: " + Minecraft.getMinecraft().getSoundHandler().isSoundPlaying(sound));
-				
-				this.playingField.set(musicTicker, null);
-				this.playingTimerField.setInt(musicTicker, Integer.MAX_VALUE);
-			}
-			catch (Exception ex) {ex.printStackTrace();}
-		}
-	}
-	
-	private void playSound(ISound sound) {
-		if (sound != null && this.playingTimerField != null) {
-			try {
-				MusicTicker musicTicker = (MusicTicker) this.musicTickerField.get(Minecraft.getMinecraft());
-				int playTimer = this.playingTimerField.getInt(musicTicker);
-					
-				if (Minecraft.getMinecraft().getSoundHandler().isSoundPlaying(sound))
-					Minecraft.getMinecraft().getSoundHandler().stopSound(sound);
-					
-				Minecraft.getMinecraft().getSoundHandler().playSound(sound);
-				
-				this.playingField.set(musicTicker, sound);
-				this.playingTimerField.setInt(musicTicker, Integer.MAX_VALUE);
-			}
-			catch (Exception ex) {ex.printStackTrace();}
-		}
-	}
-	
-	private void playRandomMusic() {
-		ISound playing = this.getPlayingMusic();
-		
-		if (this.playingTimerField != null) {
-			try {
-				MusicTicker musicTicker = (MusicTicker) this.musicTickerField.get(Minecraft.getMinecraft());
-				int playTimer = this.playingTimerField.getInt(musicTicker);
-					
-				if (playing != null && Minecraft.getMinecraft().getSoundHandler().isSoundPlaying(playing))
-					Minecraft.getMinecraft().getSoundHandler().stopSound(playing);
-				
-				MusicType music = Minecraft.getMinecraft().getAmbientMusicType();
-				
-				playing = PositionedSoundRecord.create(music.getMusicLocation());
-				Minecraft.getMinecraft().getSoundHandler().playSound(playing);
-				
-				this.playingField.set(musicTicker, playing);
-				this.playingTimerField.setInt(musicTicker, Integer.MAX_VALUE);
-			}
-			catch (Exception ex) {ex.printStackTrace();}
+			else sender.sendLangfileMessage("command.music.invalidUsage", new Object[0]);
 		}
 	}
 	

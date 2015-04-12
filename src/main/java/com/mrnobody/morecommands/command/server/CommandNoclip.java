@@ -10,7 +10,6 @@ import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.handler.EventHandler;
 import com.mrnobody.morecommands.handler.Listener;
-import com.mrnobody.morecommands.packet.server.S06PacketNoclip;
 import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.patch.NetHandlerPlayServer;
 import com.mrnobody.morecommands.wrapper.CommandException;
@@ -78,10 +77,7 @@ public class CommandNoclip extends ServerCommand implements Listener<LivingAttac
 			ascendPlayer(new Player(player));
 		}
 			
-		S06PacketNoclip packet = new S06PacketNoclip();
-		packet.allowNoclip = handler.getOverrideNoclip();
-		MoreCommands.getMoreCommands().getNetwork().sendTo(packet, player); 
-			
+		MoreCommands.getMoreCommands().getPacketDispatcher().sendS06Noclip(player, handler.getOverrideNoclip());
 		sender.sendLangfileMessage(handler.getOverrideNoclip() ? "command.noclip.enabled" : "command.noclip.disabled", new Object[0]);
 	}
 
@@ -89,9 +85,7 @@ public class CommandNoclip extends ServerCommand implements Listener<LivingAttac
 		if(handler.getOverrideNoclip() && !player.capabilities.isFlying) {
 			handler.setOverrideNoclip(false);
 			
-			S06PacketNoclip packet = new S06PacketNoclip();
-			packet.allowNoclip = false;
-			MoreCommands.getMoreCommands().getNetwork().sendTo(packet, player); 
+			MoreCommands.getMoreCommands().getPacketDispatcher().sendS06Noclip(player, false);
 			
 			(new CommandSender(player)).sendLangfileMessage("command.noclip.autodisable", new Object[0]);
 			ascendPlayer(new Player(player));

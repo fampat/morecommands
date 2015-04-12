@@ -11,6 +11,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketThreadUtil;
 import net.minecraft.network.play.client.C03PacketPlayer;
+import net.minecraft.network.play.client.C0EPacketClickWindow;
 import net.minecraft.network.play.client.C18PacketSpectate;
 import net.minecraft.network.play.server.S18PacketEntityTeleport;
 import net.minecraft.server.MinecraftServer;

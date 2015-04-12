@@ -11,7 +11,6 @@ import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.Patcher;
 import com.mrnobody.morecommands.handler.EventHandler;
 import com.mrnobody.morecommands.handler.Listener;
-import com.mrnobody.morecommands.packet.client.C02PacketKeyInput;
 import com.mrnobody.morecommands.util.ClientPlayerSettings;
 import com.mrnobody.morecommands.util.Keyboard;
 import com.mrnobody.morecommands.wrapper.CommandException;
@@ -45,12 +44,8 @@ public class CommandBind extends ClientCommand implements Listener<KeyInputEvent
 	public void onEvent(KeyInputEvent event) {
 		if (!org.lwjgl.input.Keyboard.isKeyDown(org.lwjgl.input.Keyboard.getEventKey())) return;
 		
-		if (Patcher.serverModded()) {
-			C02PacketKeyInput packet = new C02PacketKeyInput();
-			packet.playerUUID = MoreCommands.getMoreCommands().getPlayerUUID();
-			packet.key = org.lwjgl.input.Keyboard.getEventKey();
-			MoreCommands.getMoreCommands().getNetwork().sendToServer(packet);
-		}
+		if (Patcher.serverModded())
+			MoreCommands.getMoreCommands().getPacketDispatcher().sendC02KeyInput(org.lwjgl.input.Keyboard.getEventKey());
 		else {
 			if (ClientPlayerSettings.keybindMapping.containsKey(org.lwjgl.input.Keyboard.getEventKey()))
 				this.commandHandler.executeCommand(Minecraft.getMinecraft().thePlayer, ClientPlayerSettings.keybindMapping.get(org.lwjgl.input.Keyboard.getEventKey()));

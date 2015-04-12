@@ -39,6 +39,8 @@ public class ObfuscationHelper {
 		map.put("crop", "field_149877_a");
 		map.put("achievementDescription", "field_75996_k");
 		map.put("loadAllWorlds", "func_71247_a");
+		map.put("flySpeed", "field_75096_f");
+		map.put("walkSpeed", "field_75097_g");
 		//Add more fields
 		
 		ObfuscationMap = Collections.unmodifiableMap(map);

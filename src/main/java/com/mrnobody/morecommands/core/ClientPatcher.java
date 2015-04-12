@@ -11,6 +11,7 @@ import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.server.management.ServerConfigurationManager;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
@@ -33,7 +34,6 @@ import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnection
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.client.CommandAlias;
 import com.mrnobody.morecommands.network.PacketHandlerClient;
-import com.mrnobody.morecommands.packet.server.S00PacketHandshake;
 import com.mrnobody.morecommands.patch.ClientCommandManager;
 import com.mrnobody.morecommands.patch.RenderGlobal;
 import com.mrnobody.morecommands.patch.ServerCommandManager;
@@ -192,9 +192,7 @@ public class ClientPatcher extends Patcher {
 		if (!Patcher.playerPatchMapping.containsKey(player))
 			Patcher.playerPatchMapping.put(player, new PlayerPatches());
 		ServerPlayerSettings.playerUUIDMapping.put(event.player.getUniqueID(), player);
-		S00PacketHandshake packet = new S00PacketHandshake();
-		packet.playerUUID = player.getUniqueID();
-		this.mod.getNetwork().sendTo(packet, player);
+		this.mod.getPacketDispatcher().sendS00Handshake(player);
 		
 		if (GlobalSettings.welcome_message)
 			player.addChatMessage((new ChatComponentText("MrNobody Commands Mod (v" + Reference.VERSION + ") loaded")).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.DARK_AQUA)));

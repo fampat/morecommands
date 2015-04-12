@@ -1,13 +1,10 @@
 package com.mrnobody.morecommands.command.client;
 
 import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatComponentTranslation;
 
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.core.Patcher;
-import com.mrnobody.morecommands.packet.client.C03PacketOutput;
 import com.mrnobody.morecommands.util.LanguageManager;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -56,12 +53,8 @@ public class CommandOutput extends ClientCommand {
     	if (success) CommandSender.output = output;
     	sender.getMinecraftISender().addChatMessage(new ChatComponentText(text));
     	
-    	if (MoreCommands.getMoreCommands().getPlayerUUID() != null) {
-    		C03PacketOutput packet = new C03PacketOutput();
-    		packet.playerUUID = MoreCommands.getMoreCommands().getPlayerUUID();
-    		packet.output = output;
-    		MoreCommands.getMoreCommands().getNetwork().sendToServer(packet);
-    	}
+    	if (MoreCommands.getMoreCommands().getPlayerUUID() != null)
+    		MoreCommands.getMoreCommands().getPacketDispatcher().sendC03Output(output);
 	}
 	
 	@Override
