@@ -9,7 +9,7 @@ command.generic.noPlayerInfoAvailable=Fuer diesen Spieler sind keine Einstellung
 command.generic.serverConfigManagerNotPatched=Der Patch fuer den Serverkonfigurationsmanager (ServerConfigurationManager) wurde nicht angewendet, weshalb dieser Befehl nicht ausgefuehrt werden kann.
 command.generic.clientNotModded=Du hast den More Commands Mod nicht auf deinem PC installiert (client-setige Installation), dies ist fuer diesen Befehl aber Voraussetzung. Deshalb kann dieser Befehl nicht ausgefuehrt werden.
 command.generic.serverPlayerNotPatched=Der Patch fuer den server-seitigen Spieler (EntityPlayermP) wurde nicht angewendet, weshalb dieser Befehl nicht ausgefuehrt werden kann.
-command.generic.netServerPlayHandlerNotPatched=er Patch fuer den Network Play Handler (NetHandlerPlayServer) wurde nicht angewendet, weshalb dieser Befehl nicht ausgefuehrt werden kann.
+command.generic.netServerPlayHandlerNotPatched=Der Patch fuer den Network Play Handler (NetHandlerPlayServer) wurde nicht angewendet, weshalb dieser Befehl nicht ausgefuehrt werden kann.
 
 command.generic.help.pageheader=====Hilfe (Seite %d von %d)====
 command.generic.help.commandheader======== Befehls-Hilfe =========
