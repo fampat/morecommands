@@ -111,23 +111,23 @@ public class MoreCommands {
 	/**
 	 * @return Whether the mod runs on a dedicated server
 	 */
-	public boolean isServerSide() {
+	public static boolean isServerSide() {
 		return MoreCommands.proxy instanceof ServerProxy;
 	}
 	
 	/**
 	 * @return Whether the mod runs client side (e.g. integrated server)
 	 */
-	public boolean isClientSide() {
+	public static boolean isClientSide() {
 		return MoreCommands.proxy instanceof ClientProxy;
 	}
 	
 	/**
 	 * @return The running side (client or server)
 	 */
-	public Side getRunningSide() {
-		if (this.isClientSide()) return Side.CLIENT;
-		else if (this.isServerSide()) return Side.SERVER;
+	public static Side getRunningSide() {
+		if (MoreCommands.isClientSide()) return Side.CLIENT;
+		else if (MoreCommands.isServerSide()) return Side.SERVER;
 		else return null;
 	}
 	

@@ -39,7 +39,7 @@ public class PacketHandlerClient {
 	public boolean prevIsFlying;
 	public boolean prevAllowFlying;
 	public float prevFlySpeed;
-	public  float prevWalkSpeed;
+	public float prevWalkSpeed;
 	public boolean prevNoclip;
 	
 	//Data for the freezecam command

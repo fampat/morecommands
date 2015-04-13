@@ -45,23 +45,32 @@ public final class PacketDispatcher {
 	public PacketDispatcher() {
 		this.channel = NetworkRegistry.INSTANCE.newEventDrivenChannel(Reference.CHANNEL);
 		this.channel.register(this);
-		this.packetHandlerClient = new PacketHandlerClient();
+		if (MoreCommands.isClientSide())
+			this.packetHandlerClient = new PacketHandlerClient();
 		this.packetHandlerServer = new PacketHandlerServer();
 	}
 	
 	@SubscribeEvent
 	public void onServerPacketData(ClientCustomPacketEvent event) {
 		if (!event.packet.channel().equals(Reference.CHANNEL)) return;
-		handlePacket(event.packet);
+		try {handlePacket(event.packet);}
+		catch (Exception ex) {
+			ex.printStackTrace(); 
+			MoreCommands.getMoreCommands().getLogger().warn("Got a Server packet although running server side. Should be impossible");
+		}
 	}
 	
 	@SubscribeEvent
 	public void onClientPacketData(ServerCustomPacketEvent event) {
 		if (!event.packet.channel().equals(Reference.CHANNEL)) return;
-		handlePacket(event.packet);
+		try {handlePacket(event.packet);}
+		catch (Exception ex) {
+			ex.printStackTrace(); 
+			MoreCommands.getMoreCommands().getLogger().warn("Got a Server packet although running server side. Should be impossible");
+		}
 	}
 	
-	private void handlePacket(FMLProxyPacket packet) {
+	private void handlePacket(FMLProxyPacket packet) throws Exception {
 		byte id = packet.payload().readByte();
 		ByteBuf payload = packet.payload();
 		
