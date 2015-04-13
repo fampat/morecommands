@@ -425,7 +425,7 @@ command.enchant.addSuccess=Verzauberung erfolgreich hinzugefuegt
 command.enchant.removeSuccess=Verzauberung erfolgreich entfernt
 command.enchant.invalidUsage=Falsche Benutzung. Benutze 'help enchant' um Hilfe zu bekommen.
 command.enchant.NAN=Die Verzauberungs-ID muss eine Zahl sein
-command.enchant.notFound=Verzauberung nicht gefunden
+command.enchant.notFound=Verzauberung nicht gefunden.
 
 command.enderchest.description=Oeffnet die Ender-Kiste
 command.enderchest.example=/enderchest

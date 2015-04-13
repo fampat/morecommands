@@ -9,7 +9,7 @@ command.generic.noPlayerInfoAvailable=No Settings information to this player is 
 command.generic.serverConfigManagerNotPatched=The patch to the Server Configuration Manager (ServerConfigurationManager) wasn't applied and this command can therefore not be executed
 command.generic.clientNotModded=You don't have the More Commands Mod installed at your PC (client Side), but this Command requires this mod installed client Side. Install it or you can't use this command
 command.generic.serverPlayerNotPatched=The patch to the Server Player (EntityPlayerMP) wasn't applied and this command can therefore not be executed
-command.generic.netServerPlayHandlerNotPatched=The Patch to the Server Player Net Handler (NetHandlerPlayServer) wasn't applied and this command can therefore not be executed
+command.generic.netServerPlayHandlerNotPatched=The patch to the Server Player Net Handler (NetHandlerPlayServer) wasn't applied and this command can therefore not be executed
 
 command.generic.help.pageheader======Help (Page %d of %d)======
 command.generic.help.commandheader==========Command Help==========
