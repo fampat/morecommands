@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -246,6 +247,15 @@ public class MoreCommands {
 			catch (Exception ex) {ex.printStackTrace(); return false;}
 		}
 		
+		return true;
+	}
+	
+	/**
+	 * Registers all Packets
+	 * 
+	 * @return Whether the packets were registered successfully
+	 */
+	private boolean registerPackets() {
 		return true;
 	}
 	

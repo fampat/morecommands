@@ -34,6 +34,9 @@ public class DynamicClassLoader {
 	 */
 	private final ClassLoader CLASSLOADER;
 	
+	
+	//BLA
+	
 	/**
 	 * Lists of command classes
 	 */
