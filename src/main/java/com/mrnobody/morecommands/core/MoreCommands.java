@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -243,34 +242,6 @@ public class MoreCommands {
 			try {
 				Class<? extends ServerCommand> handler = serverCommandIterator.next().asSubclass(ServerCommand.class);
 				this.serverCommandClasses.add(handler);
-			}
-			catch (Exception ex) {ex.printStackTrace(); return false;}
-		}
-		
-		return true;
-	}
-	
-	/**
-	 * Registers all Packets
-	 * 
-	 * @return Whether the packets were registered successfully
-	 */
-	private boolean registerPackets() {
-		List<Class<?>> packets = new ArrayList<Class<?>>();
-		packets.addAll(MoreCommands.CLASSLOADER.getPacketClasses(this.clientPacketPackage, Side.CLIENT));
-		packets.addAll(MoreCommands.CLASSLOADER.getPacketClasses(this.serverPacketPackage, Side.SERVER));
-		
-		int discriminator = 0;
-		Method register;
-		
-		for (Class<?> packet : packets) {
-			try {
-				register = packet.getMethod("register", int.class);
-				
-				if (register != null) {
-					register.invoke(null, discriminator);
-					discriminator++;
-				}
 			}
 			catch (Exception ex) {ex.printStackTrace(); return false;}
 		}

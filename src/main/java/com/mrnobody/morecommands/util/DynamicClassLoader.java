@@ -40,12 +40,6 @@ public class DynamicClassLoader {
 	private ArrayList<Class<?>> clientCommandClasses = new ArrayList<Class<?>>();
 	private ArrayList<Class<?>> serverCommandClasses = new ArrayList<Class<?>>();
 	
-	/**
-	 * Lists of packet classes
-	 */
-	private ArrayList<Class<?>> clientPacketClasses = new ArrayList<Class<?>>();
-	private ArrayList<Class<?>> serverPacketClasses = new ArrayList<Class<?>>();
-	
 	private int rsrcWriteIndex = 0;
 	
 	public DynamicClassLoader(ClassLoader loader) {
@@ -91,33 +85,6 @@ public class DynamicClassLoader {
 				return this.serverCommandClasses;
 			}
 			else return null;
-		}
-		else return null;
-	}
-	
-	/**
-	 * Loads packet classes
-	 * 
-	 * @param pkg the package where the packet classes are in
-	 * @param side the side which the packet belongs to. Must be either {@link Side#SERVER} or {@link Side#CLIENT}
-	 * @return A list of the loaded packet classes
-	 */
-	public List<Class<?>> getPacketClasses(String pkg, Side side) {
-		if (side == Side.CLIENT) {
-			if (this.clientPacketClasses.size() != 0) return this.clientPacketClasses;
-			else {
-				ArrayList<Class<?>> packets = this.getClasses(pkg);
-				if (packets != null) {this.clientPacketClasses.addAll(packets); return this.clientPacketClasses;}
-				else return null;
-			}
-		}
-		else if (side == Side.SERVER) {
-			if (this.serverPacketClasses.size() != 0) return this.serverPacketClasses;
-			else {
-				ArrayList<Class<?>> packets = this.getClasses(pkg);
-				if (packets != null) {this.serverPacketClasses.addAll(packets); return this.serverPacketClasses;}
-				else return null;
-			}
 		}
 		else return null;
 	}
