@@ -60,12 +60,6 @@ public class MoreCommands {
 	private final String serverCommandsPackage = "com.mrnobody.morecommands.command.server";
 	private List<Class<? extends ServerCommand>> serverCommandClasses = new ArrayList<Class<? extends ServerCommand>>();
 	
-	private final String clientPacketPackage = "com.mrnobody.morecommands.packet.client";
-	private List<Class<?>> clientPacketClasses = new ArrayList<Class<?>>();
-	
-	private final String serverPacketPackage = "com.mrnobody.morecommands.packet.server";
-	private List<Class<?>> serverPacketClasses = new ArrayList<Class<?>>();
-	
 	private List<String> disabledCommands;
 	
 	//Need this because forge injects the instance too late -> Causes a NullpointerException using getMoreCommands
