@@ -7,7 +7,9 @@ import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.command.CommandBase.Requirement;
 import com.mrnobody.morecommands.command.CommandBase.ServerType;
+import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.patch.EntityPlayerMP;
+import com.mrnobody.morecommands.patch.ServerConfigurationManagerDedicated;
 import com.mrnobody.morecommands.patch.ServerConfigurationManagerIntegrated;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
@@ -58,7 +60,10 @@ public class CommandKeepinventory extends ServerCommand {
 	    if (success) {
 	    	ability.keepinventory = keepinventory;
 	    	player.setKeepInventory(keepinventory);
-	    	((ServerConfigurationManagerIntegrated) MinecraftServer.getServer().getConfigurationManager()).setKeepInventory(keepinventory);
+	    	if (MoreCommands.isClientSide())
+	    		((ServerConfigurationManagerIntegrated) MinecraftServer.getServer().getConfigurationManager()).setKeepInventory(keepinventory);
+	    	else if (MoreCommands.isServerSide())
+	    		((ServerConfigurationManagerDedicated) MinecraftServer.getServer().getConfigurationManager()).setKeepInventory(keepinventory);
 	    }
         	
         sender.sendLangfileMessage(success ? keepinventory ? "command.keepinventory.on" : "command.keepinventory.off" : "command.keepinventory.failure", new Object[0]);
