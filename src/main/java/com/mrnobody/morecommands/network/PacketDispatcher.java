@@ -45,7 +45,7 @@ public final class PacketDispatcher {
 	public PacketDispatcher() {
 		this.channel = NetworkRegistry.INSTANCE.newEventDrivenChannel(Reference.CHANNEL);
 		this.channel.register(this);
-		if (MoreCommands.isServerSide())
+		if (MoreCommands.isClientSide())
 			this.packetHandlerClient = new PacketHandlerClient();
 		this.packetHandlerServer = new PacketHandlerServer();
 	}
