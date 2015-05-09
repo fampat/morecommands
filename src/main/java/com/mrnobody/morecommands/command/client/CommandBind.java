@@ -10,7 +10,7 @@ import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.Patcher;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listener;
+import com.mrnobody.morecommands.handler.Listeners.Listener;
 import com.mrnobody.morecommands.util.ClientPlayerSettings;
 import com.mrnobody.morecommands.util.Keyboard;
 import com.mrnobody.morecommands.wrapper.CommandException;

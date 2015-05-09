@@ -9,7 +9,7 @@ import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listener;
+import com.mrnobody.morecommands.handler.Listeners.Listener;
 import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.patch.NetHandlerPlayServer;
 import com.mrnobody.morecommands.wrapper.CommandException;

@@ -235,7 +235,7 @@ public class XrayConfGui extends GuiScreen {
 	
 	private Minecraft mc;
 	private XrayHelper xray;
-	private String heading = "MrNobody CommandsMod: Xray Configuration";
+	private String heading = "More Commands: Xray Configuration";
 	private int elementSelected;
 	private GuiList guiList;
 	private GuiButton guiButtonConfigure;

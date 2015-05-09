@@ -10,7 +10,7 @@ import net.minecraftforge.client.event.sound.PlaySoundEvent;
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listener;
+import com.mrnobody.morecommands.handler.Listeners.Listener;
 import com.mrnobody.morecommands.util.ReflectionHelper;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
