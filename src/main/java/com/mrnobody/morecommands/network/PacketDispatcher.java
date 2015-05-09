@@ -360,7 +360,7 @@ public final class PacketDispatcher {
 	private String readString(ByteBuf buffer) {
 		int length = buffer.readInt();
 		byte[] string = buffer.readBytes(length).array();
-		return new String(string);
+		return new String(string, Charsets.UTF_8);
 	}
 	
 	private void writeString(String string, ByteBuf buffer) {
