@@ -18,7 +18,7 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
  * @author MrNobody98
  */
 public class Handler<T extends Event> {
-	private Map<Listeners.TwoEventListener<T, T>, Listeners.Listener<T>> doubleListener = new HashMap<Listeners.TwoEventListener<T, T>, Listeners.Listener<T>>();
+	private Map<TwoEventListener<T, T>, Listener<T>> doubleListener = new HashMap<TwoEventListener<T, T>, Listener<T>>();
 	private List<Listener<T>> listener = new ArrayList<Listener<T>>();
 	private Class<T> eventClass;
 	private boolean clientOnly;
