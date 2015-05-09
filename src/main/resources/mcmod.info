@@ -3,7 +3,7 @@
   "modid": "mrnobody_morecommands",
   "name": "More Commands",
   "description": "Mod to extend Minecraft Chat Commands",
-  "version": "2.2",
+  "version": "2.3",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",
