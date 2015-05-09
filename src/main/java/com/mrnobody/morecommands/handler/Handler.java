@@ -1,8 +1,13 @@
 package com.mrnobody.morecommands.handler;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
+import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.TwoEventListener;
 
 import cpw.mods.fml.common.eventhandler.Event;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -13,6 +18,7 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
  * @author MrNobody98
  */
 public class Handler<T extends Event> {
+	private Map<Listeners.TwoEventListener<T, T>, Listeners.Listener<T>> doubleListener = new HashMap<Listeners.TwoEventListener<T, T>, Listeners.Listener<T>>();
 	private List<Listener<T>> listener = new ArrayList<Listener<T>>();
 	private Class<T> eventClass;
 	private boolean clientOnly;
@@ -56,10 +62,46 @@ public class Handler<T extends Event> {
 	}
 	
 	/**
+	 * Registers a listener for two events to the handler
+	 * 
+	 * @param firstEvent true to invoke {@link TwoEventListener#onEvent1(Event)}, <br> false to invoke {@link TwoEventListener#onEvent2(Event)}
+	 */
+	public void register(final TwoEventListener<T, T> listener, boolean firstEvent) {
+		if (!this.doubleListener.containsKey(listener)) {
+			Listener<T> l = firstEvent ? new Listener<T>()
+			{
+				public void onEvent(T event)
+				{
+					listener.onEvent1(event);
+				}
+			} : new Listener<T>()
+			{
+				public void onEvent(T event)
+				{
+					listener.onEvent2(event);
+				}
+			};
+	        
+			this.doubleListener.put(listener, l);
+			this.listener.add(l);
+		}
+	}
+	      
+	/**
 	 * Unregisters a listener from the handler
 	 */
 	public void unregister(Listener<T> listener) {
 		if (this.listener.contains(listener)) this.listener.remove(listener);
+	}
+	
+	/**
+	 * Unregisters a listener for two events from the handler
+	 */
+	public void unregister(TwoEventListener<T, T> listener) {
+		if (this.doubleListener.containsKey(listener)) {
+			this.listener.remove(this.doubleListener.get(listener));
+			this.doubleListener.remove(listener);
+		}
 	}
 	
 	/**
@@ -68,5 +110,12 @@ public class Handler<T extends Event> {
 	public boolean isRegistered(Listener<T> listener) {
 		if (this.listener.contains(listener)) return true;
 		else return false;
+	}
+	
+	/**
+	 * @return Whether this two event listener is already registered
+	 */
+	public boolean isRegistered(TwoEventListener<T, T> listener) {
+    	return this.doubleListener.containsKey(listener);
 	}
 }

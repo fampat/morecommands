@@ -226,6 +226,16 @@ command.biome.info=Dein akutells Biom ist: %s (ID %d)
 command.biome.more=Benutze '/biome list SEITE' und ersetze SEITE mit der Seitennummer, um mehr Biome zu sehen
 command.biome.invalidUsage=Falsche Benutzung. Benutze 'help biome' um Hilfe zu bekommen.
 
+command.blocklight.description=Setzt das Lichtlevel eines Blocks (muss neu platuziert werden, um Aenderungen zu sehen)
+command.blocklight.example=/blocklight torch 0
+command.blocklight.syntax=/blocklight <BLOCK> <LICHTLEVEL>
+command.blocklight.videoURL=youtu.be/990Ns3Iebyo
+command.blocklight.invalidArg=Das Lichtlevel muss eine Zahl sein
+command.blocklight.success=Lichtlevel erfolgreich geaendert
+command.blocklight.reset=Lichtlevel erfolgreich zurueckgesetzt
+command.blocklight.notFound=Block nicht gefunden
+command.blocklight.invalidUsage=Falsche Benutzung. Benutze 'help blocklight' um Hilfe zu bekommen.
+
 command.breakspeed.description=Legt die Abbaugeschwindigkeit fest
 command.breakspeed.example=/breakspeed 20
 command.breakspeed.syntax=/breakspeed <WERT|MIN|MAX|RESET>
@@ -249,6 +259,13 @@ command.bring.videoURL=youtu.be/Vqen-jjS5rs
 command.bring.NAN=Der Radius muss eine Zahl sein
 command.bring.unknownEntity=Unbekanntes Entity
 command.bring.invalidRadius=Der Radius muss zwischen 0 und 256 liegen
+
+command.calc.description=Ein Taschenrechner (Operatoren: %,+,-,*,/,^)
+command.calc.example=/calc 5(7*8^(1/2)+(158.879-35.487)%7)
+command.calc.syntax=/calc <RECHNUNG>
+command.calc.videoURL=youtu.be/o6Kg7-uaLQQ
+command.calc.result=Das Ergebnis ist: %f
+command.calc.failure=Fehler: %s
 
 command.cannon.description=Feuert ein gezuendetes TNT ab
 command.cannon.example=/cannon 10
@@ -599,6 +616,15 @@ command.ignite.example=/ignite
 command.ignite.syntax=/ignite
 command.ignite.videoURL=youtu.be/qpyY49zJs8k
 command.ignite.notInSight=Kein Block in Sicht
+
+command.ignorespawn.description=Verhindert das Spawned bestimmter Kreaturen
+command.ignorespawn.example=/ignorespawn enderman
+command.ignorespawn.syntax=/ignorespawn <ENTITY>
+command.ignorespawn.videoURL=youtu.be/j7A9hcgj8-Q
+command.ignorespawn.unknownEntity=Unbekannte Kreatur
+command.ignorespawn.removed=Spawn der Kreatur erlaubt
+command.ignorespawn.added=Spawn der Kreatur verboten
+command.ignorespawn.invalidUsage=Falsche Benutzung. Benutze 'help ignorespawn' um Hilfe zu bekommen.
 
 command.infiniteitems.description=Schaltet unendliche Items an/aus
 command.infiniteitems.example=/infiniteitems on

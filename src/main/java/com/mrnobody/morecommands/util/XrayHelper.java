@@ -12,7 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listener;
+import com.mrnobody.morecommands.handler.Listeners.TwoEventListener;
 
 import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.common.registry.GameData;
@@ -23,7 +23,7 @@ import cpw.mods.fml.common.registry.GameData;
  * @author MrNobody98
  *
  */
-public class XrayHelper {
+public class XrayHelper implements TwoEventListener<TickEvent, RenderWorldLastEvent> {
 	private static XrayHelper xrayHelper;
 	
 	public static XrayHelper getInstance() {
@@ -32,22 +32,6 @@ public class XrayHelper {
 	
 	public static void init() {
 		XrayHelper.xrayHelper = new XrayHelper();
-	}
-	
-	private class TickListener implements Listener<TickEvent> {
-		@Override
-		public void onEvent(TickEvent event) {
-			if (event instanceof TickEvent.ClientTickEvent) {
-				clTick.tick((TickEvent.ClientTickEvent) event);
-			}
-		}
-	}
-	
-	private class RenderListener implements Listener<RenderWorldLastEvent> {
-		@Override
-		public void onEvent(RenderWorldLastEvent event) {
-			rTick.onRenderEvent(event);
-		}
 	}
 	
 	public int localPlayerX, localPlayerY, localPlayerZ;
@@ -88,12 +72,21 @@ public class XrayHelper {
 		}
 	}
 	
+	public void onEvent1(TickEvent event) {
+		if (event instanceof TickEvent.ClientTickEvent)
+			this.clTick.tick((TickEvent.ClientTickEvent) event);
+	}
+	  
+	public void onEvent2(RenderWorldLastEvent event) {
+		this.rTick.onRenderEvent(event);
+	}
+	
 	private XrayHelper() {
 		this.clTick = new XrayClientTick(this);
 		this.rTick = new XrayRenderTick(this);
 		
-		EventHandler.TICK.getHandler().register(new TickListener());
-		EventHandler.RENDERWORLD.getHandler().register(new RenderListener());
+		EventHandler.TICK.getHandler().register(this, true);
+		EventHandler.RENDERWORLD.getHandler().register(this, false);
 		
 		Block block;
 		Iterator<Block> blocks = GameData.getBlockRegistry().iterator();

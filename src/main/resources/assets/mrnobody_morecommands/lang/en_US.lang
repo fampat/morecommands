@@ -226,6 +226,16 @@ command.biome.info=Your current Biome is: %s (ID %d)
 command.biome.more=Use '/biome list PAGE' and replace PAGE with the page number to see more biome Names
 command.biome.invalidUsage=Invalid Usage. Type 'help biome' to get help
 
+command.blocklight.description=Sets the light level of a block (must replace for changes to take effect)
+command.blocklight.example=/blocklight torch 0
+command.blocklight.syntax=/blocklight <BLOCK> <LIGHT LEVEL>
+command.blocklight.videoURL=youtu.be/990Ns3Iebyo
+command.blocklight.invalidArg=The light level must be a number
+command.blocklight.success=Successfully changed the light level
+command.blocklight.reset=Successfully reseted the light level
+command.blocklight.notFound=Block not found
+command.blocklight.invalidUsage=Invalid Usage. Type 'help blocklight' to get help
+
 command.breakspeed.description=Sets the break speed for blocks
 command.breakspeed.example=/breakspeed 20
 command.breakspeed.syntax=/breakspeed <VALUE|MIN|MAX|RESET>
@@ -249,6 +259,13 @@ command.bring.videoURL=youtu.be/Vqen-jjS5rs
 command.bring.NAN=The radius must be a number
 command.bring.unknownEntity=Unknown Entity Type
 command.bring.invalidRadius=The radius must be between 0 and 256
+
+command.calc.description=A calculator (operators: %,+,-,*,/,^)
+command.calc.example=/calc 5(7*8^(1/2)+(158.879-35.487)%7)
+command.calc.syntax=/calc <CALCULATION>
+command.calc.videoURL=youtu.be/o6Kg7-uaLQQ
+command.calc.result=The result is: %f
+command.calc.failure=Error: %s
 
 command.cannon.description=Fires a primed TNT
 command.cannon.example=/cannon 10
@@ -599,6 +616,15 @@ command.ignite.example=/ignite
 command.ignite.syntax=/ignite
 command.ignite.videoURL=youtu.be/qpyY49zJs8k
 command.ignite.notInSight=No Block in sight
+
+command.ignorespawn.description=Prevents creatures from spawning
+command.ignorespawn.example=/ignorespawn enderman
+command.ignorespawn.syntax=/ignorespawn <ENTITY>
+command.ignorespawn.videoURL=youtu.be/j7A9hcgj8-Q
+command.ignorespawn.unknownEntity=Unknown Entity
+command.ignorespawn.removed=Entity Spawn allowed
+command.ignorespawn.added=Entity Spawn disallowed
+command.ignorespawn.invalidUsage=Invalid Usage. Type 'help ignorespawn' to get help
 
 command.infiniteitems.description=Turns infinite items on/off
 command.infiniteitems.example=/infiniteitems on
