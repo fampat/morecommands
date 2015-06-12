@@ -6,7 +6,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.network.PacketDispatcher;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
@@ -34,15 +33,15 @@ public class CommandStepheight extends ServerCommand {
 		float height;
 		
 		if (params.length > 0) {
-			try {height = Float.parseFloat(params[0]); sender.sendLangfileMessage("command.stepheight.setto", new Object[] {height});}
+			try {height = Float.parseFloat(params[0]); sender.sendLangfileMessage("command.stepheight.setto", height);}
 			catch (NumberFormatException e) {
-				if (params[0].equalsIgnoreCase("reset")) {height = 0.5F; sender.sendLangfileMessage("command.stepheight.reset", new Object[0]);}
-				else {sender.sendLangfileMessage("command.stepheight.invalidArg", new Object[0]); return;}
+				if (params[0].equalsIgnoreCase("reset")) {height = 0.5F; sender.sendLangfileMessage("command.stepheight.reset");}
+				else throw new CommandException("command.stepheight.invalidArg", sender);
 			}
 			
 			MoreCommands.getMoreCommands().getPacketDispatcher().sendS11Stepheight((EntityPlayerMP) sender.getMinecraftISender(), height);
 		}
-		else sender.sendLangfileMessage("command.stepheight.invalidUsage", new Object[0]);
+		else throw new CommandException("command.stepheight.invalidUsage", sender);
 	}
 	
 	@Override

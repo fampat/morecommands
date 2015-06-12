@@ -10,6 +10,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import com.google.common.base.Charsets;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.util.Reference;
+import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.network.FMLEventChannel;
@@ -37,6 +38,10 @@ public final class PacketDispatcher {
 	private static final byte S10GRAVITY              = 0x0F;
 	private static final byte S11STEPHEIGHT           = 0x10;
 	private static final byte S12RIDE                 = 0x11;
+	
+	private static final byte XRAY_SHOWCONFIG       = 0;
+	private static final byte XRAY_CHANGESETTINGS   = 1;
+	private static final byte XRAY_LOADSAVESETTINGS = 2;
 	
 	private FMLEventChannel channel;
 	private PacketHandlerClient packetHandlerClient;
@@ -156,11 +161,21 @@ public final class PacketDispatcher {
 	}
 	
 	private void processS05Xray(ByteBuf payload) {
-		boolean showConfig = payload.readBoolean();
-		boolean xrayEnabled = payload.readBoolean();
-		int blockRadius = payload.readInt();
+		byte id = readID(payload);
 		
-		this.packetHandlerClient.handleXray(showConfig, xrayEnabled, blockRadius);
+		if (id == XRAY_SHOWCONFIG) this.packetHandlerClient.handleXray();
+		else if (id == XRAY_CHANGESETTINGS) {
+			boolean enableXray = payload.readBoolean();
+			int radius = payload.readInt();
+			
+			this.packetHandlerClient.handleXray(enableXray, radius);
+		}
+		else if (id == XRAY_LOADSAVESETTINGS) {
+			boolean load = payload.readBoolean();
+			String setting = readString(payload);
+			
+			this.packetHandlerClient.handleXray(load, setting);
+		}
 	}
 	
 	private void processS06Noclip(ByteBuf payload) {
@@ -280,13 +295,31 @@ public final class PacketDispatcher {
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	
-	public void sendS05Xray(EntityPlayerMP player, boolean showConfig, boolean xrayEnabled, int blockRadius) {
+	public void sendS05Xray(EntityPlayerMP player) {
 	    ByteBuf payload = Unpooled.buffer();
 	    writeID(payload, S05XRAY);
+	    writeID(payload, XRAY_SHOWCONFIG);
 	    
-	    payload.writeBoolean(showConfig);
+		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
+	}
+	
+	public void sendS05Xray(EntityPlayerMP player, boolean xrayEnabled, int blockRadius) {
+	    ByteBuf payload = Unpooled.buffer();
+	    writeID(payload, S05XRAY);
+	    writeID(payload, XRAY_CHANGESETTINGS);
+	    
 	    payload.writeBoolean(xrayEnabled);
 	    payload.writeInt(blockRadius);
+		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
+	}
+	
+	public void sendS05Xray(EntityPlayerMP player, boolean load, String setting) {
+	    ByteBuf payload = Unpooled.buffer();
+	    writeID(payload, S05XRAY);
+	    writeID(payload, XRAY_LOADSAVESETTINGS);
+	    
+	    payload.writeBoolean(load);
+	    writeString(setting, payload);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	
@@ -313,6 +346,9 @@ public final class PacketDispatcher {
 	}
 	
 	public void sendS09ExecuteClientCommand(EntityPlayerMP player, String command) {
+		if (ServerPlayerSettings.playerSettingsMapping.containsKey(player))
+			command = replaceVars(command, ServerPlayerSettings.playerSettingsMapping.get(player));
+		
 	    ByteBuf payload = Unpooled.buffer();
 	    writeID(payload, S09EXECUTECLIENTCOMMAND);
 	    
@@ -372,5 +408,36 @@ public final class PacketDispatcher {
 		byte[] bytes = string.getBytes(Charsets.UTF_8);
 		buffer.writeInt(bytes.length);
 		buffer.writeBytes(bytes);
+	}
+	
+	private String replaceVars(String string, ServerPlayerSettings settings) {
+		String varIdentifier = "";
+		String newString = "";
+		boolean isReadingVarIdentifier = false;
+		
+		for (char ch : string.toCharArray()) {
+			if (ch == '%') {
+				if (isReadingVarIdentifier) {
+					isReadingVarIdentifier = false;
+					
+					if (varIdentifier.isEmpty()) newString += "%";
+					else {
+						if (!settings.varMapping.containsKey(varIdentifier))
+							newString += "%" + varIdentifier + "%";
+						else
+							newString += settings.varMapping.get(varIdentifier);
+					}
+					
+					varIdentifier = "";
+				}
+				else isReadingVarIdentifier = true;
+			}
+			else {
+				if (isReadingVarIdentifier) varIdentifier += ch;
+				else newString += ch;
+			}
+		}
+		
+		return newString;
 	}
 }

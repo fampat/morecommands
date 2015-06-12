@@ -32,18 +32,16 @@ import cpw.mods.fml.common.gameevent.TickEvent;
  */
 public enum EventHandler {
 	ATTACK(MinecraftForge.EVENT_BUS, new Handler<LivingAttackEvent>(LivingAttackEvent.class, false)),
-	BLOCK_PLACEMENT(MinecraftForge.EVENT_BUS, new Handler<PlaceEvent>(PlaceEvent.class, false)),
+	PLACE(MinecraftForge.EVENT_BUS, new Handler<PlaceEvent>(PlaceEvent.class, false)),
 	BREAKSPEED(MinecraftForge.EVENT_BUS, new Handler<BreakSpeed>(BreakSpeed.class, false)),
 	COMMAND(MinecraftForge.EVENT_BUS, new Handler<CommandEvent>(CommandEvent.class, false)),
 	ENTITYJOIN(MinecraftForge.EVENT_BUS, new Handler<EntityJoinWorldEvent>(EntityJoinWorldEvent.class, false)),
 	EXPLOSION(MinecraftForge.EVENT_BUS, new Handler<ExplosionEvent>(ExplosionEvent.class, false)),
 	FALL(MinecraftForge.EVENT_BUS, new Handler<LivingFallEvent>(LivingFallEvent.class, false)),
-	DROPS(MinecraftForge.EVENT_BUS, new Handler<BreakEvent>(BreakEvent.class, false)),
 	HURT(MinecraftForge.EVENT_BUS, new Handler<LivingHurtEvent>(LivingHurtEvent.class, false)),
 	ITEM_DESTROY(MinecraftForge.EVENT_BUS, new Handler<PlayerDestroyItemEvent>(PlayerDestroyItemEvent.class, false)),
 	KEYINPUT(FMLCommonHandler.instance().bus(), new Handler<KeyInputEvent>(KeyInputEvent.class, true)),
 	PLAYER_ATTACK(MinecraftForge.EVENT_BUS, new Handler<AttackEntityEvent>(AttackEntityEvent.class, false)),
-	INTERACT(MinecraftForge.EVENT_BUS, new Handler<PlayerInteractEvent>(PlayerInteractEvent.class, false)),
 	RENDERWORLD(MinecraftForge.EVENT_BUS, new Handler<RenderWorldLastEvent>(RenderWorldLastEvent.class, true)),
 	TICK(FMLCommonHandler.instance().bus(), new Handler<TickEvent>(TickEvent.class, false)),
 	SOUND(MinecraftForge.EVENT_BUS, new Handler<PlaySoundEvent17>(PlaySoundEvent17.class, true));

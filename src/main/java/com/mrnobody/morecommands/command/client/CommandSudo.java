@@ -49,10 +49,7 @@ public class CommandSudo extends ClientCommand {
 				}
 			}
 			
-			if (player == null) {
-				sender.sendLangfileMessage("command.sudo.playerNotFound", new Object[0]);
-				return;
-			}
+			if (player == null) throw new CommandException("command.sudo.playerNotFound", sender);
 			
 			ICommandManager manager = MinecraftServer.getServer().getCommandManager();
 			String command = params[1];
@@ -68,11 +65,11 @@ public class CommandSudo extends ClientCommand {
 			}
 			
 			manager.executeCommand((new CommandSender(player)).getMinecraftISender(), command + parameters);
-			sender.sendLangfileMessage("command.sudo.executed", new Object[] {command + parameters, player.getCommandSenderName()});
+			sender.sendLangfileMessage("command.sudo.executed", command + parameters, player.getCommandSenderName());
 		}
-		else if (!(MinecraftServer.getServer() instanceof IntegratedServer)) {sender.sendLangfileMessage("command.sudo.notInLAN", new Object[0]);}
-		else if (!((IntegratedServer) MinecraftServer.getServer()).getPublic()) {sender.sendLangfileMessage("command.sudo.notInLAN", new Object[0]);}
-		else {sender.sendLangfileMessage("command.sudo.invalidArgs", new Object[0]);}
+		else if (!(MinecraftServer.getServer() instanceof IntegratedServer)) throw new CommandException("command.sudo.notInLAN", sender);
+		else if (!((IntegratedServer) MinecraftServer.getServer()).getPublic()) throw new CommandException("command.sudo.notInLAN", sender);
+		else throw new CommandException("command.sudo.invalidArgs", sender);
 	}
 	
 	@Override

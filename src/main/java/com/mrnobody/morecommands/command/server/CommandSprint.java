@@ -34,25 +34,23 @@ public class CommandSprint extends ServerCommand {
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
 		
-    	boolean sprinting = false;
-    	boolean success = false;
-    	
-    	if (params.length >= 1) {
-    		if (params[0].equalsIgnoreCase("true")) {sprinting = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("false")) {sprinting = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("0")) {sprinting = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("1")) {sprinting = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("on")) {sprinting = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("off")) {sprinting = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("enable")) {sprinting = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("disable")) {sprinting = false; success = true;}
-    		else {success = false;}
-    	}
-    	else {sprinting = !player.getInfniteSprinting(); success = true;}
-    	
-    	if (success) {player.setInfniteSprinting(sprinting); player.setSprinting(sprinting);}
-    	
-    	sender.sendLangfileMessage(success ? sprinting ? "command.sprint.on" : "command.sprint.off" : "command.sprint.failure", new Object[0]);
+        if (params.length > 0) {
+        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
+            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
+        		player.setInfniteSprinting(true); player.setSprinting(true);
+            	sender.sendLangfileMessage("command.sprint.on");
+            }
+            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
+            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
+            	player.setInfniteSprinting(false); player.setSprinting(false);
+            	sender.sendLangfileMessage("command.sprint.off");
+            }
+            else throw new CommandException("command.sprint.failure", sender);
+        }
+        else {
+        	player.setInfniteSprinting(!player.getInfniteSprinting()); player.setSprinting(player.getInfniteSprinting());
+        	sender.sendLangfileMessage(player.getInfniteSprinting() ? "command.sprint.on" : "command.sprint.off");
+        }
 	}
 
 	@Override

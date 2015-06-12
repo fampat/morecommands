@@ -1,20 +1,18 @@
 package com.mrnobody.morecommands.command.server;
 
-import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.CommandBase.Requirement;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Handler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.EntityList;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+
+import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.handler.EventHandler;
+import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.wrapper.CommandException;
+import com.mrnobody.morecommands.wrapper.CommandSender;
 
 @Command(
 		name="ignorespawn",
@@ -63,19 +61,19 @@ public class CommandIgnorespawn extends ServerCommand implements Listener<Entity
       
 			if (entityClass == null) {
 				try {entityClass = (Class<? extends net.minecraft.entity.Entity>) EntityList.IDtoClassMapping.get(Integer.valueOf(Integer.parseInt(params[0])));}
-				catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.ignorespawn.unknownEntity", new Object[0]); return;}
+				catch (NumberFormatException nfe) {throw new CommandException("command.ignorespawn.unknownEntity", sender);}
 			}
 			
 			if (this.ignoreSpawn.contains(entityClass)) {
 				this.ignoreSpawn.remove(entityClass);
-				sender.sendLangfileMessage("command.ignorespawn.removed", new Object[0]);
+				sender.sendLangfileMessage("command.ignorespawn.removed");
 			}
 			else {
 				this.ignoreSpawn.add(entityClass);
-				sender.sendLangfileMessage("command.ignorespawn.added", new Object[0]);
+				sender.sendLangfileMessage("command.ignorespawn.added");
 			}
 		}
-		else sender.sendLangfileMessage("command.ignorespawn.invalidUsage", new Object[0]);
+		else throw new CommandException("command.ignorespawn.invalidUsage", sender);
 	}
   
 	@Override

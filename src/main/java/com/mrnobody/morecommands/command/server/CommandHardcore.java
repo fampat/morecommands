@@ -30,25 +30,23 @@ public class CommandHardcore extends ServerCommand {
     
 	@Override
     public void execute(CommandSender sender, String[] params) throws CommandException {
-    	boolean enableHardcore = false;
-    	boolean success = false;
-    	
-    	if (params.length >= 1) {
-    		if (params[0].equalsIgnoreCase("true")) {enableHardcore = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("false")) {enableHardcore = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("0")) {enableHardcore = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("1")) {enableHardcore = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("on")) {enableHardcore = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("off")) {enableHardcore = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("enable")) {enableHardcore = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("disable")) {enableHardcore = false; success = true;}
-    		else {success = false;}
-    	}
-    	else {enableHardcore = !sender.getWorld().isHardcore(); success = true;}
-    	
-    	if (success) {sender.getWorld().setHardcore(enableHardcore);}
-    	
-    	sender.sendLangfileMessage(success ? sender.getWorld().isHardcore() ? "command.hardcore.on" : "command.hardcore.off" : "command.hardcore.failure", new Object[0]);
+        if (params.length > 0) {
+        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
+            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
+        		sender.getWorld().setHardcore(true);
+            	sender.sendLangfileMessage("command.hardcore.on");
+            }
+            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
+            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
+            	sender.getWorld().setHardcore(false);
+            	sender.sendLangfileMessage("command.hardcore.off");
+            }
+            else throw new CommandException("command.hardcore.failure", sender);
+        }
+        else {
+        	sender.getWorld().setHardcore(sender.getWorld().isHardcore());
+        	sender.sendLangfileMessage(sender.getWorld().isHardcore() ? "command.hardcore.on" : "command.hardcore.off");
+        }
     }
 	
 	@Override

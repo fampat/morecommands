@@ -14,6 +14,7 @@ import net.minecraft.entity.player.EntityPlayer;
  */
 public class GlobalSettings {
 	public static boolean welcome_message = true;
+	public static boolean enableVars = true;
 	
 	public static boolean creeperExplosion = true;
 	public static boolean dodrops = true;
@@ -30,6 +31,7 @@ public class GlobalSettings {
 		Settings settings = new Settings(new File(Reference.getModDir(), "settings.cfg"), true);
 		
 		GlobalSettings.welcome_message = settings.getBoolean("welcome_message", true);
+		GlobalSettings.enableVars = settings.getBoolean("enableVars", true);
 		
 		//The other settings are not intended to be saved
 		
@@ -49,6 +51,7 @@ public class GlobalSettings {
 		Settings settings = new Settings(new File(Reference.getModDir(), "settings.cfg"), true);
 		
 		settings.set("welcome_message", GlobalSettings.welcome_message);
+		settings.set("enableVars", GlobalSettings.enableVars);
 		
 		//The other settings are not intended to be saved
 		

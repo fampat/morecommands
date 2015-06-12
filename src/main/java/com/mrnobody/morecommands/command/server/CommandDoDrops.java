@@ -42,7 +42,7 @@ public class CommandDoDrops extends ServerCommand implements Listener<EntityJoin
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		GlobalSettings.dodrops = !GlobalSettings.dodrops;
-		sender.sendLangfileMessage(GlobalSettings.dodrops ? "command.dodrops.enabled" : "command.dodrops.disabled", new Object[0]);
+		sender.sendLangfileMessage(GlobalSettings.dodrops ? "command.dodrops.enabled" : "command.dodrops.disabled");
 	}
 	
 	@Override

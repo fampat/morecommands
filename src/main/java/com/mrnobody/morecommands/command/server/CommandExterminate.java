@@ -40,16 +40,16 @@ public class CommandExterminate extends ServerCommand {
 			if (hit instanceof EntityLiving)  {
 				if (params.length > 0) {
 					try {strength = Integer.parseInt(params[0]);}
-					catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.exterminate.invalidArg", new Object[0]);}
+					catch (NumberFormatException nfe) {throw new CommandException("command.exterminate.invalidArg", sender);}
 				}
 				
 				entity.getWorld().createExplosion(entity.getMinecraftEntity(), new Coordinate(hit.posX, hit.posY, hit.posZ), strength);
 				
-				sender.sendLangfileMessage("command.exterminate.boooom", new Object[0]);
+				sender.sendLangfileMessage("command.exterminate.boooom");
 			}
-			else sender.sendLangfileMessage("command.exterminate.notLiving", new Object[0]);
+			else throw new CommandException("command.exterminate.notLiving", sender);
 		}
-		else sender.sendLangfileMessage("command.exterminate.notFound", new Object[0]);
+		else throw new CommandException("command.exterminate.notFound", sender);
 	}
 	
 	@Override

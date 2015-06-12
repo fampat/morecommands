@@ -48,27 +48,25 @@ public class CommandFiredamage extends ServerCommand implements Listener<LivingH
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings ability = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
     	
-    	boolean dealDamage = true;
-    	boolean success = false;
-    	
-    	if (params.length >= 1) {
-    		if (params[0].equalsIgnoreCase("true")) {dealDamage = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("false")) {dealDamage = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("0")) {dealDamage = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("1")) {dealDamage = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("on")) {dealDamage = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("off")) {dealDamage = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("enable")) {dealDamage = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("disable")) {dealDamage = false; success = true;}
-    		else {success = false;}
-    	}
-    	else {dealDamage = !ability.firedamage; success = true;}
-    	
-    	if (success) ability.firedamage = dealDamage;
-    	
-    	sender.sendLangfileMessage(success ? dealDamage ? "command.firedamage.on" : "command.firedamage.off" : "command.firedamage.failure", new Object[0]);
+        if (params.length > 0) {
+        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
+            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
+        		settings.firedamage = true;
+            	sender.sendLangfileMessage("command.firedamage.on");
+            }
+            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
+            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
+            	settings.firedamage = false;
+            	sender.sendLangfileMessage("command.firedamage.off");
+            }
+            else throw new CommandException("command.firedamage.failure", sender);
+        }
+        else {
+        	settings.firedamage = !settings.firedamage;
+        	sender.sendLangfileMessage(settings.firedamage ? "command.firedamage.on" : "command.firedamage.off");
+        }
 	}
 	
 	@Override

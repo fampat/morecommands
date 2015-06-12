@@ -34,7 +34,7 @@ public class CommandEndercrystal extends ServerCommand {
 		Entity entity = new Entity((EntityLivingBase) sender.getMinecraftISender());
 		Coordinate spawn = entity.traceBlock(128.0D);
 		
-		if (spawn == null) sender.sendLangfileMessage("command.endercrystal.notFound", new Object[0]);
+		if (spawn == null) throw new CommandException("command.endercrystal.notFound", sender);
 		else Entity.spawnEntity("EnderCrystal", spawn, entity.getWorld());
 	}
 	

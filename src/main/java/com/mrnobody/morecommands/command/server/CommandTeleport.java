@@ -47,9 +47,9 @@ public class CommandTeleport extends ServerCommand {
 						+ "; Y = " + f.format(coord.getY())
 						+ "; Z = " + f.format(coord.getZ()));
 			}
-			catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.teleport.NAN", new Object[0]);}
+			catch (NumberFormatException nfe) {throw new CommandException("command.teleport.NAN", sender);}
 		}
-		else {sender.sendLangfileMessage("command.teleport.invalidParams", new Object[0]);}
+		else throw new CommandException("command.teleport.invalidParams", sender);
 	}
 	
 	@Override

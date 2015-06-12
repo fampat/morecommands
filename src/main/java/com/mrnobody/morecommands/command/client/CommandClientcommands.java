@@ -2,6 +2,7 @@ package com.mrnobody.morecommands.command.client;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import net.minecraft.command.ICommand;
 import net.minecraftforge.client.ClientCommandHandler;
@@ -24,13 +25,13 @@ public class CommandClientcommands extends ClientCommand
 	
 	public static boolean clientCommandsEnabled() {return enabled;}
 	
-	private Map<String, ICommand> clientCommands;
+	private Map<String, ClientCommand> clientCommands;
 	
 	public CommandClientcommands() {
-		 this.clientCommands = new HashMap<String, ICommand>();
+		 this.clientCommands = new HashMap<String, ClientCommand>();
 	}
 	
-	public CommandClientcommands(Map<String, ICommand> clientCommands) {
+	public CommandClientcommands(Map<String, ClientCommand> clientCommands) {
 		 this.clientCommands = clientCommands;
 	}
 	
@@ -48,28 +49,26 @@ public class CommandClientcommands extends ClientCommand
     
 	@Override
     public void execute(CommandSender sender, String[] params) throws CommandException {
-    	boolean clientcommands = false;
-        boolean success = false;
-        	
-        if (params.length >= 1) {
-        	if (params[0].equalsIgnoreCase("enable")) {clientcommands = true; success = true;}
-        	else if (params[0].equalsIgnoreCase("disable")) {clientcommands = false; success = true;}
-        	else if (params[0].equalsIgnoreCase("0")) {clientcommands = false; success = true;}
-        	else if (params[0].equalsIgnoreCase("1")) {clientcommands = true; success = true;}
-        	else if (params[0].equalsIgnoreCase("on")) {clientcommands = true; success = true;}
-        	else if (params[0].equalsIgnoreCase("off")) {clientcommands = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("enable")) {clientcommands = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("disable")) {clientcommands = false; success = true;}
+        if (params.length > 0) {
+        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
+        		|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
+        		this.enableClientCommands();
+        		sender.sendLangfileMessage("command.clientcommands.on");
+        	}
+        	else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
+        			|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
+            	this.disableClientCommands();
+            	sender.sendLangfileMessage("command.clientcommands.off");
+            }
+        	else throw new CommandException("command.clientcommands.failure", sender);
         }
-        	
-        if (success && clientcommands) this.enableClientCommands();
-        else if (success && !clientcommands) this.disableClientCommands();
-        	
-        sender.sendLangfileMessage(success ? clientcommands ? "command.clientcommands.on" : "command.clientcommands.off" : "command.clientcommands.failure", new Object[0]);
+        else throw new CommandException("command.clientcommands.failure", sender);
     }
 	
 	private void enableClientCommands() {
-		for (ICommand command : this.clientCommands.values()) if (!(command instanceof CommandClientcommands)) ClientCommandHandler.instance.registerCommand(command);
+		for (ClientCommand command : this.clientCommands.values()) 
+			if (!(command instanceof CommandClientcommands)) ClientCommandHandler.instance.registerCommand(command);
+		
 		this.clientCommands.clear();
 		enabled = true;
 	}
@@ -77,8 +76,13 @@ public class CommandClientcommands extends ClientCommand
 	private void disableClientCommands() {
 		if (this.clientCommands.size() != 0) return;
 		this.clientCommands.clear();
-		this.clientCommands.putAll(ClientCommandHandler.instance.getCommands());
-		ClientCommandHandler.instance.getCommands().clear();
+		
+		for (Map.Entry<String, ICommand> entry : (Set<Map.Entry<String, ICommand>>) ClientCommandHandler.instance.getCommands().entrySet())
+			if (entry.getValue() instanceof ClientCommand) this.clientCommands.put(entry.getKey(), (ClientCommand) entry.getValue());
+		
+		for (String command : this.clientCommands.keySet()) 
+			ClientCommandHandler.instance.getCommands().remove(command);
+		
 		ClientCommandHandler.instance.registerCommand(new CommandClientcommands(this.clientCommands));
 		enabled = false;
 	}

@@ -36,7 +36,7 @@ public class CommandAscend extends ServerCommand {
     	while (y < 260) {
     		if (entity.getWorld().isClear(new Coordinate(coord.getBlockX(), y++, coord.getBlockZ()))) {
     			entity.setPosition(new Coordinate(coord.getBlockX() + 0.5F, --y, coord.getBlockZ() + 0.5F));
-    			sender.sendLangfileMessage("command.ascend.ascended", new Object[] {Math.abs((y - coord.getBlockY()))});
+    			sender.sendLangfileMessage("command.ascend.ascended", Math.abs(y - coord.getBlockY()));
     			break;
     		}
     	}

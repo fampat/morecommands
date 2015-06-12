@@ -54,27 +54,25 @@ public class CommandKillattacker extends ServerCommand implements Listener<Livin
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-		ServerPlayerSettings ability = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
     	
-        boolean killattacker = false;
-        boolean success = false;
-        	
-        if (params.length >= 1) {
-        	if (params[0].equalsIgnoreCase("true")) {killattacker = true; success = true;}
-        	else if (params[0].equalsIgnoreCase("false")) {killattacker = false; success = true;}
-        	else if (params[0].equalsIgnoreCase("0")) {killattacker = false; success = true;}
-        	else if (params[0].equalsIgnoreCase("1")) {killattacker = true; success = true;}
-        	else if (params[0].equalsIgnoreCase("on")) {killattacker = true; success = true;}
-        	else if (params[0].equalsIgnoreCase("off")) {killattacker = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("enable")) {killattacker = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("disable")) {killattacker = false; success = true;}
-        	else {success = false;}
+        if (params.length > 0) {
+        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
+            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
+        		settings.killattacker = true;
+            	sender.sendLangfileMessage("command.killattacker.on");
+            }
+            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
+            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
+            	settings.killattacker = false;
+            	sender.sendLangfileMessage("command.killattacker.off");
+            }
+            else throw new CommandException("command.killattacker.failure", sender);
         }
-        else {killattacker = !ability.killattacker; success = true;}
-        	
-        if (success) ability.killattacker = killattacker;
-        	
-        sender.sendLangfileMessage(success ? killattacker ? "command.killattacker.on" : "command.killattacker.off" : "command.killattacker.failure", new Object[0]);
+        else {
+        	settings.killattacker = !settings.killattacker;
+        	sender.sendLangfileMessage(settings.killattacker ? "command.killattacker.on" : "command.killattacker.off");
+        }
 	}
 	
 	@Override

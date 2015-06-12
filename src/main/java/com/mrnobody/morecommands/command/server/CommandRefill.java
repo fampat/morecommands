@@ -6,12 +6,8 @@ import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.command.CommandBase.Requirement;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-
-import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "refill",
@@ -46,10 +42,10 @@ public class CommandRefill extends ServerCommand {
 			if (player.inventory.mainInventory[player.inventory.currentItem] != null) 
 				player.inventory.mainInventory[player.inventory.currentItem].stackSize = player.inventory.mainInventory[player.inventory.currentItem].getMaxStackSize();
 			else
-				{sender.sendLangfileMessage("command.refill.noSelection", new Object[0]); return;}
+				throw new CommandException("command.refill.noSelection", sender);
 		}
 		
-		sender.sendLangfileMessage("command.refill.refilled", new Object[0]);
+		sender.sendLangfileMessage("command.refill.refilled");
 	}
 	
 	@Override

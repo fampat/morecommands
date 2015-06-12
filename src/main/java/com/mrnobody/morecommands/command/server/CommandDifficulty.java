@@ -38,7 +38,7 @@ public class CommandDifficulty extends ServerCommand {
 			else if (params[0].equalsIgnoreCase("easy")|| params[0].equalsIgnoreCase("1")) diff = EnumDifficulty.EASY;
 			else if (params[0].equalsIgnoreCase("normal")|| params[0].equalsIgnoreCase("2")) diff = EnumDifficulty.NORMAL;
 			else if (params[0].equalsIgnoreCase("hard")|| params[0].equalsIgnoreCase("3")) diff = EnumDifficulty.HARD;
-			else {sender.sendLangfileMessage("command.difficulty.invalidDifficulty", new Object[0]); return;}
+			else throw new CommandException("command.difficulty.invalidDifficulty", sender);
 			
 			server.func_147139_a(diff);
 			sender.getWorld().getMinecraftWorld().difficultySetting = diff;
@@ -51,9 +51,9 @@ public class CommandDifficulty extends ServerCommand {
 				case HARD: difficulty = "hard"; break;
 			}
 			
-			sender.sendLangfileMessage("command.difficulty.setto", new Object[] {difficulty});
+			sender.sendLangfileMessage("command.difficulty.setto", difficulty);
 		}
-		else {sender.sendLangfileMessage("command.difficulty.invalidUsage", new Object[0]);}
+		else throw new CommandException("command.difficulty.invalidUsage", sender);
 	}
 	
 	@Override

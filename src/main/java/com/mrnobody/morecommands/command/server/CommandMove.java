@@ -49,10 +49,10 @@ public class CommandMove extends ServerCommand {
 					player.setPosition(new Coordinate(player.getPosition().getX(), player.getPosition().getY() + distance, player.getPosition().getZ()));
 				} else if (params[1].toUpperCase().startsWith("D")) {
 					player.setPosition(new Coordinate(player.getPosition().getX(), player.getPosition().getY() - distance, player.getPosition().getZ()));
-				} else {sender.sendLangfileMessage("command.move.invalidDirection", new Object[0]);}
-			} catch (NumberFormatException e) {sender.sendLangfileMessage("command.move.NAN", new Object[0]);}
+				} else throw new CommandException("command.move.invalidDirection", sender);
+			} catch (NumberFormatException e) {throw new CommandException("command.move.NAN", sender);}
 		}
-		else {sender.sendLangfileMessage("command.move.invalidUsage", new Object[0]);}
+		else throw new CommandException("command.move.invalidUsage", sender);
 	}
 	
 	@Override

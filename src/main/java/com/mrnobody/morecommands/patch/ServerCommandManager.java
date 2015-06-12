@@ -10,6 +10,7 @@ import net.minecraft.command.PlayerSelector;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.common.MinecraftForge;
@@ -18,20 +19,60 @@ import net.minecraftforge.event.CommandEvent;
 import com.google.common.base.Throwables;
 import com.mrnobody.morecommands.command.CommandBase;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.network.PacketDispatcher;
 import com.mrnobody.morecommands.util.DummyCommand;
+import com.mrnobody.morecommands.util.GlobalSettings;
+import com.mrnobody.morecommands.util.LanguageManager;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
 /**
  * The patched class of {@link net.minecraft.command.ServerCommandManager} <br>
  * Patching this class is needed to use commands e.g. with a command block <br>
  * The vanilla command manager passes e.g. the command block as command sender,
- * this modified version will use players selected by a target selector
+ * this modified version will use players selected by a target selector.
+ * Another aspect why this patch is needed is to use variables.
  * 
  * @author MrNobody98
  *
  */
 public class ServerCommandManager extends net.minecraft.command.ServerCommandManager {
+	private static class VarCouldNotBeResolvedException extends Exception {
+		private String var;
+		
+		public VarCouldNotBeResolvedException(String var) {
+			this.var = var;
+		}
+	}
+	
+	private static String replaceVars(String string, ServerPlayerSettings settings) throws VarCouldNotBeResolvedException {
+		String varIdentifier = "";
+		String newString = "";
+		boolean isReadingVarIdentifier = false;
+		
+		for (char ch : string.toCharArray()) {
+			if (ch == '%') {
+				if (isReadingVarIdentifier) {
+					isReadingVarIdentifier = false;
+					
+					if (varIdentifier.isEmpty()) newString += "%";
+					else {
+						if (!settings.varMapping.containsKey(varIdentifier))
+							throw new VarCouldNotBeResolvedException(varIdentifier);
+						newString += settings.varMapping.get(varIdentifier);
+					}
+					
+					varIdentifier = "";
+				}
+				else isReadingVarIdentifier = true;
+			}
+			else {
+				if (isReadingVarIdentifier) varIdentifier += ch;
+				else newString += ch;
+			}
+		}
+		
+		return newString;
+	}
+	
     @Override
     public int executeCommand(ICommandSender p_71556_1_, String p_71556_2_)
     {
@@ -40,6 +81,14 @@ public class ServerCommandManager extends net.minecraft.command.ServerCommandMan
         if (p_71556_2_.startsWith("/"))
         {
             p_71556_2_ = p_71556_2_.substring(1);
+        }
+        
+        if (GlobalSettings.enableVars && ServerPlayerSettings.playerSettingsMapping.containsKey(p_71556_1_)) {
+        	try {p_71556_2_ = replaceVars(p_71556_2_, ServerPlayerSettings.playerSettingsMapping.get(p_71556_1_));}
+            catch (VarCouldNotBeResolvedException vcnbre) {
+            	ChatComponentText text = new ChatComponentText(LanguageManager.getTranslation(MoreCommands.getMoreCommands().getCurrentLang(p_71556_1_), "command.var.cantBeResolved", vcnbre.var));
+            	text.getChatStyle().setColor(EnumChatFormatting.RED); p_71556_1_.addChatMessage(text);
+            }
         }
 
         String[] astring = p_71556_2_.split(" ");

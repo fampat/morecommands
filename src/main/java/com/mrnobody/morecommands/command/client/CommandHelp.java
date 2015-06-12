@@ -42,11 +42,10 @@ public class CommandHelp extends ClientCommand {
 			if (params.length > 1) for (String param : Arrays.copyOfRange(params, 1, params.length)) args += " " + param;
 			
 			if (params[0].equalsIgnoreCase("client")) ClientCommandHandler.instance.executeCommand(sender.getMinecraftISender(), "chelp" + args);
-			if (params[0].equalsIgnoreCase("server")) ClientCommandHandler.instance.executeCommand(sender.getMinecraftISender(), "shelp" + args);
-			if (params[0].equalsIgnoreCase("help")) sender.sendLangfileMessage("command.helpSideClient.info", new Object[0]);
-			else sender.sendLangfileMessage("command.helpSideClient.info", new Object[0]);
+			else if (params[0].equalsIgnoreCase("server")) ClientCommandHandler.instance.executeCommand(sender.getMinecraftISender(), "shelp" + args);
+			else throw new CommandException("command.helpSideClient.info", sender);
 		}
-		else sender.sendLangfileMessage("command.helpSideClient.info", new Object[0]);
+		else throw new CommandException("command.helpSideClient.info", sender);
 	}
 	
 	@Override

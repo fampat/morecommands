@@ -77,12 +77,12 @@ public class CommandChelp extends ClientCommand {
 			page = params.length == 0 ? 0 : this.parseIntBounded(sender.getMinecraftISender(), params[0], 1, totalPages + 1) - 1;
 		}
 		catch (NumberInvalidException numberinvalidexception){
-			if (!names.contains(params[0])) {sender.sendLangfileMessage("command.generic.notFound", new Object[0]); return;}
+			if (!names.contains(params[0])) throw new CommandException("command.generic.notFound", sender);
 			else show = "commandhelp";
 		}
 		
 		if (show.equals("generalhelp")) {
-			IChatComponent text = new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.pageheader", new Object[] {Integer.valueOf(page + 1), Integer.valueOf(totalPages + 1)}));
+			IChatComponent text = new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.pageheader", Integer.valueOf(page + 1), Integer.valueOf(totalPages + 1)));
 			this.MESSAGE_PAGEHEADING = text.setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.GREEN));
 			sender.sendChatComponent(this.MESSAGE_PAGEHEADING);
 			
@@ -101,10 +101,10 @@ public class CommandChelp extends ClientCommand {
 				sender.sendChatComponent(this.MESSAGE_COMMANDHEADING);
 				
 				sender.sendChatComponent(this.MESSAGE_NAME.appendSibling((new ChatComponentText(info.name())).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
-				sender.sendChatComponent(this.MESSAGE_DESCRIPTION.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, info.description(), new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
-				sender.sendChatComponent(this.MESSAGE_SYNTAX.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, info.syntax(), new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
-				sender.sendChatComponent(this.MESSAGE_EXAMPLE.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, info.example(), new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
-				sender.sendChatComponent(this.MESSAGE_VIDEO.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, info.videoURL(), new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE).setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "http://" + LanguageManager.getTranslation(langCode, info.videoURL(), new Object[0]))))));
+				sender.sendChatComponent(this.MESSAGE_DESCRIPTION.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, info.description()))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
+				sender.sendChatComponent(this.MESSAGE_SYNTAX.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, info.syntax()))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
+				sender.sendChatComponent(this.MESSAGE_EXAMPLE.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, info.example()))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
+				sender.sendChatComponent(this.MESSAGE_VIDEO.appendSibling((new ChatComponentText(LanguageManager.getTranslation(langCode, info.videoURL()))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE).setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "http://" + LanguageManager.getTranslation(langCode, info.videoURL()))))));
 				
 				sender.sendChatComponent(this.MESSAGE_FOOTER);
 			}
@@ -125,14 +125,14 @@ public class CommandChelp extends ClientCommand {
 	}
 	
 	private void resetMessages(String langCode) {
-		this.MESSAGE_COMMANDHEADING = (new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.commandheader", new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.GREEN));
-		this.MESSAGE_FOOTER = (new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.footer", new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.GREEN));
-		this.MESSAGE_NAME = (new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.name", new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.GREEN));
-		this.MESSAGE_DESCRIPTION = (new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.description", new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.GREEN));
-		this.MESSAGE_SYNTAX = (new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.syntax", new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.GREEN));
-		this.MESSAGE_EXAMPLE = (new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.example", new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.GREEN));
-		this.MESSAGE_VIDEO = (new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.video", new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.GREEN));
-		this.MESSAGE_INFO = (new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.moreinfo", new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.AQUA));
+		this.MESSAGE_COMMANDHEADING = (new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.commandheader"))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.GREEN));
+		this.MESSAGE_FOOTER = (new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.footer"))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.GREEN));
+		this.MESSAGE_NAME = (new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.name"))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.GREEN));
+		this.MESSAGE_DESCRIPTION = (new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.description"))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.GREEN));
+		this.MESSAGE_SYNTAX = (new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.syntax"))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.GREEN));
+		this.MESSAGE_EXAMPLE = (new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.example"))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.GREEN));
+		this.MESSAGE_VIDEO = (new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.video"))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.GREEN));
+		this.MESSAGE_INFO = (new ChatComponentText(LanguageManager.getTranslation(langCode, "command.generic.help.moreinfo"))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.AQUA));
 	}
 	
 	@Override

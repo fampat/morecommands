@@ -42,7 +42,7 @@ public class CommandDefuse extends ServerCommand {
 		
 		if (params.length > 0) {
 			try {radius = Double.parseDouble(params[0]);}
-			catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.defuse.invalidArg", new Object[0]); return;}
+			catch (NumberFormatException nfe) {throw new CommandException("command.defuse.invalidArg", sender);}
 		}
 		
 		World world = sender.getWorld().getMinecraftWorld();
@@ -58,7 +58,7 @@ public class CommandDefuse extends ServerCommand {
 			world.spawnEntityInWorld(tnt);
 		}
 		
-		sender.sendLangfileMessage("command.defuse.defused", new Object[0]);
+		sender.sendLangfileMessage("command.defuse.defused");
 	}
 	
 	@Override

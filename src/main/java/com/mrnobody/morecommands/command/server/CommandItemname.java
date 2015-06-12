@@ -43,10 +43,10 @@ public class CommandItemname extends ServerCommand {
 			if (player.inventory.mainInventory[player.inventory.currentItem] != null)
 				player.inventory.mainInventory[player.inventory.currentItem].setStackDisplayName(name.trim());
 			else
-				sender.sendLangfileMessage("command.itemname.noSelection", new Object[0]);
+				throw new CommandException("command.itemname.noSelection", sender);
 		}
 		else
-			sender.sendLangfileMessage("command.itemname.invalidUsage", new Object[0]);
+			throw new CommandException("command.itemname.invalidUsage", sender);
 	}
 	
 	@Override

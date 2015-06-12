@@ -5,14 +5,10 @@ import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.command.CommandBase.Requirement;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
 import com.mrnobody.morecommands.wrapper.Player;
-
-import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "jump",
@@ -38,7 +34,7 @@ public class CommandJump extends ServerCommand {
 		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		Coordinate hit = player.traceBlock(128);
 		
-		if (hit == null) {sender.sendLangfileMessage("command.jump.notInSight", new Object[0]);}
+		if (hit == null) throw new CommandException("command.jump.notInSight", sender);
 		else {
 			int y = hit.getBlockY() + 1;
 			while (y < 260) {

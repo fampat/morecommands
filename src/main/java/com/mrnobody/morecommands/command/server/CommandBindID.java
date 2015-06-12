@@ -41,10 +41,8 @@ public class CommandBindID extends ServerCommand {
 				int keyid = Integer.parseInt(params[0]);
 				String command = params[1];
 				
-				if (!this.commandHandler.getCommands().containsKey(command) && !settings.clientCommands.contains(command)) {
-					sender.sendLangfileMessage("command.generic.notFound", new Object[0]);
-					return;
-				}
+				if (!this.commandHandler.getCommands().containsKey(command) && !settings.clientCommands.contains(command))
+					throw new CommandException("command.generic.notFound", sender);
 				
 				if (params.length > 2) {
 					int index = 0;
@@ -64,12 +62,12 @@ public class CommandBindID extends ServerCommand {
 					
 					settings.saveSettings();
 					
-					sender.sendLangfileMessage("command.bindid.success", new Object[0]);
+					sender.sendLangfileMessage("command.bindid.success");
 				}
-				else {sender.sendLangfileMessage("command.bindid.invalidChar", new Object[0]);}
-			} catch (NumberFormatException e) {sender.sendLangfileMessage("command.bind.invalidID", new Object[0]);}
+				else throw new CommandException("command.bindid.invalidChar", sender);
+			} catch (NumberFormatException e) {throw new CommandException("command.bindid.invalidID", sender);}
 		}
-		else {sender.sendLangfileMessage("command.bindid.invalidUsage", new Object[0]);}
+		else throw new CommandException("command.bindid.invalidUsage", sender);
 	}
 	
 	@Override

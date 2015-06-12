@@ -19,7 +19,6 @@ import com.mrnobody.morecommands.util.ReflectionHelper;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.Player;
 import com.mrnobody.morecommands.wrapper.World;
 
 @Command(
@@ -47,7 +46,7 @@ public class CommandGrow extends ServerCommand {
 		
 		if (params.length > 0) {
 			try {radius = Integer.parseInt(params[0]);}
-			catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.grow.invalidArg", new Object[0]); return;}
+			catch (NumberFormatException nfe) {throw new CommandException("command.grow.invalidArg", sender);}
 		}
 		
 		Coordinate pos = sender.getPosition();
@@ -71,7 +70,7 @@ public class CommandGrow extends ServerCommand {
 			}
 		}
 		
-		sender.sendLangfileMessage("command.grow.grown", new Object[0]);
+		sender.sendLangfileMessage("command.grow.grown");
 	}
 	
 	private void growPlant(World world, int x, int y, int z, Random rand) {

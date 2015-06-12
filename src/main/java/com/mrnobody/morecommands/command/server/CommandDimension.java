@@ -5,13 +5,9 @@ import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.command.CommandBase.Requirement;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
-
-import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "dimension",
@@ -39,16 +35,15 @@ public class CommandDimension extends ServerCommand {
 	public void execute(CommandSender sender, String[] params)throws CommandException {
 		if (params.length > 0) {
 			Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
-			boolean error = false;
 		
 			if (params[0].equalsIgnoreCase("normal") || params[0].equalsIgnoreCase("surface") || params[0].equalsIgnoreCase(String.valueOf(this.DIMENSION_SURFACE))) player.changeDimension(this.DIMENSION_SURFACE);
 			else if (params[0].equalsIgnoreCase("nether") || params[0].equalsIgnoreCase(String.valueOf(this.DIMENSION_NETHER))) player.changeDimension(this.DIMENSION_NETHER);
 			else if (params[0].equalsIgnoreCase("end") || params[0].equalsIgnoreCase(String.valueOf(this.DIMENSION_END))) player.changeDimension(this.DIMENSION_END);
-			else error = true;
+			else throw new CommandException("command.dimension.unknown", sender);
 			
-			if (!error) sender.sendLangfileMessage("command.dimension.changed", new Object[0]);
-			else sender.sendLangfileMessage("command.dimension.unknown", new Object[0]);
-		} else sender.sendLangfileMessage("command.dimension.notSpecified", new Object[0]);
+			sender.sendLangfileMessage("command.dimension.changed");
+		}
+		else throw new CommandException("command.dimension.notSpecified", sender);
 	}
 	
 	@Override

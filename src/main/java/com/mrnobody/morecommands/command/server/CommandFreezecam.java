@@ -6,7 +6,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.network.PacketDispatcher;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -31,15 +30,15 @@ public class CommandFreezecam extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings ability = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
 		
-		if (ability.freeezecam) {
-			ability.freeezecam = false;
-			sender.sendLangfileMessage("command.freezecam.off", new Object[0]);
+		if (settings.freeezecam) {
+			settings.freeezecam = false;
+			sender.sendLangfileMessage("command.freezecam.off");
 		}
 		else {
-			ability.freeezecam = true;
-			sender.sendLangfileMessage("command.freezecam.on", new Object[0]);
+			settings.freeezecam = true;
+			sender.sendLangfileMessage("command.freezecam.on");
 		}
 		
 		MoreCommands.getMoreCommands().getPacketDispatcher().sendS04Freezecam((EntityPlayerMP) sender.getMinecraftISender());

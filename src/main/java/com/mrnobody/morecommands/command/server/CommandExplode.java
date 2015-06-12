@@ -34,8 +34,8 @@ public class CommandExplode extends ServerCommand {
 		Entity entity = new Entity((net.minecraft.entity.EntityLivingBase) sender.getMinecraftISender());
 		int size = 4;
 		Coordinate spawn = entity.traceBlock(128.0D);
+		boolean success = spawn != null;
 		double x = 0.0D, y = 0.0D, z = 0.0D;
-		boolean success = (spawn != null);
 		if (spawn != null) {
 			x = spawn.getX();
 			y = spawn.getY();
@@ -50,18 +50,18 @@ public class CommandExplode extends ServerCommand {
 					z = Double.parseDouble(params[3]);
 					success = true;
 				}
-				catch (NumberFormatException e) {sender.sendLangfileMessage("command.explode.NAN", new Object[0]);}
+				catch (NumberFormatException e) {throw new CommandException("command.explode.NAN", sender);}
 			}
 			
 			try {size = Integer.parseInt(params[0]);}
-			catch (NumberFormatException e) {sender.sendLangfileMessage("command.explode.NAN", new Object[0]);}
+			catch (NumberFormatException e) {throw new CommandException("command.explode.NAN", sender);}
 		}
 		
 		if (success) {
 			entity.getWorld().createExplosion(entity.getMinecraftEntity(), new Coordinate(x, y, z), size);
-			sender.sendLangfileMessage("command.explode.booooom", new Object[0]);
+			sender.sendLangfileMessage("command.explode.booooom");
 		}
-		else {sender.sendLangfileMessage("command.explode.notInSight", new Object[0]);}
+		else throw new CommandException("command.explode.notInSight", sender);
 	}
 	
 	@Override

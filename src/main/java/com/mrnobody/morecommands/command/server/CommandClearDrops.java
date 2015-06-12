@@ -13,7 +13,6 @@ import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
 		name = "cleardrops",
@@ -60,7 +59,7 @@ public class CommandClearDrops extends ServerCommand {
 			}
 		}
 		
-		sender.sendLangfileMessage("command.cleardrops.removed", new Object[] {removedDrops});
+		sender.sendLangfileMessage("command.cleardrops.removed", removedDrops);
 	}
 	
 	@Override
