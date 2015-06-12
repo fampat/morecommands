@@ -3,8 +3,6 @@ package com.mrnobody.morecommands.command.server;
 import java.util.List;
 
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.Vec3;
 
 import com.mrnobody.morecommands.command.Command;
@@ -12,7 +10,6 @@ import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Entity;
-import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
 		name = "bring",
@@ -40,13 +37,13 @@ public class CommandBring extends ServerCommand {
 		
 		if (params.length > 1) {
 			try {radius = Double.parseDouble(params[1]);}
-			catch (NumberFormatException e) {sender.sendLangfileMessage("command.bring.NAN", new Object[0]); return;}
+			catch (NumberFormatException e) {throw new CommandException("command.bring.NAN", sender);}
 		}
 		
 		if (params.length > 0) {
 			if (Entity.getEntityClass(params[0]) == null) {
 				try {radius = Double.parseDouble(params[0]);}
-				catch (NumberFormatException e) {sender.sendLangfileMessage("command.bring.unknownEntity", new Object[0]); return;}
+				catch (NumberFormatException e) {throw new CommandException("command.bring.unknownEntity", sender);}
 			}
 			else entityType = params[0];
 		}
@@ -66,7 +63,7 @@ public class CommandBring extends ServerCommand {
 				foundEntity.setPosition(d1, d2 + 0.5D, d3);
 			}
 		}
-		else {sender.sendLangfileMessage("command.bring.invalidRadius", new Object[0]);}
+		else throw new CommandException("command.bring.invalidRadius", sender);
 	}
 	
 	@Override

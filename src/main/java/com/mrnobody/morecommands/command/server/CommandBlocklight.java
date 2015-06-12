@@ -64,21 +64,21 @@ public class CommandBlocklight extends ServerCommand {
 				if (params[1].equalsIgnoreCase("reset")) reset = true;
 				else {
 					try {level = Float.parseFloat(params[1]);}
-					catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.blocklight.invalidArg", new Object[0]);return;}
+					catch (NumberFormatException nfe) {throw new CommandException("command.blocklight.invalidArg", sender);}
 				}
 	        
 				if (!reset) {
 					block.setLightLevel(level / 15.0F);
-					sender.sendLangfileMessage("command.blocklight.success", new Object[0]);
+					sender.sendLangfileMessage("command.blocklight.success");
 				}
 				else {
 					block.setLightLevel(((float) this.lightLevels.get(block)) / 15.0F);
-					sender.sendLangfileMessage("command.blocklight.reset", new Object[0]);
+					sender.sendLangfileMessage("command.blocklight.reset");
 				}
 			}
-			else sender.sendLangfileMessage("command.blocklight.notFound", new Object[0]);
+			else throw new CommandException("command.blocklight.notFound", sender);
 		}
-		else sender.sendLangfileMessage("command.blocklight.invalidUsage", new Object[0]);
+		else throw new CommandException("command.blocklight.invalidUsage", sender);
 	}
   
 	@Override

@@ -34,12 +34,12 @@ public class CommandHeal extends ServerCommand {
 		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		
 		if (params.length > 0) {
-			try {player.heal(Float.parseFloat(params[0])); sender.sendLangfileMessage("command.heal.success", new Object[0]);}
-			catch (NumberFormatException e) {sender.sendLangfileMessage("command.heal.NAN", new Object[0]);}
+			try {player.heal(Float.parseFloat(params[0])); sender.sendLangfileMessage("command.heal.success");}
+			catch (NumberFormatException e) {throw new CommandException("command.heal.NAN", sender);}
 		}
 		else {
 			player.heal(MAX_HEALTH - player.getHealth());
-			sender.sendLangfileMessage("command.heal.success", new Object[0]);
+			sender.sendLangfileMessage("command.heal.success");
 		}
 	}
 	

@@ -54,21 +54,21 @@ public class CommandBreakspeed extends ServerCommand implements Listener<BreakSp
 			else if (params[0].equalsIgnoreCase("min")) {speed = 0.0F; enable = true; setspeed = true;}
 			else {
 				try {speed = Float.parseFloat(params[0]); enable = true; setspeed = true;}
-				catch (NumberFormatException e) {sender.sendLangfileMessage("command.breakspeed.invalidArg", new Object[0]);}
+				catch (NumberFormatException e) {throw new CommandException("command.breakspeed.invalidArg", sender);}
 			}
 		}
-		else {sender.sendLangfileMessage("command.breakspeed.invalidUsage", new Object[0]);}
+		else throw new CommandException("command.breakspeed.invalidUsage", sender);
 		
 		if (enable) {
 			settings.breakSpeedEnabled = true;
 			if (setspeed) {
 				settings.breakspeed = speed;
-				sender.sendLangfileMessage("command.breakspeed.setto", new Object[] {speed});
+				sender.sendLangfileMessage("command.breakspeed.setto", speed);
 			}
 		}
 		else {
 			settings.breakSpeedEnabled = false;
-			sender.sendLangfileMessage("command.breakspeed.reset", new Object[0]);
+			sender.sendLangfileMessage("command.breakspeed.reset");
 		}
 	}
 	

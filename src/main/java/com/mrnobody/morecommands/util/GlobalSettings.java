@@ -1,10 +1,6 @@
 package com.mrnobody.morecommands.util;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
-import net.minecraft.entity.player.EntityPlayer;
 
 /**
  * A class containing global settings
@@ -14,6 +10,7 @@ import net.minecraft.entity.player.EntityPlayer;
  */
 public class GlobalSettings {
 	public static boolean welcome_message = true;
+	public static boolean enableVars = true;
 	
 	//public static boolean creeperExplosion = true;
 	//public static boolean freezeEntities = false;
@@ -30,6 +27,7 @@ public class GlobalSettings {
 		Settings settings = new Settings(new File(Reference.getModDir(), "settings.cfg"), true);
 		
 		GlobalSettings.welcome_message = settings.getBoolean("welcome_message", true);
+		GlobalSettings.enableVars = settings.getBoolean("enableVars", true);
 		
 		//those settings are not intended to be read or written
 		
@@ -49,6 +47,7 @@ public class GlobalSettings {
 		Settings settings = new Settings(new File(Reference.getModDir(), "settings.cfg"), true);
 		
 		settings.set("welcome_message", GlobalSettings.welcome_message);
+		settings.set("enableVars", GlobalSettings.enableVars);
 		
 		//those settings are not intended to be read or written
 		

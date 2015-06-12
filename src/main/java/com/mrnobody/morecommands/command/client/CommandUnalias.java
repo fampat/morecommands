@@ -30,8 +30,6 @@ public class CommandUnalias extends ClientCommand {
 	public String getUsage() {
 		return "command.unalias.syntax";
 	}
-	
-	//ADD REMOVE ALL !!!!!!!!
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
@@ -44,11 +42,11 @@ public class CommandUnalias extends ClientCommand {
 				this.commandHandler.getCommands().remove(alias);
 				ClientPlayerSettings.aliasMapping.remove(alias);
 				ClientPlayerSettings.saveSettings();
-				sender.sendLangfileMessage("command.unalias.success", new Object[0]);
+				sender.sendLangfileMessage("command.unalias.success");
 			}
-			else {sender.sendLangfileMessage("command.unalias.notFound", new Object[0]);}
+			else throw new CommandException("command.unalias.notFound", sender);
 		}
-		else {sender.sendLangfileMessage("command.unalias.invalidUsage", new Object[0]);}
+		else throw new CommandException("command.unalias.invalidUsage", sender);
 	}
 	
 	@Override

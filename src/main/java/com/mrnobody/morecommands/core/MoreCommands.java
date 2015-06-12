@@ -33,6 +33,12 @@ import com.mrnobody.morecommands.util.DynamicClassLoader;
 import com.mrnobody.morecommands.util.LanguageManager;
 import com.mrnobody.morecommands.util.Reference;
 
+/**
+ * The main mod class loaded by forge
+ * 
+ * @author MrNobody98
+ *
+ */
 @Mod(modid = Reference.MODID, version = Reference.VERSION, name = Reference.NAME, acceptableRemoteVersions = "*")
 public class MoreCommands {
 	@Instance
@@ -56,7 +62,8 @@ public class MoreCommands {
 	
 	private List<String> disabledCommands;
 	
-	//Need this because forge injects the instance too late -> Causes a NullpointerException using getMoreCommands
+	//Need this because forge injects the instance after injecting the proxy, but it uses
+	//MoreCommands#getMoreCommands in its constructor -> Causes a NullpointerException
 	public MoreCommands() {MoreCommands.instance = this;}
 	
 	/**

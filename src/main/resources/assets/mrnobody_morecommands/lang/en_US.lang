@@ -945,6 +945,20 @@ command.teleport.videoURL=youtu.be/h1UuzNxhM6I
 command.teleport.NAN=The coordinates must be numbers
 command.teleport.invalidParams=Arguments are missing.
 
+command.var.description=Toggles variables in the console and sets/deletes variables. Variables can be used with %var% (percent sign: "%%")
+command.var.example=/var set x Hello World
+command.var.syntax=/var [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE|SET <NAME> <VALUE>|DEL <NAME>]
+command.var.videoURL=youtu.be/WRHwWMVUp-o
+command.var.enabled=Variables in the console are enabled
+command.var.disabled=Variables in the console are disabled
+command.var.invalidArg=Invalid Argument.
+command.var.notFound=Variable "%s" not found
+command.var.get=Variable "%s" has value "%s"
+command.var.deleted=Variable "%s" deleted
+command.var.created=Variable "%s" set to value "%s"
+command.var.cantBeResolved=Variable "%s" can't be resolved
+command.var.invalidUsage=Invalid Usage. Type 'help var' to get help
+
 command.waterdamage.description=Turns water damage on/off
 command.waterdamage.example=/waterdamage off
 command.waterdamage.syntax=/waterdamage [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
@@ -975,8 +989,11 @@ command.weather.invalidUsage=Invalid Usage. Type 'help weather' to get help
 
 command.xray.description=Toggles and configures xray
 command.xray.example=/xray config
-command.xray.syntax=/xray [ENABLE|DISABLE|CONFIG]
-command.xray.videoURL=youtu.be/rZpD014RvNs
+command.xray.syntax=/xray [ENABLE|DISABLE|CONFIG|LOAD <CONFIG>|SAVE <CONFIG>]
+command.xray.videoURL=youtu.be/ObXHBs9jpoo
 command.xray.enabled=Xray enabled
 command.xray.disabled=Xray disabled
 command.xray.invalidUsage=Invalid Usage. Type 'help xray' to get help
+command.xray.notFound=Xray setting "%s" not found
+command.xray.loaded=Xray setting "%s" loaded
+command.xray.saved=Xray setting "%s" saved

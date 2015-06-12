@@ -35,23 +35,19 @@ public class CommandJumpheight extends ServerCommand {
 		double gravity;
 		
 		if (params.length > 0) {
-			if (params[0].equalsIgnoreCase("reset")) {gravity = 1.0D; sender.sendLangfileMessage("command.jumpheight.reset", new Object[0]);}
+			if (params[0].equalsIgnoreCase("reset")) {gravity = 1.0D; sender.sendLangfileMessage("command.jumpheight.reset");}
 			else {
 				try {
 					gravity = Double.parseDouble(params[0]);
-					sender.sendLangfileMessage("command.jumpheight.success", new Object[0]);
+					sender.sendLangfileMessage("command.jumpheight.success");
 				}
-				catch (NumberFormatException nfe) {
-					sender.sendLangfileMessage("command.jumpheight.NAN", new Object[0]);
-					return;
-				}
+				catch (NumberFormatException nfe) {throw new CommandException("command.jumpheight.NAN", sender);}
 			}
 			
 			MoreCommands.getMoreCommands().getPacketDispatcher().sendS10Gravity((EntityPlayerMP) sender.getMinecraftISender(), gravity);
 		}
-		else {
-			sender.sendLangfileMessage("command.jumpheight.invalidUsage", new Object[0]);
-		}
+		else 
+			throw new CommandException("command.jumpheight.invalidUsage", sender);
 	}
 
 	@Override

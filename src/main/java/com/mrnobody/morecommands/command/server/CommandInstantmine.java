@@ -29,26 +29,24 @@ public class CommandInstantmine extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
-	    	
-	    boolean instantmine = false;
-	    boolean success = false;
-	    	
-	    if (params.length >= 1) {
-	    	if (params[0].equalsIgnoreCase("true")) {instantmine = true; success = true;}
-	    	else if (params[0].equalsIgnoreCase("false")) {instantmine = false; success = true;}
-	    	else if (params[0].equalsIgnoreCase("0")) {instantmine = false; success = true;}
-	    	else if (params[0].equalsIgnoreCase("1")) {instantmine = true; success = true;}
-	    	else if (params[0].equalsIgnoreCase("on")) {instantmine = true; success = true;}
-	    	else if (params[0].equalsIgnoreCase("off")) {instantmine = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("enable")) {instantmine = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("disable")) {instantmine = false; success = true;}
-	    	else {success = false;}
-	    }
-	    else {instantmine = !player.getInstantmine(); success = true;}
-	    	
-	    if (success) player.setInstantmine(instantmine);
-	    	
-	    sender.sendLangfileMessage(success ? instantmine ? "command.instantmine.on" : "command.instantmine.off" : "command.instantmine.failure", new Object[0]);
+	    
+        if (params.length > 0) {
+        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
+            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
+        		player.setInstantmine(true);
+            	sender.sendLangfileMessage("command.instantmine.on");
+            }
+            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
+            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
+            	player.setInstantmine(false);
+            	sender.sendLangfileMessage("command.instantmine.off");
+            }
+            else throw new CommandException("command.instantmine.failure", sender);
+        }
+        else {
+        	player.setInstantmine(!player.getInstantmine());
+        	sender.sendLangfileMessage(player.getInstantmine() ? "command.instantmine.on" : "command.instantmine.off");
+        }
 	}
 	
 	@Override

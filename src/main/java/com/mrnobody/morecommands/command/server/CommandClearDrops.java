@@ -57,7 +57,7 @@ public class CommandClearDrops extends ServerCommand {
 			}
 		}
 		
-		sender.sendLangfileMessage("command.cleardrops.removed", new Object[] {removedDrops});
+		sender.sendLangfileMessage("command.cleardrops.removed", removedDrops);
 	}
 	
 	@Override

@@ -40,25 +40,23 @@ public class CommandExplosions extends ServerCommand implements Listener<Explosi
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-    	boolean explosions = true;
-    	boolean success = false;
-    	
-    	if (params.length >= 1) {
-    		if (params[0].equalsIgnoreCase("true")) {explosions = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("false")) {explosions = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("0")) {explosions = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("1")) {explosions = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("on")) {explosions = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("off")) {explosions = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("enable")) {explosions = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("disable")) {explosions = false; success = true;}
-    		else {success = false;}
-    	}
-    	else {explosions = !GlobalSettings.explosions; success = true;}
-    	
-    	if (success) GlobalSettings.explosions = explosions;
-    	
-    	sender.sendLangfileMessage(success ? explosions ? "command.explosions.on" : "command.explosions.off" : "command.explosions.failure", new Object[0]);
+        if (params.length > 0) {
+        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
+            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
+        		GlobalSettings.explosions = true;
+            	sender.sendLangfileMessage("command.explosions.on");
+            }
+            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
+            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
+            	GlobalSettings.explosions = false;
+            	sender.sendLangfileMessage("command.explosions.off");
+            }
+            else throw new CommandException("command.explosions.failure", sender);
+        }
+        else {
+        	GlobalSettings.explosions = !GlobalSettings.explosions;
+        	sender.sendLangfileMessage(GlobalSettings.explosions ? "command.explosions.on" : "command.explosions.off");
+        }
 	}
 	
 	@Override

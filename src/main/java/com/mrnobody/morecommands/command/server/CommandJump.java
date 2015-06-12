@@ -33,7 +33,7 @@ public class CommandJump extends ServerCommand {
 		Entity entity = new Entity((net.minecraft.entity.Entity) sender.getMinecraftISender());
 		BlockPos hit = entity.traceBlock(128);
 		
-		if (hit == null) {sender.sendLangfileMessage("command.jump.notInSight", new Object[0]);}
+		if (hit == null) throw new CommandException("command.jump.notInSight", sender);
 		else {
 			int y = hit.getY() + 1;
 			while (y < 260) {

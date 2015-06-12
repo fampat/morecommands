@@ -45,28 +45,24 @@ public class CommandEnderman extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-    	boolean allowPickup = false;
-    	boolean success = false;
-    	
-    	if (params.length >= 1) {
-    		if (params[0].equalsIgnoreCase("true")) {allowPickup = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("false")) {allowPickup = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("0")) {allowPickup = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("1")) {allowPickup = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("on")) {allowPickup = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("off")) {allowPickup = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("enable")) {allowPickup = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("disable")) {allowPickup = false; success = true;}
-    		else {success = false;}
-    	}
-    	else {allowPickup = !GlobalSettings.endermanpickup; success = true;}
-    	
-    	if (success) {GlobalSettings.endermanpickup = allowPickup; updatePickup();}
-    	
-    	sender.sendLangfileMessage(success ? allowPickup ? "command.enderman.on" : "command.enderman.off" : "command.enderman.failure", new Object[0]);
-	}
-	
-	private void updatePickup() {
+        if (params.length > 0) {
+        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
+            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
+        		GlobalSettings.endermanpickup = true;
+            	sender.sendLangfileMessage("command.enderman.on");
+            }
+            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
+            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
+            	GlobalSettings.endermanpickup = false;
+            	sender.sendLangfileMessage("command.enderman.off");
+            }
+            else throw new CommandException("command.enderman.failure", sender);
+        }
+        else {
+        	GlobalSettings.endermanpickup = !GlobalSettings.endermanpickup;
+        	sender.sendLangfileMessage(GlobalSettings.endermanpickup ? "command.enderman.on" : "command.enderman.off");
+        }
+        
 		Iterator<Block> blocks = Block.blockRegistry.iterator();
 		
 		while (blocks.hasNext()) {

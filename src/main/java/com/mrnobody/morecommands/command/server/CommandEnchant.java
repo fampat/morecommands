@@ -51,36 +51,36 @@ public class CommandEnchant extends ServerCommand {
     				for (int index = from; index < to; index++) {
     					if (Enchantment.enchantmentsBookList[index] != null) sender.sendStringMessage(" - '" + Enchantment.enchantmentsBookList[index].getName().substring(12) + "' (" + String.valueOf(Enchantment.enchantmentsBookList[index].effectId) + ")");
     				}
-    				sender.sendLangfileMessage("command.enchant.more", new Object[0]);
+    				sender.sendLangfileMessage("command.enchant.more");
     			}
-    			else {sender.sendLangfileMessage("command.enchant.invalidUsage", new Object[0]);}
+    			else throw new CommandException("command.enchant.invalidUsage", sender);
     		}
     		
     		else if (params[0].equals("remove")) {
     			player.removeEnchantment(); 
-    			sender.sendLangfileMessage("command.enchant.removeSuccess", new Object[0]);
+    			sender.sendLangfileMessage("command.enchant.removeSuccess");
     		}
 		
     		else if (params[0].equals("add")) {
     			if (params.length > 2) {
-    				boolean broken = false;
+    				boolean found = false;
     				
     				for (Enchantment e : Enchantment.enchantmentsBookList) {
     					if (e != null) {
     						if (params[1].equalsIgnoreCase(e.getName().substring(12)) || String.valueOf(e.effectId).equals(params[1])) {
-    							try {player.addEnchantment(e, Integer.parseInt(params[2])); broken = true; sender.sendLangfileMessage("command.enchant.addSuccess", new Object[0]);}
-    							catch (NumberFormatException ex) {sender.sendLangfileMessage("command.enchant.NAN", new Object[0]); broken = true;}
+    							try {player.addEnchantment(e, Integer.parseInt(params[2])); found = true; sender.sendLangfileMessage("command.enchant.addSuccess");}
+    							catch (NumberFormatException ex) {sender.sendLangfileMessage("command.enchant.NAN"); found = true;}
     							break;
     						}
     					}
     				}
-    				if (!broken) sender.sendLangfileMessage("command.enchant.notFound", new Object[0]);
+    				if (!found) throw new CommandException("command.enchant.notFound", sender);
     			}
-    			else {sender.sendLangfileMessage("command.enchant.invalidUsage", new Object[0]);}
+    			else throw new CommandException("command.enchant.invalidUsage", sender);
     		}
-    		else {sender.sendLangfileMessage("command.enchant.invalidUsage", new Object[0]);}
+    		else throw new CommandException("command.enchant.invalidUsage", sender);
 		}
-		else {sender.sendLangfileMessage("command.enchant.invalidUsage", new Object[0]);}
+		else throw new CommandException("command.enchant.invalidUsage", sender);
 	}
 	
 	@Override

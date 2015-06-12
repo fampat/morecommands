@@ -66,7 +66,7 @@ public class CommandFirework extends ServerCommand {
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		Entity entity = new Entity((net.minecraft.entity.Entity) sender.getMinecraftISender());
 		BlockPos spawn = entity.traceBlock(128.0D);
-		if (spawn == null) {sender.sendLangfileMessage("command.firework.notFound", new Object[0]); return;}
+		if (spawn == null) throw new CommandException("command.firework.notFound", sender);
 		
 		Random rand = new Random();
 		List recipes = CraftingManager.getInstance().getRecipeList();

@@ -3,6 +3,7 @@ package com.mrnobody.morecommands.command;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.EnumChatFormatting;
 
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.Patcher;
@@ -47,16 +48,18 @@ public abstract class ServerCommand extends CommandBase {
     }
     
     public final boolean isEnabled(ICommandSender sender) {
-    	MoreCommands mod = MoreCommands.getMoreCommands();
+    	String lang = MoreCommands.getMoreCommands().getCurrentLang(sender);
     	
     	if (!this.canSenderUse(sender)) {
-    		sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(sender), "command.generic.notServer", new Object[0])));
+    		sendChatMsg(sender, LanguageManager.getTranslation(lang, "command.generic.notServer"));
     		return false;
     	}
     	
-    	if (!(this.getAllowedServerType() == ServerType.ALL || this.getAllowedServerType() == mod.getRunningServer())) {
-    		if (this.getAllowedServerType() == ServerType.INTEGRATED) sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(sender), "command.generic.notIntegrated", new Object[0])));
-    		if (this.getAllowedServerType() == ServerType.DEDICATED) sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(sender), "command.generic.notDedicated", new Object[0])));
+    	if (!(this.getAllowedServerType() == ServerType.ALL || this.getAllowedServerType() == MoreCommands.getMoreCommands().getRunningServer())) {
+    		if (this.getAllowedServerType() == ServerType.INTEGRATED)
+    			sendChatMsg(sender, LanguageManager.getTranslation(lang, "command.generic.notIntegrated"));
+    		if (this.getAllowedServerType() == ServerType.DEDICATED) 
+    			sendChatMsg(sender, LanguageManager.getTranslation(lang, "command.generic.notDedicated"));
     		return false;
     	}
     	
@@ -69,47 +72,60 @@ public abstract class ServerCommand extends CommandBase {
     	for (Requirement requierement : requierements) {
     		if (requierement == Requirement.PATCH_SERVERCONFIGMANAGER) {
     			if (!Patcher.serverConfigManagerPatched()) {
-    				sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(sender), "command.generic.serverConfigManagerNotPatched", new Object[0])));
+    				sendChatMsg(sender, LanguageManager.getTranslation(lang, "command.generic.serverConfigManagerNotPatched"));
+    	    		return false;
+    			}
+    		}
+    		
+    		if (requierement == Requirement.PATCH_SERVERCOMMANDHANDLER) {
+    			if (!Patcher.serverCommandManagerPatched()) {
+    				sendChatMsg(sender, LanguageManager.getTranslation(lang, "command.generic.serverCommandManagerNotPatched"));
     	    		return false;
     			}
     		}
     		
     		if (requierement == Requirement.MODDED_CLIENT) {
     			if (!clientInfo.clientModded()) {
-    				sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(sender), "command.generic.clientNotModded", new Object[0])));
+    				sendChatMsg(sender, LanguageManager.getTranslation(lang, "command.generic.clientNotModded"));
     	    		return false;
     			}
     		}
     		
     		if (requierement == Requirement.PATCH_RENDERGLOBAL) {
     			if (!clientInfo.renderGlobalPatched()) {
-    				sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(sender), "command.generic.renderGlobalNotPatched", new Object[0])));
+    				sendChatMsg(sender, LanguageManager.getTranslation(lang, "command.generic.renderGlobalNotPatched"));
     	    		return false;
     			}
     		}
     		
     		if (requierement == Requirement.PATCH_ENTITYPLAYERSP) {
     			if (!clientInfo.clientPlayerPatched()) {
-    				sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(sender), "command.generic.clientPlayerNotPatched", new Object[0])));
+    				sendChatMsg(sender, LanguageManager.getTranslation(lang, "command.generic.clientPlayerNotPatched"));
     	    		return false;
     			}
     		}
     		
     		if (requierement == Requirement.PATCH_ENTITYPLAYERMP) {
     			if (!(sender instanceof com.mrnobody.morecommands.patch.EntityPlayerMP)) {
-    				sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(sender), "command.generic.serverPlayerNotPatched", new Object[0])));
+    				sendChatMsg(sender, LanguageManager.getTranslation(lang, "command.generic.serverPlayerNotPatched"));
     	    		return false;
     			}
     		}
     		
       		if (requierement == Requirement.PATCH_NETHANDLERPLAYSERVER) {
     			if (!clientInfo.serverPlayHandlerPatched()) {
-    				sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(sender), "command.generic.netServerPlayHandlerNotPatched", new Object[0])));
+    				sendChatMsg(sender, LanguageManager.getTranslation(lang, "command.generic.netServerPlayHandlerNotPatched"));
     	    		return false;
     			}
     		}
     	}
     	
     	return true;
+    }
+    
+    private final void sendChatMsg(ICommandSender sender, String msg) {
+    	ChatComponentText text = new ChatComponentText(msg);
+    	text.getChatStyle().setColor(EnumChatFormatting.RED);
+    	sender.addChatMessage(text);
     }
 }

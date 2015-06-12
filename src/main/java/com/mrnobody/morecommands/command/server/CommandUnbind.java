@@ -46,17 +46,17 @@ public class CommandUnbind extends ServerCommand {
 				settings.clientKeybindMapping.remove(keyid);
 				settings.serverKeybindMapping.remove(keyid);
 				settings.saveSettings();
-				sender.sendLangfileMessage("command.unbind.success", new Object[0]);
+				sender.sendLangfileMessage("command.unbind.success");
 			}
 			else if (params[0].equalsIgnoreCase("all")) {
 				settings.serverKeybindMapping.clear();
 				settings.clientKeybindMapping.clear();
 				settings.saveSettings();
-				sender.sendLangfileMessage("command.unbind.success", new Object[0]);
+				sender.sendLangfileMessage("command.unbind.success");
 			}
-			else {sender.sendLangfileMessage("command.unbind.bindingNotFound", new Object[0]);}
+			else throw new CommandException("command.unbind.bindingNotFound", sender);
 		}
-		else {sender.sendLangfileMessage("command.unbind.invalidUsage", new Object[0]);}
+		else throw new CommandException("command.unbind.invalidUsage", sender);
 	}
 
 	@Override

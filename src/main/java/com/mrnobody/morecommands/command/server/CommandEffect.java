@@ -51,49 +51,49 @@ public class CommandEffect extends ServerCommand {
     				for (int index = from; index < to; index++) {
     					if (Potion.potionTypes[index] != null) sender.sendStringMessage(" - '" + Potion.potionTypes[index].getName().substring(7) + "' (" + String.valueOf(Potion.potionTypes[index].getId()) + ")");
     				}
-    				sender.sendLangfileMessage("command.effect.more", new Object[0]);
+    				sender.sendLangfileMessage("command.effect.more");
     			}
-    			else {sender.sendLangfileMessage("command.effect.invalidUsage", new Object[0]);}
+    			else throw new CommandException("command.effect.invalidUsage", sender);
     		}
     		
     		else if (params[0].equals("remove")) {
     			if (params.length > 1) {
-    				boolean broken = false;
+    				boolean found = false;
     				
     				for (Potion p : Potion.potionTypes) {
     					if (p != null) {
     						if (params[1].equalsIgnoreCase(p.getName().substring(7)) || String.valueOf(p.getId()).equals(params[1])) {
-    							player.removePotionEffect(p.getId()); sender.sendLangfileMessage("command.effect.removeSuccess", new Object[0]); broken = true; break;
+    							player.removePotionEffect(p.getId()); sender.sendLangfileMessage("command.effect.removeSuccess"); found = true; break;
     						}
     					}
     				}
-    				if (!broken) sender.sendLangfileMessage("command.effect.removeFailure", new Object[0]);
+    				if (!found) throw new CommandException("command.effect.removeFailure", sender);
     			}
-    			else {sender.sendLangfileMessage("command.effect.invalidUsage", new Object[0]);}
+    			else throw new CommandException("command.effect.invalidUsage", sender);
     		}
     		
-    		else if (params[0].equals("removeAll")) {player.removeAllPotionEffects(); sender.sendLangfileMessage("command.effect.removeAllSuccess", new Object[0]);}
+    		else if (params[0].equals("removeAll")) {player.removeAllPotionEffects(); sender.sendLangfileMessage("command.effect.removeAllSuccess");}
     		
     		else if (params[0].equals("add")) {
     			if (params.length > 2) {
-    				boolean broken = false;
+    				boolean found = false;
     				
     				for (Potion p : Potion.potionTypes) {
     					if (p != null) {
     						if (params[1].toLowerCase().equals(p.getName().substring(7).toLowerCase()) || String.valueOf(p.getId()).equals(params[1])) {
-    							try {player.addPotionEffect(p.getId(), Integer.parseInt(params[2]), params.length > 3 ? Integer.parseInt(params[3]) : 0); broken = true; sender.sendLangfileMessage("command.effect.addSuccess", new Object[0]);}
-    							catch (NumberFormatException e) {sender.sendLangfileMessage("command.effect.NAN", new Object[0]); broken = true;}
+    							try {player.addPotionEffect(p.getId(), Integer.parseInt(params[2]), params.length > 3 ? Integer.parseInt(params[3]) : 0); found = true; sender.sendLangfileMessage("command.effect.addSuccess");}
+    							catch (NumberFormatException e) {sender.sendLangfileMessage("command.effect.NAN"); found = true;}
     							break;
     						}
     					}
     				}
-    				if (!broken) sender.sendLangfileMessage("command.effect.notFound", new Object[0]);
+    				if (!found) throw new CommandException("command.effect.notFound", sender);
     			}
-    			else {sender.sendLangfileMessage("command.effect.invalidUsage", new Object[0]);}
+    			else throw new CommandException("command.effect.invalidUsage", sender);
     		}
-    		else {sender.sendLangfileMessage("command.effect.invalidUsage", new Object[0]);}
+    		else throw new CommandException("command.effect.invalidUsage", sender);
 		}
-		else {sender.sendLangfileMessage("command.effect.invalidUsage", new Object[0]);}
+		else throw new CommandException("command.effect.invalidUsage", sender);
 	}
 	
 	@Override

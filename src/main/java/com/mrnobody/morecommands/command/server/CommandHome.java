@@ -34,7 +34,7 @@ public class CommandHome extends ServerCommand {
 		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		BlockPos spawn = player.getSpawn() == null ? player.getWorld().getSpawn() : player.getSpawn();
 		player.setPosition(spawn);
-		sender.sendLangfileMessage("command.home.atHome", new Object[0]);
+		sender.sendLangfileMessage("command.home.atHome");
 	}
 	
 	@Override

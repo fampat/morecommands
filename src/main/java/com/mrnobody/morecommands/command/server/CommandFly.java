@@ -55,32 +55,28 @@ public class CommandFly extends ServerCommand implements Listener<LivingFallEven
 	@Override
     public void execute(CommandSender sender, String[] params) throws CommandException {
 		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
-		ServerPlayerSettings ability = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
-    		
-        boolean allowFly = false;
-        boolean success = false;
-        	
-        if (params.length >= 1) {
-        	if (params[0].equalsIgnoreCase("true")) {allowFly = true; success = true;}
-        	else if (params[0].equalsIgnoreCase("false")) {allowFly = false; success = true;}
-        	else if (params[0].equalsIgnoreCase("0")) {allowFly = false; success = true;}
-        	else if (params[0].equalsIgnoreCase("1")) {allowFly = true; success = true;}
-        	else if (params[0].equalsIgnoreCase("on")) {allowFly = true; success = true;}
-        	else if (params[0].equalsIgnoreCase("off")) {allowFly = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("enable")) {allowFly = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("disable")) {allowFly = false; success = true;}
-        	else {success = false;}
+		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		boolean fly;
+		
+        if (params.length > 0) {
+        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
+            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
+        		fly = true;
+            }
+            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
+            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
+            	fly = false;
+            }
+            else throw new CommandException("command.freeze.failure", sender);
         }
-        else {allowFly = !player.getAllowFlying(); success = true;}
-        	
-        if (success) {
-        	ability.fly = allowFly;
-        	if (allowFly) {ability.noFall = true;}
-        	else {ability.noFall = false; if (!player.getMinecraftPlayer().onGround) ability.justDisabled = true;}
-        	player.setAllowFlying(allowFly);
-        }
-        	
-        sender.sendLangfileMessage(success ? player.getAllowFlying() ? "command.fly.on" : "command.fly.off" : "command.fly.failure", new Object[0]);
+        else fly = !player.getAllowFlying();
+        
+    	settings.fly = fly;
+    	if (fly) {settings.noFall = true;}
+    	else {settings.noFall = false; if (!player.getMinecraftPlayer().onGround) settings.justDisabled = true;}
+    	player.setAllowFlying(fly);
+    	
+    	sender.sendLangfileMessage(player.getAllowFlying() ? "command.fly.on" : "command.fly.off");
     }
 	
 	@Override

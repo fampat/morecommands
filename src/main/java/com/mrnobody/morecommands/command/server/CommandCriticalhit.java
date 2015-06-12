@@ -30,26 +30,24 @@ public class CommandCriticalhit extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 	    EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
-	    	
-	    boolean criticalhit = false;
-	    boolean success = false;
-	    	
-	    if (params.length >= 1) {
-	    	if (params[0].equalsIgnoreCase("true")) {criticalhit = true; success = true;}
-	    	else if (params[0].equalsIgnoreCase("false")) {criticalhit = false; success = true;}
-	    	else if (params[0].equalsIgnoreCase("0")) {criticalhit = false; success = true;}
-	    	else if (params[0].equalsIgnoreCase("1")) {criticalhit = true; success = true;}
-	    	else if (params[0].equalsIgnoreCase("on")) {criticalhit = true; success = true;}
-	    	else if (params[0].equalsIgnoreCase("off")) {criticalhit = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("enable")) {criticalhit = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("disable")) {criticalhit = false; success = true;}
-	    	else {success = false;}
-	    }
-	    else {criticalhit = !player.getCriticalHit(); success = true;}
-	    	
-	    if (success) ((EntityPlayerMP) sender.getMinecraftISender()).setCriticalhit(criticalhit);
-	    	
-	    sender.sendLangfileMessage(success ? player.getCriticalHit() ? "command.criticalhit.on" : "command.criticalhit.off" : "command.criticalhit.failure", new Object[0]);
+    	
+        if (params.length > 0) {
+        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
+            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
+        		player.setCriticalhit(true);
+            	sender.sendLangfileMessage("command.criticalhit.on");
+            }
+            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
+            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
+            	player.setCriticalhit(false);
+            	sender.sendLangfileMessage("command.criticalhit.off");
+            }
+            else throw new CommandException("command.criticalhit.failure", sender);
+        }
+        else {
+        	player.setCriticalhit(!player.getCriticalHit());
+        	sender.sendLangfileMessage(player.getCriticalHit() ? "command.criticalhit.on" : "command.criticalhit.off");
+        }
 	}
 	
 	@Override

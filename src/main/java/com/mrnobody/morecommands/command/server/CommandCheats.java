@@ -1,13 +1,11 @@
 package com.mrnobody.morecommands.command.server;
 
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
 		name = "cheats",
@@ -32,25 +30,23 @@ public class CommandCheats extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-    	boolean allowCheats = false;
-    	boolean success = false;
-    	
-    	if (params.length >= 1) {
-    		if (params[0].equalsIgnoreCase("true")) {allowCheats = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("false")) {allowCheats = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("0")) {allowCheats = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("1")) {allowCheats = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("on")) {allowCheats = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("off")) {allowCheats = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("enable")) {allowCheats = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("disable")) {allowCheats = false; success = true;}
-    		else {success = false;}
-    	}
-    	else {allowCheats = !sender.getWorld().isCheats(); success = true;}
-    	
-    	if (success) {sender.getWorld().setCheats(allowCheats);}
-    	
-    	sender.sendLangfileMessage(success ? sender.getWorld().isCheats() ? "command.cheats.on" : "command.cheats.off" : "command.cheats.failure", new Object[0]);
+        if (params.length > 0) {
+        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
+            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
+        		sender.getWorld().setCheats(true);
+            	sender.sendLangfileMessage("command.cheats.on");
+            }
+            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
+            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
+            	sender.getWorld().setCheats(false);
+            	sender.sendLangfileMessage("command.cheats.off");
+            }
+            else throw new CommandException("command.cheats.failure", sender);
+        }
+        else {
+        	sender.getWorld().setCheats(sender.getWorld().isCheats());
+        	sender.sendLangfileMessage(sender.getWorld().isCheats() ? "command.cheats.on" : "command.cheats.off");
+        }
 	}
 	
 	@Override

@@ -73,8 +73,8 @@ public class CommandInfiniteitems extends ServerCommand implements TwoEventListe
 	private StackObserver observer;
 	
 	public CommandInfiniteitems() {
-		EventHandler.BLOCK_PLACEMENT.getHandler().register(this, true);
-		EventHandler.ITEM_DESTROY.getHandler().register(this, false);
+		EventHandler.PLACE.getHandler().register(this, true);
+		EventHandler.DESTROY.getHandler().register(this, false);
 		this.stacks = new ConcurrentLinkedQueue<Stack>();
 		this.observer = new StackObserver();
 		this.observer.start();
@@ -106,27 +106,25 @@ public class CommandInfiniteitems extends ServerCommand implements TwoEventListe
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
-		ServerPlayerSettings ability = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
-    		
-        boolean infnite = false;
-        boolean success = false;
-        	
-        if (params.length >= 1) {
-        	if (params[0].equalsIgnoreCase("true")) {infnite = true; success = true;}
-        	else if (params[0].equalsIgnoreCase("false")) {infnite = false; success = true;}
-        	else if (params[0].equalsIgnoreCase("0")) {infnite = false; success = true;}
-        	else if (params[0].equalsIgnoreCase("1")) {infnite = true; success = true;}
-        	else if (params[0].equalsIgnoreCase("on")) {infnite = true; success = true;}
-        	else if (params[0].equalsIgnoreCase("off")) {infnite = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("enable")) {infnite = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("disable")) {infnite = false; success = true;}
-        	else {success = false;}
+		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+    	
+        if (params.length > 0) {
+        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
+            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
+        		settings.infiniteitems = true;
+            	sender.sendLangfileMessage("command.infiniteitems.on");
+            }
+            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
+            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
+            	settings.infiniteitems = false;
+            	sender.sendLangfileMessage("command.infiniteitems.off");
+            }
+            else throw new CommandException("command.infiniteitems.failure", sender);
         }
-        else {infnite = !ability.infiniteitems; success = true;}
-        	
-        if (success) ability.infiniteitems = infnite;
-        	
-        sender.sendLangfileMessage(success ? infnite ? "command.infiniteitems.on" : "command.infiniteitems.off" : "command.infiniteitems.failure", new Object[0]);
+        else {
+        	settings.infiniteitems = !settings.infiniteitems;
+        	sender.sendLangfileMessage(settings.infiniteitems ? "command.infiniteitems.on" : "command.infiniteitems.off");
+        }
 	}
 	
 	@Override
@@ -136,8 +134,8 @@ public class CommandInfiniteitems extends ServerCommand implements TwoEventListe
 	
 	@Override
 	public void unregisterFromHandler() {
-		EventHandler.BLOCK_PLACEMENT.getHandler().unregister(this);
-		EventHandler.ITEM_DESTROY.getHandler().unregister(this);
+		EventHandler.PLACE.getHandler().unregister(this);
+		EventHandler.DESTROY.getHandler().unregister(this);
 		this.observer.interrupt();
 	}
 

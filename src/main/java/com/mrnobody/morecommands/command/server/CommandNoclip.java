@@ -50,35 +50,37 @@ public class CommandNoclip extends ServerCommand implements Listener<LivingAttac
 		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
 		boolean allowNoclip = false;
 		
-		if(!player.capabilities.isFlying) {
-			sender.sendLangfileMessage("command.noclip.mustBeFlying", new Object[0]); return;
-		}
+		if(!player.capabilities.isFlying)
+			throw new CommandException("command.noclip.mustBeFlying", sender);
 		
-		if(!((NetHandlerPlayServer) player.playerNetServerHandler).enabled) {
-			sender.sendLangfileMessage("command.noclip.reflectionError", new Object[0]); return;
-		}
+		if(!((NetHandlerPlayServer) player.playerNetServerHandler).enabled)
+			throw new CommandException("command.noclip.reflectionError", sender);
 		
 		NetHandlerPlayServer handler = (NetHandlerPlayServer) player.playerNetServerHandler;
-    	
-		if (params.length >= 1) {
-			if (params[0].equalsIgnoreCase("true")) {handler.setOverrideNoclip(true);}
-			else if (params[0].equalsIgnoreCase("false")) {handler.setOverrideNoclip(false);}
-			else if (params[0].equalsIgnoreCase("0")) {handler.setOverrideNoclip(false);}
-			else if (params[0].equalsIgnoreCase("1")) {handler.setOverrideNoclip(true);}
-			else if (params[0].equalsIgnoreCase("on")) {handler.setOverrideNoclip(true);}
-			else if (params[0].equalsIgnoreCase("off")) {handler.setOverrideNoclip(false);}
-    		else if (params[0].equalsIgnoreCase("enable")) {handler.setOverrideNoclip(true);}
-    		else if (params[0].equalsIgnoreCase("disable")) {handler.setOverrideNoclip(false);}
-			else {sender.sendLangfileMessage("command.noclip.failure", new Object[0]); return;}
-		}
-		else {handler.setOverrideNoclip(!handler.getOverrideNoclip());}
+		
+        if (params.length > 0) {
+        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
+            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
+        		handler.setOverrideNoclip(true);
+            	sender.sendLangfileMessage("command.noclip.enabled");
+            }
+            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
+            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
+            	handler.setOverrideNoclip(false);
+            	sender.sendLangfileMessage("command.noclip.disabled");
+            }
+            else throw new CommandException("command.noclip.failure", sender);
+        }
+        else {
+        	handler.setOverrideNoclip(!handler.getOverrideNoclip());
+        	sender.sendLangfileMessage(handler.getOverrideNoclip() ? "command.noclip.enabled" : "command.noclip.disabled");
+        }
     	
 		if(handler.getOverrideNoclip() == false) {
 			ascendPlayer(new Player(player));
 		}
 			
 		MoreCommands.getMoreCommands().getPacketDispatcher().sendS06Noclip(player, handler.getOverrideNoclip());
-		sender.sendLangfileMessage(handler.getOverrideNoclip() ? "command.noclip.enabled" : "command.noclip.disabled", new Object[0]);
 	}
 
 	public static void checkSafe(NetHandlerPlayServer handler, net.minecraft.entity.player.EntityPlayerMP player) {
@@ -87,7 +89,7 @@ public class CommandNoclip extends ServerCommand implements Listener<LivingAttac
 			
 			MoreCommands.getMoreCommands().getPacketDispatcher().sendS06Noclip(player, false);
 			
-			(new CommandSender(player)).sendLangfileMessage("command.noclip.autodisable", new Object[0]);
+			(new CommandSender(player)).sendLangfileMessage("command.noclip.autodisable");
 			ascendPlayer(new Player(player));
 		}
 	}

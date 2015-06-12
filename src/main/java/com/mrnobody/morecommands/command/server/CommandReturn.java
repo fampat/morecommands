@@ -10,7 +10,6 @@ import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Entity;
 import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
@@ -35,10 +34,8 @@ public class CommandReturn extends ServerCommand {
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
 		
-		if (settings.lastPos == null) {
-			sender.sendLangfileMessage("command.return.noLastPos", new Object[0]);
-			return;
-		}
+		if (settings.lastPos == null) 
+			throw new CommandException("command.return.noLastPos", sender);
 		
 		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		player.setPosition(settings.lastPos);

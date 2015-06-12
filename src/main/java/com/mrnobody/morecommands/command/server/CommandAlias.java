@@ -96,22 +96,19 @@ public class CommandAlias extends ServerCommand implements Listener<CommandEvent
 						cmd.setOriginalCommandName(sender.getMinecraftISender(), command + parameters);
 						cmd.getSenderSideMapping().put(sender.getMinecraftISender(), clientSide);
 					}
-					else {
-						sender.sendLangfileMessage("command.alias.overwrite", new Object[0]);
-						return;
-					}
+					else throw new CommandException("command.alias.overwrite", sender);
 					
 					if (settings.clientCommands.contains(command)) settings.clientAliasMapping.put(alias, command + parameters);
 					else settings.serverAliasMapping.put(alias, command + parameters);
 					settings.saveSettings();
 					
-					sender.sendLangfileMessage("command.alias.success", new Object[0]);
+					sender.sendLangfileMessage("command.alias.success");
 				}
-				else {sender.sendLangfileMessage("command.generic.notFound", new Object[0]);}
+				else throw new CommandException("command.generic.notFound", sender);
 			}
-			else {sender.sendLangfileMessage("command.alias.infiniteRecursion", new Object[0]);}
+			else throw new CommandException("command.alias.infiniteRecursion", sender);
 		}
-		else {sender.sendLangfileMessage("command.alias.invalidUsage", new Object[0]);}
+		else throw new CommandException("command.alias.invalidUsage", sender);
 	}
 	
 	@Override

@@ -70,7 +70,7 @@ public class CommandDuplicate extends ServerCommand {
 			player.worldObj.spawnEntityInWorld(itemEntity);
 		}
 		
-		sender.sendLangfileMessage("command.duplicate.duplicated", new Object[0]);
+		sender.sendLangfileMessage("command.duplicate.duplicated");
 	}
 	
 	@Override

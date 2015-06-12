@@ -31,30 +31,27 @@ public class CommandClimb extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
 		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
-		ServerPlayerSettings ability = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
-    		
-    	boolean allowClimb = false;
-    	boolean success = false;
-    		
-        if (params.length >= 1) {
-        	if (params[0].equalsIgnoreCase("true")) {allowClimb = true; success = true;}
-        	else if (params[0].equalsIgnoreCase("false")) {allowClimb = false; success = true;}
-        	else if (params[0].equalsIgnoreCase("0")) {allowClimb = false; success = true;}
-        	else if (params[0].equalsIgnoreCase("1")) {allowClimb = true; success = true;}
-        	else if (params[0].equalsIgnoreCase("on")) {allowClimb = true; success = true;}
-        	else if (params[0].equalsIgnoreCase("off")) {allowClimb = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("enable")) {allowClimb = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("disable")) {allowClimb = false; success = true;}
-        	else {success = false;}
+		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+    	
+        if (params.length > 0) {
+        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
+            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
+        		settings.climb = true;
+            	sender.sendLangfileMessage("command.climb.on");
+            }
+            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
+            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
+            	settings.climb = false;
+            	sender.sendLangfileMessage("command.climb.off");
+            }
+            else throw new CommandException("command.climb.failure", sender);
         }
-        else {allowClimb = !ability.climb; success = true;}
-        	
-        if (success) {
-        	ability.climb = allowClimb;
-        	MoreCommands.getMoreCommands().getPacketDispatcher().sendS02Climb(player, allowClimb);
+        else {
+        	settings.climb = !settings.climb;
+        	sender.sendLangfileMessage(settings.climb ? "command.climb.on" : "command.climb.off");
         }
-        	
-        sender.sendLangfileMessage(success ? allowClimb ? "command.climb.on" : "command.climb.off" : "command.climb.failure", new Object[0]);
+        
+        MoreCommands.getMoreCommands().getPacketDispatcher().sendS02Climb(player, settings.climb);
 	}
 	
 	@Override

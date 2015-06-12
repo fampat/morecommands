@@ -28,25 +28,25 @@ public class CommandInvisible extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-    	boolean invisible = true;
-    	boolean success = false;
-    	
-    	if (params.length >= 1) {
-    		if (params[0].equalsIgnoreCase("true")) {invisible = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("false")) {invisible = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("0")) {invisible = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("1")) {invisible = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("on")) {invisible = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("off")) {invisible = false; success = true;}
-    		else if (params[0].equalsIgnoreCase("enable")) {invisible = true; success = true;}
-    		else if (params[0].equalsIgnoreCase("disable")) {invisible = false; success = true;}
-    		else {success = false;}
-    	}
-    	else {invisible = !((EntityPlayerMP) sender.getMinecraftISender()).isInvisible(); success = true;}
-    	
-    	if (success) ((EntityPlayerMP) sender.getMinecraftISender()).setInvisible(invisible);
-    	
-    	sender.sendLangfileMessage(success ? invisible ? "command.invisible.on" : "command.invisible.off" : "command.invisible.failure", new Object[0]);
+		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
+		
+        if (params.length > 0) {
+        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
+            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
+        		player.setInvisible(true);
+            	sender.sendLangfileMessage("command.invisible.on");
+            }
+            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
+            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
+            	player.setInvisible(false);
+            	sender.sendLangfileMessage("command.invisible.off");
+            }
+            else throw new CommandException("command.invisible.failure", sender);
+        }
+        else {
+        	player.setInvisible(!player.isInvisible());
+        	sender.sendLangfileMessage(player.isInvisible() ? "command.invisible.on" : "command.invisible.off");
+        }
 	}
 	
 	@Override

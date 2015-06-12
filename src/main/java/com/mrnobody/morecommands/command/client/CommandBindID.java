@@ -37,10 +37,8 @@ public class CommandBindID extends ClientCommand {
 				int keyid = Integer.parseInt(params[0]);
 				String command = params[1];
 				
-				if (this.commandHandler.getCommands().get(command) == null) {
-					sender.sendLangfileMessage("command.generic.notFound", new Object[0]);
-					return;
-				}
+				if (this.commandHandler.getCommands().get(command) == null)
+					throw new CommandException("command.generic.notFound", sender);
 				
 				if (params.length > 2) {
 					int index = 0;
@@ -58,12 +56,12 @@ public class CommandBindID extends ClientCommand {
 					ClientPlayerSettings.keybindMapping.put(keyid, command);
 					ClientPlayerSettings.saveSettings();
 					
-					sender.sendLangfileMessage("command.bindid.success", new Object[0]);
+					sender.sendLangfileMessage("command.bindid.success");
 				}
-				else {sender.sendLangfileMessage("command.bindid.invalidChar", new Object[0]);}
-			} catch (NumberFormatException e) {sender.sendLangfileMessage("command.bindid.invalidID", new Object[0]);}
+				else throw new CommandException("command.bindid.invalidChar", sender);
+			} catch (NumberFormatException e) {throw new CommandException("command.bindid.invalidID", sender);}
 		}
-		else {sender.sendLangfileMessage("command.bindid.invalidUsage", new Object[0]);}
+		else throw new CommandException("command.bindid.invalidUsage", sender);
 	}
 	
 	@Override

@@ -40,7 +40,7 @@ public class CommandIgnite extends ServerCommand {
 			BlockPos fire = new BlockPos(ignite.getX(), ignite.getY() + 1, ignite.getZ());
 			if (entity.getWorld().isAirBlock(fire)) entity.getWorld().setBlock(fire, BLOCK_FIRE);
 		}
-		else sender.sendLangfileMessage("command.ignite.notInSight", new Object[0]);
+		else throw new CommandException("command.ignite.notInSight", sender);
 	}
 	
 	@Override

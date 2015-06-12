@@ -45,14 +45,14 @@ public class CommandPick extends ServerCommand {
 		
 		if (params.length > 0) {
 			try {amount = Integer.parseInt(params[0]);}
-			catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.pick.NAN", new Object[0]); return;}
+			catch (NumberFormatException nfe) {throw new CommandException("command.pick.NAN", sender);}
 		}
 		
 		if (pick != null) {
 			if (!this.onPickBlock(pick, player.getMinecraftPlayer(), player.getWorld().getMinecraftWorld(), amount))
-				sender.sendLangfileMessage("command.pick.cantgive", new Object[0]);
+				throw new CommandException("command.pick.cantgive", sender);
 		}
-		else sender.sendLangfileMessage("command.pick.notInSight", new Object[0]);
+		else throw new CommandException("command.pick.notInSight", sender);
 	}
 	
 	@Override

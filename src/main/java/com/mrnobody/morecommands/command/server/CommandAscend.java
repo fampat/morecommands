@@ -1,7 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.BlockPos;
 
 import com.mrnobody.morecommands.command.Command;
@@ -9,7 +8,6 @@ import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Entity;
-import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
 		name = "ascend",
@@ -37,7 +35,7 @@ public class CommandAscend extends ServerCommand {
     	while (y < 260) {
     		if (entity.getWorld().isClear(new BlockPos(coord.getX(), y++, coord.getZ()))) {
     			entity.setPosition(new BlockPos(coord.getX() + 0.5F, --y, coord.getZ() + 0.5F));
-    			sender.sendLangfileMessage("command.ascend.ascended", new Object[] {Math.abs((y - coord.getY()))});
+    			sender.sendLangfileMessage("command.ascend.ascended", Math.abs(y - coord.getY()));
     			break;
     		}
     	}

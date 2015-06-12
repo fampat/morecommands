@@ -49,18 +49,18 @@ public class CommandExplode extends ServerCommand {
 					z = Double.parseDouble(params[3]);
 					success = true;
 				}
-				catch (NumberFormatException e) {sender.sendLangfileMessage("command.explode.NAN", new Object[0]);}
+				catch (NumberFormatException e) {throw new CommandException("command.explode.NAN", sender);}
 			}
 			
 			try {size = Integer.parseInt(params[0]);}
-			catch (NumberFormatException e) {sender.sendLangfileMessage("command.explode.NAN", new Object[0]);}
+			catch (NumberFormatException e) {throw new CommandException("command.explode.NAN", sender);}
 		}
 		
 		if (success) {
 			entity.getWorld().createExplosion(entity.getMinecraftEntity(), new BlockPos(x, y, z), size);
-			sender.sendLangfileMessage("command.explode.booooom", new Object[0]);
+			sender.sendLangfileMessage("command.explode.booooom");
 		}
-		else {sender.sendLangfileMessage("command.explode.notInSight", new Object[0]);}
+		else throw new CommandException("command.explode.notInSight", sender);
 	}
 	
 	@Override

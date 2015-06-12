@@ -32,7 +32,7 @@ public class CommandBiome extends ServerCommand {
 		BiomeGenBase biome = sender.getWorld().getMinecraftWorld().getBiomeGenForCoords(sender.getPosition());
 	
 		if (params.length > 0) {
-			if (params[0].equalsIgnoreCase("info")) sender.sendLangfileMessage("command.biome.info", new Object[] {biome.biomeName, biome.biomeID});
+			if (params[0].equalsIgnoreCase("info")) sender.sendLangfileMessage("command.biome.info", biome.biomeName, biome.biomeID);
 			else if (params[0].equalsIgnoreCase("list")) {
 				BiomeGenBase[] biomeList = BiomeGenBase.getBiomeGenArray();
     			int page = 1;
@@ -41,22 +41,19 @@ public class CommandBiome extends ServerCommand {
     			
     			if (params.length > 1) {
     				try {page = Integer.parseInt(params[1]);} 
-    				catch (NumberFormatException e) {validParam = false;}
+    				catch (NumberFormatException e) {throw new CommandException("command.biome.invalidUsage", sender);}
     			}
     			
-    			if (validParam) {
-    				int to = PAGE_MAX * page <= biomeList.length ? PAGE_MAX * page : biomeList.length;
-    				int from = to - PAGE_MAX;
-    				
-    				try{for (int index = from; index < to; index++) {sender.sendStringMessage(" - '" + biomeList[index].biomeName + "' " + " (ID " + biomeList[index].biomeID + ")");}}
-    				catch (Exception ex) {}
-    				sender.sendLangfileMessage("command.biome.more", new Object[0]);
-    			}
-    			else {sender.sendLangfileMessage("command.biome.invalidUsage", new Object[0]);}
+				int to = PAGE_MAX * page <= biomeList.length ? PAGE_MAX * page : biomeList.length;
+				int from = to - PAGE_MAX;
+				
+				try{for (int index = from; index < to; index++) {sender.sendStringMessage(" - '" + biomeList[index].biomeName + "' " + " (ID " + biomeList[index].biomeID + ")");}}
+				catch (Exception ex) {}
+    			sender.sendLangfileMessage("command.biome.more");
 			}
-			else {sender.sendLangfileMessage("command.biome.invalidUsage", new Object[0]);}
+			else throw new CommandException("command.biome.invalidUsage", sender);
 		}
-		else {sender.sendLangfileMessage("command.biome.invalidUsage", new Object[0]);}
+		else throw new CommandException("command.biome.invalidUsage", sender);
 	}
 	
 	@Override

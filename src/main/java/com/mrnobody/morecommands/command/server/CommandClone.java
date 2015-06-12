@@ -36,7 +36,7 @@ public class CommandClone extends ServerCommand {
 		
 		if (params.length > 0) {
 			try {quantity = Integer.parseInt(params[0]);}
-			catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.clone.invalidArg", new Object[0]); return;}
+			catch (NumberFormatException nfe) {throw new CommandException("command.clone.invalidArg", sender);}
 		}
 		
 		com.mrnobody.morecommands.wrapper.Entity player = new com.mrnobody.morecommands.wrapper.Entity((Entity) sender.getMinecraftISender());
@@ -52,13 +52,11 @@ public class CommandClone extends ServerCommand {
 		BlockPos coord = player.getPosition();
 		
 		for (int i = 0; i < quantity; i++) {
-			if (!com.mrnobody.morecommands.wrapper.Entity.spawnEntity(name, coord, world)) {
-				sender.sendStringMessage("An Error occurred during cloning NPC '" + name + "'");
-				return;
-			}
+			if (!com.mrnobody.morecommands.wrapper.Entity.spawnEntity(name, coord, world))
+				throw new CommandException("An Error occurred during cloning NPC '" + name + "'");
 		}
 		
-		sender.sendLangfileMessage("command.clone.success", new Object[0]);
+		sender.sendLangfileMessage("command.clone.success");
 	}
 	
 	@Override
