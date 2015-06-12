@@ -54,7 +54,7 @@ public class CommandDropstore extends ServerCommand {
            player.getMinecraftPlayer().inventory.armorInventory[i] = null;
         }
         
-        sender.sendLangfileMessage("command.dropstore.stored");
+        sender.sendLangfileMessage("command.dropstore.stored", new Object[0]);
 	}
 	
 	@Override

@@ -72,27 +72,27 @@ public class CommandFlammable extends ServerCommand {
 					if (params[1].equalsIgnoreCase("reset")) reset = true;
 					else {
 						try {encouragement = Integer.parseInt(params[1]);}
-						catch (NumberFormatException nfe) {throw new CommandException("command.flammable.invalidArg", sender);}
+						catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.flammable.invalidArg", new Object[0]); return;}
 					}
 				}
 				
 				if (!reset && params.length > 2) {
 					try {flammibility = Integer.parseInt(params[2]);}
-					catch (NumberFormatException nfe) {throw new CommandException("command.flammable.invalidArg", sender);}
+					catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.flammable.invalidArg", new Object[0]); return;}
 				}
 				
 				if (!reset) {
 					Blocks.fire.setFireInfo(block, encouragement, flammibility);
-					sender.sendLangfileMessage("command.flammable.success");
+					sender.sendLangfileMessage("command.flammable.success", new Object[0]);
 				}
 				else {
 					Blocks.fire.setFireInfo(block, this.flammables.get(block).encouragement, this.flammables.get(block).flammibility);
-					sender.sendLangfileMessage("command.flammable.reset");
+					sender.sendLangfileMessage("command.flammable.reset", new Object[0]);
 				}
 			}
-			else throw new CommandException("command.flammable.notFound", sender);
+			else sender.sendLangfileMessage("command.flammable.notFound", new Object[0]);
 		}
-		else throw new CommandException("command.flammable.invalidUsage", sender);
+		else sender.sendLangfileMessage("command.flammable.invalidUsage", new Object[0]);
 	}
 	
 	@Override

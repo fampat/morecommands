@@ -30,15 +30,15 @@ public class CommandFreezecam extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings ability = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
 		
-		if (settings.freeezecam) {
-			settings.freeezecam = false;
-			sender.sendLangfileMessage("command.freezecam.off");
+		if (ability.freeezecam) {
+			ability.freeezecam = false;
+			sender.sendLangfileMessage("command.freezecam.off", new Object[0]);
 		}
 		else {
-			settings.freeezecam = true;
-			sender.sendLangfileMessage("command.freezecam.on");
+			ability.freeezecam = true;
+			sender.sendLangfileMessage("command.freezecam.on", new Object[0]);
 		}
 		
 		MoreCommands.getMoreCommands().getPacketDispatcher().sendS04Freezecam((EntityPlayerMP) sender.getMinecraftISender());

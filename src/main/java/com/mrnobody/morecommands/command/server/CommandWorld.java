@@ -24,7 +24,6 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.util.BlockPos;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldType;
@@ -69,37 +68,39 @@ public class CommandWorld extends ServerCommand {
 						long seed = Long.parseLong(params[2]);
 						NBTTagCompound data = ((EntityPlayerMP) sender.getMinecraftISender()).worldObj.getWorldInfo().getNBTTagCompound();
 						data.setLong("RandomSeed", seed);
-						sender.sendLangfileMessage("command.world.setseed", String.valueOf(seed));
+						sender.sendLangfileMessage("command.world.setseed", new Object[] {String.valueOf(seed)});
 					}
-					catch (Exception ex) {throw new CommandException("command.world.NAN", sender);}
+					catch (Exception ex) {sender.sendLangfileMessage("command.world.NAN", new Object[0]);}
 				}
 				else {
 					long seed = ((EntityPlayerMP) sender.getMinecraftISender()).worldObj.getSeed();
-					sender.sendLangfileMessage("command.world.currentseed", String.valueOf(seed));
+					sender.sendLangfileMessage("command.world.currentseed", new Object[] {String.valueOf(seed)});
 				}
 				return;
 			}
 			else if (params[0].equalsIgnoreCase("name")) {
 				if (params.length > 2 && params[1].equalsIgnoreCase("set")) {
 					((EntityPlayerMP) sender.getMinecraftISender()).worldObj.getWorldInfo().setWorldName(params[2]);
-					sender.sendLangfileMessage("command.world.setname", String.valueOf(params[2]));
+					sender.sendLangfileMessage("command.world.setname", new Object[] {String.valueOf(params[2])});
 				}
 				else {
 					String name = ((EntityPlayerMP) sender.getMinecraftISender()).worldObj.getWorldInfo().getWorldName();
-					sender.sendLangfileMessage("command.world.currentname", name);
+					sender.sendLangfileMessage("command.world.currentname", new Object[] {name});
 				}
 				return;
 			}
 			
-			if (MoreCommands.getMoreCommands().getRunningServer() != ServerType.DEDICATED)
-				throw new CommandException("command.generic.notDedicated", sender);
+			if (MoreCommands.getMoreCommands().getRunningServer() != ServerType.DEDICATED) {
+				sender.sendLangfileMessage("command.generic.notDedicated", new Object[0]);
+				return;
+			}
 			
 			DedicatedServer server = (DedicatedServer) MinecraftServer.getServer();
 			ISaveFormat sf = server.getActiveAnvilConverter();
-			
-			if (sf == null || !(sf instanceof AnvilSaveConverter))
-				throw new CommandException("command.world.loaderNotFound", sender);
-			
+			if (sf == null || !(sf instanceof AnvilSaveConverter)) {
+				sender.sendLangfileMessage("command.world.loaderNotFound", new Object[0]);
+				return;
+			}
 			AnvilSaveConverter loader = (AnvilSaveConverter) sf;
 				
 			if (params[0].equalsIgnoreCase("load") && params.length > 1) {
@@ -111,7 +112,7 @@ public class CommandWorld extends ServerCommand {
 							WorldType.parseWorldType(server.getStringProperty("level-type", "DEFAULT")), 
 							server.getStringProperty("generator-settings", ""));
 				}
-				else throw new CommandException("command.world.notLoadable", sender, world.trim());
+				else sender.sendLangfileMessage("command.world.notLoadable", new Object[] {world.trim()});
 			}
 			else if (params[0].equalsIgnoreCase("backup") || params[0].equalsIgnoreCase("save")) {
 				Method saveWorld = ReflectionHelper.getMethod(MinecraftServer.class, "saveAllWorlds", boolean.class);
@@ -123,7 +124,8 @@ public class CommandWorld extends ServerCommand {
 				if (params[0].equalsIgnoreCase("backup")) {
 					if (!(new File(loader.savesDirectory, server.getFolderName())).isDirectory()) {
 						MoreCommands.getMoreCommands().getLogger().info("Couldn't backup world");
-						throw new CommandException("command.world.backupfailed", sender);
+						sender.sendLangfileMessage("command.world.backupfailed", new Object[0]);
+						return;
 					}
 					
 					MoreCommands.getMoreCommands().getLogger().info("Backing up world \"" + server.getFolderName() + "\"");
@@ -132,10 +134,10 @@ public class CommandWorld extends ServerCommand {
 					String time = format.format(new Date());
 					copyDirectory(new File(loader.savesDirectory, server.getFolderName()), new File(loader.savesDirectory, "backup/" + server.getFolderName() + "/" + time));
 					
-					sender.sendLangfileMessage("command.world.backupsuccess");
+					sender.sendLangfileMessage("command.world.backupsuccess", new Object[0]);
 					MoreCommands.getMoreCommands().getLogger().info("Backup successfully created");
 				}
-				else sender.sendLangfileMessage("command.world.saved");
+				else sender.sendLangfileMessage("command.world.saved", new Object[0]);
 			}
 			else if (params[0].equalsIgnoreCase("exit")) {
 				((EntityPlayerMP) sender.getMinecraftISender()).playerNetServerHandler.kickPlayerFromServer("World exited");
@@ -146,7 +148,7 @@ public class CommandWorld extends ServerCommand {
 				
 				if (params.length > 2) {
 					try {seed = Long.parseLong(params[params.length - 1]); sub = 1;}
-					catch (Exception ex) {sender.sendLangfileMessage("command.world.NAN", EnumChatFormatting.RED); seed = (new Random()).nextLong();}
+					catch (Exception ex) {sender.sendLangfileMessage("command.world.NAN", new Object[0]); seed = (new Random()).nextLong();}
 				}
 				else seed = (new Random()).nextLong();
 				
@@ -154,8 +156,10 @@ public class CommandWorld extends ServerCommand {
 				for (int i = 1; i < params.length - sub; i++) world += " " + params[i];
 				File fldr = new File(loader.savesDirectory, world);
 				
-				if (fldr.exists()) 
-					throw new CommandException("command.world.cantcreate", sender);
+				if (fldr.exists()) {
+					sender.sendLangfileMessage("command.world.cantcreate", new Object[0]);
+					return;
+				}
 				
 				loadWorld(server, loader, world.trim(), seed,
 						WorldType.parseWorldType(server.getStringProperty("level-type", "DEFAULT")),
@@ -181,10 +185,10 @@ public class CommandWorld extends ServerCommand {
 						else saves += ", " + list[i].getName();
 					}
 				}
-				sender.sendLangfileMessage("command.world.saves");
+				sender.sendLangfileMessage("command.world.saves", new Object[0]);
 				sender.sendStringMessage(saves);
 			}
-			else throw new CommandException("command.world.invalidArg", sender);
+			else sender.sendLangfileMessage("command.world.invalidArg", new Object[0]);
 		}
 	}
 	

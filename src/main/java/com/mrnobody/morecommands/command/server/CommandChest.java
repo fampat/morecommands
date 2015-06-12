@@ -37,14 +37,18 @@ public class CommandChest extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-		if (params.length < 1)
-			throw new CommandException("command.chest.invalidUsage", sender);
+		if (params.length < 1) {
+			sender.sendLangfileMessage("command.chest.invalidUsage", new Object[0]);
+			return;
+		}
 		
 		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		BlockPos coord = player.traceBlock(128.0D);
 		
-		if (coord == null)
-			throw new CommandException("command.chest.noBlockInSight", sender);
+		if (coord == null) {
+			sender.sendLangfileMessage("command.chest.noBlockInSight", new Object[0]);
+			return;
+		}
 		
 		Block block = player.getWorld().getBlock(coord);
 		
@@ -68,7 +72,10 @@ public class CommandChest extends ServerCommand {
 				else if (player.getWorld().getBlock(x1, y1, z1 - 1) == Blocks.chest) {x2 = x1; z2 = z1 - 1;}
 				else y2 = -1;
 			}
-			else throw new CommandException("command.chest.noChest", sender);
+			else {
+				sender.sendLangfileMessage("command.chest.noChest", new Object[0]);
+				return;
+			}
 		}
 		
 		IInventory chest = null;

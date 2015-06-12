@@ -35,7 +35,7 @@ import com.mrnobody.morecommands.wrapper.World;
 		)
 public class CommandInstantgrow extends ServerCommand implements Listener<PlaceEvent> {
 	public CommandInstantgrow() {
-		EventHandler.PLACE.getHandler().register(this);
+		EventHandler.BLOCK_PLACEMENT.getHandler().register(this);
 	}
 
 	@Override
@@ -56,25 +56,27 @@ public class CommandInstantgrow extends ServerCommand implements Listener<PlaceE
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
-    	
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		settings.instantgrow = true;
-            	sender.sendLangfileMessage("command.instantgrow.on");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	settings.instantgrow = false;
-            	sender.sendLangfileMessage("command.instantgrow.off");
-            }
-            else throw new CommandException("command.instantgrow.failure", sender);
+		ServerPlayerSettings ability = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+    		
+        boolean instant = false;
+        boolean success = false;
+        	
+        if (params.length >= 1) {
+        	if (params[0].equalsIgnoreCase("true")) {instant = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("false")) {instant = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("0")) {instant = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("1")) {instant = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("on")) {instant = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("off")) {instant = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {instant = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {instant = false; success = true;}
+        	else {success = false;}
         }
-        else {
-        	settings.instantgrow = !settings.instantgrow;
-        	sender.sendLangfileMessage(settings.instantgrow ? "command.instantgrow.on" : "command.instantgrow.off");
-        }
+        else {instant = !ability.instantgrow; success = true;}
+        	
+        if (success) ability.instantgrow = instant;
+        	
+        sender.sendLangfileMessage(success ? instant ? "command.instantgrow.on" : "command.instantgrow.off" : "command.instantgrow.failure", new Object[0]);
 	}
 	
 	private void growPlant(World world, int x, int y, int z, Random rand) {
@@ -145,7 +147,7 @@ public class CommandInstantgrow extends ServerCommand implements Listener<PlaceE
 	
 	@Override
 	public void unregisterFromHandler() {
-		EventHandler.PLACE.getHandler().unregister(this);
+		EventHandler.BLOCK_PLACEMENT.getHandler().unregister(this);
 	}
 
 	@Override

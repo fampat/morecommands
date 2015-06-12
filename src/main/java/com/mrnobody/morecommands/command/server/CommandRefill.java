@@ -42,10 +42,10 @@ public class CommandRefill extends ServerCommand {
 			if (player.inventory.mainInventory[player.inventory.currentItem] != null) 
 				player.inventory.mainInventory[player.inventory.currentItem].stackSize = player.inventory.mainInventory[player.inventory.currentItem].getMaxStackSize();
 			else
-				throw new CommandException("command.refill.noSelection", sender);
+				{sender.sendLangfileMessage("command.refill.noSelection", new Object[0]); return;}
 		}
 		
-		sender.sendLangfileMessage("command.refill.refilled");
+		sender.sendLangfileMessage("command.refill.refilled", new Object[0]);
 	}
 	
 	@Override

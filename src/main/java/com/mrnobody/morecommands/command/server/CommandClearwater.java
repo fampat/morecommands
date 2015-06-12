@@ -41,33 +41,36 @@ public class CommandClearwater extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		GlobalSettings.clearwater = true;
-            	sender.sendLangfileMessage("command.clearwater.on");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	GlobalSettings.clearwater = false;
-            	sender.sendLangfileMessage("command.clearwater.off");
-            }
-            else throw new CommandException("command.clearwater.failure", sender);
-        }
-        else {
-        	GlobalSettings.clearwater = !GlobalSettings.clearwater;
-        	sender.sendLangfileMessage(GlobalSettings.clearwater ? "command.clearwater.on" : "command.clearwater.off");
-        }
-        
-    	Block block;
-    	Iterator<Block> blocks = this.lightOpacities.keySet().iterator();
-    		
-    	while (blocks.hasNext()) {
-    		block = blocks.next();
-    			
-    		if (GlobalSettings.clearwater) block.setLightOpacity(0);
-    		else block.setLightOpacity(this.lightOpacities.get(block));
+    	boolean clearwater = !GlobalSettings.clearwater;
+    	boolean success = true;
+    	
+    	if (params.length > 0) {
+    		if (params[0].equalsIgnoreCase("true")) {clearwater = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("false")) {clearwater = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("0")) {clearwater = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("1")) {clearwater = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("on")) {clearwater = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("off")) {clearwater = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {clearwater = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {clearwater = false; success = true;}
+    		else {success = false;}
     	}
+    	
+    	if (success) {
+    		GlobalSettings.clearwater = clearwater;
+    		
+    		Block block;
+    		Iterator<Block> blocks = this.lightOpacities.keySet().iterator();
+    		
+    		while (blocks.hasNext()) {
+    			block = blocks.next();
+    			
+    			if (clearwater) block.setLightOpacity(0);
+    			else block.setLightOpacity(this.lightOpacities.get(block));
+    		}
+    	}
+    	
+    	sender.sendLangfileMessage(success ? GlobalSettings.clearwater ? "command.clearwater.on" : "command.clearwater.off" : "command.clearwater.failure", new Object[0]);
 	}
 	
 	@Override

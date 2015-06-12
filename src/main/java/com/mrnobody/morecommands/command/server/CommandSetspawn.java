@@ -39,7 +39,7 @@ public class CommandSetspawn extends ServerCommand {
 		
 		if (params.length > 2) {
 			try {coord = new BlockPos(Double.parseDouble(params[0]), Double.parseDouble(params[1]), Double.parseDouble(params[2]));}
-			catch (NumberFormatException nfe) {throw new CommandException("command.setspawn.invalidPos", sender);}
+			catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.setspawn.invalidPos", new Object[0]); return;}
 		}
 		
 		player.setSpawn(coord);

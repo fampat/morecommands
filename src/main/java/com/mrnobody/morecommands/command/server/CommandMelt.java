@@ -48,7 +48,7 @@ public class CommandMelt extends ServerCommand {
 			if (result != null) smelt++;
 		}
 		
-		sender.sendLangfileMessage("command.melt.molten", smelt);
+		sender.sendLangfileMessage("command.melt.molten", new Object[] {smelt});
 	}
 	
 	@Override

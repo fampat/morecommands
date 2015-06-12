@@ -48,10 +48,10 @@ public class CommandMove extends ServerCommand {
 					entity.setPosition(new BlockPos(entity.getPosition().getX(), entity.getPosition().getY() + distance, entity.getPosition().getZ()));
 				} else if (params[1].toUpperCase().startsWith("D")) {
 					entity.setPosition(new BlockPos(entity.getPosition().getX(), entity.getPosition().getY() - distance, entity.getPosition().getZ()));
-				} else throw new CommandException("command.move.invalidDirection", sender);
-			} catch (NumberFormatException e) {throw new CommandException("command.move.NAN", sender);}
+				} else {sender.sendLangfileMessage("command.move.invalidDirection", new Object[0]);}
+			} catch (NumberFormatException e) {sender.sendLangfileMessage("command.move.NAN", new Object[0]);}
 		}
-		else throw new CommandException("command.move.invalidUsage", sender);
+		else {sender.sendLangfileMessage("command.move.invalidUsage", new Object[0]);}
 	}
 	
 	@Override

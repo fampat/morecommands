@@ -55,8 +55,10 @@ public class CommandMusic extends ClientCommand implements Listener<PlaySoundEve
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 0) {
 			if (params[0].equalsIgnoreCase("play")) {
-				if (!this.stopSound)
-					throw new CommandException("command.music.isplaying", sender);
+				if (!this.stopSound) {
+					sender.sendLangfileMessage("command.music.isplaying", new Object[0]);
+					return;
+				}
 				
 				this.stopSound = false;
 				
@@ -66,7 +68,7 @@ public class CommandMusic extends ClientCommand implements Listener<PlaySoundEve
 				}
 				catch (Exception ex) {ex.printStackTrace();}
 				
-				sender.sendLangfileMessage("command.music.played");
+				sender.sendLangfileMessage("command.music.played", new Object[0]);
 			}
 			else if (params[0].equalsIgnoreCase("next") || params[0].equalsIgnoreCase("skip")) {
 				Minecraft.getMinecraft().getSoundHandler().stopSounds();
@@ -78,12 +80,12 @@ public class CommandMusic extends ClientCommand implements Listener<PlaySoundEve
 				}
 				catch (Exception ex) {ex.printStackTrace();}
 				
-				sender.sendLangfileMessage("command.music.skipped");
+				sender.sendLangfileMessage("command.music.skipped", new Object[0]);
 			}
 			else if (params[0].equalsIgnoreCase("stop")) {
 				Minecraft.getMinecraft().getSoundHandler().stopSounds();
 				this.stopSound = true;
-				sender.sendLangfileMessage("command.music.stopped");
+				sender.sendLangfileMessage("command.music.stopped", new Object[0]);
 			}
 			else if (params[0].equalsIgnoreCase("volume") && params.length > 1) {
 				try {
@@ -95,11 +97,11 @@ public class CommandMusic extends ClientCommand implements Listener<PlaySoundEve
 					Minecraft.getMinecraft().gameSettings.setSoundLevel(SoundCategory.MUSIC, volume / 100.0F);
 					Minecraft.getMinecraft().getSoundHandler().setSoundLevel(SoundCategory.MUSIC, volume / 100.0F);
 					
-					sender.sendLangfileMessage("command.music.volumeset");
+					sender.sendLangfileMessage("command.music.volumeset", new Object[0]);
 				}
-				catch (NumberFormatException nfe) {throw new CommandException("command.music.invalidArg", sender);}
+				catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.music.invalidArg", new Object[0]);}
 			}
-			else throw new CommandException("command.music.invalidUsage", sender);
+			else sender.sendLangfileMessage("command.music.invalidUsage", new Object[0]);
 		}
 	}
 	

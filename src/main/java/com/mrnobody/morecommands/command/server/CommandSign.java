@@ -57,7 +57,7 @@ public class CommandSign extends ServerCommand {
 			args = args.trim();
 			
 			if (!args.startsWith("\"") && !args.endsWith("\""))
-				throw new CommandException("command.sign.invalidUsage", sender);
+				{sender.sendLangfileMessage("command.sign.invalidUsage", new Object[0]); return;}
 			args = args.substring(1, args.length() - 1);
 			
 			String[] lines = args.split("\" \"");
@@ -75,10 +75,10 @@ public class CommandSign extends ServerCommand {
 				Packet update = sign.getDescriptionPacket();
 				((EntityPlayerMP) sender.getMinecraftISender()).playerNetServerHandler.sendPacket(update);
 			
-				sender.sendLangfileMessage("command.sign.editsuccess");
+				sender.sendLangfileMessage("command.sign.editsuccess", new Object[0]);
 			}
 			else if (params[0].equalsIgnoreCase("add")) {
-				if (hit.sideHit == EnumFacing.DOWN) throw new CommandException("command.sign.bottom", sender);
+				if (hit.sideHit == EnumFacing.DOWN) {sender.sendLangfileMessage("command.sign.bottom", new Object[0]); return;}
 				
 				int x = trace.getX();
 				int y = trace.getY();
@@ -106,12 +106,12 @@ public class CommandSign extends ServerCommand {
 					sign.signText[2] = newLines[2];
 					sign.signText[3] = newLines[3];
 				
-					sender.sendLangfileMessage("command.sign.addsuccess");
+					sender.sendLangfileMessage("command.sign.addsuccess", new Object[0]);
 				}
 			}
-			else throw new CommandException("command.sign.invalidUsage", sender);
+			else sender.sendLangfileMessage("command.sign.invalidUsage", new Object[0]);
 		}
-		else throw new CommandException("command.sign.noBlockInSight", sender);
+		else sender.sendLangfileMessage("command.sign.noBlockInSight", new Object[0]);
 	}
 
 	@Override

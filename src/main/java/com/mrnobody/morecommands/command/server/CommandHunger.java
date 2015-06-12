@@ -42,8 +42,8 @@ public class CommandHunger extends ServerCommand {
 			catch (NumberFormatException e) {
 				if (params[0].equalsIgnoreCase("min")) {foodLevel = 0;}
 				else if (params[0].equalsIgnoreCase("max")) {foodLevel = 20;}
-				else if (params[0].equalsIgnoreCase("get")) {sender.sendLangfileMessage("command.hunger.get", player.getHunger()); return;}
-				else throw new CommandException("command.hunger.invalidParam", sender);
+				else if (params[0].equalsIgnoreCase("get")) {sender.sendLangfileMessage("command.hunger.get", new Object[] {player.getHunger()}); return;}
+				else {sender.sendLangfileMessage("command.hunger.invalidParam", new Object[0]); return;}
 			}
 			
 			Field foodStats = ReflectionHelper.getField(FoodStats.class, "foodLevel");
@@ -51,13 +51,15 @@ public class CommandHunger extends ServerCommand {
 			if (foodStats != null) {
 				try {
 					foodStats.setInt(player.getMinecraftPlayer().getFoodStats(), foodLevel);
-					sender.sendLangfileMessage("command.hunger.success");
+					sender.sendLangfileMessage("command.hunger.success", new Object[0]);
 				}
-				catch (Exception ex) {throw new CommandException("command.hunger.error", sender);}
+				catch (Exception ex) {
+					sender.sendLangfileMessage("command.hunger.error", new Object[0]);
+				}
 			}
-			else throw new CommandException("command.hunger.error", sender);
+			else sender.sendLangfileMessage("command.hunger.error", new Object[0]);
 		}
-		else throw new CommandException("command.hunger.invalidUsage", sender);
+		else {sender.sendLangfileMessage("command.hunger.invalidUsage", new Object[0]);}
 	}
 	
 	@Override

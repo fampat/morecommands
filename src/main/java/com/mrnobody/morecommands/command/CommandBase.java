@@ -1,6 +1,13 @@
 package com.mrnobody.morecommands.command;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.minecraft.command.ICommandSender;
+import net.minecraft.command.server.CommandBlockLogic;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
 
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -23,7 +30,6 @@ public abstract class CommandBase extends net.minecraft.command.CommandBase {
 		MODDED_CLIENT,
 		PATCH_SERVERCONFIGMANAGER,
 		PATCH_CLIENTCOMMANDHANDLER,
-		PATCH_SERVERCOMMANDHANDLER,
 		PATCH_RENDERGLOBAL
 	}
 	

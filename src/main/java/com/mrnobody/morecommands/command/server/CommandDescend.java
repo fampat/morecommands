@@ -37,7 +37,7 @@ public class CommandDescend extends ServerCommand {
     	while (y > 0) {
     		if (entity.getWorld().isClear(new BlockPos(coord.getX(), y--, coord.getZ()))) {
     			entity.setPosition(new BlockPos(coord.getX() + 0.5F, ++y, coord.getZ() + 0.5F));
-    			sender.sendLangfileMessage("command.descend.descended", Math.abs(y - coord.getY()));
+    			sender.sendLangfileMessage("command.descend.descended", new Object[] {Math.abs((y - coord.getY()))});
     			break;
     		}
     	}

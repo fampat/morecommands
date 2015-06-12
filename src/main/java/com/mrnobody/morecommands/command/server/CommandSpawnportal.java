@@ -55,15 +55,19 @@ public class CommandSpawnportal extends ServerCommand {
 		         }
 		         catch (Throwable t) {
 		        	 t.printStackTrace();
-		        	 throw new CommandException("command.spawnportal.endError", sender);
+		        	 sender.sendLangfileMessage("command.spawnportal.endError", new Object[0]);
 		         }
 			}
 			else if (params[0].equalsIgnoreCase("nether")) {
 				(new Teleporter(((EntityPlayerMP) sender.getMinecraftISender()).getServerForPlayer())).makePortal((EntityPlayerMP) sender.getMinecraftISender());
 			}
-			else throw new CommandException("command.spawnportal.unknownPortal", sender);
+			else {
+				sender.sendLangfileMessage("command.spawnportal.unknownPortal", new Object[0]);
+			}
 		}
-		else throw new CommandException("command.spawnportal.noArgs", sender);
+		else {
+			sender.sendLangfileMessage("command.spawnportal.noArgs", new Object[0]);
+		}
 	}
 	
 	@Override

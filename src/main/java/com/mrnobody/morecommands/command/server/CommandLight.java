@@ -36,13 +36,13 @@ public class CommandLight extends ServerCommand {
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
 		
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
-    	settings.lightWorld = !settings.lightWorld;
+		ServerPlayerSettings ability = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+    	ability.lightWorld = !ability.lightWorld;
     		
     	MoreCommands.getMoreCommands().getPacketDispatcher().sendS07Light(player);
     		
-    	if (!settings.lightWorld) sender.sendLangfileMessage("command.light.restore");
-    	else sender.sendLangfileMessage("command.light.lightup");
+    	if (!ability.lightWorld) sender.sendLangfileMessage("command.light.restore", new Object[0]);
+    	else sender.sendLangfileMessage("command.light.lightup", new Object[0]);
 	}
 	
 	@Override

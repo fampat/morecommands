@@ -34,34 +34,34 @@ public class CommandKeepinventory extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
 		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
-		boolean keepinventory;
+		ServerPlayerSettings ability = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
 		
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		keepinventory = true;
-            	sender.sendLangfileMessage("command.keepinventory.on");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	keepinventory = false;
-            	sender.sendLangfileMessage("command.keepinventory.off");
-            }
-            else throw new CommandException("command.keepinventory.failure", sender);
+        boolean keepinventory = false;
+        boolean success = false;
+        	
+        if (params.length >= 1) {
+        	if (params[0].equalsIgnoreCase("true")) {keepinventory = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("false")) {keepinventory = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("0")) {keepinventory = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("1")) {keepinventory = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("on")) {keepinventory = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("off")) {keepinventory = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {keepinventory = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {keepinventory = false; success = true;}
+        	else {success = false;}
         }
-        else {
-        	keepinventory = !player.getKeepInventory();
-        	sender.sendLangfileMessage(keepinventory ? "command.keepinventory.on" : "command.keepinventory.off");
-        }
-        
-    	settings.keepinventory = keepinventory;
-    	player.setKeepInventory(keepinventory);
-    	
-    	if (MoreCommands.isClientSide())
-    		((ServerConfigurationManagerIntegrated) MinecraftServer.getServer().getConfigurationManager()).setKeepInventory(keepinventory);
-    	else if (MoreCommands.isServerSide())
-    		((ServerConfigurationManagerDedicated) MinecraftServer.getServer().getConfigurationManager()).setKeepInventory(keepinventory);
+	    else {keepinventory = !player.getKeepInventory(); success = true;}
+	    	
+	    if (success) {
+	    	ability.keepinventory = keepinventory;
+	    	player.setKeepInventory(keepinventory);
+	    	if (MoreCommands.isClientSide())
+	    		((ServerConfigurationManagerIntegrated) MinecraftServer.getServer().getConfigurationManager()).setKeepInventory(keepinventory);
+	    	else if (MoreCommands.isServerSide())
+	    		((ServerConfigurationManagerDedicated) MinecraftServer.getServer().getConfigurationManager()).setKeepInventory(keepinventory);
+	    }
+        	
+        sender.sendLangfileMessage(success ? keepinventory ? "command.keepinventory.on" : "command.keepinventory.off" : "command.keepinventory.failure", new Object[0]);
 	}
 	
 	@Override

@@ -29,23 +29,25 @@ public class CommandClouds extends ClientCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {    		
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		Minecraft.getMinecraft().gameSettings.clouds = true;
-            	sender.sendLangfileMessage("command.clouds.on");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-        		Minecraft.getMinecraft().gameSettings.clouds = false;
-            	sender.sendLangfileMessage("command.clouds.off");
-            }
-            else throw new CommandException("command.clouds.failure", sender);
+    	boolean clouds = false;
+    	boolean success = false;
+    		
+        if (params.length >= 1) {
+        	if (params[0].equalsIgnoreCase("true")) {clouds = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("false")) {clouds = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("0")) {clouds = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("1")) {clouds = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("on")) {clouds = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("off")) {clouds = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {clouds = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {clouds = false; success = true;}
+        	else {success = false;}
         }
-        else {
-        	Minecraft.getMinecraft().gameSettings.clouds = !Minecraft.getMinecraft().gameSettings.clouds;
-        	sender.sendLangfileMessage(Minecraft.getMinecraft().gameSettings.clouds ? "command.clouds.on" : "command.clouds.off");
-        }
+        else {clouds = !this.clouds; success = true;}
+        	
+        if (success) {this.clouds = clouds; Minecraft.getMinecraft().gameSettings.clouds = clouds;}
+        	
+        sender.sendLangfileMessage(success ? clouds ? "command.clouds.on" : "command.clouds.off" : "command.clouds.failure", new Object[0]);
 	}
 	
 	@Override

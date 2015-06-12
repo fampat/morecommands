@@ -40,11 +40,11 @@ public class CommandDimension extends ServerCommand {
 			if (params[0].equalsIgnoreCase("normal") || params[0].equalsIgnoreCase("surface") || params[0].equalsIgnoreCase(String.valueOf(this.DIMENSION_SURFACE))) player.changeDimension(this.DIMENSION_SURFACE);
 			else if (params[0].equalsIgnoreCase("nether") || params[0].equalsIgnoreCase(String.valueOf(this.DIMENSION_NETHER))) player.changeDimension(this.DIMENSION_NETHER);
 			else if (params[0].equalsIgnoreCase("end") || params[0].equalsIgnoreCase(String.valueOf(this.DIMENSION_END))) player.changeDimension(this.DIMENSION_END);
-			else throw new CommandException("command.dimension.unknown", sender);
+			else error = true;
 			
-			sender.sendLangfileMessage("command.dimension.changed");
-		}
-		else throw new CommandException("command.dimension.notSpecified", sender);
+			if (!error) sender.sendLangfileMessage("command.dimension.changed", new Object[0]);
+			else sender.sendLangfileMessage("command.dimension.unknown", new Object[0]);
+		} else sender.sendLangfileMessage("command.dimension.notSpecified", new Object[0]);
 	}
 	
 	@Override

@@ -57,38 +57,54 @@ public class CommandPath extends ServerCommand implements Listener<TickEvent> {
 			catch (NumberFormatException nfe) {
 				if (Block.getBlockFromName("minecraft:" + blockID) != null) 
 					block = Block.getBlockFromName("minecraft:" + blockID);
-				else throw new CommandException("command.path.unknownBlock", sender, block);
+				else {
+					sender.sendLangfileMessage("command.path.unknownBlock", new Object[] {block});
+					return;
+				}
 			}
 			
 			if (metaID != null) {
 				try {meta = Integer.parseInt(metaID);} 
-				catch (NumberFormatException nfe) {throw new CommandException("command.path.invalidMeta", sender);}
+				catch (NumberFormatException nfe) {
+					sender.sendLangfileMessage("command.path.invalidMeta", new Object[0]);
+					return;
+				}
 			}
 			
-			if (block == null || block instanceof BlockAir)
-				throw new CommandException("command.path.unknownBlock", sender, block.getUnlocalizedName());
+			if (block == null || block instanceof BlockAir) {
+				sender.sendLangfileMessage("command.path.unknownBlock", new Object[] {block.getUnlocalizedName()});
+				return;
+			}
 			
 			int size = 1;
 			
 			if (params.length > 1)  {
 				try {
 					if (Integer.parseInt(params[1]) > 0 && Integer.parseInt(params[1]) <= 50) size = Integer.parseInt(params[1]);
-					else throw new CommandException("command.path.invalidRadius", sender);
-				} catch (NumberFormatException nfe) {throw new CommandException("command.path.invalidRadius", sender);}
+					else sender.sendLangfileMessage("command.path.invalidRadius", new Object[0]);}
+				catch (NumberFormatException nfe) {
+					sender.sendLangfileMessage("command.path.invalidRadius", new Object[0]);
+					return;
+				}
 			}
 			
 			if (ServerPlayerSettings.playerSettingsMapping.containsKey(playerEntity)) {
 				ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(playerEntity);
 				int[] plrData = settings.pathData;
-				if(plrData[0] == Block.getIdFromBlock(block) && plrData[1] == meta && plrData[2] == size)
-					throw new CommandException("command.path.noChange", sender);
-				sender.sendLangfileMessage("command.path.enabled");
+				if(plrData[0] == Block.getIdFromBlock(block) && plrData[1] == meta && plrData[2] == size) {
+					sender.sendLangfileMessage("command.path.noChange", new Object[0]);
+					return;
+				}
+				sender.sendLangfileMessage("command.path.enabled", new Object[0]);
 				settings.pathData = new int[] {Block.getIdFromBlock(block), meta, size, -1, -1, -1};
 			}
 		} else if (ServerPlayerSettings.playerSettingsMapping.containsKey(playerEntity) && ServerPlayerSettings.playerSettingsMapping.get(playerEntity).pathData[0] > -1) {
-			sender.sendLangfileMessage("command.path.disabled");
+			sender.sendLangfileMessage("command.path.disabled", new Object[0]);
 			ServerPlayerSettings.playerSettingsMapping.get(playerEntity).pathData[0] = -1;
-		} else throw new CommandException("command.path.invalidUsage", sender);
+		} else {
+			sender.sendLangfileMessage("command.path.invalidUsage", new Object[0]);
+			return;
+		}
 	}
 		
 	@Override

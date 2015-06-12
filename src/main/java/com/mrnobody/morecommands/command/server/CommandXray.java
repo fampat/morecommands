@@ -32,38 +32,37 @@ public class CommandXray extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings ability = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		
+		boolean showGUI = false;
+		int blockRadius = ability.xrayBlockRadius;
+		boolean enable = ability.xrayEnabled;
 		
 		if (params.length > 0) {
-			if (params[0].equalsIgnoreCase("config")) 
-				MoreCommands.getMoreCommands().getPacketDispatcher().sendS05Xray(player);
+			if (params[0].equalsIgnoreCase("config")) {showGUI = true;}
 			else if (params[0].equalsIgnoreCase("radius") && params.length > 1) {
-				try {settings.xrayBlockRadius = Integer.parseInt(params[1]);}
-				catch (NumberFormatException nfe) {throw new CommandException("command.xray.invalidUsage", sender);}
-				
-				MoreCommands.getMoreCommands().getPacketDispatcher().sendS05Xray(player, settings.xrayEnabled, settings.xrayBlockRadius);
+				try {blockRadius = Integer.parseInt(params[1]);}
+				catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.xray.invalidUsage", new Object[0]);}
 			}
-			else if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("1") || params[0].equalsIgnoreCase("true")) {
-				settings.xrayEnabled = true;
-				MoreCommands.getMoreCommands().getPacketDispatcher().sendS05Xray(player, true, settings.xrayBlockRadius);
-				sender.sendLangfileMessage("command.xray.enabled");
+			else if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("1")) {
+				enable = true; 
+				sender.sendLangfileMessage("command.xray.enabled", new Object[0]);
 			}
-			else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("0") || params[0].equalsIgnoreCase("false")) {
-				settings.xrayEnabled = false;
-				MoreCommands.getMoreCommands().getPacketDispatcher().sendS05Xray(player, false, settings.xrayBlockRadius);
-				sender.sendLangfileMessage("command.xray.disabled");
+			else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("0")) {
+				enable = false; 
+				sender.sendLangfileMessage("command.xray.disabled", new Object[0]);
 			}
-			else if (params[0].equalsIgnoreCase("load") && params.length > 1)
-				MoreCommands.getMoreCommands().getPacketDispatcher().sendS05Xray(player, true, params[1]);
-			else if (params[0].equalsIgnoreCase("save") && params.length > 1)
-				MoreCommands.getMoreCommands().getPacketDispatcher().sendS05Xray(player, false, params[1]);
-			else throw new CommandException("command.xray.invalidUsage", sender);
+			else {sender.sendLangfileMessage("command.xray.invalidUsage", new Object[0]);}
 		}
 		else {
-			settings.xrayEnabled = !settings.xrayEnabled;
-			MoreCommands.getMoreCommands().getPacketDispatcher().sendS05Xray(player, settings.xrayEnabled, settings.xrayBlockRadius);
-			sender.sendLangfileMessage(settings.xrayEnabled ? "command.xray.enabled" : "command.xray.disabled");
+			enable = !enable; 
+			sender.sendLangfileMessage(enable ? "command.xray.enabled" : "command.xray.disabled", new Object[0]);
 		}
+		
+		ability.xrayBlockRadius = blockRadius;
+		ability.xrayEnabled = enable;
+		
+		MoreCommands.getMoreCommands().getPacketDispatcher().sendS05Xray(player, showGUI, enable, blockRadius);
 	}
 	
 	@Override

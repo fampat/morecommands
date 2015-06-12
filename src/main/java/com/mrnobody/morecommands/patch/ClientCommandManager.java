@@ -1,22 +1,18 @@
 package com.mrnobody.morecommands.patch;
 
 import static net.minecraft.util.EnumChatFormatting.RED;
+
+import com.mrnobody.morecommands.util.DummyCommand;
+
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.CommandEvent;
-
-import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.util.ClientPlayerSettings;
-import com.mrnobody.morecommands.util.DummyCommand;
-import com.mrnobody.morecommands.util.GlobalSettings;
-import com.mrnobody.morecommands.util.LanguageManager;
 
 /**
  * The patched class of {@link ClientCommandHandler} <br>
@@ -32,44 +28,6 @@ import com.mrnobody.morecommands.util.LanguageManager;
  *
  */
 public class ClientCommandManager extends ClientCommandHandler {
-	private static class VarCouldNotBeResolvedException extends Exception {
-		private String var;
-		
-		public VarCouldNotBeResolvedException(String var) {
-			this.var = var;
-		}
-	}
-	
-	private static String replaceVars(String string) throws VarCouldNotBeResolvedException {
-		String varIdentifier = "";
-		String newString = "";
-		boolean isReadingVarIdentifier = false;
-		
-		for (char ch : string.toCharArray()) {
-			if (ch == '%') {
-				if (isReadingVarIdentifier) {
-					isReadingVarIdentifier = false;
-					
-					if (varIdentifier.isEmpty()) newString += "%";
-					else {
-						if (!ClientPlayerSettings.varMapping.containsKey(varIdentifier))
-							throw new VarCouldNotBeResolvedException(varIdentifier);
-						newString += ClientPlayerSettings.varMapping.get(varIdentifier);
-					}
-					
-					varIdentifier = "";
-				}
-				else isReadingVarIdentifier = true;
-			}
-			else {
-				if (isReadingVarIdentifier) varIdentifier += ch;
-				else newString += ch;
-			}
-		}
-		
-		return newString;
-	}
-	
     @Override
     public int executeCommand(ICommandSender sender, String message)
     {
@@ -79,13 +37,6 @@ public class ClientCommandManager extends ClientCommandHandler {
         {
             message = message.substring(1);
         }
-        
-        VarCouldNotBeResolvedException vcnbre = null;
-        
-        if (GlobalSettings.enableVars) {
-        	try {message = replaceVars(message);}
-            catch (VarCouldNotBeResolvedException e) {vcnbre = e;}
-        }     
 
         String[] temp = message.split(" ");
         String[] args = new String[temp.length - 1];
@@ -98,11 +49,6 @@ public class ClientCommandManager extends ClientCommandHandler {
             if (icommand == null)
             {
                 return 0;
-            }
-            
-            if (vcnbre != null) {
-            	ChatComponentText text = new ChatComponentText(LanguageManager.getTranslation(MoreCommands.getMoreCommands().getCurrentLang(sender), "command.var.cantBeResolved", vcnbre.var));
-            	text.getChatStyle().setColor(RED); sender.addChatMessage(text);
             }
 
             if (icommand.canCommandSenderUse(sender))

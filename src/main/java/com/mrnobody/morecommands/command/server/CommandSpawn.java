@@ -46,9 +46,11 @@ public class CommandSpawn extends ServerCommand {
 			else if (Entity.getEntityClass(params[0]) == null) {
 				try {
 					params[0] = EntityList.getStringFromID(Integer.parseInt(params[0]));
-					if (params[0] == null) 
-						throw new CommandException("command.spawn.unknownEntityID", sender);
-				} catch (NumberFormatException nfe) {throw new CommandException("command.spawn.unknownEntity", sender);}
+					if (params[0] == null) {
+						sender.sendLangfileMessage("command.spawn.unknownEntityID", new Object[0]);
+						return;
+					}
+				} catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.spawn.unknownEntity", new Object[0]); return;}
 			}
 			
 			int quantity = 1;
@@ -57,7 +59,7 @@ public class CommandSpawn extends ServerCommand {
 			
 			if (params.length > 4) {
 				try {coord = new BlockPos(Double.parseDouble(params[2]), Double.parseDouble(params[3]), Double.parseDouble(params[4]));}
-				catch (NumberFormatException nfe) {throw new CommandException("command.spawn.invalidPos", sender);}
+				catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.spawn.invalidPos", new Object[0]); return;}
 			}
 			else {
 				if (sender.getMinecraftISender() instanceof Entity)
@@ -71,11 +73,12 @@ public class CommandSpawn extends ServerCommand {
 			}
 			
 			for (int i = 0; i < quantity; i++) {
-				if (!Entity.spawnEntity(params[0], coord, sender.getWorld()))
-					throw new CommandException("command.spawn.couldNotSpawn", sender, params[0]);
+				if (!Entity.spawnEntity(params[0], coord, sender.getWorld())) {
+					sender.sendLangfileMessage("command.spawn.couldNotSpawn", new Object[] {params[0]});
+				}
 			}
 		}
-		else throw new CommandException("command.spawn.invalidUsage", sender);
+		else {sender.sendLangfileMessage("command.spawn.invalidUsage", new Object[0]);}
 	}
 	
 	@Override

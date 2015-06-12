@@ -48,25 +48,27 @@ public class CommandWaterdamage extends ServerCommand implements Listener<Living
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings ability = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
     	
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		settings.waterdamage = true;
-            	sender.sendLangfileMessage("command.waterdamage.on");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	settings.waterdamage = false;
-            	sender.sendLangfileMessage("command.waterdamage.off");
-            }
-            else throw new CommandException("command.waterdamage.failure", sender);
-        }
-        else {
-        	settings.waterdamage = !settings.waterdamage;
-        	sender.sendLangfileMessage(settings.waterdamage ? "command.waterdamage.on" : "command.waterdamage.off");
-        }
+    	boolean dealDamage = true;
+    	boolean success = false;
+    	
+    	if (params.length >= 1) {
+    		if (params[0].equalsIgnoreCase("true")) {dealDamage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("false")) {dealDamage = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("0")) {dealDamage = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("1")) {dealDamage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("on")) {dealDamage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("off")) {dealDamage = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {dealDamage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {dealDamage = false; success = true;}
+    		else {success = false;}
+    	}
+    	else {dealDamage = !ability.waterdamage; success = true;}
+    	
+    	if (success) ability.waterdamage = dealDamage;
+    	
+    	sender.sendLangfileMessage(success ? dealDamage ? "command.waterdamage.on" : "command.waterdamage.off" : "command.waterdamage.failure", new Object[0]);
 	}
 	
 	@Override

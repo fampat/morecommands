@@ -73,19 +73,19 @@ public class CommandSuperpunch extends ServerCommand implements Listener<AttackE
         if (params.length > 0) {
         	if (params[0].equalsIgnoreCase("reset")) {
         		settings.superpunch = -1;
-        		sender.sendLangfileMessage("command.superpunch.reset");
+        		sender.sendLangfileMessage("command.superpunch.reset", new Object[0]);
         	}
         	else {
         		try {
         			settings.superpunch = Integer.parseInt(params[0]);
-        			sender.sendLangfileMessage("command.superpunch.success");
+        			sender.sendLangfileMessage("command.superpunch.success", new Object[0]);
         		}
         		catch (NumberFormatException nfe) {
-        			throw new CommandException("command.superpunch.NAN", sender);
+        			sender.sendLangfileMessage("command.superpunch.NAN", new Object[0]);
         		}
         	}
         }
-        else throw new CommandException("command.superpunch.invalidUsage", sender);
+        else sender.sendLangfileMessage("command.superpunch.invalidUsage", new Object[0]);
 	}
 
 	@Override

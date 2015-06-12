@@ -44,8 +44,8 @@ public class CommandConfuse extends ServerCommand {
 		
 		if (params.length > 0) {
 			try {radius = Double.parseDouble(params[0]);}
-			catch (NumberFormatException nfe) {throw new CommandException("command.confuse.invalidArg", sender);}
-			if (radius > this.RADIUS_MAX) throw new CommandException("command.confuse.invalidRadius", sender);
+			catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.confuse.invalidArg", new Object[0]); return;}
+			if (radius > this.RADIUS_MAX) {sender.sendLangfileMessage("command.confuse.invalidRadius", new Object[0]); return;}
 		}
 		
 		List<EntityCreature> entities = new ArrayList<EntityCreature>();
@@ -58,7 +58,7 @@ public class CommandConfuse extends ServerCommand {
 			((EntityCreature) entities.get(index)).setRevengeTarget(entities.get(index - 1));
 		}
         
-		sender.sendLangfileMessage("command.confuse.confused", entities.size(), radius);
+		sender.sendLangfileMessage("command.confuse.confused", new Object[] {entities.size(), radius});
 	}
 	
 	private <T extends EntityLivingBase> List<T> getEntitiesInRadius(final EntityPlayer player, World world, Class<T> class1, double d) {

@@ -21,14 +21,14 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		videoURL = "command.itemdamage.videoURL"
 		)
 public class CommandItemdamage extends ServerCommand {
-	private final Map<Item, Integer> damageValues = new HashMap<Item, Integer>();
+	private final Map<Item, Integer> damgeValues = new HashMap<Item, Integer>();
 	
 	public CommandItemdamage() {
 		Iterator<Item> items = Item.itemRegistry.iterator();
 		
 		while (items.hasNext()) {
 			Item item = items.next();
-			this.damageValues.put(item, item.getMaxDamage());
+			this.damgeValues.put(item, item.getMaxDamage());
 		}
 	}
 	
@@ -45,38 +45,42 @@ public class CommandItemdamage extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		GlobalSettings.itemdamage = true;
-            	sender.sendLangfileMessage("command.itemdamage.on");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	GlobalSettings.itemdamage = false;
-            	sender.sendLangfileMessage("command.itemdamage.off");
-            }
-            else throw new CommandException("command.itemdamage.failure", sender);
-        }
-        else {
-        	GlobalSettings.itemdamage = !GlobalSettings.itemdamage;
-        	sender.sendLangfileMessage(GlobalSettings.itemdamage ? "command.itemdamage.on" : "command.itemdamage.off");
-        }
-        
-        if (GlobalSettings.itemdamage) {
-			Iterator<Item> items = this.damageValues.keySet().iterator();
-			
-			while (items.hasNext()) {
-				Item item = items.next();
-				
-				item.setMaxDamage(this.damageValues.get(item));
-			}
-        }
-        else {
-			Iterator<Item> items = this.damageValues.keySet().iterator();
-			
-			while (items.hasNext()) items.next().setMaxDamage(-1);
-        }
+    	boolean damage = false;
+    	boolean success = false;
+    	
+    	if (params.length >= 1) {
+    		if (params[0].equalsIgnoreCase("true")) {damage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("false")) {damage = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("0")) {damage = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("1")) {damage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("on")) {damage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("off")) {damage = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {damage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {damage = false; success = true;}
+    		else {success = false;}
+    	}
+    	else {damage = !GlobalSettings.itemdamage; success = true;}
+    	
+    	if (success) {
+    		if (damage) {
+    			GlobalSettings.itemdamage = true;
+    			Iterator<Item> items = this.damgeValues.keySet().iterator();
+    			
+    			while (items.hasNext()) {
+    				Item item = items.next();
+    				
+    				item.setMaxDamage(this.damgeValues.get(item));
+    			}
+    		}
+    		else {
+    			GlobalSettings.itemdamage = false;
+    			Iterator<Item> items = this.damgeValues.keySet().iterator();
+    			
+    			while (items.hasNext()) items.next().setMaxDamage(-1);
+    		}
+    	}
+    	
+    	sender.sendLangfileMessage(success ? damage ? "command.itemdamage.on" : "command.itemdamage.off" : "command.itemdamage.failure", new Object[0]);
 	}
 	
 	@Override

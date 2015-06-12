@@ -114,14 +114,6 @@ public class ServerPlayerSettings {
 				}
 			}
 			
-			NBTTagCompound vars = world.hasKey("vars") ? world.getCompoundTag("vars") : null;
-			
-			if (vars != null) {
-				for (Object o : vars.getKeySet()) {
-					settings.varMapping.put((String) o, vars.getString((String) o));
-				}
-			}
-			
 			NBTTagCompound waypoints = world.hasKey("waypoints") ? world.getCompoundTag("waypoints") : null;
 			
 			if (waypoints != null) {
@@ -168,7 +160,6 @@ public class ServerPlayerSettings {
 	public Map<Integer, String> clientKeybindMapping = new HashMap<Integer, String>();
 	public Map<String, String> serverAliasMapping = new HashMap<String, String>();
 	public Map<String, String> clientAliasMapping = new HashMap<String, String>();
-	public Map<String, String> varMapping = new HashMap<String, String>();
 	public Map<String, double[]> waypoints = new HashMap<String, double[]>();
 	public Map<String, NBTTagList> inventories = new HashMap<String, NBTTagList>();
 	
@@ -267,14 +258,6 @@ public class ServerPlayerSettings {
 			}
 		
 			world.setTag("inventories", inventories);
-			
-			NBTTagCompound vars = new NBTTagCompound();
-			
-			for (String var : this.varMapping.keySet()) {
-				vars.setString(var, this.varMapping.get(var));
-			}
-		
-			world.setTag("vars", vars);
 			
 			data.setTag(MinecraftServer.getServer().getFolderName(), world);
 		

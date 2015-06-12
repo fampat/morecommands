@@ -49,9 +49,9 @@ public class CommandUnalias extends ServerCommand {
 					cmd.getSenderCommandMapping().remove(sender.getMinecraftISender());
 					cmd.getSenderSideMapping().remove(sender.getMinecraftISender());
 			}
-			else throw new CommandException("command.unalias.notFound", sender);
+			else {sender.sendLangfileMessage("command.unalias.notFound", new Object[0]);}
 		}
-		else throw new CommandException("command.unalias.invalidUsage", sender);
+		else {sender.sendLangfileMessage("command.alias.invalidUsage", new Object[0]);}
 	}
 	
 	@Override

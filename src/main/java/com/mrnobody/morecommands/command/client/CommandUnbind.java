@@ -2,6 +2,7 @@ package com.mrnobody.morecommands.command.client;
 
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.util.ClientPlayerSettings;
 import com.mrnobody.morecommands.util.Keyboard;
 import com.mrnobody.morecommands.wrapper.CommandException;
@@ -40,17 +41,19 @@ public class CommandUnbind extends ClientCommand {
 			if (keyid != Keyboard.KEY_NONE && ClientPlayerSettings.keybindMapping.containsKey(keyid)) {
 				ClientPlayerSettings.keybindMapping.remove(keyid);
 				ClientPlayerSettings.saveSettings();
-				sender.sendLangfileMessage("command.unbind.success");
+				sender.sendLangfileMessage("command.unbind.success", new Object[0]);
 			}
 			else if (params[0].equalsIgnoreCase("all")) {
 				ClientPlayerSettings.keybindMapping.clear();
 				ClientPlayerSettings.saveSettings();
-				sender.sendLangfileMessage("command.unbind.success");
+				sender.sendLangfileMessage("command.unbind.success", new Object[0]);
 			}
-			else if (!ClientPlayerSettings.keybindMapping.containsKey(keyid))
-				throw new CommandException("command.unbind.bindingNotFound", sender);
+			else if (!ClientPlayerSettings.keybindMapping.containsKey(keyid)) {
+				sender.sendLangfileMessage("command.unbind.bindingNotFound", new Object[0]);
+				return;
+			}
 		}
-		else throw new CommandException("command.unbind.invalidUsage", sender);
+		else {sender.sendLangfileMessage("command.unbind.invalidUsage", new Object[0]);}
 	}
 
 	@Override

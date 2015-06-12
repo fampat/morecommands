@@ -6,6 +6,7 @@ import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
@@ -58,21 +59,21 @@ public class CommandSlippery extends ServerCommand {
 				if (params[1].equalsIgnoreCase("reset")) reset = true;
 				else {
 					try {slipperiness = Float.parseFloat(params[1]);}
-					catch (NumberFormatException nfe) {throw new CommandException("command.slippery.invalidArg", sender);}
+					catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.slippery.invalidArg", new Object[0]); return;}
 				}
 				
 				if (!reset) {
 					block.slipperiness = slipperiness;
-					sender.sendLangfileMessage("command.slippery.success");
+					sender.sendLangfileMessage("command.slippery.success", new Object[0]);
 				}
 				else {
 					block.slipperiness = this.slipperies.get(block);
-					sender.sendLangfileMessage("command.slippery.reset");
+					sender.sendLangfileMessage("command.slippery.reset", new Object[0]);
 				}
 			}
-			else throw new CommandException("command.slippery.notFound", sender);
+			else sender.sendLangfileMessage("command.slippery.notFound", new Object[0]);
 		}
-		else throw new CommandException("command.slippery.invalidUsage", sender);
+		else sender.sendLangfileMessage("command.slippery.invalidUsage", new Object[0]);
 	}
 	
 	@Override

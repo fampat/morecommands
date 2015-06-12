@@ -1,7 +1,5 @@
 package com.mrnobody.morecommands.patch;
 
-import static net.minecraft.util.EnumChatFormatting.RED;
-
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -12,15 +10,12 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerSelector;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
 
 import com.mrnobody.morecommands.command.CommandBase;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.util.DummyCommand;
-import com.mrnobody.morecommands.util.GlobalSettings;
-import com.mrnobody.morecommands.util.LanguageManager;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
 /**
@@ -28,51 +23,12 @@ import com.mrnobody.morecommands.util.ServerPlayerSettings;
  * Patching this class is needed to use commands e.g. with a command block <br>
  * The vanilla command manager passes e.g. the command block as command sender,
  * this modified version will use players selected by a target selector
- * Another aspect why this patch is needed is to use variables.
  * 
  * @author MrNobody98
  *
  */
 public class ServerCommandManager extends net.minecraft.command.ServerCommandManager {	
-	private static class VarCouldNotBeResolvedException extends Exception {
-		private String var;
-		
-		public VarCouldNotBeResolvedException(String var) {
-			this.var = var;
-		}
-	}
-	
-	private static String replaceVars(String string, ServerPlayerSettings settings) throws VarCouldNotBeResolvedException {
-		String varIdentifier = "";
-		String newString = "";
-		boolean isReadingVarIdentifier = false;
-		
-		for (char ch : string.toCharArray()) {
-			if (ch == '%') {
-				if (isReadingVarIdentifier) {
-					isReadingVarIdentifier = false;
-					
-					if (varIdentifier.isEmpty()) newString += "%";
-					else {
-						if (!settings.varMapping.containsKey(varIdentifier))
-							throw new VarCouldNotBeResolvedException(varIdentifier);
-						newString += settings.varMapping.get(varIdentifier);
-					}
-					
-					varIdentifier = "";
-				}
-				else isReadingVarIdentifier = true;
-			}
-			else {
-				if (isReadingVarIdentifier) varIdentifier += ch;
-				else newString += ch;
-			}
-		}
-		
-		return newString;
-	}
-	
-	@Override
+    @Override
     public int executeCommand(ICommandSender sender, String rawCommand)
     {
         rawCommand = rawCommand.trim();
@@ -80,14 +36,6 @@ public class ServerCommandManager extends net.minecraft.command.ServerCommandMan
         if (rawCommand.startsWith("/"))
         {
             rawCommand = rawCommand.substring(1);
-        }
-        
-        if (GlobalSettings.enableVars && ServerPlayerSettings.playerSettingsMapping.containsKey(sender)) {
-        	try {rawCommand = replaceVars(rawCommand, ServerPlayerSettings.playerSettingsMapping.get(sender));}
-            catch (VarCouldNotBeResolvedException vcnbre) {
-            	ChatComponentText text = new ChatComponentText(LanguageManager.getTranslation(MoreCommands.getMoreCommands().getCurrentLang(sender), "command.var.cantBeResolved", vcnbre.var));
-            	text.getChatStyle().setColor(RED); sender.addChatMessage(text);
-            }
         }
 
         String[] astring = rawCommand.split(" ");

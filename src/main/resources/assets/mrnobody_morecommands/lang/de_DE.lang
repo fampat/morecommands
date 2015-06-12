@@ -945,20 +945,6 @@ command.teleport.videoURL=youtu.be/h1UuzNxhM6I
 command.teleport.NAN=Die Koordinaten muessen Zahlen sein
 command.teleport.invalidParams=Es fehlen Koordinaten
 
-command.var.description=Schaltet Variablen im Chat ein/aus und setzt/loescht Variablen. Variablen koennen mit %var% genutzt werden (Prozent-Zeichen: "%%")
-command.var.example=/var set x Hallo Welt
-command.var.syntax=/var [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE|SET <NAME> <WERT>|DEL <NAME>]
-command.var.videoURL=youtu.be/WRHwWMVUp-o
-command.var.enabled=Variablen im Chat aktiviert
-command.var.disabled=Variablen im Chat deaktiviert
-command.var.invalidArg=Ungueltiges Argument.
-command.var.notFound=Variable "%s" nicht gefunden
-command.var.get=Variable "%s" hat den Wert "%s"
-command.var.deleted=Variable "%s" geloescht
-command.var.created=Variable "%s" auf Wert "%s" gesetzt
-command.var.cantBeResolved=Variable "%s" nicht bekannt
-command.var.invalidUsage=Falsche Benutzung. Benutze 'help var' um Hilfe zu bekommen.
-
 command.waterdamage.description=Schaltet Wasserschaden an/aus
 command.waterdamage.example=/waterdamage off
 command.waterdamage.syntax=/waterdamage [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
@@ -989,11 +975,8 @@ command.weather.invalidUsage=Falsche Benutzung. Benutze 'help weather' um Hilfe 
 
 command.xray.description=Schaltet Xray an/aus und konfiguriert es
 command.xray.example=/xray config
-command.xray.syntax=/xray [ENABLE|DISABLE|CONFIG|LOAD <CONFIG>|SAVE <CONFIG>]
-command.xray.videoURL=youtu.be/ObXHBs9jpoo
+command.xray.syntax=/xray [ENABLE|DISABLE|CONFIG]
+command.xray.videoURL=youtu.be/rZpD014RvNs
 command.xray.enabled=Xray eingeschaltet
 command.xray.disabled=Xray ausgeschaltet
 command.xray.invalidUsage=Falsche Benutzung. Benutze 'help xray' um Hilfe zu bekommen.
-command.xray.notFound=Xray Einstellung "%s" nicht gefunden
-command.xray.loaded=Xray Einstellung "%s" geladen
-command.xray.saved=Xray Einstellung "%s" gespeichert

@@ -77,21 +77,23 @@ public class CommandMacro extends ClientCommand {
 						
 						br.close();
 					}
-					catch (IOException ex) {ex.printStackTrace(); throw new CommandException("command.macro.executeError", sender);}
+					catch (IOException ex) {ex.printStackTrace(); sender.sendLangfileMessage("command.macro.executeError", new Object[0]);}
 				}
-				else throw new CommandException("command.macro.notFound", sender, params[1]);
+				else sender.sendLangfileMessage("command.macro.notFound", params[1]);
 			}
 			else if ((params[0].equalsIgnoreCase("add") || params[0].equalsIgnoreCase("new") || params[0].equalsIgnoreCase("create") || params[0].equalsIgnoreCase("edit")) && params.length > 1) {
 				File macro = new File(Reference.getMacroDir(), params[1] + ".cfg");
 				
 				if (macro.exists() && macro.isFile()) {
-					if (params[0].equalsIgnoreCase("add") || params[0].equalsIgnoreCase("new") || params[0].equalsIgnoreCase("create") || params[0].equalsIgnoreCase("add"))
-						throw new CommandException("command.macro.exists", sender, params[1]);
+					if (params[0].equalsIgnoreCase("add") || params[0].equalsIgnoreCase("new") || params[0].equalsIgnoreCase("create") || params[0].equalsIgnoreCase("add")) {
+						sender.sendLangfileMessage("command.macro.exists", params[1]);
+						return;
+					}
 					macro.delete();
 				}
 				
 				try {macro.createNewFile();}
-				catch (IOException ex) {ex.printStackTrace(); throw new CommandException("command.macro.writeError", sender);}
+				catch (IOException ex) {ex.printStackTrace(); sender.sendLangfileMessage("command.macro.writeError", new Object[0]); return;}
 				
 				if (params.length > 2) {
 					String commandlist = "";
@@ -108,14 +110,14 @@ public class CommandMacro extends ClientCommand {
 						
 						bw.close();
 					}
-					catch (IOException ex) {ex.printStackTrace(); throw new CommandException("command.macro.writeError", sender);}
+					catch (IOException ex) {ex.printStackTrace(); sender.sendLangfileMessage("command.macro.writeError", new Object[0]);}
 				}
 				
 				sender.sendLangfileMessage("command.macro.createSuccess", macro.getName());
 			}
-			else throw new CommandException("command.macro.invalidUsage", sender);
+			else sender.sendLangfileMessage("command.macro.invalidUsage", new Object[0]);
 		}
-		else throw new CommandException("command.macro.invalidUsage", sender);
+		else sender.sendLangfileMessage("command.macro.invalidUsage", new Object[0]);
 	}
 
 	@Override

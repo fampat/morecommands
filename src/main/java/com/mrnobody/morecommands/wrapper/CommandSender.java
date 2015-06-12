@@ -1,10 +1,9 @@
 package com.mrnobody.morecommands.wrapper;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatStyle;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 
 import com.mrnobody.morecommands.core.MoreCommands;
@@ -42,35 +41,15 @@ public class CommandSender {
 		else if (CommandSender.output && ServerPlayerSettings.playerSettingsMapping.get(sender).output) sender.addChatMessage(component);
 	}
 	
-	public void sendStringMessage(String message, ChatStyle stye) {
-		ChatComponentText text = new ChatComponentText(message);
-		text.setChatStyle(stye);
-		this.sendChatComponent(text);
-	}
-	
-	public void sendStringMessage(String message, EnumChatFormatting color) {
-		ChatComponentText text = new ChatComponentText(message);
-		text.getChatStyle().setColor(color);
-		this.sendChatComponent(text);
-	}
-	
 	public void sendStringMessage(String message) {
-		this.sendChatComponent(new ChatComponentText(message));
+		if (CommandSender.output && !ServerPlayerSettings.playerSettingsMapping.containsKey(sender)) sender.addChatMessage(new ChatComponentText(message));
+		else if (CommandSender.output && ServerPlayerSettings.playerSettingsMapping.get(sender).output) sender.addChatMessage(new ChatComponentText(message));
 	}
 	
 	public void sendLangfileMessage(String LangFileEntry, Object... formatArgs) {
 		String text = LanguageManager.getTranslation(MoreCommands.getMoreCommands().getCurrentLang(this.sender), LangFileEntry, formatArgs);
-		this.sendStringMessage(text);
-	}
-	
-	public void sendLangfileMessage(String LangFileEntry, ChatStyle style , Object... formatArgs) {
-		String text = LanguageManager.getTranslation(MoreCommands.getMoreCommands().getCurrentLang(this.sender), LangFileEntry, formatArgs);
-		this.sendStringMessage(text, style);
-	}
-	
-	public void sendLangfileMessage(String LangFileEntry, EnumChatFormatting color , Object... formatArgs) {
-		String text = LanguageManager.getTranslation(MoreCommands.getMoreCommands().getCurrentLang(this.sender), LangFileEntry, formatArgs);
-		this.sendStringMessage(text, color);
+		if (CommandSender.output && !ServerPlayerSettings.playerSettingsMapping.containsKey(sender)) sender.addChatMessage(new ChatComponentText(text));
+		else if (CommandSender.output && ServerPlayerSettings.playerSettingsMapping.get(sender).output) sender.addChatMessage(new ChatComponentText(text));
 	}
 	
 	public BlockPos getPosition() {

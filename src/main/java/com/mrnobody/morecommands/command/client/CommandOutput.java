@@ -33,26 +33,26 @@ public class CommandOutput extends ClientCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		boolean output = false;
-		
-		if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		output = true;
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	output = false;
-            }
-            else throw new CommandException("command.output.failure", sender);
-        }
-        else output = !CommandSender.output;
-		
-		sender.getMinecraftISender().addChatMessage(new ChatComponentText(LanguageManager.getTranslation(
-				MoreCommands.getMoreCommands().getCurrentLang(sender.getMinecraftISender()), output ? "command.output.on" : "command.output.off")));
-		
-		CommandSender.output = output;
-		
+    	boolean output = false;
+    	boolean success = false;
+    	
+    	if (params.length >= 1) {
+    		if (params[0].equalsIgnoreCase("true")) {output = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("false")) {output = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("0")) {output = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("1")) {output = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("on")) {output = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("off")) {output = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {output = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {output = false; success = true;}
+    		else {success = false;}
+    	}
+    	else {output = !CommandSender.output; success = true;}
+    	
+    	String text = LanguageManager.getTranslation(MoreCommands.getMoreCommands().getCurrentLang(sender.getMinecraftISender()), success ? output ? "command.output.on" : "command.output.off"  : "command.output.failure", new Object[0]);
+    	if (success) CommandSender.output = output;
+    	sender.getMinecraftISender().addChatMessage(new ChatComponentText(text));
+    	
     	if (MoreCommands.getMoreCommands().getPlayerUUID() != null)
     		MoreCommands.getMoreCommands().getPacketDispatcher().sendC03Output(output);
 	}
