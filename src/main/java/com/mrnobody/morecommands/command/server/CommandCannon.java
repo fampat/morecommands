@@ -45,7 +45,7 @@ public class CommandCannon extends ServerCommand {
 		double multiplier = 1;
 		if (params.length > 0) {
 			try {multiplier = Double.parseDouble(params[0]);} 
-			catch (NumberFormatException e) {throw new CommandException("command.cannon.NAN", sender);}
+			catch (NumberFormatException e) {sender.sendLangfileMessage("command.cannon.NAN", new Object[0]); return;}
 		}
 		
 		tnt.motionX *= multiplier;
@@ -53,7 +53,7 @@ public class CommandCannon extends ServerCommand {
 		tnt.motionZ *= multiplier;
 
 		player.getWorld().getMinecraftWorld().spawnEntityInWorld(tnt);
-		sender.sendLangfileMessage("command.cannon.success");
+		sender.sendLangfileMessage("command.cannon.success", new Object[0]);
 	}
 	
 	@Override

@@ -14,7 +14,6 @@ import net.minecraft.client.LoadingScreenRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.WorldSettings.GameType;
 import net.minecraft.world.WorldType;
@@ -58,7 +57,7 @@ public class CommandWorld extends ClientCommand {
 					
 					if (Minecraft.getMinecraft().getSaveLoader().canLoadWorld(world.trim()))
 						Minecraft.getMinecraft().launchIntegratedServer(world.trim(), world.trim(), new WorldSettings(new Random().nextLong(), GameType.SURVIVAL, true, false, WorldType.DEFAULT));
-					else throw new CommandException("command.world.notLoadable", sender, world.trim());
+					else sender.sendLangfileMessage("command.world.notLoadable", new Object[] {world.trim()});
 				}
 				else if (params[0].equalsIgnoreCase("backup") || params[0].equalsIgnoreCase("save")) {
 					LoadingScreenRenderer l = new LoadingScreenRenderer(Minecraft.getMinecraft());
@@ -88,7 +87,7 @@ public class CommandWorld extends ClientCommand {
 					
 					if (params.length > 2) {
 						try {seed = Long.parseLong(params[2]);}
-						catch (Exception ex) {sender.sendLangfileMessage("command.world.NAN", EnumChatFormatting.RED); seed = (new Random()).nextLong();}
+						catch (Exception ex) {sender.sendLangfileMessage("command.world.NAN", new Object[0]); seed = (new Random()).nextLong();}
 					}
 					else seed = (new Random()).nextLong();
 					
@@ -96,8 +95,10 @@ public class CommandWorld extends ClientCommand {
 					String name = params[1];
 					File child = new File(parent, name);
 					
-					if (child.exists())
-						throw new CommandException("command.world.cantcreate", sender);
+					if (child.exists()) {
+						sender.sendLangfileMessage("command.world.cantcreate", new Object[0]);
+						return;
+					}
 					
 					Minecraft.getMinecraft().launchIntegratedServer(name, name, new WorldSettings(seed, GameType.SURVIVAL, true, false, WorldType.DEFAULT));
 				}
@@ -112,7 +113,7 @@ public class CommandWorld extends ClientCommand {
 							else saves += ", " + list[i].getName();
 						}
 					}
-					sender.sendLangfileMessage("command.world.saves");
+					sender.sendLangfileMessage("command.world.saves", new Object[0]);
 					sender.sendStringMessage(saves);
 				}
 				else if (params[0].equalsIgnoreCase("seed") && MoreCommands.getMoreCommands().getPlayerUUID() != null) {
@@ -125,15 +126,15 @@ public class CommandWorld extends ClientCommand {
 						MoreCommands.getMoreCommands().getPacketDispatcher().sendC04World("name set " + params[2]);
 					else MoreCommands.getMoreCommands().getPacketDispatcher().sendC04World("name");
 				}
-				else throw new CommandException("command.world.invalidArg", sender);
+				else sender.sendLangfileMessage("command.world.invalidArg", new Object[0]);
 			}
-			else throw new CommandException("command.world.invalidUsage", sender);
+			else sender.sendLangfileMessage("command.world.invalidUsage", new Object[0]);
 		}
 		else if (Patcher.serverModded()) {
 			String command = "/world"; for (String param : params) command += " " + param;
 			Minecraft.getMinecraft().thePlayer.sendChatMessage(command);
 		}
-		else throw new CommandException("command.world.serverNotModded", sender);
+		else sender.sendLangfileMessage("command.world.serverNotModded", new Object[0]);
 	}
 
 	@Override

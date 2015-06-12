@@ -1,12 +1,19 @@
 package com.mrnobody.morecommands.command.server;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayer;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandBase.Requirement;
+import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.patch.EntityPlayerMP;
+import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.wrapper.Player;
+
+import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "instantkill",
@@ -30,23 +37,27 @@ public class CommandInstantkill extends ServerCommand {
 	public void execute(CommandSender sender, String[] params)throws CommandException {
 		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
 		
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		player.setInstantkill(true);
-            	sender.sendLangfileMessage("command.instantkill.on");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	player.setInstantkill(false);
-            	sender.sendLangfileMessage("command.instantkill.off");
-            }
-            else throw new CommandException("command.instantkill.failure", sender);
+		ServerPlayerSettings ability = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+    		
+        boolean instant = false;
+        boolean success = false;
+        	
+        if (params.length >= 1) {
+        	if (params[0].equalsIgnoreCase("true")) {instant = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("false")) {instant = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("0")) {instant = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("1")) {instant = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("on")) {instant = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("off")) {instant = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {instant = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {instant = false; success = true;}
+        	else {success = false;}
         }
-        else {
-        	player.setInstantkill(!player.getInstantkill());
-        	sender.sendLangfileMessage(player.getInstantkill() ? "command.instantkill.on" : "command.instantkill.off");
-        }
+        else {instant = !player.getInstantkill(); success = true;}
+        	
+        if (success) player.setInstantkill(instant);
+        	
+        sender.sendLangfileMessage(success ? instant ? "command.instantkill.on" : "command.instantkill.off" : "command.instantkill.failure", new Object[0]);
 	}
 	
 	@Override

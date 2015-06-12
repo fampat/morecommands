@@ -27,7 +27,7 @@ public class CommandFog extends ClientCommand {
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public void execute(CommandSender sender, String[] params)throws CommandException {
 		if (params.length > 0) {
 			int distance = 0;
 			
@@ -35,13 +35,13 @@ public class CommandFog extends ClientCommand {
 			else if (params[0].equalsIgnoreCase("small")) distance = 6;
 			else if (params[0].equalsIgnoreCase("normal")) distance = 10;
 			else if (params[0].equalsIgnoreCase("far")) distance = 16;
-			else throw new CommandException("command.fog.invalidArg", sender);
+			else {sender.sendLangfileMessage("command.fog.invalidArg", new Object[0]); return;}
 			
 			Minecraft.getMinecraft().gameSettings.renderDistanceChunks = distance;
 			
-			sender.sendLangfileMessage("command.fog.success");
+			sender.sendLangfileMessage("command.fog.success", new Object[0]);
 		}
-		else throw new CommandException("command.fog.invalidUsage", sender);
+		else sender.sendLangfileMessage("command.fog.invalidUsage", new Object[0]);
 	}
 	
 	@Override

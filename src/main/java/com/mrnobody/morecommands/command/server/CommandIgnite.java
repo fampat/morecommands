@@ -41,7 +41,7 @@ public class CommandIgnite extends ServerCommand {
 			Coordinate fire = new Coordinate(ignite.getBlockX(), ignite.getBlockY() + 1, ignite.getBlockZ());
 			if (player.getWorld().isAirBlock(fire)) player.getWorld().setBlock(fire, BLOCK_FIRE);
 		}
-		else throw new CommandException("command.ignite.notInSight", sender);
+		else sender.sendLangfileMessage("command.ignite.notInSight", new Object[0]);
 	}
 	
 	@Override

@@ -5,9 +5,13 @@ import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandBase.Requirement;
+import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
+
+import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "heal",
@@ -34,12 +38,12 @@ public class CommandHeal extends ServerCommand {
 		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		
 		if (params.length > 0) {
-			try {player.heal(Float.parseFloat(params[0])); sender.sendLangfileMessage("command.heal.success");}
-			catch (NumberFormatException e) {throw new CommandException("command.heal.NAN", sender);}
+			try {player.heal(Float.parseFloat(params[0])); sender.sendLangfileMessage("command.heal.success", new Object[0]);}
+			catch (NumberFormatException e) {sender.sendLangfileMessage("command.heal.NAN", new Object[0]);}
 		}
 		else {
 			player.heal(MAX_HEALTH - player.getHealth());
-			sender.sendLangfileMessage("command.heal.success");
+			sender.sendLangfileMessage("command.heal.success", new Object[0]);
 		}
 	}
 	

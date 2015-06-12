@@ -40,7 +40,7 @@ public class CommandDestroy extends ServerCommand {
 			player.inventory.mainInventory[player.inventory.currentItem] = null;
 		}
 		
-		sender.sendLangfileMessage("command.destroy.destroyed");
+		sender.sendLangfileMessage("command.destroy.destroyed", new Object[0]);
 	}
 	
 	@Override

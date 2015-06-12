@@ -34,8 +34,10 @@ public class CommandReturn extends ServerCommand {
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
 		
-		if (settings.lastPos == null) 
-			throw new CommandException("command.return.noLastPos", sender);
+		if (settings.lastPos == null) {
+			sender.sendLangfileMessage("command.return.noLastPos", new Object[0]);
+			return;
+		}
 		
 		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		player.setPosition(settings.lastPos);

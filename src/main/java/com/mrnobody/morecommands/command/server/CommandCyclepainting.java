@@ -40,8 +40,10 @@ public class CommandCyclepainting extends ServerCommand {
 		boolean sneaking = entity.getMinecraftEntity().isSneaking();
 		net.minecraft.entity.Entity hit = entity.traceEntity(128.0D);
 		
-		if (!(hit instanceof EntityPainting) || hit.isDead)
-			throw new CommandException("command.cyclepainting.noPainting", sender);
+		if (!(hit instanceof EntityPainting) || hit.isDead) {
+        	sender.sendLangfileMessage("command.cyclepainting.noPainting", new Object[0]);
+            return;
+        }
 		
 		EntityPainting picture = (EntityPainting) hit;
 		EntityPainting newPicture = new EntityPainting(picture.worldObj, picture.field_146063_b, picture.field_146064_c, picture.field_146062_d, picture.hangingDirection);
@@ -61,7 +63,8 @@ public class CommandCyclepainting extends ServerCommand {
 			newPicture.art = oldArt;
 			entity.getMinecraftEntity().worldObj.removeEntity(picture);
 			entity.getMinecraftEntity().worldObj.spawnEntityInWorld(newPicture);
-			throw new CommandException("command.cyclepainting.noMoreArts", sender);
+			sender.sendLangfileMessage("command.cyclepainting.noMoreArts", new Object[0]);
+			return;
 		}
 		        
 		int newArt = sneaking ? (current == 0 ? arts.size() - 1 : current - 1) : (current == arts.size() - 1 ? 0 : current + 1);

@@ -6,6 +6,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.network.PacketDispatcher;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
@@ -36,15 +37,15 @@ public class CommandReach extends ServerCommand {
 				float distance = Float.parseFloat(params[0]);
 				MoreCommands.getMoreCommands().getPacketDispatcher().sendS08Reach(playerEntity, distance);
 				playerEntity.theItemInWorldManager.setBlockReachDistance(distance);
-				sender.sendLangfileMessage("command.reach.set", params[0]);
+				sender.sendLangfileMessage("command.reach.set", new Object[] {params[0]});
 			}
 			catch (NumberFormatException e) {
 				if (params[0].equalsIgnoreCase("reset")) {
 					MoreCommands.getMoreCommands().getPacketDispatcher().sendS08Reach(playerEntity, 5.0F);
 					playerEntity.theItemInWorldManager.setBlockReachDistance(5.0F);
-					sender.sendLangfileMessage("command.reach.reset");
+					sender.sendLangfileMessage("command.reach.reset", new Object[0]);
 				}
-				else throw new CommandException("command.reach.invalidArg", sender);
+				else {sender.sendLangfileMessage("command.reach.invalidArg", new Object[0]);}
 			}
 		}
 	}

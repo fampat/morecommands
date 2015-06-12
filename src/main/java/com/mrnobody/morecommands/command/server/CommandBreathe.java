@@ -36,12 +36,12 @@ public class CommandBreathe extends ServerCommand {
 		
 		if (params.length > 0) {
 			try {air = Integer.parseInt(params[0]);}
-			catch (NumberFormatException e) {throw new CommandException("command.breathe.noNumber", sender);}
+			catch (NumberFormatException e) {sender.sendLangfileMessage("command.breathe.noNumber", new Object[0]);}
 		}
 		else air = this.AIR_MAX;
 		
 		if (player.getMinecraftPlayer().isInWater()) {player.setAir(player.getMinecraftPlayer().getAir() + air > this.AIR_MAX ? this.AIR_MAX : player.getMinecraftPlayer().getAir() + air);}
-		else throw new CommandException("command.breathe.notInWater", sender);
+		else {sender.sendLangfileMessage("command.breathe.notInWater", new Object[0]);}
 	}
 	
 	@Override

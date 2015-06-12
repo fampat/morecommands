@@ -36,16 +36,16 @@ public class CommandAir extends ServerCommand {
     	Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
     	
 		if (params.length > 0 && player.getMinecraftPlayer().isInWater()) {
-			try {player.setAir(Integer.parseInt(params[0])); sender.sendLangfileMessage("command.air.success");}
+			try {player.setAir(Integer.parseInt(params[0])); sender.sendLangfileMessage("command.air.success", new Object[0]);}
 			catch (NumberFormatException e) {
-				if (params[0].equalsIgnoreCase("min")) {player.setAir(this.AIR_MIN); sender.sendLangfileMessage("command.air.success");}
-				else if (params[0].equalsIgnoreCase("max")) {player.setAir(this.AIR_MAX); sender.sendLangfileMessage("command.air.success");}
-				else if (params[0].equalsIgnoreCase("get")) {sender.sendLangfileMessage("command.air.get", player.getMinecraftPlayer().getAir());}
-				else throw new CommandException("command.air.invalidParam", sender);
+				if (params[0].equalsIgnoreCase("min")) {player.setAir(this.AIR_MIN); sender.sendLangfileMessage("command.air.success", new Object[0]);}
+				else if (params[0].equalsIgnoreCase("max")) {player.setAir(this.AIR_MAX); sender.sendLangfileMessage("command.air.success", new Object[0]);}
+				else if (params[0].equalsIgnoreCase("get")) {sender.sendLangfileMessage("command.air.get", new Object[] {player.getMinecraftPlayer().getAir()});}
+				else {sender.sendLangfileMessage("command.air.invalidParam", new Object[0]);}
 			}
 		}
-		else if (!player.getMinecraftPlayer().isInWater()) throw new CommandException("command.air.notInWater", sender);
-		else throw new CommandException("command.air.invalidUsage", sender);
+		else if (!player.getMinecraftPlayer().isInWater()) {sender.sendLangfileMessage("command.air.notInWater", new Object[0]);}
+		else {sender.sendLangfileMessage("command.air.invalidUsage", new Object[0]);}
 	}
 	
 	@Override

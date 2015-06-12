@@ -58,7 +58,7 @@ public class XrayClientTick implements Runnable {
 								Block block = mc.theWorld.getBlock(x, y, z);
 								
 								for(XrayHelper.BlockSettings xrayBlock : this.xray.blockMapping.values()){
-									if ((xrayBlock.draw) && xrayBlock.block == block) {
+									if ((xrayBlock.draw) && xrayBlock.block == block){
 										temp.add(new XrayHelper.BlockPosition(x, y, z, xrayBlock.color));
 										break;
 									}

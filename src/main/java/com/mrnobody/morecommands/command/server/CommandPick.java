@@ -10,7 +10,9 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeHooks;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
@@ -44,14 +46,14 @@ public class CommandPick extends ServerCommand {
 		
 		if (params.length > 0) {
 			try {amount = Integer.parseInt(params[0]);}
-			catch (NumberFormatException nfe) {throw new CommandException("command.pick.NAN", sender);}
+			catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.pick.NAN", new Object[0]); return;}
 		}
 		
 		if (pick != null) {
 			if (!this.onPickBlock(pick, player.getMinecraftPlayer(), player.getMinecraftPlayer().worldObj, amount))
-				throw new CommandException("command.pick.cantgive", sender);
+				sender.sendLangfileMessage("command.pick.cantgive", new Object[0]);
 		}
-		else throw new CommandException("command.pick.notInSight", sender);
+		else sender.sendLangfileMessage("command.pick.notInSight", new Object[0]);
 	}
 	
 	@Override

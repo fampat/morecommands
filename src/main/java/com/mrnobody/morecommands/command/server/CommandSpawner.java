@@ -46,18 +46,20 @@ public class CommandSpawner extends ServerCommand {
 				if (Entity.getEntityClass(params[0]) == null) {
 					try {
 						params[0] = EntityList.getStringFromID(Integer.parseInt(params[0]));
-						if (params[0] == null) 
-							throw new CommandException("command.spawner.unknownEntityID", sender);
-					} catch (NumberFormatException nfe) {throw new CommandException("command.spawner.unknownEntity", sender);}
+						if (params[0] == null) {
+							sender.sendLangfileMessage("command.spawner.unknownEntityID", new Object[0]);
+							return;
+						}
+					} catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.spawner.unknownEntity", new Object[0]); return;}
 				}
 				
 				spawner.func_145881_a().setEntityName(params[0]);
 				spawner.func_145881_a().updateSpawner();
-				sender.sendLangfileMessage("command.spawner.success");
+				sender.sendLangfileMessage("command.spawner.success", new Object[0]);
 			}
-			else throw new CommandException("command.spawner.notASpawner", sender);
+			else sender.sendLangfileMessage("command.spawner.notASpawner", new Object[0]);
 		}
-		else throw new CommandException("command.spawner.invalidUsage", sender);
+		else sender.sendLangfileMessage("command.spawner.invalidUsage", new Object[0]);
 	}
 
 	@Override

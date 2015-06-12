@@ -8,8 +8,9 @@ import net.minecraft.server.MinecraftServer;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.util.DummyCommand.DummyServerCommand;
+import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
+import com.mrnobody.morecommands.util.DummyCommand.DummyServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
@@ -49,9 +50,9 @@ public class CommandUnalias extends ServerCommand {
 					cmd.getSenderCommandMapping().remove(sender.getMinecraftISender());
 					cmd.getSenderSideMapping().remove(sender.getMinecraftISender());
 			}
-			else throw new CommandException("command.unalias.notFound", sender);
+			else {sender.sendLangfileMessage("command.unalias.notFound", new Object[0]);}
 		}
-		else throw new CommandException("command.unalias.invalidUsage", sender);
+		else {sender.sendLangfileMessage("command.alias.invalidUsage", new Object[0]);}
 	}
 	
 	@Override

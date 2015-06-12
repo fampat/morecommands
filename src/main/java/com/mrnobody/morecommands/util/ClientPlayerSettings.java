@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
@@ -22,9 +21,6 @@ import com.mrnobody.morecommands.core.MoreCommands;
 public class ClientPlayerSettings {
 	public static Map<Integer, String> keybindMapping = new HashMap<Integer, String>();
 	public static Map<String, String> aliasMapping = new HashMap<String, String>();
-	public static Map<String, String> varMapping = new HashMap<String, String>();
-	public static Map<String, Map<Block, Integer>> xrayColorMapping = new HashMap<String, Map<Block, Integer>>();
-	public static Map<String, Integer> xrayRadiusMapping = new HashMap<String, Integer>();
 	
 	/**
 	 * Read settings
@@ -87,35 +83,6 @@ public class ClientPlayerSettings {
 				}
 			}
 			
-			NBTTagCompound vars = socket.hasKey("vars") ? socket.getCompoundTag("vars") : null;
-			
-			if (vars != null) {
-				for (Object o : vars.func_150296_c()) {
-					ClientPlayerSettings.varMapping.put((String) o, vars.getString((String) o));
-				}
-			}
-			
-			NBTTagCompound xray = socket.hasKey("xray") ? socket.getCompoundTag("xray") : null;
-			
-			if (xray != null) {
-				for (Object o : xray.func_150296_c()) {
-					NBTTagCompound setting = xray.getCompoundTag((String) o);
-					NBTTagCompound colors = setting.getCompoundTag("colors");
-					int radius = setting.getInteger("radius");
-					
-					HashMap<Block, Integer> map = new HashMap<Block, Integer>();
-					
-					for (Object o2 : colors.func_150296_c()) {
-						Block block = Block.getBlockById(Integer.parseInt((String) o2));
-						int color = colors.getInteger((String) o2);
-						map.put(block, color);
-					}
-					
-					ClientPlayerSettings.xrayColorMapping.put((String) o, map);
-					ClientPlayerSettings.xrayRadiusMapping.put((String) o, radius);
-				}
-			}
-			
 			return true;
 		}
 		catch (Exception ex) {
@@ -150,32 +117,6 @@ public class ClientPlayerSettings {
 			}
 		
 			socket.setTag("aliases", aliases);
-			
-			NBTTagCompound vars = new NBTTagCompound();
-			
-			for (String var : ClientPlayerSettings.varMapping.keySet()) {
-				vars.setString(var, ClientPlayerSettings.varMapping.get(var));
-			}
-		
-			socket.setTag("vars", vars);
-			
-			NBTTagCompound xray = new NBTTagCompound();
-			
-			for (String conf : ClientPlayerSettings.xrayColorMapping.keySet()) {
-				NBTTagCompound setting = new NBTTagCompound();
-				NBTTagCompound colors = new NBTTagCompound();
-				Map<Block, Integer> map = ClientPlayerSettings.xrayColorMapping.get(conf);
-				
-				for (Block block : map.keySet())
-					colors.setInteger(String.valueOf(Block.getIdFromBlock(block)), map.get(block));
-				
-				setting.setInteger("radius", ClientPlayerSettings.xrayRadiusMapping.containsKey(conf) ? ClientPlayerSettings.xrayRadiusMapping.get(conf) : 32);
-				setting.setTag("colors", colors);
-				
-				xray.setTag(conf, setting);
-			}
-		
-			socket.setTag("xray", xray);
 			
 			data.setTag(Minecraft.getMinecraft().getNetHandler().getNetworkManager().getSocketAddress().toString(), socket);
 		

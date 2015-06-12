@@ -2,8 +2,8 @@ package com.mrnobody.morecommands.command;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.client.ClientCommandHandler;
 
 import com.mrnobody.morecommands.core.MoreCommands;
@@ -12,6 +12,8 @@ import com.mrnobody.morecommands.util.LanguageManager;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
+import cpw.mods.fml.common.eventhandler.Event;
+
 /**
  * Base Class for all client commands
  * 
@@ -19,39 +21,32 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
  */
 public abstract class ClientCommand extends CommandBase {
 	public final void processCommand(ICommandSender sender, String[] params) {
-    	if (MoreCommands.isModEnabled() && this.isEnabled(sender)) {
+    	if (MoreCommands.isModEnabled() && this.isEnabled(Minecraft.getMinecraft().thePlayer)) {
         	try{
-        		this.execute(new CommandSender(sender), params);
+        		this.execute(new CommandSender(Minecraft.getMinecraft().thePlayer), params);
         	}
         	catch (CommandException e) {
-        		ChatComponentText text = new ChatComponentText(e.getMessage());
-        		text.getChatStyle().setColor(EnumChatFormatting.RED);
-        		sender.addChatMessage(text);
+        		sender.addChatMessage(new ChatComponentText(e.getMessage()));
         	}
     	}
     	else {
-    		if (!MoreCommands.isModEnabled()) {
-        		ChatComponentText text = new ChatComponentText(LanguageManager.getTranslation(MoreCommands.getMoreCommands().getCurrentLang(sender), "command.generic.notEnabled"));
-        		text.getChatStyle().setColor(EnumChatFormatting.RED);
-        		sender.addChatMessage(text);
-    		}
+    		if (!MoreCommands.isModEnabled())
+    			sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(MoreCommands.getMoreCommands().getCurrentLang(sender), "command.generic.notEnabled", new Object[0])));
     	}
     }
 	
     @Override
     public final boolean isEnabled(ICommandSender sender) {
-		String lang = MoreCommands.getMoreCommands().getCurrentLang(sender);
+		MoreCommands mod = MoreCommands.getMoreCommands();
 		
     	if (!(sender instanceof net.minecraft.client.entity.EntityClientPlayerMP)) {
-    		sendChatMsg(sender, LanguageManager.getTranslation(lang, "command.generic.notClient"));
+    		sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(sender), "command.generic.notClient", new Object[0])));
     		return false;
     	}
     	
-    	if (!(this.getAllowedServerType() == ServerType.ALL || this.getAllowedServerType() == MoreCommands.getMoreCommands().getRunningServer())) {
-    		if (this.getAllowedServerType() == ServerType.INTEGRATED) 
-    			sendChatMsg(sender, LanguageManager.getTranslation(lang, "command.generic.notIntegrated"));
-    		if (this.getAllowedServerType() == ServerType.DEDICATED)
-    			sendChatMsg(sender, LanguageManager.getTranslation(lang, "command.generic.notDedicated"));
+    	if (!(this.getAllowedServerType() == ServerType.ALL || this.getAllowedServerType() == mod.getRunningServer())) {
+    		if (this.getAllowedServerType() == ServerType.INTEGRATED) sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(sender), "command.generic.notIntegrated", new Object[0])));
+    		if (this.getAllowedServerType() == ServerType.DEDICATED) sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(sender), "command.generic.notDedicated", new Object[0])));
     		return false;
     	}
     	
@@ -60,26 +55,20 @@ public abstract class ClientCommand extends CommandBase {
     	for (Requirement requierement : requierements) {
     		if (requierement == Requirement.PATCH_ENTITYCLIENTPLAYERMP) {
     			if (!(Minecraft.getMinecraft().thePlayer instanceof EntityClientPlayerMP)) {
-    				sendChatMsg(sender, LanguageManager.getTranslation(lang, "command.generic.clientPlayerNotPatched"));
+    				sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(sender), "command.generic.clientPlayerNotPatched", new Object[0])));
     	    		return false;
     			}
     		}
     		
     		if (requierement == Requirement.PATCH_CLIENTCOMMANDHANDLER) {
     			if (!(ClientCommandHandler.instance instanceof com.mrnobody.morecommands.patch.ClientCommandManager)) {
-    				sendChatMsg(sender, LanguageManager.getTranslation(lang, "command.generic.clientCommandHandlerNotPatched"));
+    				sender.addChatMessage(new ChatComponentText(LanguageManager.getTranslation(mod.getCurrentLang(sender), "command.generic.clientCommandHandlerNotPatched", new Object[0])));
     	    		return false;
     			}
     		}
     	}
     	
     	return true;
-    }
-    
-    private final void sendChatMsg(ICommandSender sender, String msg) {
-    	ChatComponentText text = new ChatComponentText(msg);
-    	text.getChatStyle().setColor(EnumChatFormatting.RED);
-    	sender.addChatMessage(text);
     }
     
     /**

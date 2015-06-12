@@ -1,11 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandBase.Requirement;
+import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+import net.minecraft.command.ICommandSender;
 
 @Command(
 		description="command.calc.description",
@@ -37,8 +38,6 @@ public class CommandCalc extends ServerCommand {
 			@Override Operation next() {return null;}
 		};
 		
-		public static final Operation FIRST = MODULO;
-		
 		abstract double perform(double op1, double op2);
 		abstract String[] split(String calc);
 		abstract Operation next();
@@ -57,8 +56,8 @@ public class CommandCalc extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		String calc = ""; for (String param : params) calc = calc + " " + param;
-		try {sender.sendLangfileMessage("command.calc.result", parseCalculation(calc));}
-		catch (NumberFormatException nfe) {throw new CommandException("command.calc.failure", sender, nfe.getMessage());}
+		try {sender.sendLangfileMessage("command.calc.result", new Object[] {parseCalculation(calc)});}
+		catch (NumberFormatException nfe) { sender.sendLangfileMessage("command.calc.failure", new Object[] {nfe.getMessage()});}
 	}
   
 	private double parseCalculation(String calc) throws NumberFormatException {
@@ -154,17 +153,19 @@ public class CommandCalc extends ServerCommand {
 	}
   
 	private double parseOperands(String calc) throws NumberFormatException {
-		return parseOperands(calc, Operation.FIRST);
+		return parseOperands(calc, Operation.values()[0]);
 	}
   
 	private double parseOperands(String calc, Operation operation) throws NumberFormatException {
-		if (operation == null) return Double.parseDouble(calc);
-		
 		String[] operands = operation.split(calc);
-		double result = parseOperands(operands[0], operation.next());
 		
-		for (int i = 1; i < operands.length; i++)
-			result = operation.perform(result, parseOperands(operands[i], operation.next()));
+		if (operands.length < 0) return 0.0;
+		else if (operands.length < 1) return operation.next() == null ? Double.parseDouble(operands[0]) : this.parseOperands(operands[0], operation.next());
+		
+		double result = operation.next() == null ? Double.parseDouble(operands[0]) : this.parseOperands(operands[0], operation.next());
+		
+		for (int index = 1; index < operands.length; index++)
+			result = operation.perform(result, operation.next() == null ? Double.parseDouble(operands[index]) : this.parseOperands(operands[index], operation.next()));
 		
 		return result;
 	}

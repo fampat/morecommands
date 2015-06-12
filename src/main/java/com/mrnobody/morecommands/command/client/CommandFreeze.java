@@ -69,23 +69,25 @@ public class CommandFreeze extends ClientCommand implements Listener<TickEvent> 
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		this.freeze = true;
-            	sender.sendLangfileMessage("command.freeze.on");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	this.freeze = false;
-            	sender.sendLangfileMessage("command.freeze.off");
-            }
-            else throw new CommandException("command.freeze.failure", sender);
-        }
-        else {
-        	this.freeze = !this.freeze;
-        	sender.sendLangfileMessage(this.freeze ? "command.freeze.on" : "command.freeze.off");
-        }
+    	boolean freeze = false;
+    	boolean success = false;
+    	
+    	if (params.length >= 1) {
+    		if (params[0].equalsIgnoreCase("true")) {freeze = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("false")) {freeze = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("0")) {freeze = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("1")) {freeze = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("on")) {freeze = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("off")) {freeze = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {freeze = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {freeze = false; success = true;}
+    		else {success = false;}
+    	}
+    	else {freeze = !this.freeze; success = true;}
+    	
+    	if (success) this.freeze = freeze;
+    	
+    	sender.sendLangfileMessage(success ? freeze ? "command.freeze.on" : "command.freeze.off" : "command.freeze.failure", new Object[0]);
 	}
 	
 	@Override

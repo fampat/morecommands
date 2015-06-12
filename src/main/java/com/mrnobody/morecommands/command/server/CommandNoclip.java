@@ -10,6 +10,7 @@ import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.handler.EventHandler;
 import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.network.PacketDispatcher;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
@@ -46,37 +47,35 @@ public class CommandNoclip extends ServerCommand implements Listener<LivingAttac
 		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		boolean allowNoclip = false;
 		
-		if(!player.getMinecraftPlayer().capabilities.isFlying && !player.getMinecraftPlayer().noClip)
-			throw new CommandException("command.noclip.mustBeFlying", sender);
-		
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		player.getMinecraftPlayer().noClip = true;
-            	sender.sendLangfileMessage("command.noclip.enabled");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	player.getMinecraftPlayer().noClip = false;
-            	sender.sendLangfileMessage("command.noclip.disabled");
-            }
-            else throw new CommandException("command.noclip.failure", sender);
-        }
-        else {
-        	player.getMinecraftPlayer().noClip = !player.getMinecraftPlayer().noClip;
-        	sender.sendLangfileMessage(player.getMinecraftPlayer().noClip ? "command.noclip.enabled" : "command.noclip.disabled");
-        }
+		if(!player.getMinecraftPlayer().capabilities.isFlying && !player.getMinecraftPlayer().noClip) {
+			sender.sendLangfileMessage("command.noclip.mustBeFlying", new Object[0]); return;
+		}
+    	
+		if (params.length >= 1) {
+			if (params[0].equalsIgnoreCase("true")) {player.getMinecraftPlayer().noClip = true;}
+			else if (params[0].equalsIgnoreCase("false")) {player.getMinecraftPlayer().noClip = false;}
+			else if (params[0].equalsIgnoreCase("0")) {player.getMinecraftPlayer().noClip = false;}
+			else if (params[0].equalsIgnoreCase("1")) {player.getMinecraftPlayer().noClip = true;}
+			else if (params[0].equalsIgnoreCase("on")) {player.getMinecraftPlayer().noClip = true;}
+			else if (params[0].equalsIgnoreCase("off")) {player.getMinecraftPlayer().noClip = false;}
+    		else if (params[0].equalsIgnoreCase("enable")) {player.getMinecraftPlayer().noClip = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {player.getMinecraftPlayer().noClip = false;}
+			else {sender.sendLangfileMessage("command.noclip.failure", new Object[0]); return;}
+		}
+		else {player.getMinecraftPlayer().noClip = !player.getMinecraftPlayer().noClip;}
     	
 		if(!(player.getMinecraftPlayer() instanceof EntityPlayerMP)) {
 			player.getMinecraftPlayer().noClip = false;
-			throw new CommandException("command.noclip.failure", sender);
+			sender.sendLangfileMessage("command.noclip.failure", new Object[0]);
+			return;
 		}
     	
 		if(player.getMinecraftPlayer().noClip == false) {
 			ascendPlayer(player);
 		}
 		
-		MoreCommands.getMoreCommands().getPacketDispatcher().sendS06Noclip(player.getMinecraftPlayer(), player.getMinecraftPlayer().noClip);
+		MoreCommands.getMoreCommands().getPacketDispatcher().sendS06Noclip(player.getMinecraftPlayer(), player.getMinecraftPlayer().noClip);	
+		sender.sendLangfileMessage(player.getMinecraftPlayer().noClip ? "command.noclip.enabled" : "command.noclip.disabled", new Object[0]);
 	}
 
 	public static void checkSafe(EntityPlayerMP player) {

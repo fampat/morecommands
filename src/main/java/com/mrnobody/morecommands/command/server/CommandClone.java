@@ -37,25 +37,29 @@ public class CommandClone extends ServerCommand {
 		
 		if (params.length > 0) {
 			try {quantity = Integer.parseInt(params[0]);}
-			catch (NumberFormatException nfe) {throw new CommandException("command.clone.invalidArg", sender);}
+			catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.clone.invalidArg", new Object[0]); return;}
 		}
 		
 		com.mrnobody.morecommands.wrapper.Entity player = new com.mrnobody.morecommands.wrapper.Entity((EntityLivingBase) sender.getMinecraftISender());
 		Entity entity = player.traceEntity(128.0D);
 		
-		if (entity == null)
-			throw new CommandException("command.clone.noNPCFound", sender);
+		if (entity == null) {
+			sender.sendLangfileMessage("command.clone.noNPCFound", new Object[0]);
+			return;
+		}
 		
 		String name = EntityList.getEntityString(entity);
 		World world = player.getWorld();
 		Coordinate coord = new Coordinate(entity.posX, entity.posY, entity.posZ);
 		
 		for (int i = 0; i < quantity; i++) {
-			if (!com.mrnobody.morecommands.wrapper.Entity.spawnEntity(name, coord, world))
-				throw new CommandException("An Error occurred during cloning NPC '" + name + "'");
+			if (!com.mrnobody.morecommands.wrapper.Entity.spawnEntity(name, coord, world)) {
+				sender.sendStringMessage("An Error occurred during cloning NPC '" + name + "'");
+				return;
+			}
 		}
 		
-		sender.sendLangfileMessage("command.clone.success");
+		sender.sendLangfileMessage("command.clone.success", new Object[0]);
 	}
 	
 	@Override

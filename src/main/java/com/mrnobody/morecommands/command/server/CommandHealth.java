@@ -5,9 +5,13 @@ import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandBase.Requirement;
+import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
+
+import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "health",
@@ -36,15 +40,15 @@ public class CommandHealth extends ServerCommand {
 		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		
 		if (params.length > 0) {
-			try {player.setHealth(Float.parseFloat(params[0])); sender.sendLangfileMessage("command.health.success");}
+			try {player.setHealth(Float.parseFloat(params[0])); sender.sendLangfileMessage("command.health.success", new Object[0]);}
 			catch (NumberFormatException e) {
-				if (params[0].equalsIgnoreCase("min")) {player.setHealth(MIN_HEALTH); sender.sendLangfileMessage("command.health.success");}
-				else if (params[0].equalsIgnoreCase("max")) {player.setHealth(MAX_HEALTH); sender.sendLangfileMessage("command.health.success");}
-				else if (params[0].equalsIgnoreCase("get")) {sender.sendLangfileMessage("command.health.get", player.getHealth());}
-				else throw new CommandException("command.health.invalidParam", sender);
+				if (params[0].equalsIgnoreCase("min")) {player.setHealth(MIN_HEALTH); sender.sendLangfileMessage("command.health.success", new Object[0]);}
+				else if (params[0].equalsIgnoreCase("max")) {player.setHealth(MAX_HEALTH); sender.sendLangfileMessage("command.health.success", new Object[0]);}
+				else if (params[0].equalsIgnoreCase("get")) {sender.sendLangfileMessage("command.health.get", new Object[] {player.getHealth()});}
+				else {sender.sendLangfileMessage("command.health.invalidParam", new Object[0]);}
 			}
 		}
-		else throw new CommandException("command.health.invalidUsage", sender);
+		else {sender.sendLangfileMessage("command.health.invalidUsage", new Object[0]);}
 	}
 	
 	@Override

@@ -52,25 +52,27 @@ public class CommandMobdamage extends ServerCommand implements Listener<LivingHu
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
-    	
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		settings.mobdamage = true;
-            	sender.sendLangfileMessage("command.mobdamage.on");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	settings.mobdamage = false;
-            	sender.sendLangfileMessage("command.mobdamage.off");
-            }
-            else throw new CommandException("command.mobdamage.failure", sender);
+		ServerPlayerSettings ability = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+    		
+        boolean mobdamage = false;
+        boolean success = false;
+        	
+        if (params.length >= 1) {
+        	if (params[0].equalsIgnoreCase("true")) {mobdamage = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("false")) {mobdamage = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("0")) {mobdamage = false; success = true;}
+        	else if (params[0].equalsIgnoreCase("1")) {mobdamage = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("on")) {mobdamage = true; success = true;}
+        	else if (params[0].equalsIgnoreCase("off")) {mobdamage = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {mobdamage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {mobdamage = false; success = true;}
+        	else {success = false;}
         }
-        else {
-        	settings.mobdamage = !settings.mobdamage;
-        	sender.sendLangfileMessage(settings.mobdamage ? "command.mobdamage.on" : "command.mobdamage.off");
-        }
+        else {mobdamage = !ability.mobdamage; success = true;}
+        	
+        if (success) ability.mobdamage = mobdamage;
+        	
+        sender.sendLangfileMessage(success ? mobdamage ? "command.mobdamage.on" : "command.mobdamage.off" : "command.mobdamage.failure", new Object[0]);
 	}
 	
 	@Override

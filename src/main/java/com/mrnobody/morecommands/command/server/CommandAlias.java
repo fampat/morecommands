@@ -12,6 +12,7 @@ import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.handler.EventHandler;
 import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.network.PacketDispatcher;
 import com.mrnobody.morecommands.util.DummyCommand;
 import com.mrnobody.morecommands.util.DummyCommand.DummyServerCommand;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
@@ -96,19 +97,22 @@ public class CommandAlias extends ServerCommand implements Listener<CommandEvent
 						cmd.setOriginalCommandName(sender.getMinecraftISender(), command + parameters);
 						cmd.getSenderSideMapping().put(sender.getMinecraftISender(), clientSide);
 					}
-					else throw new CommandException("command.alias.overwrite", sender);
+					else {
+						sender.sendLangfileMessage("command.alias.overwrite", new Object[0]);
+						return;
+					}
 					
 					if (settings.clientCommands.contains(command)) settings.clientAliasMapping.put(alias, command + parameters);
 					else settings.serverAliasMapping.put(alias, command + parameters);
 					settings.saveSettings();
 					
-					sender.sendLangfileMessage("command.alias.success");
+					sender.sendLangfileMessage("command.alias.success", new Object[0]);
 				}
-				else throw new CommandException("command.generic.notFound", sender);
+				else {sender.sendLangfileMessage("command.generic.notFound", new Object[0]);}
 			}
-			else throw new CommandException("command.alias.infiniteRecursion", sender);
+			else {sender.sendLangfileMessage("command.alias.infiniteRecursion", new Object[0]);}
 		}
-		else throw new CommandException("command.alias.invalidUsage", sender);
+		else {sender.sendLangfileMessage("command.alias.invalidUsage", new Object[0]);}
 	}
 	
 	@Override

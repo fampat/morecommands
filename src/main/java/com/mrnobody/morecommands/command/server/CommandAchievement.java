@@ -36,17 +36,21 @@ public class CommandAchievement extends ServerCommand {
     			Object[] nameList = Achievements.getAchievementNameList();
     			int page = 1;
     			int PAGE_MAX = 15;
+    			boolean validParam = true;
     			
     			if (params.length > 1) {
     				try {page = Integer.parseInt(params[1]);} 
-    				catch (NumberFormatException e) {throw new CommandException("command.achievement.invalidUsage", sender);}
+    				catch (NumberFormatException e) {validParam = false;}
     			}
     			
-    			int to = PAGE_MAX * page <= nameList.length ? PAGE_MAX * page : nameList.length;
-    			int from = to - PAGE_MAX;
+    			if (validParam) {
+    				int to = PAGE_MAX * page <= nameList.length ? PAGE_MAX * page : nameList.length;
+    				int from = to - PAGE_MAX;
     				
-    			for (int index = from; index < to; index++) {sender.sendStringMessage(" - '" + nameList[index] + "'");}
-    			sender.sendLangfileMessage("command.achievement.more");
+    				for (int index = from; index < to; index++) {sender.sendStringMessage(" - '" + nameList[index] + "'");}
+    				sender.sendLangfileMessage("command.achievement.more", new Object[0]);
+    			}
+    			else {sender.sendLangfileMessage("command.achievement.invalidUsage", new Object[0]);}
     		}
     		
     		else if (params[0].equals("unlockAll")) {
@@ -56,27 +60,27 @@ public class CommandAchievement extends ServerCommand {
     					player.addAchievement((String) ach);
     				}
     			}
-    			sender.sendLangfileMessage("command.achievement.unlockAllSuccess");
+    			sender.sendLangfileMessage("command.achievement.unlockAllSuccess", new Object[0]);
     		}
     		
     		else if (params[0].equals("unlock")) {
     			if (params.length > 1) {
-    				boolean found = false;
+    				boolean broken = false;
     				
     				for (Object ach : Achievements.getAchievementNameList()) {
     					if (ach instanceof String && params[1].equalsIgnoreCase((String) ach)) {
-    						if (player.addAchievement((String) (ach))) {sender.sendLangfileMessage("command.achievement.unlockSuccess");}
+    						if (player.addAchievement((String) (ach))) {sender.sendLangfileMessage("command.achievement.unlockSuccess", new Object[0]);}
     						else {sender.sendLangfileMessage("command.achievement.parent", Achievements.getAchievementRequirement(params[1]));}
-    						found = true; break;
+    						broken = true; break;
     					}
     				}
-    				if (!found) throw new CommandException("command.achievement.unlockFailure", sender);
+    				if (!broken) sender.sendLangfileMessage("command.achievement.unlockFailure", new Object[0]);
     			}
-    			else throw new CommandException("command.achievement.invalidUsage", sender);
+    			else {sender.sendLangfileMessage("command.achievement.invalidUsage", new Object[0]);}
     		}
-    		else throw new CommandException("command.achievement.invalidUsage", sender);
+    		else {sender.sendLangfileMessage("command.achievement.invalidUsage", new Object[0]);}
     	}
-    	else throw new CommandException("command.achievement.invalidUsage", sender);
+    	else {sender.sendLangfileMessage("command.achievement.invalidUsage", new Object[0]);}
     }
 
 	@Override

@@ -6,11 +6,15 @@ import net.minecraft.init.Blocks;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandBase.Requirement;
+import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
 import com.mrnobody.morecommands.wrapper.Player;
 import com.mrnobody.morecommands.wrapper.World;
+
+import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "extinguish",
@@ -44,27 +48,27 @@ public class CommandExtinguish extends ServerCommand {
 				
 				if (params.length > 1) {
 					try {radius = Integer.parseInt(params[1]);}
-					catch (NumberFormatException nfe) {throw new CommandException("command.extinguish.invalidArg", sender);}
+					catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.extinguish.invalidArg", new Object[0]); return;}
 				}
 				
 				this.extinguish(player.getWorld(), player.getPosition(), radius);
 				player.getMinecraftPlayer().extinguish();
-				sender.sendLangfileMessage("command.extinguish.extinguished");
+				sender.sendLangfileMessage("command.extinguish.extinguished", new Object[0]);
 			}
 			else {
 				int radius;
 				
 				try {radius = Integer.parseInt(params[0]);}
-				catch (NumberFormatException nfe) {throw new CommandException("command.extinguish.invalidArg", sender);}
+				catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.extinguish.invalidArg", new Object[0]); return;}
 				
 				this.extinguish(player.getWorld(), player.getPosition(), radius);
-				sender.sendLangfileMessage("command.extinguish.extinguished");
+				sender.sendLangfileMessage("command.extinguish.extinguished", new Object[0]);
 			}
 		}
 		else {
 			this.extinguish(player.getWorld(), player.getPosition(), 16);
 			player.getMinecraftPlayer().extinguish();
-			sender.sendLangfileMessage("command.extinguish.extinguished");
+			sender.sendLangfileMessage("command.extinguish.extinguished", new Object[0]);
 		}
 	}
 	

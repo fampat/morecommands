@@ -62,8 +62,7 @@ public class MoreCommands {
 	
 	private List<String> disabledCommands;
 	
-	//Need this because forge injects the instance after injecting the proxy, but it uses
-	//MoreCommands#getMoreCommands in its constructor -> Causes a NullpointerException
+	//Need this because forge injects the instance too late -> Causes a NullpointerException using getMoreCommands
 	public MoreCommands() {MoreCommands.instance = this;}
 	
 	/**

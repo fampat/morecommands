@@ -54,10 +54,14 @@ public class CommandDuplicate extends ServerCommand {
 				EntityItem itemEntity = new EntityItem(player.worldObj, player.posX, player.posY, player.posZ, duplicate);
 				player.worldObj.spawnEntityInWorld(itemEntity);
 			}
+			
+			
 		}
 		else {
-			if (player.inventory.mainInventory[player.inventory.currentItem] == null)
-				throw new CommandException("command.duplicate.notSelected", sender);
+			if (player.inventory.mainInventory[player.inventory.currentItem] == null) {
+				sender.sendLangfileMessage("command.duplicate.notSelected", new Object[0]);
+				return;
+			}
 			
 			ItemStack item = player.inventory.mainInventory[player.inventory.currentItem];
 			ItemStack duplicate = new ItemStack(item.getItem(), item.stackSize, item.getItemDamage());
@@ -66,7 +70,7 @@ public class CommandDuplicate extends ServerCommand {
 			player.worldObj.spawnEntityInWorld(itemEntity);
 		}
 		
-		sender.sendLangfileMessage("command.duplicate.duplicated");
+		sender.sendLangfileMessage("command.duplicate.duplicated", new Object[0]);
 	}
 	
 	@Override

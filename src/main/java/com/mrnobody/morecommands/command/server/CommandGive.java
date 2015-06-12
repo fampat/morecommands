@@ -45,20 +45,22 @@ public class CommandGive extends ServerCommand {
 					if (params.length > 2) {
 						if (item.getHasSubtypes()) {
 							try {player.givePlayerItem(item, Integer.parseInt(params[1]), Integer.parseInt(params[2]));}
-							catch(NumberFormatException e) {throw new CommandException("command.give.notFound", sender);}
+							catch(NumberFormatException e) {sender.sendLangfileMessage("command.give.notFound", new Object[0]);}
 						}
-						else throw new CommandException("command.give.noMeta", sender);
+						else {sender.sendLangfileMessage("command.give.noMeta", new Object[0]);}
 					}
 					else {
-						try {player.givePlayerItem(item, Integer.parseInt(params[1])); sender.sendLangfileMessage("command.give.success");}
-						catch (NumberFormatException e) {throw new CommandException("command.give.notFound", sender);}
+						try {player.givePlayerItem(item, Integer.parseInt(params[1])); sender.sendLangfileMessage("command.give.success", new Object[0]);}
+						catch (NumberFormatException e) {sender.sendLangfileMessage("command.give.notFound", new Object[0]);}
 					}
 				}
-				else {player.givePlayerItem(item); sender.sendLangfileMessage("command.give.success");}
+				else {player.givePlayerItem(item); sender.sendLangfileMessage("command.give.success", new Object[0]);}
 			}
-			else throw new CommandException("command.give.notFound", sender);
+			else {sender.sendLangfileMessage("command.give.notFound", new Object[0]);}
 		}
-		else throw new CommandException("command.give.invalidUsage", sender);
+		else {
+			sender.sendLangfileMessage("command.give.invalidUsage", new Object[0]);
+		}
 	}
 	
 	@Override

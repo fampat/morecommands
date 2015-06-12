@@ -34,23 +34,25 @@ public class CommandDamage extends ServerCommand {
     public void execute(CommandSender sender, String[] params) throws CommandException {
 		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
     	
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		player.setDamage(true);
-            	sender.sendLangfileMessage("command.damage.on");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	player.setDamage(false);
-            	sender.sendLangfileMessage("command.damage.off");
-            }
-            else throw new CommandException("command.damage.failure", sender);
-        }
-        else {
-        	player.setDamage(player.getDamage());
-        	sender.sendLangfileMessage(player.getDamage() ? "command.damage.on" : "command.damage.off");
-        }
+    	boolean enableDamage = false;
+    	boolean success = false;
+    	
+    	if (params.length >= 1) {
+    		if (params[0].equalsIgnoreCase("true")) {enableDamage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("false")) {enableDamage = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("0")) {enableDamage = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("1")) {enableDamage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("on")) {enableDamage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("off")) {enableDamage = false; success = true;}
+    		else if (params[0].equalsIgnoreCase("enable")) {enableDamage = true; success = true;}
+    		else if (params[0].equalsIgnoreCase("disable")) {enableDamage = false; success = true;}
+    		else {success = false;}
+    	}
+    	else {enableDamage = !player.getDamage(); success = true;}
+    	
+    	if (success) {player.setDamage(enableDamage);}
+    	
+    	sender.sendLangfileMessage(success ? player.getDamage() ? "command.damage.on" : "command.damage.off" : "command.damage.failure", new Object[0]);
     }
 	
 	@Override

@@ -4,13 +4,18 @@ import java.text.DecimalFormat;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.ChunkCoordinates;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandBase.Requirement;
+import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
 import com.mrnobody.morecommands.wrapper.Player;
+
+import cpw.mods.fml.relauncher.Side;
 
 @Command(
 		name = "setspawn",
@@ -39,7 +44,7 @@ public class CommandSetspawn extends ServerCommand {
 		
 		if (params.length > 2) {
 			try {coord = new Coordinate(Double.parseDouble(params[0]), Double.parseDouble(params[1]), Double.parseDouble(params[2]));}
-			catch (NumberFormatException nfe) {throw new CommandException("command.setspawn.invalidPos", sender);}
+			catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.setspawn.invalidPos", new Object[0]); return;}
 		}
 		
 		player.setSpawn(coord);
