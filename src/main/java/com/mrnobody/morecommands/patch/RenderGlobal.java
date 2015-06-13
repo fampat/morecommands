@@ -3,6 +3,7 @@ package com.mrnobody.morecommands.patch;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.BlockPos;
 
 /**
  * The patched class of {@link net.minecraft.client.renderer.RenderGlobal} <br>
