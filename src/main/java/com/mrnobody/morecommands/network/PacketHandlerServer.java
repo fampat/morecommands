@@ -20,8 +20,6 @@ import com.mrnobody.morecommands.util.ServerPlayerSettings;
  *
  */
 public class PacketHandlerServer {
-	public static final PacketHandlerServer INSTANCE = new PacketHandlerServer();
-	
 	/**
 	 * Is called if the server receives a handshake packet
 	 */
