@@ -41,6 +41,7 @@ public class ObfuscationHelper {
 		map.put("loadAllWorlds", "func_71247_a");
 		map.put("flySpeed", "field_75096_f");
 		map.put("walkSpeed", "field_75097_g");
+		map.put("reloadListeners", "field_110546_b");
 		//Add more fields
 		
 		ObfuscationMap = Collections.unmodifiableMap(map);

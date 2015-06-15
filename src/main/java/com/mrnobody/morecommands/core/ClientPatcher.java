@@ -2,10 +2,12 @@ package com.mrnobody.morecommands.core;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.client.resources.SimpleReloadableResourceManager;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.NetworkManager;
@@ -67,8 +69,7 @@ public class ClientPatcher extends Patcher {
 	
 	public void applyModStatePatch(FMLStateEvent stateEvent) {
 		if (stateEvent instanceof FMLInitializationEvent) {
-			Minecraft.getMinecraft().renderGlobal = new RenderGlobal(Minecraft.getMinecraft());
-			this.mod.getLogger().info("RenderGlobal Patches applied");
+			this.applyInitPatches();
 			this.loadEventPatches();
 		}
 		else if (stateEvent instanceof FMLServerAboutToStartEvent) {
@@ -76,6 +77,28 @@ public class ClientPatcher extends Patcher {
 		}
 		else if (stateEvent instanceof FMLPostInitializationEvent) {
 			this.applyPostInitPatches();
+		}
+	}
+	
+	/**
+	 * Applies patches during initialization, which is currently only the patch to:
+	 * {@link net.minecraft.client.renderer.RenderGlobal}
+	 */
+	private void applyInitPatches() {
+		try {
+			SimpleReloadableResourceManager resourceManager = (SimpleReloadableResourceManager) Minecraft.getMinecraft().getResourceManager();
+			Field reloadListenerList = ReflectionHelper.getField(SimpleReloadableResourceManager.class, "reloadListeners");
+			
+			List reloadListeners = (List) reloadListenerList.get(resourceManager);
+			reloadListeners.remove(Minecraft.getMinecraft().renderGlobal);
+			
+			Minecraft.getMinecraft().renderGlobal = new RenderGlobal(Minecraft.getMinecraft());
+			resourceManager.registerReloadListener(Minecraft.getMinecraft().renderGlobal);
+			
+			this.mod.getLogger().info("RenderGlobal Patches applied");
+		}
+		catch (Exception ex) {
+			this.mod.getLogger().info("Error applying RenderGlobal Patches");
 		}
 	}
 	
