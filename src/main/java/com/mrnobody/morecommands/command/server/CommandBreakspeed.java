@@ -24,7 +24,7 @@ public class CommandBreakspeed extends ServerCommand implements Listener<BreakSp
 	
 	@Override
 	public void onEvent(BreakSpeed event) {
-		if (!(event.entityPlayer instanceof EntityPlayerMP)) return;
+		if (!ServerPlayerSettings.playerSettingsMapping.containsKey(event.entityPlayer)) return;
 		
 		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(event.entityPlayer);
 		event.newSpeed = settings.breakSpeedEnabled ? settings.breakspeed : event.originalSpeed;
