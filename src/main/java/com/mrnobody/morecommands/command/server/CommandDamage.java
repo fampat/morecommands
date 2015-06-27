@@ -48,7 +48,7 @@ public class CommandDamage extends ServerCommand {
             else throw new CommandException("command.damage.failure", sender);
         }
         else {
-        	player.setDamage(player.getDamage());
+        	player.setDamage(!player.getDamage());
         	sender.sendLangfileMessage(player.getDamage() ? "command.damage.on" : "command.damage.off");
         }
     }
