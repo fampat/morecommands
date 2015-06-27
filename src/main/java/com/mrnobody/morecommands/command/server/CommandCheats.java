@@ -45,7 +45,7 @@ public class CommandCheats extends ServerCommand {
             else throw new CommandException("command.cheats.failure", sender);
         }
         else {
-        	sender.getWorld().setCheats(sender.getWorld().isCheats());
+        	sender.getWorld().setCheats(!sender.getWorld().isCheats());
         	sender.sendLangfileMessage(sender.getWorld().isCheats() ? "command.cheats.on" : "command.cheats.off");
         }
 	}

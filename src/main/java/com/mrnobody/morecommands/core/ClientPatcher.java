@@ -136,7 +136,7 @@ public class ClientPatcher extends Patcher {
 			if (!Patcher.playerPatchMapping.containsKey(player)) patches = new PlayerPatches();
 			else patches = Patcher.playerPatchMapping.get(player);
 			
-			if (player.playerNetServerHandler.playerEntity == event.entity) {
+			if (player.playerNetServerHandler.playerEntity == event.entity && !(player.playerNetServerHandler instanceof com.mrnobody.morecommands.patch.NetHandlerPlayServer)) {
 				NetHandlerPlayServer handler = player.playerNetServerHandler;
 				player.playerNetServerHandler = new com.mrnobody.morecommands.patch.NetHandlerPlayServer(MinecraftServer.getServer(), handler.netManager, handler.playerEntity);
 				this.mod.getLogger().info("Server Play Handler Patches applied for Player " + player.getCommandSenderName());
