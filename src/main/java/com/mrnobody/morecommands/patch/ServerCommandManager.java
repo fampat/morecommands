@@ -42,6 +42,11 @@ public class ServerCommandManager extends net.minecraft.command.ServerCommandMan
 		}
 	}
 	
+	public ServerCommandManager(net.minecraft.command.ICommandManager parent) {
+		super();
+		for (Object command : parent.getCommands().values()) this.registerCommand((ICommand) parent.getCommands().get(command));
+	}
+	
 	private static String replaceVars(String string, ServerPlayerSettings settings) throws VarCouldNotBeResolvedException {
 		String varIdentifier = "";
 		String newString = "";
