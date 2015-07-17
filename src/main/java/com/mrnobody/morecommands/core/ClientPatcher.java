@@ -88,7 +88,7 @@ public class ClientPatcher extends Patcher {
 		
 		try {
 			modifiers.setInt(instance, instance.getModifiers() & ~Modifier.FINAL);
-			instance.set(null, new ClientCommandManager());
+			instance.set(null, new ClientCommandManager((ClientCommandHandler) instance.get(null)));
 			
 			this.mod.getLogger().info("Client Command Manager Patches applied");
 			Patcher.setClientCommandManagerPatched(true);
@@ -105,7 +105,7 @@ public class ClientPatcher extends Patcher {
 		
 		if (commandManager != null) {
 			try {
-				commandManager.set(MinecraftServer.getServer(), new ServerCommandManager());
+				commandManager.set(MinecraftServer.getServer(), new ServerCommandManager(MinecraftServer.getServer().getCommandManager()));
 				this.mod.getLogger().info("Server Command Manager Patches applied");
 				Patcher.setServerCommandManagerPatched(true);
 			}

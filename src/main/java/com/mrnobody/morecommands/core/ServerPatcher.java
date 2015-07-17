@@ -69,7 +69,7 @@ public class ServerPatcher extends Patcher {
 		
 		if (commandManager != null) {
 			try {
-				commandManager.set(MinecraftServer.getServer(), new ServerCommandManager());
+				commandManager.set(MinecraftServer.getServer(), new ServerCommandManager(MinecraftServer.getServer().getCommandManager()));
 				this.mod.getLogger().info("Command Manager Patches applied");
 				Patcher.setServerCommandManagerPatched(true);
 			}
