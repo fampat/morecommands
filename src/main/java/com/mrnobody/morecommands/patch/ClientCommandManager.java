@@ -43,7 +43,7 @@ public class ClientCommandManager extends ClientCommandHandler {
 	
 	public ClientCommandManager(ClientCommandHandler parent) {
 		super();
-		for (Object command : parent.getCommands().values()) this.registerCommand((ICommand) parent.getCommands().get(command));
+		for (Object command : parent.getCommands().values()) this.registerCommand((ICommand) command);
 	}
 	
 	private static String replaceVars(String string) throws VarCouldNotBeResolvedException {
