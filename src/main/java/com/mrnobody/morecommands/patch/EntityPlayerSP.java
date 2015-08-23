@@ -42,9 +42,10 @@ public class EntityPlayerSP extends net.minecraft.client.entity.EntityPlayerSP {
         super(mcIn, worldIn, p_i46278_3_, p_i46278_4_);
         this.handler = p_i46278_3_;
         this.writer = p_i46278_4_;
-        this.inventory = new InventoryPlayer(this);
-        this.inventoryContainer = new ContainerPlayer(this.inventory, !worldIn.isRemote, this);
-        this.openContainer = this.inventoryContainer;
+        
+        //this.inventory = new net.minecraft.entity.player.InventoryPlayer(this); //don't use patched class of InventoryPlayer as there is no need for it currently
+        //this.inventoryContainer = new ContainerPlayer(this.inventory, !worldIn.isRemote, this);
+        //this.openContainer = this.inventoryContainer;
     }
     
     public StatFileWriter getWriter() {
