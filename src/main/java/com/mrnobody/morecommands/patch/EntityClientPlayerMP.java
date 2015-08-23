@@ -42,9 +42,10 @@ public class EntityClientPlayerMP extends net.minecraft.client.entity.EntityClie
 	
     public EntityClientPlayerMP(Minecraft minecraft, World world, Session session, NetHandlerPlayClient netClientHandler, StatFileWriter statFileWriter) {
         super(minecraft, world, session, netClientHandler, statFileWriter);
-        this.inventory = new InventoryPlayer(this);
-        this.inventoryContainer = new ContainerPlayer(this.inventory, !world.isRemote, this);
-        this.openContainer = this.inventoryContainer;
+        
+        //this.inventory = new net.minecraft.entity.player.InventoryPlayer(this); //don't use patched class of InventoryPlayer as there is no need for it currently
+        //this.inventoryContainer = new ContainerPlayer(this.inventory, !world.isRemote, this);
+        //this.openContainer = this.inventoryContainer;
     }
     
     public StatFileWriter getWriter() {

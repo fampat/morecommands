@@ -42,9 +42,10 @@ public class EntityPlayerMP extends net.minecraft.entity.player.EntityPlayerMP {
 	
 	public EntityPlayerMP(MinecraftServer p_i45285_1_, WorldServer p_i45285_2_, GameProfile p_i45285_3_, ItemInWorldManager p_i45285_4_) {
 		super(p_i45285_1_, p_i45285_2_, p_i45285_3_, p_i45285_4_);
-        this.inventory = new InventoryPlayer(this);
-        this.inventoryContainer = new ContainerPlayer(this.inventory, !p_i45285_2_.isRemote, this);
-        this.openContainer = this.inventoryContainer;
+		
+        //this.inventory = new net.minecraft.entity.player.InventoryPlayer(this); //don't use patched class of InventoryPlayer as there is no need for it currently
+        //this.inventoryContainer = new ContainerPlayer(this.inventory, !p_i45285_2_.isRemote, this);
+        //this.openContainer = this.inventoryContainer;
 	}
 	
 	public boolean getCriticalHit() {
