@@ -11,6 +11,7 @@ command.generic.serverConfigManagerNotPatched=The patch to the Server Configurat
 command.generic.clientNotModded=You don't have the More Commands Mod installed at your PC (client Side), but this Command requires this mod installed client Side. Install it or you can't use this command
 command.generic.serverPlayerNotPatched=The patch to the Server Player (EntityPlayerMP) wasn't applied and this command can therefore not be executed
 command.generic.netServerPlayHandlerNotPatched=The patch to the Server Player Net Handler (NetHandlerPlayServer) wasn't applied and this command can therefore not be executed
+command.generic.handshakeNotFinished=The handshake was not successful, therefore this command can't be executed. Try "/handshake redo" to fix this error.
 
 command.generic.help.pageheader======Help (Page %d of %d)======
 command.generic.help.commandheader==========Command Help==========
@@ -78,6 +79,18 @@ command.clouds.on=Clouds successfully turned on
 command.clouds.off=Clouds successfully turned off
 command.clouds.failure=Invalid Argument.
 
+command.command.description=Turns commands on/off
+command.command.example=/command disable ignorespawn
+command.command.syntax=/command <DISABLE|ENABLE> <COMMAND>
+command.command.videoURL=youtu.be/xpHkPZOg3Jg
+command.command.enabled=Command enabled
+command.command.disabled=Command disabled
+command.command.alreadyEnabled=This Command is already enabled
+command.command.alreadyDisabled=This Command is already disabled or not found
+command.command.serverNotModded=The Server doesn't have MoreCommands installed which means that commands which are registered on the Server can't be deactivated and locally the command wasn't found
+command.command.wantedToDisable=You can't disable the command which disables other commands ;)
+command.command.invalidUsage=Invalid Usage. Type 'help command' to get help
+
 command.morecommands.description=Gives information about this mod
 command.morecommands.example=/morecommands
 command.morecommands.syntax=/morecommands
@@ -90,14 +103,6 @@ command.fog.videoURL=youtu.be/6okUNR7-5kg
 command.fog.invalidArg=Invalid Argument.
 command.fog.success=Render distance successfully changed
 command.fog.invalidUsage=Invalid Usage. Type 'help fog' to get help
-
-command.freeze.description=Freezes Entities
-command.freeze.example=/freeze
-command.freeze.syntax=/freeze
-command.freeze.videoURL=youtu.be/egouVQSCY4Q
-command.freeze.on=Entities successfully frozen
-command.freeze.off=Entities successfully unfrozen
-command.freeze.failure=Invalid Argument.
 
 command.helpSideClient.description=Displays information about how to get help with this mod
 command.helpSideClient.example=/help
@@ -141,15 +146,6 @@ command.position.description=Shows you current position
 command.position.example=/position
 command.position.syntax=/position
 command.position.videoURL=youtu.be/x6ffLV-TNjM
-
-command.ride.description=Let's you ride any entity you're looking at (Type ride again to dismount entity)
-command.ride.example=/ride
-command.ride.syntax=/ride
-command.ride.videoURL=youtu.be/EUmDAi_sM9Y
-command.ride.mounted=Entity mounted
-command.ride.notLiving=Entity is not living
-command.ride.notFound=No Entity found
-command.ride.dismounted=Entity dismounted
 
 command.shelp.description=Gives help to server commands
 command.shelp.example=/shelp toggledownfall
@@ -539,6 +535,14 @@ command.fly.on=Fly mode successfully turned on
 command.fly.off=Fly mode successfully turned off
 command.fly.failure=Invalid Argument.
 
+command.freeze.description=Freezes Entities
+command.freeze.example=/freeze
+command.freeze.syntax=/freeze
+command.freeze.videoURL=youtu.be/egouVQSCY4Q
+command.freeze.on=Entities successfully frozen
+command.freeze.off=Entities successfully unfrozen
+command.freeze.failure=Invalid Argument.
+
 command.freecam.description=Allows you to freecam around the map
 command.freecam.example=/freecam
 command.freecam.syntax=/freecam
@@ -568,6 +572,17 @@ command.grow.syntax=/grow [RADIUS]
 command.grow.videoURL=youtu.be/NPQvJOwLQDA
 command.grow.invalidArg=The radius must be a number
 command.grow.grown=Plants grown
+
+command.handshake.description=Shows the Handshake status/executes a new handshake
+command.handshake.example=/handshake redo
+command.handshake.syntax=/handshake <STATUS|REDO>
+command.handshake.videoURL=youtu.be/VqklcUfliKQ
+command.handshake.errored=Handshake failed
+command.handshake.completed=Handshake completed
+command.handshake.importantSent=Handshake partly completed
+command.handshake.handshakeFinished=Handshake already sent
+command.handshake.sendingHandshake=Handshake is sent
+command.handshake.invalidArgs=Invalid Usage. Type 'help handshake' to get help
 
 command.hardcore.description=Turns hardcore mode on/off
 command.hardcore.example=/hardcore off
@@ -604,15 +619,17 @@ command.home.syntax=/home
 command.home.videoURL=youtu.be/3H-vnWXT2RQ
 command.home.atHome=Welcome at home
 
-command.hunger.description=Sets your hunger
-command.hunger.example=/hunger 10
-command.hunger.syntax=/hunger <GET|MAX|MIN|VALUE>
-command.hunger.videoURL=youtu.be/xHDQN8uvl9Y
+command.hunger.description=Sets your hunger or (de)activates hunger
+command.hunger.example=/hunger off
+command.hunger.syntax=/hunger [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE|GET|MAX|MIN|VALUE]
+command.hunger.videoURL=youtu.be/Oh6U4baovgA
 command.hunger.invalidParam=Invalid Argument.
 command.hunger.success=Hunger successfully set
 command.hunger.error=An error occurred performing this command
 command.hunger.invalidUsage=Invalid Usage. Type 'help hunger' to get help
 command.hunger.get=Your hunger is %d
+command.hunger.off=You won't be hungry again
+command.hunger.on=You will be hungry again
 
 command.ignite.description=Ignites the block you're looking at
 command.ignite.example=/ignite
@@ -758,6 +775,16 @@ command.move.invalidDirection=Invalid Direction
 command.move.NAN=The distance must be a number
 command.move.invalidUsage=Invalid Usage. Type 'help move' to get help
 
+command.noattack.description=Prevents entities from attacking you
+command.noattack.example=/noattack Spider
+command.noattack.syntax=/noattack <ENTITY>
+command.noattack.videoURL=youtu.be/uHr0A5fNv3A
+command.noattack.unknownEntity=Unknown Entity
+command.noattack.notLiving=The Entity is not a living Entity
+command.noattack.removed=The Entity will attack you
+command.noattack.added=The Entity won't attack you
+command.noattack.invalidUsage=Invalid Usage. Type 'help noattack' to get help
+
 command.noclip.description=Turns Clipping on/off
 command.noclip.example=/noclip off
 command.noclip.syntax=/noclip [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
@@ -814,6 +841,15 @@ command.return.example=/return
 command.return.syntax=/return
 command.return.videoURL=youtu.be/M2J2dld-wgE
 command.return.noLastPos=You didn't do a teleport recently
+
+command.ride.description=Let's you ride any entity you're looking at (Type ride again to dismount entity)
+command.ride.example=/ride
+command.ride.syntax=/ride
+command.ride.videoURL=youtu.be/EUmDAi_sM9Y
+command.ride.mounted=Entity mounted
+command.ride.notLiving=Entity is not living
+command.ride.notFound=No Entity found
+command.ride.dismounted=Entity dismounted
 
 command.scuba.description=Allows you to breathe under water
 command.scuba.example=/scuba on
@@ -938,12 +974,13 @@ command.superpunch.success=Superpunch was successfully set
 command.superpunch.NAN=The strength must be a number
 command.superpunch.invalidUsage=Invalid Usage. Type 'help superpunch' to get help
 
-command.teleport.description=Teleports you to coordinates
+command.teleport.description=Teleports you to coordinates or to another player
 command.teleport.example=/teleport 156 57 234
-command.teleport.syntax=/teleport <X|Y|Z>
+command.teleport.syntax=/teleport <PLAYER|X Y Z>
 command.teleport.videoURL=youtu.be/h1UuzNxhM6I
 command.teleport.NAN=The coordinates must be numbers
 command.teleport.invalidParams=Arguments are missing.
+command.teleport.playerNotFound=Player not found
 
 command.var.description=Toggles variables in the console and sets/deletes variables. Variables can be used with %var% (percent sign: "%%")
 command.var.example=/var set x Hello World

@@ -1,10 +1,5 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.DamageSource;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
@@ -13,6 +8,11 @@ import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.DamageSource;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
+
 @Command(
 		name = "firedamage",
 		description = "command.firedamage.description",
@@ -20,19 +20,16 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.firedamage.syntax",
 		videoURL = "command.firedamage.videoURL"
 		)
-public class CommandFiredamage extends ServerCommand implements Listener<LivingHurtEvent> {
+public class CommandFiredamage extends ServerCommand implements Listener<LivingAttackEvent> {
 	public CommandFiredamage() {
-		EventHandler.HURT.getHandler().register(this);
+		EventHandler.ATTACK.getHandler().register(this);
 	}
 	
 	@Override
-	public void onEvent(LivingHurtEvent event) {
+	public void onEvent(LivingAttackEvent event) {
 		if (event.entity instanceof EntityPlayerMP && (event.source == DamageSource.inFire || event.source == DamageSource.onFire || event.source == DamageSource.lava)) {
 			EntityPlayerMP player = (EntityPlayerMP) event.entity;
-			
-			if (ServerPlayerSettings.playerSettingsMapping.containsKey(player)) {
-				if (!ServerPlayerSettings.playerSettingsMapping.get(player).firedamage) event.setCanceled(true);
-			}
+			if (!ServerPlayerSettings.getPlayerSettings(player).firedamage) event.setCanceled(true);
 		}
 	}
 	
@@ -48,7 +45,7 @@ public class CommandFiredamage extends ServerCommand implements Listener<LivingH
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
     	
         if (params.length > 0) {
         	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
@@ -76,7 +73,7 @@ public class CommandFiredamage extends ServerCommand implements Listener<LivingH
 	
 	@Override
 	public void unregisterFromHandler() {
-		EventHandler.HURT.getHandler().unregister(this);
+		EventHandler.ATTACK.getHandler().unregister(this);
 	}
 
 	@Override

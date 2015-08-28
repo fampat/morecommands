@@ -9,6 +9,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
+
+import com.mrnobody.morecommands.command.ClientCommand;
+import com.mrnobody.morecommands.command.CommandBase.ServerType;
+import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.network.PacketDispatcher;
+import com.mrnobody.morecommands.util.DynamicClassLoader;
+import com.mrnobody.morecommands.util.LanguageManager;
+import com.mrnobody.morecommands.util.Reference;
+
 import net.minecraft.command.ICommandSender;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
@@ -23,16 +33,6 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
 import net.minecraftforge.fml.relauncher.Side;
 
-import org.apache.logging.log4j.Logger;
-
-import com.mrnobody.morecommands.command.ClientCommand;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.network.PacketDispatcher;
-import com.mrnobody.morecommands.util.DynamicClassLoader;
-import com.mrnobody.morecommands.util.LanguageManager;
-import com.mrnobody.morecommands.util.Reference;
-
 /**
  * The main mod class loaded by forge
  * 
@@ -44,7 +44,7 @@ public class MoreCommands {
 	@Instance
 	private static MoreCommands instance;
 	
-	@SidedProxy(clientSide="com.mrnobody.morecommands.core.ClientProxy", serverSide="com.mrnobody.morecommands.core.ServerProxy", modId=Reference.MODID)
+	@SidedProxy(clientSide="com.mrnobody.morecommands.core.ClientProxy", serverSide="com.mrnobody.morecommands.core.CommonProxy", modId=Reference.MODID)
 	private static CommonProxy proxy;
 	
 	public static final DynamicClassLoader CLASSLOADER = new DynamicClassLoader(MoreCommands.class.getClassLoader());
@@ -112,7 +112,7 @@ public class MoreCommands {
 	 * @return Whether the mod runs on a dedicated server
 	 */
 	public static boolean isServerSide() {
-		return MoreCommands.proxy instanceof ServerProxy;
+		return !(MoreCommands.proxy instanceof ClientProxy);
 	}
 	
 	/**

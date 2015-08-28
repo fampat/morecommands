@@ -11,6 +11,10 @@ import java.io.File;
 public class GlobalSettings {
 	public static boolean welcome_message = true;
 	public static boolean enableVars = true;
+	public static boolean retryHandshake = true;
+	public static int startupTimeout = 10;
+	public static int handshakeTimeout = 3;
+	public static int handshakeRetries = 3;
 	
 	//public static boolean creeperExplosion = true;
 	//public static boolean freezeEntities = false;
@@ -28,6 +32,10 @@ public class GlobalSettings {
 		
 		GlobalSettings.welcome_message = settings.getBoolean("welcome_message", true);
 		GlobalSettings.enableVars = settings.getBoolean("enableVars", true);
+		GlobalSettings.retryHandshake = settings.getBoolean("retryHandshake", true);
+		GlobalSettings.startupTimeout = settings.getInteger("startupTimeout", 10);
+		GlobalSettings.handshakeTimeout = settings.getInteger("handshakeTimeout", 3);
+		GlobalSettings.handshakeRetries = settings.getInteger("handshakeRetries", 3);
 		
 		//those settings are not intended to be read or written
 		
@@ -48,6 +56,10 @@ public class GlobalSettings {
 		
 		settings.set("welcome_message", GlobalSettings.welcome_message);
 		settings.set("enableVars", GlobalSettings.enableVars);
+		settings.set("retryHandshake", GlobalSettings.retryHandshake);
+		settings.set("startupTimeout", GlobalSettings.startupTimeout);
+		settings.set("handshakeTimeout", GlobalSettings.handshakeTimeout);
+		settings.set("handshakeRetries", GlobalSettings.handshakeRetries);
 		
 		//those settings are not intended to be read or written
 		

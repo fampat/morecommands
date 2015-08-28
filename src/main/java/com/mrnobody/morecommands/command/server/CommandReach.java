@@ -34,13 +34,13 @@ public class CommandReach extends ServerCommand {
 		if (params.length > 0) {
 			try {
 				float distance = Float.parseFloat(params[0]);
-				MoreCommands.getMoreCommands().getPacketDispatcher().sendS08Reach(playerEntity, distance);
+				MoreCommands.getMoreCommands().getPacketDispatcher().sendS09Reach(playerEntity, distance);
 				playerEntity.theItemInWorldManager.setBlockReachDistance(distance);
 				sender.sendLangfileMessage("command.reach.set", params[0]);
 			}
 			catch (NumberFormatException e) {
 				if (params[0].equalsIgnoreCase("reset")) {
-					MoreCommands.getMoreCommands().getPacketDispatcher().sendS08Reach(playerEntity, 5.0F);
+					MoreCommands.getMoreCommands().getPacketDispatcher().sendS09Reach(playerEntity, 5.0F);
 					playerEntity.theItemInWorldManager.setBlockReachDistance(5.0F);
 					sender.sendLangfileMessage("command.reach.reset");
 				}

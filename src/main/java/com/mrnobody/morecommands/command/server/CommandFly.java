@@ -1,9 +1,5 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraftforge.event.entity.living.LivingFallEvent;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
@@ -12,6 +8,10 @@ import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraftforge.event.entity.living.LivingFallEvent;
 
 @Command(
 		name = "fly",
@@ -27,16 +27,13 @@ public class CommandFly extends ServerCommand implements Listener<LivingFallEven
 	public void onEvent(LivingFallEvent event) {
 		if (event.entity instanceof EntityPlayerMP) {
 			EntityPlayerMP player = (EntityPlayerMP) event.entity;
-			
-			if (ServerPlayerSettings.playerSettingsMapping.containsKey(event.entity)) {
-				ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(event.entity);
+			ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings(player);
 				
-		        if (settings.noFall) {event.setCanceled(true);}
-		        else if (settings.justDisabled) {
-		        	event.setCanceled(true);
-		        	settings.justDisabled = false;
-		        }
-			}
+		    if (settings.noFall) {event.setCanceled(true);}
+		    else if (settings.justDisabled) {
+		    	event.setCanceled(true);
+		        settings.justDisabled = false;
+		    }
 		}
 	}
 
@@ -55,7 +52,7 @@ public class CommandFly extends ServerCommand implements Listener<LivingFallEven
 	@Override
     public void execute(CommandSender sender, String[] params) throws CommandException {
 		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
 		boolean fly;
 		
         if (params.length > 0) {

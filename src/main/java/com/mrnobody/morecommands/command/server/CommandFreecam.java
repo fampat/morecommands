@@ -30,7 +30,7 @@ public class CommandFreecam extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
 		
 		if (settings.freecam) {
 			settings.freecam = false;
@@ -41,7 +41,7 @@ public class CommandFreecam extends ServerCommand {
             sender.sendLangfileMessage("command.freecam.on");
 		}
 		
-		MoreCommands.getMoreCommands().getPacketDispatcher().sendS03Freecam((EntityPlayerMP) sender.getMinecraftISender());
+		MoreCommands.getMoreCommands().getPacketDispatcher().sendS04Freecam((EntityPlayerMP) sender.getMinecraftISender());
 	}
 	
 	@Override

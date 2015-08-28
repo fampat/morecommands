@@ -1,20 +1,22 @@
-package com.mrnobody.morecommands.command.client;
+package com.mrnobody.morecommands.command.server;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.monster.EntityCreeper;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-
-import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
 import com.mrnobody.morecommands.handler.Listeners.Listener;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.monster.EntityCreeper;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.world.World;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 @Command(
 		name = "freeze",
@@ -23,17 +25,20 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.freeze.syntax",
 		videoURL = "command.freeze.videoURL"
 		)
-public class CommandFreeze extends ClientCommand implements Listener<TickEvent> {
-	private boolean freeze = false;
+public class CommandFreeze extends ServerCommand implements Listener<TickEvent> {
+	private List<World> worldsToFreeze = new ArrayList<World>();
 	
 	public CommandFreeze() {
 		EventHandler.TICK.getHandler().register(this);
 	}
 	
 	@Override
-	public void onEvent(TickEvent event) {
-		if (this.freeze && Minecraft.getMinecraft().theWorld != null) {
-			List<Entity> loadedEntities = Minecraft.getMinecraft().theWorld.loadedEntityList;
+	public void onEvent(TickEvent ev) {
+		if (!(ev instanceof TickEvent.WorldTickEvent) || ev.phase != TickEvent.Phase.END) return;
+		TickEvent.WorldTickEvent event = (TickEvent.WorldTickEvent) ev;
+		
+		if (event.world != null && this.worldsToFreeze.contains(event.world)) {
+			List<Entity> loadedEntities = event.world.loadedEntityList;
 			if (loadedEntities == null) return;
 			
 			for (int i = 0; i < loadedEntities.size(); i++) {
@@ -67,25 +72,32 @@ public class CommandFreeze extends ClientCommand implements Listener<TickEvent> 
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
+		World world = sender.getWorld().getMinecraftWorld();
         if (params.length > 0) {
         	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
             	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		this.freeze = true;
+        		this.worldsToFreeze.add(world);
             	sender.sendLangfileMessage("command.freeze.on");
             }
             else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
             		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	this.freeze = false;
+            	this.worldsToFreeze.remove(world);
             	sender.sendLangfileMessage("command.freeze.off");
             }
             else throw new CommandException("command.freeze.failure", sender);
         }
         else {
-        	this.freeze = !this.freeze;
-        	sender.sendLangfileMessage(this.freeze ? "command.freeze.on" : "command.freeze.off");
+        	if (this.worldsToFreeze.contains(world)) this.worldsToFreeze.remove(world);
+        	else this.worldsToFreeze.add(world);
+        	sender.sendLangfileMessage(this.worldsToFreeze.contains(world) ? "command.freeze.on" : "command.freeze.off");
         }
 	}
 	
+	@Override
+	public void unregisterFromHandler() {
+		EventHandler.TICK.getHandler().unregister(this);
+	}
+
 	@Override
 	public Requirement[] getRequirements() {
 		return new Requirement[0];
@@ -93,16 +105,16 @@ public class CommandFreeze extends ClientCommand implements Listener<TickEvent> 
 
 	@Override
 	public ServerType getAllowedServerType() {
-		return ServerType.INTEGRATED;
+		return ServerType.ALL;
 	}
-	
-	@Override
-	public boolean registerIfServerModded() {
-		return true;
-	}
-	
+
 	@Override
 	public int getPermissionLevel() {
-		return 0;
+		return 2;
+	}
+	
+	@Override
+	public boolean canSenderUse(ICommandSender sender) {
+		return true;
 	}
 }

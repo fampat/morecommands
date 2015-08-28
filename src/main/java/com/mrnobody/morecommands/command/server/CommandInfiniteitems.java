@@ -3,12 +3,6 @@ package com.mrnobody.morecommands.command.server;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
-import net.minecraftforge.event.world.BlockEvent.PlaceEvent;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
@@ -16,6 +10,12 @@ import com.mrnobody.morecommands.handler.Listeners.TwoEventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
+import net.minecraftforge.event.world.BlockEvent.PlaceEvent;
 
 @Command(
 		name = "infiniteitems",
@@ -81,15 +81,15 @@ public class CommandInfiniteitems extends ServerCommand implements TwoEventListe
 	}
 	
 	public void onPlace(PlaceEvent event) {
-		if (ServerPlayerSettings.playerSettingsMapping.containsKey(event.player)
-			&& ServerPlayerSettings.playerSettingsMapping.get(event.player).infiniteitems
+		if (event.player instanceof EntityPlayerMP
+			&& ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) event.player).infiniteitems
 			&& event.player.getCurrentEquippedItem() != null)
 			this.stacks.offer(new Stack(event.player, event.player.inventory.currentItem));
-	  }
+	}
 	  
 	public void onDestroy(PlayerDestroyItemEvent event) {
-		if (ServerPlayerSettings.playerSettingsMapping.containsKey(event.entityPlayer)
-			&& ServerPlayerSettings.playerSettingsMapping.get(event.entityPlayer).infiniteitems
+		if (event.entityPlayer instanceof EntityPlayerMP
+			&& ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) event.entityPlayer).infiniteitems
 			&& event.original != null && event.original.stackSize < 1) event.original.stackSize += 1;
 	}
 	
@@ -106,7 +106,7 @@ public class CommandInfiniteitems extends ServerCommand implements TwoEventListe
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
     	
         if (params.length > 0) {
         	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")

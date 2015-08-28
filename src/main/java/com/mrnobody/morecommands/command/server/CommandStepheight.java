@@ -39,7 +39,7 @@ public class CommandStepheight extends ServerCommand {
 				else throw new CommandException("command.stepheight.invalidArg", sender);
 			}
 			
-			MoreCommands.getMoreCommands().getPacketDispatcher().sendS11Stepheight((EntityPlayerMP) sender.getMinecraftISender(), height);
+			MoreCommands.getMoreCommands().getPacketDispatcher().sendS12Stepheight((EntityPlayerMP) sender.getMinecraftISender(), height);
 		}
 		else throw new CommandException("command.stepheight.invalidUsage", sender);
 	}

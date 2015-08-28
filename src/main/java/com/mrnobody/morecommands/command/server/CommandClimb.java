@@ -1,14 +1,14 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 
 @Command(
 		name = "climb",
@@ -31,7 +31,7 @@ public class CommandClimb extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
 		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
     	
         if (params.length > 0) {
         	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
@@ -51,7 +51,7 @@ public class CommandClimb extends ServerCommand {
         	sender.sendLangfileMessage(settings.climb ? "command.climb.on" : "command.climb.off");
         }
         
-        MoreCommands.getMoreCommands().getPacketDispatcher().sendS02Climb(player, settings.climb);
+        MoreCommands.getMoreCommands().getPacketDispatcher().sendS03Climb(player, settings.climb);
 	}
 	
 	@Override

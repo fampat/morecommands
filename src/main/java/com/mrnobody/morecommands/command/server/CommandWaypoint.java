@@ -4,16 +4,16 @@ import java.text.DecimalFormat;
 import java.util.Iterator;
 import java.util.Map;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.BlockPos;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.BlockPos;
 
 @Command(
 		name = "waypoint",
@@ -37,7 +37,7 @@ public class CommandWaypoint extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
 		
 		if (params.length > 1) {
 			Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());

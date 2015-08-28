@@ -4,17 +4,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraftforge.fml.common.event.FMLStateEvent;
 
 /**
- * Abstract base class for client and server Patcher.
- * Contains Information to the patches applied to players and server
+ * Class containing Information to the patches applied to players, server and client
  * 
  * @author MrNobody98
  *
  */
-public abstract class Patcher {
-	private static boolean serverModded = false;
+public final class AppliedPatches {
+	private AppliedPatches() {}
+	
+	private static volatile boolean serverModded = false;
+	private static volatile boolean handshakeFinished = false;
 	private static boolean serverConfigManagerPatched = false;
 	private static boolean serverCommandManagerPatched = false;
 	private static boolean clientCommandManagerPatched = false;
@@ -31,6 +32,7 @@ public abstract class Patcher {
 	 *
 	 */
 	public static class PlayerPatches {
+		private boolean handshakeFinished = false;
 		private boolean clientModded = false;
 		private boolean clientPlayerPatched = false;
 		private boolean serverPlayHandlerPatched = false;
@@ -65,6 +67,13 @@ public abstract class Patcher {
 		}
 		
 		/**
+		 * @return Whether the server completed a full handshake with the client
+		 */
+		public boolean handshakeFinished() {
+			return this.handshakeFinished;
+		}
+		
+		/**
 		 * Sets whether the client has this mod installed
 		 */
 		public void setClientModded(boolean modded) {
@@ -91,66 +100,82 @@ public abstract class Patcher {
 		public void setRenderGlobalPatched(boolean patched) {
 			this.renderGlobalPatched = patched;
 		}
+		
+		/**
+		 * Sets whether the server completed a full handshake with the client
+		 */
+		public void setHandshakeFinished(boolean finished) {
+			this.handshakeFinished = finished;
+		}
 	}
 	
 	/**
 	 * @return Whether the servers {@link net.minecraft.server.management.ServerConfigurationManager} was patched
 	 */
 	public static boolean serverConfigManagerPatched() {
-		return Patcher.serverConfigManagerPatched;
+		return AppliedPatches.serverConfigManagerPatched;
 	}
 	
 	/**
 	 * @return Whether the clients Command Handler ({@link net.minecraftforge.client.ClientCommandHandler}) was patched
 	 */
 	public static boolean clientCommandManagerPatched() {
-		return Patcher.clientCommandManagerPatched;
+		return AppliedPatches.clientCommandManagerPatched;
 	}
 	
 	/**
 	 * @return Whether the servers Command Handler ({@link net.minecraft.command.ServerCommandManager}) was patched
 	 */
 	public static boolean serverCommandManagerPatched() {
-		return Patcher.serverCommandManagerPatched;
+		return AppliedPatches.serverCommandManagerPatched;
 	}
 	
 	/**
 	 * @return Whether the server has this mod installed
 	 */
 	public static boolean serverModded() {
-		return Patcher.serverModded;
+		return AppliedPatches.serverModded;
+	}
+	
+	/**
+	 * @return Whether the handshake was finished
+	 */
+	public static boolean handshakeFinished() {
+		return AppliedPatches.handshakeFinished;
 	}
 	
 	/**
 	 * Sets whether the server has this mod installed
 	 */
 	public static void setServerModded(boolean modded) {
-		Patcher.serverModded = modded;
+		AppliedPatches.serverModded = modded;
+	}
+	
+	/**
+	 * Sets whether the handshake is finished
+	 */
+	public static void setHandshakeFinished(boolean finished) {
+		AppliedPatches.handshakeFinished = finished;
 	}
 	
 	/**
 	 * Sets whether the servers {@link net.minecraft.server.management.ServerConfigurationManager} was patched
 	 */
 	public static void setServerConfigManagerPatched(boolean patched) {
-		Patcher.serverConfigManagerPatched = patched;
+		AppliedPatches.serverConfigManagerPatched = patched;
 	}
 	
 	/**
 	 * Sets whether the clients Command Handler ({@link net.minecraftforge.client.ClientCommandHandler}) was patched
 	 */
 	public static void setClientCommandManagerPatched(boolean patched) {
-		Patcher.clientCommandManagerPatched = patched;
+		AppliedPatches.clientCommandManagerPatched = patched;
 	}
 	
 	/**
 	 * Sets whether the servers Command Handler ({@link net.minecraft.command.ServerCommandManager}) was patched
 	 */
 	public static void setServerCommandManagerPatched(boolean patched) {
-		Patcher.serverCommandManagerPatched = patched;
+		AppliedPatches.serverCommandManagerPatched = patched;
 	}
-	
-	/**
-	 * Applies the patches corresponding to the current {@link FMLStateEvent}
-	 */
-	public abstract void applyModStatePatch(FMLStateEvent stateEvent);
 }

@@ -1,5 +1,13 @@
 package com.mrnobody.morecommands.command.server;
 
+import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.handler.EventHandler;
+import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.util.ServerPlayerSettings;
+import com.mrnobody.morecommands.wrapper.CommandException;
+import com.mrnobody.morecommands.wrapper.CommandSender;
+
 import net.minecraft.command.ICommandSender;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
@@ -18,14 +26,6 @@ import net.minecraft.stats.StatList;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
-
-import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 @Command(
 	name = "superpunch",
@@ -46,8 +46,8 @@ public class CommandSuperpunch extends ServerCommand implements Listener<AttackE
 	
 	@Override
 	public void onEvent(AttackEntityEvent event) {
-		if (ServerPlayerSettings.playerSettingsMapping.containsKey(event.entity) && event.entity instanceof EntityPlayer) {
-			ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(event.entity);
+		if (event.entity instanceof EntityPlayerMP) {
+			ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) event.entity);
 			
 			if (settings.superpunch > 0) {
 				event.setCanceled(true);
@@ -68,7 +68,7 @@ public class CommandSuperpunch extends ServerCommand implements Listener<AttackE
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
         	
         if (params.length > 0) {
         	if (params[0].equalsIgnoreCase("reset")) {

@@ -1,8 +1,5 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.server.MinecraftServer;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
@@ -12,6 +9,9 @@ import com.mrnobody.morecommands.patch.ServerConfigurationManagerIntegrated;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.server.MinecraftServer;
 
 @Command(
 		name = "keepinventory",
@@ -34,7 +34,7 @@ public class CommandKeepinventory extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
 		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
 		boolean keepinventory;
 		
         if (params.length > 0) {

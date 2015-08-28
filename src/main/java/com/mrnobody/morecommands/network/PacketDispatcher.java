@@ -1,10 +1,14 @@
 package com.mrnobody.morecommands.network;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-
 import java.util.UUID;
 
+import com.google.common.base.Charsets;
+import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.util.Reference;
+import com.mrnobody.morecommands.util.ServerPlayerSettings;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -14,30 +18,26 @@ import net.minecraftforge.fml.common.network.FMLNetworkEvent.ServerCustomPacketE
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 
-import com.google.common.base.Charsets;
-import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.util.Reference;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-
 public final class PacketDispatcher {
 	private static final byte C00HANDSHAKE            = 0x00;
 	private static final byte C01CLIENTCOMMAND        = 0x01;
-	private static final byte C02KEYINPUT             = 0x02;
-	private static final byte C03OUTPUT               = 0x03;
-	private static final byte C04WORLD                = 0x04;
-	private static final byte S00HANDSHAKE            = 0x05;
-	private static final byte S01CLIENTCOMMAND        = 0x06;
-	private static final byte S02CLIMB                = 0x07;
-	private static final byte S03FREECAM              = 0x08;
-	private static final byte S04FREEZECAM            = 0x09;
-	private static final byte S05XRAY                 = 0x0A;
-	private static final byte S06NOCLIP               = 0x0B;
-	private static final byte S07LIGHT                = 0x0C;
-	private static final byte S08REACH                = 0x0D;
-	private static final byte S09EXECUTECLIENTCOMMAND = 0x0E;
-	private static final byte S10GRAVITY              = 0x0F;
-	private static final byte S11STEPHEIGHT           = 0x10;
-	private static final byte S12RIDE                 = 0x11;
+	private static final byte C02FINISHHANDSHAKE      = 0x02;
+	private static final byte C03KEYINPUT             = 0x03;
+	private static final byte C04OUTPUT               = 0x04;
+	private static final byte C05WORLD                = 0x05;
+	private static final byte S00HANDSHAKE            = 0x06;
+	private static final byte S01CLIENTCOMMAND        = 0x07;
+	private static final byte S02HANDSHAKEFINISHED    = 0x08;
+	private static final byte S03CLIMB                = 0x09;
+	private static final byte S04FREECAM              = 0x0A;
+	private static final byte S05FREEZECAM            = 0x0B;
+	private static final byte S06XRAY                 = 0x0C;
+	private static final byte S07NOCLIP               = 0x0D;
+	private static final byte S08LIGHT                = 0x0E;
+	private static final byte S09REACH                = 0x0F;
+	private static final byte S10EXECUTECLIENTCOMMAND = 0x10;
+	private static final byte S11GRAVITY              = 0x11;
+	private static final byte S12STEPHEIGHT           = 0x12;
 	
 	private static final byte XRAY_SHOWCONFIG       = 0;
 	private static final byte XRAY_CHANGESETTINGS   = 1;
@@ -81,22 +81,23 @@ public final class PacketDispatcher {
 		switch (id) {
 			case C00HANDSHAKE:            processC00Handshake(payload); break;
 			case C01CLIENTCOMMAND:        processC01ClientCommand(payload); break;
-			case C02KEYINPUT:             processC02KeyInput(payload); break;
-			case C03OUTPUT:               processC03Output(payload); break;
-			case C04WORLD:                processC04World(payload); break;
+			case C02FINISHHANDSHAKE:      processC02FinishHandshake(payload); break;
+			case C03KEYINPUT:             processC03KeyInput(payload); break;
+			case C04OUTPUT:               processC04Output(payload); break;
+			case C05WORLD:                processC05World(payload); break;
 			case S00HANDSHAKE:            processS00Handshake(payload); break;
 			case S01CLIENTCOMMAND:        processS01ClientCommand(payload); break;
-			case S02CLIMB:                processS02Climb(payload); break;
-			case S03FREECAM:              processS03Freecam(payload); break;
-			case S04FREEZECAM:            processS04Freezecam(payload); break;
-			case S05XRAY:                 processS05Xray(payload); break;
-			case S06NOCLIP:               processS06Noclip(payload); break;
-			case S07LIGHT:                processS07Light(payload); break;
-			case S08REACH:                processS08Reach(payload); break;
-			case S09EXECUTECLIENTCOMMAND: processS09ExecuteClientCommand(payload); break;
-			case S10GRAVITY:              processS10Gravity(payload); break;
-			case S11STEPHEIGHT:           processS11Stepheight(payload); break;
-			case S12RIDE:                 processS12Ride(payload); break;
+			case S02HANDSHAKEFINISHED:    processS02HandshakeFinished(payload); break;
+			case S03CLIMB:                processS03Climb(payload); break;
+			case S04FREECAM:              processS04Freecam(payload); break;
+			case S05FREEZECAM:            processS05Freezecam(payload); break;
+			case S06XRAY:                 processS06Xray(payload); break;
+			case S07NOCLIP:               processS07Noclip(payload); break;
+			case S08LIGHT:                processS08Light(payload); break;
+			case S09REACH:                processS09Reach(payload); break;
+			case S10EXECUTECLIENTCOMMAND: processS10ExecuteClientCommand(payload); break;
+			case S11GRAVITY:              processS11Gravity(payload); break;
+			case S12STEPHEIGHT:           processS12Stepheight(payload); break;
 			default:                      break;
 		}
 	}
@@ -116,21 +117,27 @@ public final class PacketDispatcher {
 		this.packetHandlerServer.clientCommand(uuid, command);
 	}
 	
-	private void processC02KeyInput(ByteBuf payload) {
+	private void processC02FinishHandshake(ByteBuf payload) {
+		UUID uuid = readUUID(payload);
+		
+		this.packetHandlerServer.finishHandshake(uuid);
+	}
+	
+	private void processC03KeyInput(ByteBuf payload) {
 		int key = payload.readInt();
 		UUID uuid = readUUID(payload);
 		
 		this.packetHandlerServer.input(uuid, key);
 	}
 	
-	private void processC03Output(ByteBuf payload) {
+	private void processC04Output(ByteBuf payload) {
 		boolean output = payload.readBoolean();
 		UUID uuid = readUUID(payload);
 		
 		this.packetHandlerServer.output(uuid, output);
 	}
 	
-	private void processC04World(ByteBuf payload) {
+	private void processC05World(ByteBuf payload) {
 		String params = readString(payload);
 		UUID uuid = readUUID(payload);
 		
@@ -146,20 +153,24 @@ public final class PacketDispatcher {
 		this.packetHandlerClient.sendClientCommands();
 	}
 	
-	private void processS02Climb(ByteBuf payload) {
+	private void processS02HandshakeFinished(ByteBuf payload) {
+		this.packetHandlerClient.handshakeFinished();
+	}
+	
+	private void processS03Climb(ByteBuf payload) {
 		boolean allowClimb = payload.readBoolean();
 		this.packetHandlerClient.handleClimb(allowClimb);
 	}
 	
-	private void processS03Freecam(ByteBuf payload) {
+	private void processS04Freecam(ByteBuf payload) {
 		this.packetHandlerClient.handleFreecam();
 	}
 	
-	private void processS04Freezecam(ByteBuf payload) {
+	private void processS05Freezecam(ByteBuf payload) {
 		this.packetHandlerClient.handleFreezeCam();
 	}
 	
-	private void processS05Xray(ByteBuf payload) {
+	private void processS06Xray(ByteBuf payload) {
 		byte id = readID(payload);
 		
 		if (id == XRAY_SHOWCONFIG) this.packetHandlerClient.handleXray();
@@ -177,37 +188,33 @@ public final class PacketDispatcher {
 		}
 	}
 	
-	private void processS06Noclip(ByteBuf payload) {
+	private void processS07Noclip(ByteBuf payload) {
 		boolean allowNoclip = payload.readBoolean();
 		this.packetHandlerClient.handleNoclip(allowNoclip);
 	}
 	
-	private void processS07Light(ByteBuf payload) {
+	private void processS08Light(ByteBuf payload) {
 		this.packetHandlerClient.handleLight();
 	}
 	
-	private void processS08Reach(ByteBuf payload) {
+	private void processS09Reach(ByteBuf payload) {
 		float reachDistance = payload.readFloat();
 		this.packetHandlerClient.handleReach(reachDistance);
 	}
 	
-	private void processS09ExecuteClientCommand(ByteBuf payload) {
+	private void processS10ExecuteClientCommand(ByteBuf payload) {
 		String command = readString(payload);
 		this.packetHandlerClient.executeClientCommand(command);
 	}
 	
-	private void processS10Gravity(ByteBuf payload) {
+	private void processS11Gravity(ByteBuf payload) {
 		double gravity = payload.readDouble();
 		this.packetHandlerClient.setGravity(gravity);
 	}
 	
-	private void processS11Stepheight(ByteBuf payload) {
+	private void processS12Stepheight(ByteBuf payload) {
 		float stepheight = payload.readFloat();
 		this.packetHandlerClient.setStepheight(stepheight);
-	}
-	
-	private void processS12Ride(ByteBuf payload) {
-		this.packetHandlerClient.ride();
 	}
 	
 	public void sendC00Handshake(boolean clientPlayerPatched, boolean renderGlobalPatched) {
@@ -229,27 +236,35 @@ public final class PacketDispatcher {
 		this.channel.sendToServer(new FMLProxyPacket(payload, Reference.CHANNEL));
 	}
 	
-	public void sendC02KeyInput(int key) {
+	public void sendC02FinishHandshake() {
 		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-		writeID(payload, C02KEYINPUT);
+		writeID(payload, C02FINISHHANDSHAKE);
+		
+		writeUUID(payload);
+		this.channel.sendToServer(new FMLProxyPacket(payload, Reference.CHANNEL));
+	}
+	
+	public void sendC03KeyInput(int key) {
+		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
+		writeID(payload, C03KEYINPUT);
 		
 		payload.writeInt(key);
 		writeUUID(payload);
 		this.channel.sendToServer(new FMLProxyPacket(payload, Reference.CHANNEL));
 	}
 	
-	public void sendC03Output(boolean output) {
+	public void sendC04Output(boolean output) {
 		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-		writeID(payload, C03OUTPUT);
+		writeID(payload, C04OUTPUT);
 		
 		payload.writeBoolean(output);
 		writeUUID(payload);
 		this.channel.sendToServer(new FMLProxyPacket(payload, Reference.CHANNEL));
 	}
 	
-	public void sendC04World(String params) {
+	public void sendC05World(String params) {
 		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-		writeID(payload, C04WORLD);
+		writeID(payload, C05WORLD);
 		
 		writeString(params, payload);
 		writeUUID(payload);
@@ -270,37 +285,43 @@ public final class PacketDispatcher {
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	
-	public void sendS02Climb(EntityPlayerMP player, boolean climb) {
+	public void sendS02HandshakeFinished(EntityPlayerMP player) {
 		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-		writeID(payload, S02CLIMB);
+		writeID(payload, S02HANDSHAKEFINISHED);
+		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
+	}
+	
+	public void sendS03Climb(EntityPlayerMP player, boolean climb) {
+		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
+		writeID(payload, S03CLIMB);
 		
 		payload.writeBoolean(climb);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	
-	public void sendS03Freecam(EntityPlayerMP player) {
+	public void sendS04Freecam(EntityPlayerMP player) {
 		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-		writeID(payload, S03FREECAM);
+		writeID(payload, S04FREECAM);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	
-	public void sendS04Freezecam(EntityPlayerMP player) {
+	public void sendS05Freezecam(EntityPlayerMP player) {
 		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-		writeID(payload, S04FREEZECAM);
+		writeID(payload, S05FREEZECAM);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	
-	public void sendS05Xray(EntityPlayerMP player) {
+	public void sendS06Xray(EntityPlayerMP player) {
 		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S05XRAY);
+	    writeID(payload, S06XRAY);
 	    writeID(payload, XRAY_SHOWCONFIG);
 	    
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	
-	public void sendS05Xray(EntityPlayerMP player, boolean xrayEnabled, int blockRadius) {
+	public void sendS06Xray(EntityPlayerMP player, boolean xrayEnabled, int blockRadius) {
 		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S05XRAY);
+	    writeID(payload, S06XRAY);
 	    writeID(payload, XRAY_CHANGESETTINGS);
 	    
 	    payload.writeBoolean(xrayEnabled);
@@ -308,9 +329,9 @@ public final class PacketDispatcher {
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	
-	public void sendS05Xray(EntityPlayerMP player, boolean load, String setting) {
+	public void sendS06Xray(EntityPlayerMP player, boolean load, String setting) {
 		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S05XRAY);
+	    writeID(payload, S06XRAY);
 	    writeID(payload, XRAY_LOADSAVESETTINGS);
 	    
 	    payload.writeBoolean(load);
@@ -318,58 +339,51 @@ public final class PacketDispatcher {
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	
-	public void sendS06Noclip(EntityPlayerMP player, boolean noclip) {
+	public void sendS07Noclip(EntityPlayerMP player, boolean noclip) {
 		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-		writeID(payload, S06NOCLIP);
+		writeID(payload, S07NOCLIP);
 		
 		payload.writeBoolean(noclip);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	
-	public void sendS07Light(EntityPlayerMP player) {
+	public void sendS08Light(EntityPlayerMP player) {
 		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-		writeID(payload, S07LIGHT);
+		writeID(payload, S08LIGHT);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	
-	public void sendS08Reach(EntityPlayerMP player, float reachDistance) {
+	public void sendS09Reach(EntityPlayerMP player, float reachDistance) {
 		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-		writeID(payload, S08REACH);
+		writeID(payload, S09REACH);
 		
 		payload.writeFloat(reachDistance);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	
-	public void sendS09ExecuteClientCommand(EntityPlayerMP player, String command) {
-		if (ServerPlayerSettings.playerSettingsMapping.containsKey(player))
-			command = replaceVars(command, ServerPlayerSettings.playerSettingsMapping.get(player));
+	public void sendS10ExecuteClientCommand(EntityPlayerMP player, String command) {
+		command = replaceVars(command, ServerPlayerSettings.getPlayerSettings(player));
 		
 		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-		writeID(payload, S09EXECUTECLIENTCOMMAND);
+		writeID(payload, S10EXECUTECLIENTCOMMAND);
 		
 		writeString(command, payload);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	
-	public void sendS10Gravity(EntityPlayerMP player, double gravity) {
+	public void sendS11Gravity(EntityPlayerMP player, double gravity) {
 		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-		writeID(payload, S10GRAVITY);
+		writeID(payload, S11GRAVITY);
 		
 		payload.writeDouble(gravity);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	
-	public void sendS11Stepheight(EntityPlayerMP player, float stepheight) {
+	public void sendS12Stepheight(EntityPlayerMP player, float stepheight) {
 		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-		writeID(payload, S11STEPHEIGHT);
+		writeID(payload, S12STEPHEIGHT);
 		
 		payload.writeFloat(stepheight);
-		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
-	}
-	
-	public void sendS12Ride(EntityPlayerMP player) {
-		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-		writeID(payload, S12RIDE);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	

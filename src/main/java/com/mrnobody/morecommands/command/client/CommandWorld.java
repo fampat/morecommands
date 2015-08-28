@@ -22,7 +22,7 @@ import net.minecraft.world.WorldType;
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.core.Patcher;
+import com.mrnobody.morecommands.core.AppliedPatches;
 import com.mrnobody.morecommands.util.ReflectionHelper;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -117,19 +117,19 @@ public class CommandWorld extends ClientCommand {
 				}
 				else if (params[0].equalsIgnoreCase("seed") && MoreCommands.getMoreCommands().getPlayerUUID() != null) {
 					if (params.length > 2 && params[1].equalsIgnoreCase("set"))
-						MoreCommands.getMoreCommands().getPacketDispatcher().sendC04World("seed set " + params[2]);
-					else MoreCommands.getMoreCommands().getPacketDispatcher().sendC04World("seed");
+						MoreCommands.getMoreCommands().getPacketDispatcher().sendC05World("seed set " + params[2]);
+					else MoreCommands.getMoreCommands().getPacketDispatcher().sendC05World("seed");
 				}
 				else if (params[0].equalsIgnoreCase("name") && MoreCommands.getMoreCommands().getPlayerUUID() != null) {
 					if (params.length > 2 && params[1].equalsIgnoreCase("set"))
-						MoreCommands.getMoreCommands().getPacketDispatcher().sendC04World("name set " + params[2]);
-					else MoreCommands.getMoreCommands().getPacketDispatcher().sendC04World("name");
+						MoreCommands.getMoreCommands().getPacketDispatcher().sendC05World("name set " + params[2]);
+					else MoreCommands.getMoreCommands().getPacketDispatcher().sendC05World("name");
 				}
 				else throw new CommandException("command.world.invalidArg", sender);
 			}
 			else throw new CommandException("command.world.invalidUsage", sender);
 		}
-		else if (Patcher.serverModded()) {
+		else if (AppliedPatches.serverModded()) {
 			String command = "/world"; for (String param : params) command += " " + param;
 			Minecraft.getMinecraft().thePlayer.sendChatMessage(command);
 		}
@@ -179,6 +179,8 @@ public class CommandWorld extends ClientCommand {
 		return true;
 	}
 	
+	
+	@SuppressWarnings("resource")
 	private boolean copyFile(File sourceFile, File destFile) {
 		if (!destFile.exists()) {
 			try {

@@ -10,6 +10,7 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.living.LivingSetAttackTargetEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
@@ -29,13 +30,13 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
  */
 public enum EventHandler {
 	ATTACK(MinecraftForge.EVENT_BUS, new Handler<LivingAttackEvent>(LivingAttackEvent.class, false)),
+	SET_TARGET(MinecraftForge.EVENT_BUS, new Handler<LivingSetAttackTargetEvent>(LivingSetAttackTargetEvent.class, false)),
 	PLACE(MinecraftForge.EVENT_BUS, new Handler<PlaceEvent>(PlaceEvent.class, false)),
 	BREAKSPEED(MinecraftForge.EVENT_BUS, new Handler<BreakSpeed>(BreakSpeed.class, false)),
 	COMMAND(MinecraftForge.EVENT_BUS, new Handler<CommandEvent>(CommandEvent.class, false)),
 	ENTITYJOIN(MinecraftForge.EVENT_BUS, new Handler<EntityJoinWorldEvent>(EntityJoinWorldEvent.class, false)),
 	EXPLOSION(MinecraftForge.EVENT_BUS, new Handler<ExplosionEvent>(ExplosionEvent.class, false)),
 	FALL(MinecraftForge.EVENT_BUS, new Handler<LivingFallEvent>(LivingFallEvent.class, false)),
-	HURT(MinecraftForge.EVENT_BUS, new Handler<LivingHurtEvent>(LivingHurtEvent.class, false)),
 	DESTROY(MinecraftForge.EVENT_BUS, new Handler<PlayerDestroyItemEvent>(PlayerDestroyItemEvent.class, false)),
 	KEYINPUT(FMLCommonHandler.instance().bus(), new Handler<KeyInputEvent>(KeyInputEvent.class, true)),
 	PLAYER_ATTACK(MinecraftForge.EVENT_BUS, new Handler<AttackEntityEvent>(AttackEntityEvent.class, false)),
@@ -73,6 +74,11 @@ public enum EventHandler {
 	private static final Method register = getRegisterMethod();
 	
 	/**
+	 * The "onEvent" method of a {@link Handler}
+	 */
+	private static final Method onEvent = getOnEventMethod();
+	
+	/**
 	 * Gets the private "internal" register method of the {@link EventBus}
 	 * @see EventHandler#register
 	 */
@@ -86,23 +92,32 @@ public enum EventHandler {
 	}
 	
 	/**
+	 * Gets the "onEvent" method of the {@link Handler}
+	 * @see Handler#onEvent(Object)
+	 */
+	private static Method getOnEventMethod() {
+		try {
+			for (Method m : Handler.class.getMethods()) {
+				if (m.getName().equals("onEvent") && m.isAnnotationPresent(SubscribeEvent.class)) return m;
+			}
+			return null;
+		}
+		catch (Exception ex) {ex.printStackTrace(); return null;}
+	}
+	
+	/**
 	 * Registers a handler to a {@link cpw.mods.fml.common.eventhandler.EventBus}. <br>
 	 * The regular {@link cpw.mods.fml.common.eventhandler.EventBus#register(Object)} method can't
 	 * be used, because it doesn't work with generic types.
 	 * 
 	 * @author MrNobody98
 	 */
-	public static void register(EventBus bus, Handler handler, ModContainer container) {
-		if (handler.getEventClass() != null) {
-			Method onEvent = null;
-			for (Method m : handler.getClass().getMethods()) {
-				if (m.getName().equals("onEvent") && m.isAnnotationPresent(SubscribeEvent.class)) {onEvent = m; break;}
-			}
-			
-			if (onEvent != null && EventHandler.register != null && container != null) {
-				try {EventHandler.register.invoke(bus, handler.getEventClass(), handler, onEvent, container);}
-				catch (Exception ex) {ex.printStackTrace();}
-			}
+	public static boolean register(EventHandler handler, ModContainer container) {
+		if (handler.getHandler().getEventClass() != null && onEvent != null && register != null && container != null) {
+			try {EventHandler.register.invoke(handler.getBus(), handler.getHandler().getEventClass(), handler.getHandler(), onEvent, container);}
+			catch (Exception ex) {ex.printStackTrace(); return false;}
+			return true;
 		}
+		return false;
 	}
 }

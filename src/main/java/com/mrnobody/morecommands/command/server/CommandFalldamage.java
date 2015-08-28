@@ -1,9 +1,5 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraftforge.event.entity.living.LivingFallEvent;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
@@ -11,6 +7,10 @@ import com.mrnobody.morecommands.handler.Listeners.Listener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraftforge.event.entity.living.LivingFallEvent;
 
 @Command(
 		name = "falldamage",
@@ -28,10 +28,7 @@ public class CommandFalldamage extends ServerCommand implements Listener<LivingF
 	public void onEvent(LivingFallEvent event) {
 		if (event.entity instanceof EntityPlayerMP) {
 			EntityPlayerMP player = (EntityPlayerMP) event.entity;
-			
-			if (ServerPlayerSettings.playerSettingsMapping.containsKey(player)) {
-				if (!ServerPlayerSettings.playerSettingsMapping.get(player).falldamage) event.setCanceled(true);
-			}
+			if (!ServerPlayerSettings.getPlayerSettings(player).falldamage) event.setCanceled(true);
 		}
 	}
 	
@@ -47,7 +44,7 @@ public class CommandFalldamage extends ServerCommand implements Listener<LivingF
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
     	
         if (params.length > 0) {
         	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")

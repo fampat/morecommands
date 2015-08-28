@@ -1,17 +1,17 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.CommandHandler;
-import net.minecraft.command.ICommand;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.server.MinecraftServer;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.util.DummyCommand.DummyServerCommand;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.CommandHandler;
+import net.minecraft.command.ICommand;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
 
 @Command(
 		name = "unalias",
@@ -35,7 +35,7 @@ public class CommandUnalias extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
 		
 		if (params.length > 0) {
 			String alias = params[0];
@@ -56,7 +56,7 @@ public class CommandUnalias extends ServerCommand {
 	
 	@Override
 	public Requirement[] getRequirements() {
-		return new Requirement[0];
+		return new Requirement[] {Requirement.HANDSHAKE_FINISHED_IF_CLIENT_MODDED};
 	}
 	
 	@Override

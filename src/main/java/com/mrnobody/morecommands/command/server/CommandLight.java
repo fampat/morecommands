@@ -1,14 +1,14 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 
 @Command(
 		name = "light",
@@ -36,10 +36,10 @@ public class CommandLight extends ServerCommand {
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
 		
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
     	settings.lightWorld = !settings.lightWorld;
     		
-    	MoreCommands.getMoreCommands().getPacketDispatcher().sendS07Light(player);
+    	MoreCommands.getMoreCommands().getPacketDispatcher().sendS08Light(player);
     		
     	if (!settings.lightWorld) sender.sendLangfileMessage("command.light.restore");
     	else sender.sendLangfileMessage("command.light.lightup");

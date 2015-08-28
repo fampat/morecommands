@@ -11,6 +11,7 @@ command.generic.serverConfigManagerNotPatched=Der Patch fuer den Serverkonfigura
 command.generic.clientNotModded=Du hast den More Commands Mod nicht auf deinem PC installiert (client-setige Installation), dies ist fuer diesen Befehl aber Voraussetzung. Deshalb kann dieser Befehl nicht ausgefuehrt werden.
 command.generic.serverPlayerNotPatched=Der Patch fuer den server-seitigen Spieler (EntityPlayermP) wurde nicht angewendet, weshalb dieser Befehl nicht ausgefuehrt werden kann.
 command.generic.netServerPlayHandlerNotPatched=er Patch fuer den Network Play Handler (NetHandlerPlayServer) wurde nicht angewendet, weshalb dieser Befehl nicht ausgefuehrt werden kann.
+command.generic.handshakeNotFinished=Der Handshake war nicht erfolgreich, weswegen dieser Befehl nicht ausgefuehrt werden kann. Probiere "/handshake redo" um diesen Fehler zu beheben.
 
 command.generic.help.pageheader=====Hilfe (Seite %d von %d)====
 command.generic.help.commandheader======== Befehls-Hilfe =========
@@ -78,6 +79,18 @@ command.clouds.on=Wolken erfolgreich eingeschaltet
 command.clouds.off=Wolken erfolgreich ausgeschaltet
 command.clouds.failure=Uengultiges Argument.
 
+command.command.description=Schaltet Befehle an/aus
+command.command.example=/command disable ignorespawn
+command.command.syntax=/command <DISABLE|ENABLE> <BEFEHL>
+command.command.videoURL=youtu.be/xpHkPZOg3Jg
+command.command.enabled=Befehl aktiviert
+command.command.disabled=Befehl deaktiviert
+command.command.alreadyEnabled=Befehl bereits aktiviert
+command.command.alreadyDisabled=Befehl bereits deaktiviert oder nicht gefunden
+command.command.serverNotModded=Der Server hat MoreCommands nicht installiert, d.h. Befehle, die auf dem Server registriert sind, koennen nicht deaktiviert werden und lokal wurde der Befehl nicht gefunden
+command.command.wantedToDisable=Du kannst nicht den Befehl deaktivieren, der andere Befehle deaktiviert ;)
+command.command.invalidUsage=Falsche Benutzung. Benutze 'help command' um Hilfe zu bekommen.
+
 command.morecommands.description=Zeigt Informationen ueber den More Commands Mod
 command.morecommands.example=/morecommands
 command.morecommands.syntax=/morecommands
@@ -90,14 +103,6 @@ command.fog.videoURL=youtu.be/6okUNR7-5kg
 command.fog.invalidArg=Uengultiges Argument.
 command.fog.success=Render-Distanz erfolgreich geaendert
 command.fog.invalidUsage=Falsche Benutzung. Benutze 'help fog' um Hilfe zu bekommen.
-
-command.freeze.description=Friert Entities ein
-command.freeze.example=/freeze
-command.freeze.syntax=/freeze
-command.freeze.videoURL=youtu.be/egouVQSCY4Q
-command.freeze.on=Entities erfolgreich eingefroren
-command.freeze.off=Entities erfolgreich aufgetaut
-command.freeze.failure=Uengultiges Argument.
 
 command.helpSideClient.description=Zeigt Information, wie man mit diesem Mod Hilfe bekomment
 command.helpSideClient.example=/help
@@ -141,15 +146,6 @@ command.position.description=Zeigt die aktuelle Position
 command.position.example=/position
 command.position.syntax=/position
 command.position.videoURL=youtu.be/x6ffLV-TNjM
-
-command.ride.description=Laesst die jedes Entity, das du anschaust reiten (Benutze ride erneut, um abzusteigen)
-command.ride.example=/ride
-command.ride.syntax=/ride
-command.ride.videoURL=youtu.be/EUmDAi_sM9Y
-command.ride.mounted=Auf Entity aufgestiegen
-command.ride.notLiving=Dieses Entity lebt nicht
-command.ride.notFound=Kein Entity gefunden
-command.ride.dismounted=Von Entity abgestiegen
 
 command.shelp.description=Zeigt Hilfe zu server-seitigen Befehlen
 command.shelp.example=/shelp toggledownfall
@@ -539,6 +535,14 @@ command.fly.on=Flugmodus erfolgreich eingeschaltet
 command.fly.off=Flugmodus erfolgreich ausgeschaltet
 command.fly.failure=Ungueltiges Argument
 
+command.freeze.description=Friert Entities ein
+command.freeze.example=/freeze
+command.freeze.syntax=/freeze
+command.freeze.videoURL=youtu.be/egouVQSCY4Q
+command.freeze.on=Entities erfolgreich eingefroren
+command.freeze.off=Entities erfolgreich aufgetaut
+command.freeze.failure=Uengultiges Argument.
+
 command.freecam.description=Laesst dich die Kamera frei bewegen
 command.freecam.example=/freecam
 command.freecam.syntax=/freecam
@@ -568,6 +572,17 @@ command.grow.syntax=/grow [RADIUS]
 command.grow.videoURL=youtu.be/NPQvJOwLQDA
 command.grow.invalidArg=Der Radius muss eine Zahl sein
 command.grow.grown=Pflanzen gewachsen
+
+command.handshake.description=Fraegt den Handshake-Status ab/fuehrt ein Handshake durch
+command.handshake.example=/handshake redo
+command.handshake.syntax=/handshake <STATUS|REDO>
+command.handshake.videoURL=youtu.be/VqklcUfliKQ
+command.handshake.errored=Handshake fehlgeschlagen
+command.handshake.completed=Handshake komplett durchgefuehrt
+command.handshake.importantSent=Handshake grossteils durchgefuehrt
+command.handshake.handshakeFinished=Handshake bereits durchgefuehrt
+command.handshake.sendingHandshake=Handshake wird gesendet
+command.handshake.invalidArgs=Falsche Benutzung. Benutze 'help handshake' um Hilfe zu bekommen.
 
 command.hardcore.description=Schaltet Hardcore an/aus
 command.hardcore.example=/hardcore off
@@ -604,15 +619,17 @@ command.home.syntax=/home
 command.home.videoURL=youtu.be/3H-vnWXT2RQ
 command.home.atHome=Willkommen zu Hause
 
-command.hunger.description=Legt deinen Hunger fest
-command.hunger.example=/hunger 10
-command.hunger.syntax=/hunger <GET|MAX|MIN|WERT>
-command.hunger.videoURL=youtu.be/xHDQN8uvl9Y
+command.hunger.description=Legt deinen Hunger fest oder (de)aktiviert Hunger
+command.hunger.example=/hunger off
+command.hunger.syntax=/hunger [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE|GET|MAX|MIN|wert]
+command.hunger.videoURL=youtu.be/Oh6U4baovgA
 command.hunger.invalidParam=Ungueltiges Argument
 command.hunger.success=Hunger erfolgreich festgelegt
 command.hunger.error=Ein Fehler ist bei der Ausfuehrung aufgetreten
 command.hunger.invalidUsage=Falsche Benutzung. Benutze 'help hunger' um Hilfe zu bekommen.
 command.hunger.get=Dein Hunger betraegt %d
+command.hunger.off=Du wirst keinen Hunger haben
+command.hunger.on=Du wirst Hunger haben
 
 command.ignite.description=Zuendet den Block an, den du anschaust
 command.ignite.example=/ignite
@@ -620,7 +637,7 @@ command.ignite.syntax=/ignite
 command.ignite.videoURL=youtu.be/qpyY49zJs8k
 command.ignite.notInSight=Kein Block in Sicht
 
-command.ignorespawn.description=Verhindert das Spawned bestimmter Kreaturen
+command.ignorespawn.description=Verhindert das Spawnen bestimmter Kreaturen
 command.ignorespawn.example=/ignorespawn enderman
 command.ignorespawn.syntax=/ignorespawn <ENTITY>
 command.ignorespawn.videoURL=youtu.be/j7A9hcgj8-Q
@@ -758,6 +775,16 @@ command.move.invalidDirection=Ungueltige Richtung
 command.move.NAN=Die Distanz muss eine Zahl sein
 command.move.invalidUsage=Falsche Benutzung. Benutze 'help move' um Hilfe zu bekommen.
 
+command.noattack.description=Verhindert das Angreifen bestimmter Kreaturen
+command.noattack.example=/noattack Spider
+command.noattack.syntax=/noattack <ENTITY>
+command.noattack.videoURL=youtu.be/uHr0A5fNv3A
+command.noattack.unknownEntity=Unbekannte Kreatur
+command.noattack.notLiving=Das Entity ist kein lebendes Entity
+command.noattack.removed=Die Kreatur wird dich wieder angreifen
+command.noattack.added=Die Kreatur wird dich nicht angreifen
+command.noattack.invalidUsage=Falsche Benutzung. Benutze 'help noattack' um Hilfe zu bekommen.
+
 command.noclip.description=Schaltet Clipping an/aus
 command.noclip.example=/noclip off
 command.noclip.syntax=/noclip [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
@@ -814,6 +841,15 @@ command.return.example=/return
 command.return.syntax=/return
 command.return.videoURL=youtu.be/M2J2dld-wgE
 command.return.noLastPos=Du hast letztlich keinen Teleport durchgefuehrt
+
+command.ride.description=Laesst die jedes Entity, das du anschaust reiten (Benutze ride erneut, um abzusteigen)
+command.ride.example=/ride
+command.ride.syntax=/ride
+command.ride.videoURL=youtu.be/EUmDAi_sM9Y
+command.ride.mounted=Auf Entity aufgestiegen
+command.ride.notLiving=Dieses Entity lebt nicht
+command.ride.notFound=Kein Entity gefunden
+command.ride.dismounted=Von Entity abgestiegen
 
 command.scuba.description=Erlaubt es, unter Wasser zu atmen
 command.scuba.example=/scuba on
@@ -938,12 +974,13 @@ command.superpunch.success=Die Rueckstoss-Staerke wurde erfolgreich festgelegt
 command.superpunch.NAN=Die Starke muss eine Zahl sein
 command.superpunch.invalidUsage=Falsche Benutzung. Benutze 'help superpunch' um Hilfe zu bekommen.
 
-command.teleport.description=Teleportiert dich zu Koordinaten
+command.teleport.description=Teleportiert dich zu Koordinaten oder zu einem anderen Spieler
 command.teleport.example=/teleport 156 57 234
-command.teleport.syntax=/teleport <X|Y|Z>
+command.teleport.syntax=/teleport <SPIELER|X Y Z>
 command.teleport.videoURL=youtu.be/h1UuzNxhM6I
 command.teleport.NAN=Die Koordinaten muessen Zahlen sein
 command.teleport.invalidParams=Es fehlen Koordinaten
+command.teleport.playerNotFound=Spieler nicht gefunden
 
 command.var.description=Schaltet Variablen im Chat ein/aus und setzt/loescht Variablen. Variablen koennen mit %var% genutzt werden (Prozent-Zeichen: "%%")
 command.var.example=/var set x Hallo Welt

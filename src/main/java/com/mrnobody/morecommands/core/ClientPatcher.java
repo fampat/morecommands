@@ -4,47 +4,30 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.network.NetHandlerPlayClient;
-import net.minecraft.client.resources.SimpleReloadableResourceManager;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.network.NetHandlerPlayServer;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.server.management.ServerConfigurationManager;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatStyle;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraftforge.client.ClientCommandHandler;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.fml.client.FMLClientHandler;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
-import net.minecraftforge.fml.common.event.FMLStateEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
-
-import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.client.CommandAlias;
 import com.mrnobody.morecommands.network.PacketHandlerClient;
 import com.mrnobody.morecommands.patch.ClientCommandManager;
 import com.mrnobody.morecommands.patch.RenderGlobal;
-import com.mrnobody.morecommands.patch.ServerCommandManager;
 import com.mrnobody.morecommands.patch.ServerConfigurationManagerIntegrated;
 import com.mrnobody.morecommands.util.ClientPlayerSettings;
-import com.mrnobody.morecommands.util.GlobalSettings;
-import com.mrnobody.morecommands.util.Reference;
 import com.mrnobody.morecommands.util.ReflectionHelper;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.client.resources.SimpleReloadableResourceManager;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLStateEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 
 /**
  * The Patcher used by the Client proxy
@@ -52,28 +35,13 @@ import com.mrnobody.morecommands.util.ServerPlayerSettings;
  * @author MrNobody98
  *
  */
-public class ClientPatcher extends Patcher {
-	private MoreCommands mod;
-	
-	public ClientPatcher() {
-		this.mod = MoreCommands.getMoreCommands();
-	}
-	
-	/**
-	 * Registers the Patcher to the event buses to receive events determining when patches shall be applied
-	 */
-	private void loadEventPatches() {
-		MinecraftForge.EVENT_BUS.register(this);
-		FMLCommonHandler.instance().bus().register(this);
-	}
-	
+public class ClientPatcher extends CommonPatcher {
+	@Override
 	public void applyModStatePatch(FMLStateEvent stateEvent) {
+		super.applyModStatePatch(stateEvent);
+		
 		if (stateEvent instanceof FMLInitializationEvent) {
 			this.applyInitPatches();
-			this.loadEventPatches();
-		}
-		else if (stateEvent instanceof FMLServerAboutToStartEvent) {
-			this.applyServerStartPatches((FMLServerAboutToStartEvent) stateEvent);
 		}
 		else if (stateEvent instanceof FMLPostInitializationEvent) {
 			this.applyPostInitPatches();
@@ -115,61 +83,21 @@ public class ClientPatcher extends Patcher {
 			instance.set(null, new ClientCommandManager((ClientCommandHandler) instance.get(null)));
 			
 			this.mod.getLogger().info("Client Command Manager Patches applied");
-			Patcher.setClientCommandManagerPatched(true);
+			AppliedPatches.setClientCommandManagerPatched(true);
 		}
 		catch (Exception ex)  {ex.printStackTrace();}
 	}
-
-	/**
-	 * Applies patches before the server starts, which are patches for: <br>
-	 * {@link net.minecraft.command.ServerCommandManager} and {@link ServerConfigurationManager}
-	 */
-	private void applyServerStartPatches(FMLServerAboutToStartEvent event) {
-		Field commandManager = ReflectionHelper.getField(MinecraftServer.class, "commandManager");
-		
-		if (commandManager != null) {
-			try {
-				commandManager.set(MinecraftServer.getServer(), new ServerCommandManager(MinecraftServer.getServer().getCommandManager()));
-				this.mod.getLogger().info("Server Command Manager Patches applied");
-				Patcher.setServerCommandManagerPatched(true);
-			}
-			catch (Exception ex) {
-				ex.printStackTrace();
-			}
+	
+	@Override
+	protected boolean applyServerConfigManagerPatch(MinecraftServer server) {
+		if (server instanceof IntegratedServer) {
+			server.setConfigManager(new ServerConfigurationManagerIntegrated((IntegratedServer) server));
+			return true;
 		}
-		
-		if (event.getServer() instanceof IntegratedServer) {
-			event.getServer().setConfigManager(new ServerConfigurationManagerIntegrated((IntegratedServer) event.getServer()));
-			this.mod.getLogger().info("Server Configuration Manager Patches applied");
-			Patcher.setServerConfigManagerPatched(true);
-		}
+		 return false;
 	}
 	
 	private boolean clientNetHandlerPatchApplied = false;
-	
-	/**
-	 * Applies patches for a player joining a world, which is currently only the patch for: <br>
-	 * {@link NetHandlerPlayServer}
-	 */
-	@SubscribeEvent
-	public void onJoin(EntityJoinWorldEvent event) {
-		if (event.entity instanceof EntityPlayerMP) {
-			PlayerPatches patches;
-			EntityPlayerMP player = (EntityPlayerMP) event.entity;
-			
-			if (!Patcher.playerPatchMapping.containsKey(player)) patches = new PlayerPatches();
-			else patches = Patcher.playerPatchMapping.get(player);
-			
-			if (player.playerNetServerHandler.playerEntity == event.entity && !(player.playerNetServerHandler instanceof com.mrnobody.morecommands.patch.NetHandlerPlayServer)) {
-				NetHandlerPlayServer handler = player.playerNetServerHandler;
-				player.playerNetServerHandler = new com.mrnobody.morecommands.patch.NetHandlerPlayServer(MinecraftServer.getServer(), handler.netManager, handler.playerEntity);
-				this.mod.getLogger().info("Server Play Handler Patches applied for Player " + player.getName());
-				patches.setServerPlayHandlerPatched(true);
-			}
-			
-			Patcher.playerPatchMapping.put(player, patches);
-		}
-	}
 	
 	/**
 	 * Called every client tick to pass the right time to apply the following patch: 
@@ -202,51 +130,12 @@ public class ClientPatcher extends Patcher {
 	}
 	
 	/**
-	 * Called on a player login. Sends a request for a handshake to the client,
-	 * loads the players settings and displays the welcome message if enabled.
-	 * Also registers server aliases set by this player.
-	 */
-	@SubscribeEvent
-	public void playerLogin(PlayerLoggedInEvent event) {
-		if (!(event.player instanceof EntityPlayerMP)) return;
-		EntityPlayerMP player = (EntityPlayerMP) event.player;
-		
-		this.mod.getLogger().info("Requesting Client Handshake");
-		if (!Patcher.playerPatchMapping.containsKey(player))
-			Patcher.playerPatchMapping.put(player, new PlayerPatches());
-		ServerPlayerSettings.playerUUIDMapping.put(event.player.getUniqueID(), player);
-		this.mod.getPacketDispatcher().sendS00Handshake(player);
-		
-		if (GlobalSettings.welcome_message)
-			player.addChatMessage((new ChatComponentText("MrNobody Commands Mod (v" + Reference.VERSION + ") loaded")).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.DARK_AQUA)));
-		ServerPlayerSettings.playerSettingsMapping.put(player, ServerPlayerSettings.getPlayerSettings(player));
-		com.mrnobody.morecommands.command.server.CommandAlias.registerAliases(player);
-	}
-	
-	/**
-	 * Saves the settings for a player logging out and resets the patches applied for this player
-	 */
-	@SubscribeEvent
-	public void playerLogout(PlayerLoggedOutEvent event) {
-		if (event.player instanceof EntityPlayerMP) {
-			EntityPlayerMP player = (EntityPlayerMP) event.player;
-			
-			if (Patcher.playerPatchMapping.containsKey(player)) 
-				Patcher.playerPatchMapping.remove(player);
-		}
-		
-		if (ServerPlayerSettings.playerSettingsMapping.containsKey(event.player)) {
-			ServerPlayerSettings.playerSettingsMapping.get(event.player).saveSettings();
-			ServerPlayerSettings.playerSettingsMapping.remove(event.player);
-		}
-	}
-	
-	/**
 	 * Reads the client player settings when the player connects to a server
 	 * and registers client aliases
 	 */
 	@SubscribeEvent
 	public void playerConnect(ClientConnectedToServerEvent event) {
+		PacketHandlerClient.runStartupThread();
 		ClientPlayerSettings.readSettings(event.manager.getRemoteAddress().toString());
 		CommandAlias.registerAliases();
 	}
@@ -257,9 +146,9 @@ public class ClientPatcher extends Patcher {
 	@SubscribeEvent
 	public void playerDisconnect(ClientDisconnectionFromServerEvent event) {
 		this.mod.setPlayerUUID(null);
-		Patcher.setServerModded(false);
-		for (ClientCommand cmd : PacketHandlerClient.removedCmds) ClientCommandHandler.instance.registerCommand(cmd);
-		PacketHandlerClient.removedCmds.clear();
+		AppliedPatches.setServerModded(false);
+		AppliedPatches.setHandshakeFinished(false);
+		PacketHandlerClient.reregisterAndClearRemovedCmds();
 		this.clientNetHandlerPatchApplied = false;
 	}
 }

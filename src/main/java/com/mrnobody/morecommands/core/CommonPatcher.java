@@ -2,6 +2,16 @@ package com.mrnobody.morecommands.core;
 
 import java.lang.reflect.Field;
 
+import com.mrnobody.morecommands.command.server.CommandAlias;
+import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
+import com.mrnobody.morecommands.network.PacketHandlerServer;
+import com.mrnobody.morecommands.patch.ServerCommandManager;
+import com.mrnobody.morecommands.patch.ServerConfigurationManagerDedicated;
+import com.mrnobody.morecommands.util.GlobalSettings;
+import com.mrnobody.morecommands.util.Reference;
+import com.mrnobody.morecommands.util.ReflectionHelper;
+import com.mrnobody.morecommands.util.ServerPlayerSettings;
+
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.server.MinecraftServer;
@@ -20,24 +30,16 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 
-import com.mrnobody.morecommands.command.server.CommandAlias;
-import com.mrnobody.morecommands.patch.ServerCommandManager;
-import com.mrnobody.morecommands.patch.ServerConfigurationManagerDedicated;
-import com.mrnobody.morecommands.util.GlobalSettings;
-import com.mrnobody.morecommands.util.Reference;
-import com.mrnobody.morecommands.util.ReflectionHelper;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-
 /**
- * The Patcher used by the Server proxy
+ * The common Patcher class
  * 
  * @author MrNobody98
  *
  */
-public class ServerPatcher extends Patcher {
-	private MoreCommands mod;
+public class CommonPatcher {
+	protected MoreCommands mod;
 	
-	public ServerPatcher() {
+	public CommonPatcher() {
 		this.mod = MoreCommands.getMoreCommands();
 	}
 	
@@ -49,6 +51,9 @@ public class ServerPatcher extends Patcher {
 		FMLCommonHandler.instance().bus().register(this);
 	}
 	
+	/**
+	 * Applies the patches corresponding to the current {@link FMLStateEvent}
+	 */
 	public void applyModStatePatch(FMLStateEvent stateEvent) {
 		if (stateEvent instanceof FMLInitializationEvent) {
 			this.loadEventPatches();
@@ -69,18 +74,28 @@ public class ServerPatcher extends Patcher {
 			try {
 				commandManager.set(MinecraftServer.getServer(), new ServerCommandManager(MinecraftServer.getServer().getCommandManager()));
 				this.mod.getLogger().info("Command Manager Patches applied");
-				Patcher.setServerCommandManagerPatched(true);
+				AppliedPatches.setServerCommandManagerPatched(true);
 			}
 			catch (Exception ex) {
 				ex.printStackTrace();
 			}
 		}
 		
-		if (event.getServer() instanceof DedicatedServer) {
-			event.getServer().setConfigManager(new ServerConfigurationManagerDedicated((DedicatedServer) event.getServer()));
+		if (this.applyServerConfigManagerPatch(event.getServer())) {
 			this.mod.getLogger().info("Server Configuration Manager Patches applied");
-			Patcher.setServerConfigManagerPatched(true);
+			AppliedPatches.setServerConfigManagerPatched(true);
 		}
+	}
+	
+	protected boolean applyServerConfigManagerPatch(MinecraftServer server){
+		if (server instanceof DedicatedServer) {
+			//must create new instance via reflection because "new" creates bytecode but the "ServerConfigurationManagerDedicated" class
+			//is not available on the client so it will cause a NoClassDefFoundError, reflection creates the new instance dynamically
+			try {server.setConfigManager(ServerConfigurationManagerDedicated.class.getConstructor(DedicatedServer.class).newInstance(server));}
+			catch (Exception ex) {ex.printStackTrace(); return false;}
+			return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -93,8 +108,8 @@ public class ServerPatcher extends Patcher {
 			PlayerPatches patches;
 			EntityPlayerMP player = (EntityPlayerMP) event.entity;
 			
-			if (!Patcher.playerPatchMapping.containsKey(player)) patches = new PlayerPatches();
-			else patches = Patcher.playerPatchMapping.get(player);
+			if (!AppliedPatches.playerPatchMapping.containsKey(player)) patches = new PlayerPatches();
+			else patches = AppliedPatches.playerPatchMapping.get(player);
 			
 			if (player.playerNetServerHandler.playerEntity == event.entity && !(player.playerNetServerHandler instanceof com.mrnobody.morecommands.patch.NetHandlerPlayServer)) {
 				NetHandlerPlayServer handler = player.playerNetServerHandler;
@@ -103,27 +118,10 @@ public class ServerPatcher extends Patcher {
 				patches.setServerPlayHandlerPatched(true);
 			}
 			
-			Patcher.playerPatchMapping.put(player, patches);
+			AppliedPatches.playerPatchMapping.put(player, patches);
 		}
 	}
 	
-	/**
-	 * Saves the settings for a player logging out and resets the patches applied for this player
-	 */
-	@SubscribeEvent
-	public void playerLogout(PlayerLoggedOutEvent event) {
-		if (event.player instanceof EntityPlayerMP) {
-			EntityPlayerMP player = (EntityPlayerMP) event.player;
-			
-			if (Patcher.playerPatchMapping.containsKey(player))
-				Patcher.playerPatchMapping.remove(player);
-		}
-		
-		if (ServerPlayerSettings.playerSettingsMapping.containsKey(event.player)) {
-			ServerPlayerSettings.playerSettingsMapping.get(event.player).saveSettings();
-			ServerPlayerSettings.playerSettingsMapping.remove(event.player);
-		}
-	}
 	
 	/**
 	 * Called on a player login. Sends a request for a handshake to the client,
@@ -135,15 +133,37 @@ public class ServerPatcher extends Patcher {
 		if (!(event.player instanceof EntityPlayerMP)) return;
 		EntityPlayerMP player = (EntityPlayerMP) event.player;
 		
-		this.mod.getLogger().info("Requesting Client Handshake");
-		if (!Patcher.playerPatchMapping.containsKey(player)) 
-			Patcher.playerPatchMapping.put(player, new PlayerPatches());
-		ServerPlayerSettings.playerUUIDMapping.put(event.player.getUniqueID(), player);
+		if (!AppliedPatches.playerPatchMapping.containsKey(player)) 
+			AppliedPatches.playerPatchMapping.put(player, new PlayerPatches());
+		
+		ServerPlayerSettings.storePlayerSettings(player, ServerPlayerSettings.readPlayerSettings(player));
+		CommandAlias.registerAliases(player);
+		
+		this.mod.getLogger().info("Requesting Client Handshake for Player '" + player.getName() + "'");
 		this.mod.getPacketDispatcher().sendS00Handshake(player);
 		
+		if (GlobalSettings.retryHandshake)
+			PacketHandlerServer.addPlayerToRetries(player);
+		
 		if (GlobalSettings.welcome_message)
-			event.player.addChatMessage((new ChatComponentText("MrNobody Commands Mod (v" + Reference.VERSION + ") loaded")).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.DARK_AQUA)));
-		ServerPlayerSettings.playerSettingsMapping.put(player, ServerPlayerSettings.getPlayerSettings(player));
-		CommandAlias.registerAliases(player);
+			event.player.addChatMessage((new ChatComponentText("More Commands (v" + Reference.VERSION + ") loaded")).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.DARK_AQUA)));
+	}
+	
+	/**
+	 * Saves the settings for a player logging out and resets the patches applied for this player
+	 */
+	@SubscribeEvent
+	public void playerLogout(PlayerLoggedOutEvent event) {
+		if (event.player instanceof EntityPlayerMP) {
+			EntityPlayerMP player = (EntityPlayerMP) event.player;
+			
+			if (AppliedPatches.playerPatchMapping.containsKey(player))
+				AppliedPatches.playerPatchMapping.remove(player);
+			
+			if (ServerPlayerSettings.containsSettingsForPlayer(player)) {
+				ServerPlayerSettings.getPlayerSettings(player).saveSettings();
+				ServerPlayerSettings.removePlayerSettings(player);
+			}
+		}
 	}
 }

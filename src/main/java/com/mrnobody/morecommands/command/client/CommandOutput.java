@@ -54,7 +54,7 @@ public class CommandOutput extends ClientCommand {
 		CommandSender.output = output;
 		
     	if (MoreCommands.getMoreCommands().getPlayerUUID() != null)
-    		MoreCommands.getMoreCommands().getPacketDispatcher().sendC03Output(output);
+    		MoreCommands.getMoreCommands().getPacketDispatcher().sendC04Output(output);
 	}
 	
 	@Override

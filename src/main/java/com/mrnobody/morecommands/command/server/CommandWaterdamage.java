@@ -1,10 +1,5 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.DamageSource;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
@@ -13,6 +8,11 @@ import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.DamageSource;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
+
 @Command(
 		name = "waterdamage",
 		description = "command.waterdamage.description",
@@ -20,19 +20,16 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.waterdamage.syntax",
 		videoURL = "command.waterdamage.videoURL"
 		)
-public class CommandWaterdamage extends ServerCommand implements Listener<LivingHurtEvent> {
+public class CommandWaterdamage extends ServerCommand implements Listener<LivingAttackEvent> {
 	public CommandWaterdamage() {
-		EventHandler.HURT.getHandler().register(this);
+		EventHandler.ATTACK.getHandler().register(this);
 	}
 	
 	@Override
-	public void onEvent(LivingHurtEvent event) {
+	public void onEvent(LivingAttackEvent event) {
 		if (event.entity instanceof EntityPlayerMP && event.source == DamageSource.drown) {
 			EntityPlayerMP player = (EntityPlayerMP) event.entity;
-			
-			if (ServerPlayerSettings.playerSettingsMapping.containsKey(player)) {
-				if (!ServerPlayerSettings.playerSettingsMapping.get(player).waterdamage) event.setCanceled(true);
-			}
+			if (!ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) player).waterdamage) event.setCanceled(true);
 		}
 	}
 	
@@ -48,7 +45,7 @@ public class CommandWaterdamage extends ServerCommand implements Listener<Living
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
     	
         if (params.length > 0) {
         	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
@@ -76,7 +73,7 @@ public class CommandWaterdamage extends ServerCommand implements Listener<Living
 	
 	@Override
 	public void unregisterFromHandler() {
-		EventHandler.HURT.getHandler().unregister(this);
+		EventHandler.ATTACK.getHandler().unregister(this);
 	}
 
 	@Override

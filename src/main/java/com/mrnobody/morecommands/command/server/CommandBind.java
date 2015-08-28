@@ -1,10 +1,5 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.CommandHandler;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.server.MinecraftServer;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
@@ -15,6 +10,11 @@ import com.mrnobody.morecommands.util.Keyboard;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.CommandHandler;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
 
 @Command(
 		name = "bind",
@@ -33,10 +33,10 @@ public class CommandBind extends ServerCommand implements Listener<KeyEvent> {
 	public void onEvent(KeyEvent event) {
 		if (!MinecraftServer.getServer().isServerRunning()) return;
 		
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(event.player);
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings(event.player);
 		if (settings.serverKeybindMapping.containsKey(event.key)) this.commandHandler.executeCommand(event.player, settings.serverKeybindMapping.get(event.key));
 		else if (settings.clientKeybindMapping.containsKey(event.key))
-			MoreCommands.getMoreCommands().getPacketDispatcher().sendS09ExecuteClientCommand(event.player, settings.clientKeybindMapping.get(event.key));
+			MoreCommands.getMoreCommands().getPacketDispatcher().sendS10ExecuteClientCommand(event.player, settings.clientKeybindMapping.get(event.key));
 	}
 
 	@Override
@@ -51,7 +51,7 @@ public class CommandBind extends ServerCommand implements Listener<KeyEvent> {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
 		
 		if (params.length > 1) {
 			String keycode = params[0].toUpperCase();
@@ -87,7 +87,7 @@ public class CommandBind extends ServerCommand implements Listener<KeyEvent> {
 
 	@Override
 	public Requirement[] getRequirements() {
-		return new Requirement[] {Requirement.MODDED_CLIENT};
+		return new Requirement[] {Requirement.HANDSHAKE_FINISHED};
 	}
 	
 	@Override

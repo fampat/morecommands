@@ -8,7 +8,7 @@ import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.core.Patcher;
+import com.mrnobody.morecommands.core.AppliedPatches;
 import com.mrnobody.morecommands.handler.EventHandler;
 import com.mrnobody.morecommands.handler.Listeners.Listener;
 import com.mrnobody.morecommands.util.ClientPlayerSettings;
@@ -44,8 +44,8 @@ public class CommandBind extends ClientCommand implements Listener<KeyInputEvent
 	public void onEvent(KeyInputEvent event) {
 		if (!org.lwjgl.input.Keyboard.isKeyDown(org.lwjgl.input.Keyboard.getEventKey())) return;
 		
-		if (Patcher.serverModded())
-			MoreCommands.getMoreCommands().getPacketDispatcher().sendC02KeyInput(org.lwjgl.input.Keyboard.getEventKey());
+		if (AppliedPatches.serverModded())
+			MoreCommands.getMoreCommands().getPacketDispatcher().sendC03KeyInput(org.lwjgl.input.Keyboard.getEventKey());
 		else {
 			if (ClientPlayerSettings.keybindMapping.containsKey(org.lwjgl.input.Keyboard.getEventKey()))
 				this.commandHandler.executeCommand(Minecraft.getMinecraft().thePlayer, ClientPlayerSettings.keybindMapping.get(org.lwjgl.input.Keyboard.getEventKey()));

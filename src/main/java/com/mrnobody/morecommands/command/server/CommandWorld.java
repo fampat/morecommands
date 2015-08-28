@@ -225,6 +225,7 @@ public class CommandWorld extends ServerCommand {
 		return true;
 	}
 	
+	@SuppressWarnings("resource")
 	private boolean copyFile(File sourceFile, File destFile) {
 		if (!destFile.exists()) {
 			try {

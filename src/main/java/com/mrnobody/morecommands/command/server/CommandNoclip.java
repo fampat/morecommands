@@ -80,14 +80,14 @@ public class CommandNoclip extends ServerCommand implements Listener<LivingAttac
 			ascendPlayer(new Player(player));
 		}
 			
-		MoreCommands.getMoreCommands().getPacketDispatcher().sendS06Noclip(player, handler.getOverrideNoclip());
+		MoreCommands.getMoreCommands().getPacketDispatcher().sendS07Noclip(player, handler.getOverrideNoclip());
 	}
 
 	public static void checkSafe(NetHandlerPlayServer handler, net.minecraft.entity.player.EntityPlayerMP player) {
 		if(handler.getOverrideNoclip() && !player.capabilities.isFlying) {
 			handler.setOverrideNoclip(false);
 			
-			MoreCommands.getMoreCommands().getPacketDispatcher().sendS06Noclip(player, false);
+			MoreCommands.getMoreCommands().getPacketDispatcher().sendS07Noclip(player, false);
 			
 			(new CommandSender(player)).sendLangfileMessage("command.noclip.autodisable");
 			ascendPlayer(new Player(player));

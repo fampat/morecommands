@@ -1,14 +1,5 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockAir;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.MathHelper;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
@@ -17,6 +8,14 @@ import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
+
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockAir;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.MathHelper;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 @Command(
 		name = "path",
@@ -40,7 +39,7 @@ public class CommandPath extends ServerCommand implements Listener<TickEvent> {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		EntityPlayer playerEntity = (EntityPlayer) sender.getMinecraftISender();
+		EntityPlayerMP playerEntity = (EntityPlayerMP) sender.getMinecraftISender();
 		
 		if (params.length > 0) {
 			if (params[0].toLowerCase().startsWith("minecraft:")) params[0] = params[0].substring("minecraft:".length());
@@ -77,17 +76,15 @@ public class CommandPath extends ServerCommand implements Listener<TickEvent> {
 				} catch (NumberFormatException nfe) {throw new CommandException("command.path.invalidRadius", sender);}
 			}
 			
-			if (ServerPlayerSettings.playerSettingsMapping.containsKey(playerEntity)) {
-				ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(playerEntity);
-				int[] plrData = settings.pathData;
-				if(plrData[0] == Block.getIdFromBlock(block) && plrData[1] == meta && plrData[2] == size)
-					throw new CommandException("command.path.noChange", sender);
-				sender.sendLangfileMessage("command.path.enabled");
-				settings.pathData = new int[] {Block.getIdFromBlock(block), meta, size, -1, -1, -1};
-			}
-		} else if (ServerPlayerSettings.playerSettingsMapping.containsKey(playerEntity) && ServerPlayerSettings.playerSettingsMapping.get(playerEntity).pathData[0] > -1) {
+			ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings(playerEntity);
+			int[] plrData = settings.pathData;
+			if(plrData[0] == Block.getIdFromBlock(block) && plrData[1] == meta && plrData[2] == size)
+				throw new CommandException("command.path.noChange", sender);
+			sender.sendLangfileMessage("command.path.enabled");
+			settings.pathData = new int[] {Block.getIdFromBlock(block), meta, size, -1, -1, -1};
+		} else if (ServerPlayerSettings.getPlayerSettings(playerEntity).pathData[0] > -1) {
 			sender.sendLangfileMessage("command.path.disabled");
-			ServerPlayerSettings.playerSettingsMapping.get(playerEntity).pathData[0] = -1;
+			ServerPlayerSettings.getPlayerSettings(playerEntity).pathData[0] = -1;
 		} else throw new CommandException("command.path.invalidUsage", sender);
 	}
 		
@@ -96,8 +93,8 @@ public class CommandPath extends ServerCommand implements Listener<TickEvent> {
 		if (e instanceof TickEvent.PlayerTickEvent) {
 			TickEvent.PlayerTickEvent event = (TickEvent.PlayerTickEvent) e;
 			
-			if (event.player instanceof EntityPlayerMP && ServerPlayerSettings.playerSettingsMapping.containsKey(event.player)) {
-				int[] plrData = ServerPlayerSettings.playerSettingsMapping.get(event.player).pathData;
+			if (event.player instanceof EntityPlayerMP) {
+				int[] plrData = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) event.player).pathData;
 				this.makePath(new Player((EntityPlayerMP) event.player), plrData);
 			}
 			else return;
@@ -105,7 +102,7 @@ public class CommandPath extends ServerCommand implements Listener<TickEvent> {
 	}
 	
 	private void makePath(Player player, int[] data) {
-		if (data[0] >= 0) {
+		if (data[0] > 0) {
 			BlockPos position = player.getPosition();
 			int x = MathHelper.floor_double(position.getX());
 			int y = MathHelper.floor_double(position.getY());
