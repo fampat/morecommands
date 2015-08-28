@@ -5,6 +5,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
@@ -31,7 +32,9 @@ public class CommandHome extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
 		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		if (settings != null) settings.lastPos = player.getPosition();
 		Coordinate spawn = player.getSpawn() == null ? player.getWorld().getSpawn() : player.getSpawn();
 		player.setPosition(spawn);
 		sender.sendLangfileMessage("command.home.atHome");

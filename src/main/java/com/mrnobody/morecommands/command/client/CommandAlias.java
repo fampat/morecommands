@@ -8,7 +8,7 @@ import net.minecraftforge.event.CommandEvent;
 
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.core.Patcher;
+import com.mrnobody.morecommands.core.AppliedPatches;
 import com.mrnobody.morecommands.handler.EventHandler;
 import com.mrnobody.morecommands.handler.Listeners.Listener;
 import com.mrnobody.morecommands.util.ClientPlayerSettings;
@@ -33,7 +33,7 @@ public class CommandAlias extends ClientCommand implements Listener<CommandEvent
 	
 	@Override
 	public void onEvent(CommandEvent event) {
-		if (Patcher.serverModded()) return;
+		if (AppliedPatches.serverModded()) return;
 		if (event.command instanceof DummyClientCommand) {
 			DummyClientCommand cmd = (DummyClientCommand) event.command;
 			String command = cmd.getOriginalCommandName();

@@ -2,6 +2,14 @@ package com.mrnobody.morecommands.patch;
 
 import java.util.Arrays;
 
+import com.google.common.base.Throwables;
+import com.mrnobody.morecommands.command.CommandBase;
+import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.util.DummyCommand;
+import com.mrnobody.morecommands.util.GlobalSettings;
+import com.mrnobody.morecommands.util.LanguageManager;
+import com.mrnobody.morecommands.util.ServerPlayerSettings;
+
 import net.minecraft.command.CommandException;
 import net.minecraft.command.CommandNotFoundException;
 import net.minecraft.command.ICommand;
@@ -15,14 +23,6 @@ import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.CommandEvent;
-
-import com.google.common.base.Throwables;
-import com.mrnobody.morecommands.command.CommandBase;
-import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.util.DummyCommand;
-import com.mrnobody.morecommands.util.GlobalSettings;
-import com.mrnobody.morecommands.util.LanguageManager;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
 /**
  * The patched class of {@link net.minecraft.command.ServerCommandManager} <br>
@@ -88,8 +88,8 @@ public class ServerCommandManager extends net.minecraft.command.ServerCommandMan
             p_71556_2_ = p_71556_2_.substring(1);
         }
         
-        if (GlobalSettings.enableVars && ServerPlayerSettings.playerSettingsMapping.containsKey(p_71556_1_)) {
-        	try {p_71556_2_ = replaceVars(p_71556_2_, ServerPlayerSettings.playerSettingsMapping.get(p_71556_1_));}
+        if (GlobalSettings.enableVars && p_71556_1_ instanceof EntityPlayerMP && ServerPlayerSettings.containsSettingsForPlayer((EntityPlayerMP) p_71556_1_)) {
+        	try {p_71556_2_ = replaceVars(p_71556_2_, ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) p_71556_1_));}
             catch (VarCouldNotBeResolvedException vcnbre) {
             	ChatComponentText text = new ChatComponentText(LanguageManager.getTranslation(MoreCommands.getMoreCommands().getCurrentLang(p_71556_1_), "command.var.cantBeResolved", vcnbre.var));
             	text.getChatStyle().setColor(EnumChatFormatting.RED); p_71556_1_.addChatMessage(text);
@@ -117,11 +117,11 @@ public class ServerCommandManager extends net.minecraft.command.ServerCommandMan
                     {
                     	EntityPlayerMP entityplayermp = aentityplayermp[l];
                     	
-                    	if (ServerPlayerSettings.playerSettingsMapping.containsKey(entityplayermp)) {
-                    		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(entityplayermp);
+                    	if (ServerPlayerSettings.containsSettingsForPlayer(entityplayermp)) {
+                    		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings(entityplayermp);
                     		
                     		if (settings.clientCommands.contains(s1)) {
-                    			MoreCommands.getMoreCommands().getPacketDispatcher().sendS09ExecuteClientCommand(entityplayermp, s1 + " " + String.join(" ", astring));
+                    			MoreCommands.getMoreCommands().getPacketDispatcher().sendS10ExecuteClientCommand(entityplayermp, s1 + " " + String.join(" ", astring));
                     			++j;
                     			continue;
                     		}

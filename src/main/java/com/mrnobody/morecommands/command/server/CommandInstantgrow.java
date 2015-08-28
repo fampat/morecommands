@@ -3,6 +3,17 @@ package com.mrnobody.morecommands.command.server;
 import java.lang.reflect.Field;
 import java.util.Random;
 
+import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.handler.EventHandler;
+import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.util.ReflectionHelper;
+import com.mrnobody.morecommands.util.ServerPlayerSettings;
+import com.mrnobody.morecommands.wrapper.CommandException;
+import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.wrapper.Coordinate;
+import com.mrnobody.morecommands.wrapper.World;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockCactus;
 import net.minecraft.block.BlockCrops;
@@ -14,17 +25,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.world.BlockEvent.PlaceEvent;
-
-import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
-import com.mrnobody.morecommands.util.ReflectionHelper;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.World;
 
 @Command(
 		name = "instantgrow",
@@ -41,7 +41,7 @@ public class CommandInstantgrow extends ServerCommand implements Listener<PlaceE
 
 	@Override
 	public void onEvent(PlaceEvent event) {
-		if (ServerPlayerSettings.playerSettingsMapping.containsKey(event.player) && ServerPlayerSettings.playerSettingsMapping.get(event.player).instantgrow) 
+		if (event.player instanceof EntityPlayerMP && ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) event.player).instantgrow) 
 			this.growPlant(new World(event.world), event.x, event.y, event.z, new Random());
 	}
 	
@@ -57,7 +57,7 @@ public class CommandInstantgrow extends ServerCommand implements Listener<PlaceE
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
     	
         if (params.length > 0) {
         	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")

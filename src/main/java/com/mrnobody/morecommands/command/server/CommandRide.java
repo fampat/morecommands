@@ -1,14 +1,14 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.network.PacketDispatcher;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.player.EntityPlayerMP;
 
 @Command(
 		name = "ride",
@@ -31,7 +31,23 @@ public class CommandRide extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		MoreCommands.getMoreCommands().getPacketDispatcher().sendS12Ride((EntityPlayerMP) sender.getMinecraftISender());
+		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
+		Entity hit = (new com.mrnobody.morecommands.wrapper.Entity(player)).traceEntity(128.0D);
+		
+		if (player.ridingEntity != null) {
+			sender.sendLangfileMessage("command.ride.dismounted", new Object[0]);
+			player.mountEntity(null);
+			return;
+		}
+		
+		if (hit != null) {
+			if (hit instanceof EntityLiving) {
+				player.mountEntity(hit);
+				sender.sendLangfileMessage("command.ride.mounted", new Object[0]);
+			}
+			else sender.sendLangfileMessage("command.ride.notLiving", new Object[0]);
+		}
+		else sender.sendLangfileMessage("command.ride.notFound", new Object[0]);
 	}
 	
 	@Override

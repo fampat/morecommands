@@ -1,14 +1,14 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 
 @Command(
 		name = "freezecam",
@@ -30,7 +30,7 @@ public class CommandFreezecam extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
 		
 		if (settings.freeezecam) {
 			settings.freeezecam = false;
@@ -41,7 +41,7 @@ public class CommandFreezecam extends ServerCommand {
 			sender.sendLangfileMessage("command.freezecam.on");
 		}
 		
-		MoreCommands.getMoreCommands().getPacketDispatcher().sendS04Freezecam((EntityPlayerMP) sender.getMinecraftISender());
+		MoreCommands.getMoreCommands().getPacketDispatcher().sendS05Freezecam((EntityPlayerMP) sender.getMinecraftISender());
 	}
 	
 	@Override

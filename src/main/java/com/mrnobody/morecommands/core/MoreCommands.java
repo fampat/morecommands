@@ -9,8 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
-import net.minecraft.command.ICommandSender;
-
 import org.apache.logging.log4j.Logger;
 
 import com.mrnobody.morecommands.command.ClientCommand;
@@ -32,6 +30,7 @@ import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.relauncher.Side;
+import net.minecraft.command.ICommandSender;
 
 /**
  * The main mod class loaded by forge
@@ -44,7 +43,7 @@ public class MoreCommands {
 	@Instance(Reference.MODID)
 	private static MoreCommands instance;
 	
-	@SidedProxy(clientSide="com.mrnobody.morecommands.core.ClientProxy", serverSide="com.mrnobody.morecommands.core.ServerProxy", modId=Reference.MODID)
+	@SidedProxy(clientSide="com.mrnobody.morecommands.core.ClientProxy", serverSide="com.mrnobody.morecommands.core.CommonProxy", modId=Reference.MODID)
 	private static CommonProxy proxy;
 	
 	public static final DynamicClassLoader CLASSLOADER = new DynamicClassLoader(MoreCommands.class.getClassLoader());
@@ -112,7 +111,7 @@ public class MoreCommands {
 	 * @return Whether the mod runs on a dedicated server
 	 */
 	public static boolean isServerSide() {
-		return MoreCommands.proxy instanceof ServerProxy;
+		return !(MoreCommands.proxy instanceof ClientProxy);
 	}
 	
 	/**

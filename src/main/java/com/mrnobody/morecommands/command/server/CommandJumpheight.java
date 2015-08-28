@@ -45,7 +45,7 @@ public class CommandJumpheight extends ServerCommand {
 				catch (NumberFormatException nfe) {throw new CommandException("command.jumpheight.NAN", sender);}
 			}
 			
-			MoreCommands.getMoreCommands().getPacketDispatcher().sendS10Gravity((EntityPlayerMP) sender.getMinecraftISender(), gravity);
+			MoreCommands.getMoreCommands().getPacketDispatcher().sendS11Gravity((EntityPlayerMP) sender.getMinecraftISender(), gravity);
 		}
 		else 
 			throw new CommandException("command.jumpheight.invalidUsage", sender);

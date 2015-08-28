@@ -28,10 +28,7 @@ public class CommandFalldamage extends ServerCommand implements Listener<LivingF
 	public void onEvent(LivingFallEvent event) {
 		if (event.entity instanceof EntityPlayerMP) {
 			EntityPlayerMP player = (EntityPlayerMP) event.entity;
-			
-			if (ServerPlayerSettings.playerSettingsMapping.containsKey(player)) {
-				if (!ServerPlayerSettings.playerSettingsMapping.get(player).falldamage) event.setCanceled(true);
-			}
+			if (!ServerPlayerSettings.getPlayerSettings(player).falldamage) event.setCanceled(true);
 		}
 	}
 	
@@ -47,7 +44,7 @@ public class CommandFalldamage extends ServerCommand implements Listener<LivingF
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
     	
         if (params.length > 0) {
         	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")

@@ -11,26 +11,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraftforge.client.ClientCommandHandler;
-
 import com.mrnobody.morecommands.command.ClientCommand;
+import com.mrnobody.morecommands.core.AppliedPatches;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.core.Patcher;
 import com.mrnobody.morecommands.patch.EntityClientPlayerMP;
 import com.mrnobody.morecommands.patch.PlayerControllerMP;
 import com.mrnobody.morecommands.util.ClientPlayerSettings;
+import com.mrnobody.morecommands.util.GlobalSettings;
 import com.mrnobody.morecommands.util.Reference;
 import com.mrnobody.morecommands.util.XrayHelper;
 import com.mrnobody.morecommands.util.XrayHelper.BlockSettings;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.EntityCamera;
 import com.mrnobody.morecommands.wrapper.World;
+
+import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraftforge.client.ClientCommandHandler;
 
 /**
  * This class handles all incoming packets from the server
@@ -39,29 +37,75 @@ import com.mrnobody.morecommands.wrapper.World;
  *
  */
 public class PacketHandlerClient {
-	public static List<ClientCommand> removedCmds = new ArrayList<ClientCommand>();
+	private static final List<ClientCommand> removedCmds = new ArrayList<ClientCommand>();
 	
 	//Data for the freecam command
-	public EntityClientPlayerMP freecamOriginalPlayer;
-	public boolean prevIsFlying;
-	public boolean prevAllowFlying;
-	public float prevFlySpeed;
-	public  float prevWalkSpeed;
-	public boolean prevNoclip;
+	private EntityClientPlayerMP freecamOriginalPlayer;
+	private boolean prevIsFlying;
+	private boolean prevAllowFlying;
+	private float prevFlySpeed;
+	private float prevWalkSpeed;
+	private boolean prevNoclip;
 	
 	//Data for the freezecam command
-	public EntityClientPlayerMP freezecamOriginalPlayer;
+	private EntityClientPlayerMP freezecamOriginalPlayer;
 	
 	//Data for the light command
-	public boolean isEnlightened = false;
-	public int lightenedWorld = 0;
+	private boolean isEnlightened = false;
+	private int lightenedWorld = 0;
+	
+	/**
+	 * re-registers the unregistered client commands and clears the list
+	 */
+	public static void reregisterAndClearRemovedCmds() {
+		for (ClientCommand cmd : PacketHandlerClient.removedCmds) ClientCommandHandler.instance.registerCommand(cmd);
+		PacketHandlerClient.removedCmds.clear();
+	}
+	
+	/**
+	 * Runs a thread waiting for a handshake from the server <br>
+	 * to execute startup commands. If it isn't received after a <br>
+	 * certain time, they are still executed
+	 */
+	public static void runStartupThread() {
+		final int timeout = GlobalSettings.startupTimeout < 0 ? 10000 : GlobalSettings.startupTimeout > 10 ? 10000 : GlobalSettings.startupTimeout * 1000;
+		
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				long t = System.currentTimeMillis() + timeout;
+				boolean added = false;
+				
+				while (t > System.currentTimeMillis()) {
+					if (!added && AppliedPatches.serverModded()) {t = System.currentTimeMillis() + timeout; added = true;}
+					if (AppliedPatches.handshakeFinished()) break;
+				}
+				
+				//Execute commands specified in the startup.cfg
+				try {
+					File startup = new File(Reference.getModDir(), "startup.cfg");
+					if (!startup.exists() || !startup.isFile()) startup.createNewFile();
+					
+					BufferedReader br = new BufferedReader(new FileReader(startup));
+					String line;
+					while ((line = br.readLine()) != null) {
+						if (ClientCommandHandler.instance.executeCommand(Minecraft.getMinecraft().thePlayer, line) == 0)
+							Minecraft.getMinecraft().thePlayer.sendChatMessage(line.startsWith("/") ? line : "/" + line);
+						MoreCommands.getMoreCommands().getLogger().info("Executed startup command '" + line + "'");
+					}
+					br.close();
+				}
+				catch (IOException ex) {ex.printStackTrace(); MoreCommands.getMoreCommands().getLogger().info("Startup commands couldn't be executed");}
+			}
+		}).start();
+	}
 	
 	/**
 	 * Is called if the client receives a handshake packet
 	 */
 	public void handshake(UUID uuid) {
 		MoreCommands.getMoreCommands().setPlayerUUID(uuid);
-		Patcher.setServerModded(true);
+		AppliedPatches.setServerModded(true);
 		
 		//Remove commands, which shall be removed if the server side version shall be used
 		List<String> remove = new ArrayList<String>();
@@ -72,30 +116,24 @@ public class PacketHandlerClient {
 			}
 		}
 		
-		for (String rem : remove) {
-			ClientCommandHandler.instance.getCommands().remove(rem);
-			MoreCommands.getMoreCommands().getLogger().info("Unregistered client command '" + rem + "' because server side version of this command is used");
+		if (!remove.isEmpty()) {
+			for (String rem : remove)
+				ClientCommandHandler.instance.getCommands().remove(rem);
+			
+			MoreCommands.getMoreCommands().getLogger().info("Unregistered following client commands because server side versions are used:\n" + remove);
 		}
 		
 		//Let the server know that the mod is installed client side
 		MoreCommands.getMoreCommands().getLogger().info("Sending client handshake");
 		MoreCommands.getMoreCommands().getPacketDispatcher().sendC00Handshake(Minecraft.getMinecraft().thePlayer instanceof EntityClientPlayerMP);
-		
-		//Execute commands specified in the startup.cfg
-		try {
-			File startup = new File(Reference.getModDir(), "startup.cfg");
-			if (!startup.exists() || !startup.isFile()) startup.createNewFile();
-			
-			BufferedReader br = new BufferedReader(new FileReader(startup));
-			String line;
-			while ((line = br.readLine()) != null) {
-				if (ClientCommandHandler.instance.executeCommand(Minecraft.getMinecraft().thePlayer, line) == 0)
-					Minecraft.getMinecraft().thePlayer.sendChatMessage(line.startsWith("/") ? line : "/" + line);
-				MoreCommands.getMoreCommands().getLogger().info("Executed startup command '" + line + "'");
-			}
-			br.close();
-		}
-		catch (IOException ex) {ex.printStackTrace(); MoreCommands.getMoreCommands().getLogger().info("Startup commands couldn't be executed");}
+	}
+	
+	/**
+	 * Called when the handshake is finished
+	 */
+	public void handshakeFinished() {
+		AppliedPatches.setHandshakeFinished(true);
+		MoreCommands.getMoreCommands().getLogger().info("Handshake finished");
 	}
 	
 	/**
@@ -273,9 +311,12 @@ public class PacketHandlerClient {
 	 */
 	public void sendClientCommands() {
 		for (Object command : ClientCommandHandler.instance.getCommands().values()) {
-			if (command instanceof ClientCommand)
+			if (command instanceof ClientCommand) {
 				MoreCommands.getMoreCommands().getPacketDispatcher().sendC01ClientCommand(((ClientCommand) command).getCommandName());
+			}
 		}
+		
+		MoreCommands.getMoreCommands().getPacketDispatcher().sendC02FinishHandshake();
 	}
 
 	/**
@@ -292,29 +333,5 @@ public class PacketHandlerClient {
 	 */
 	public void setStepheight(float stepheight) {
 		Minecraft.getMinecraft().thePlayer.stepHeight = stepheight;
-	}
-
-	/**
-	 * mounts/dismounts an entity
-	 */
-	public void ride() {
-		EntityPlayer player = Minecraft.getMinecraft().thePlayer;
-		CommandSender sender = new CommandSender(player);
-		Entity hit = (new com.mrnobody.morecommands.wrapper.Entity(player)).traceEntity(128.0D);
-		
-		if (player.ridingEntity != null) {
-			sender.sendLangfileMessage("command.ride.dismounted");
-			player.mountEntity(null);
-			return;
-		}
-		
-		if (hit != null) {
-			if (hit instanceof EntityLiving) {
-				player.mountEntity(hit);
-				sender.sendLangfileMessage("command.ride.mounted");
-			}
-			else sender.sendLangfileMessage("command.ride.notLiving");
-		}
-		else sender.sendLangfileMessage("command.ride.notFound");
 	}
 }

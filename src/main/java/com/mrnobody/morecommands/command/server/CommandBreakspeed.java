@@ -1,9 +1,5 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
@@ -11,6 +7,10 @@ import com.mrnobody.morecommands.handler.Listeners.Listener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 
 @Command(
 		name = "breakspeed",
@@ -24,9 +24,9 @@ public class CommandBreakspeed extends ServerCommand implements Listener<BreakSp
 	
 	@Override
 	public void onEvent(BreakSpeed event) {
-		if (!ServerPlayerSettings.playerSettingsMapping.containsKey(event.entityPlayer)) return;
+		if (!(event.entityPlayer instanceof EntityPlayerMP)) return;
 		
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(event.entityPlayer);
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) event.entityPlayer);
 		event.newSpeed = settings.breakSpeedEnabled ? settings.breakspeed : event.originalSpeed;
 	}
 
@@ -42,7 +42,7 @@ public class CommandBreakspeed extends ServerCommand implements Listener<BreakSp
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
 		
 		boolean enable = true;
 		boolean setspeed = false;

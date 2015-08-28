@@ -1,10 +1,5 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.DamageSource;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
@@ -14,6 +9,11 @@ import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
 import com.mrnobody.morecommands.wrapper.Player;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.DamageSource;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
 
 @Command(
 		name = "noclip",
@@ -76,14 +76,14 @@ public class CommandNoclip extends ServerCommand implements Listener<LivingAttac
 			ascendPlayer(player);
 		}
 		
-		MoreCommands.getMoreCommands().getPacketDispatcher().sendS06Noclip(player.getMinecraftPlayer(), player.getMinecraftPlayer().noClip);
+		MoreCommands.getMoreCommands().getPacketDispatcher().sendS07Noclip(player.getMinecraftPlayer(), player.getMinecraftPlayer().noClip);
 	}
 
 	public static void checkSafe(EntityPlayerMP player) {
 		if(player.noClip && !player.capabilities.isFlying) {
 			player.noClip = false;
 			
-			MoreCommands.getMoreCommands().getPacketDispatcher().sendS06Noclip(player, false);
+			MoreCommands.getMoreCommands().getPacketDispatcher().sendS07Noclip(player, false);
 			
 			(new CommandSender(player)).sendLangfileMessage("command.noclip.autodisable", new Object[0]);
 			ascendPlayer(new Player(player));

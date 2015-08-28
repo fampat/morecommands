@@ -5,6 +5,7 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
@@ -40,6 +41,7 @@ public class CommandDuplicate extends ServerCommand {
 				
 				ItemStack item = player.inventory.mainInventory[i];
 				ItemStack duplicate = new ItemStack(item.getItem(), item.stackSize, item.getItemDamage());
+				duplicate.setTagCompound((NBTTagCompound) item.getTagCompound().copy());
 				
 				EntityItem itemEntity = new EntityItem(player.worldObj, player.posX, player.posY, player.posZ, duplicate);
 				player.worldObj.spawnEntityInWorld(itemEntity);
@@ -50,6 +52,7 @@ public class CommandDuplicate extends ServerCommand {
 				
 				ItemStack item = player.inventory.armorInventory[i];
 				ItemStack duplicate = new ItemStack(item.getItem(), item.stackSize, item.getItemDamage());
+				duplicate.setTagCompound((NBTTagCompound) item.getTagCompound().copy());
 				
 				EntityItem itemEntity = new EntityItem(player.worldObj, player.posX, player.posY, player.posZ, duplicate);
 				player.worldObj.spawnEntityInWorld(itemEntity);
@@ -61,6 +64,7 @@ public class CommandDuplicate extends ServerCommand {
 			
 			ItemStack item = player.inventory.mainInventory[player.inventory.currentItem];
 			ItemStack duplicate = new ItemStack(item.getItem(), item.stackSize, item.getItemDamage());
+			duplicate.setTagCompound((NBTTagCompound) item.getTagCompound().copy());
 			
 			EntityItem itemEntity = new EntityItem(player.worldObj, player.posX, player.posY, player.posZ, duplicate);
 			player.worldObj.spawnEntityInWorld(itemEntity);

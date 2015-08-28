@@ -2,11 +2,6 @@ package com.mrnobody.morecommands.command.server;
 
 import java.util.Map;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.event.CommandEvent;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
@@ -17,6 +12,11 @@ import com.mrnobody.morecommands.util.DummyCommand.DummyServerCommand;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.event.CommandEvent;
 
 @Command(
 		name = "alias",
@@ -45,7 +45,7 @@ public class CommandAlias extends ServerCommand implements Listener<CommandEvent
 				for (String p : event.parameters) command += " " + p;
 				
 				if (cmd.getSenderSideMapping().get(event.sender))
-					MoreCommands.getMoreCommands().getPacketDispatcher().sendS09ExecuteClientCommand((EntityPlayerMP) event.sender, command);
+					MoreCommands.getMoreCommands().getPacketDispatcher().sendS10ExecuteClientCommand((EntityPlayerMP) event.sender, command);
 				else commandHandler.executeCommand(event.sender, command);
 			}
 		}
@@ -63,7 +63,7 @@ public class CommandAlias extends ServerCommand implements Listener<CommandEvent
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
     	
 		if (params.length > 1) {
 			String alias = params[0];
@@ -113,7 +113,7 @@ public class CommandAlias extends ServerCommand implements Listener<CommandEvent
 	
 	@Override
 	public Requirement[] getRequirements() {
-		return new Requirement[0];
+		return new Requirement[] {Requirement.HANDSHAKE_FINISHED_IF_CLIENT_MODDED};
 	}
 	
 	@Override
@@ -129,8 +129,8 @@ public class CommandAlias extends ServerCommand implements Listener<CommandEvent
 	 * Reads aliases for the given server player and registers them
 	 */
 	public static void registerAliases(EntityPlayerMP player) {
-		Map<String, String> clientAliases = ServerPlayerSettings.playerSettingsMapping.get(player).clientAliasMapping;
-		Map<String, String> serverAliases = ServerPlayerSettings.playerSettingsMapping.get(player).serverAliasMapping;
+		Map<String, String> clientAliases = ServerPlayerSettings.getPlayerSettings(player).clientAliasMapping;
+		Map<String, String> serverAliases = ServerPlayerSettings.getPlayerSettings(player).serverAliasMapping;
 		
 		net.minecraft.command.CommandHandler commandHandler = (net.minecraft.command.CommandHandler) MinecraftServer.getServer().getCommandManager();
 		String command;

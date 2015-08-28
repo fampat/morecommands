@@ -19,8 +19,8 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.dodrops.syntax",
 		videoURL = "command.dodrops.videoURL"
 		)
-public class CommandDoDrops extends ServerCommand implements Listener<EntityJoinWorldEvent> {
-	public CommandDoDrops() {
+public class CommandDodrops extends ServerCommand implements Listener<EntityJoinWorldEvent> {
+	public CommandDodrops() {
 		EventHandler.ENTITYJOIN.getHandler().register(this);
 	}
 	

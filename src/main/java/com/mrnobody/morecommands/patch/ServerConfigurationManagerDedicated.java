@@ -13,7 +13,6 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.network.play.server.S05PacketSpawnPosition;
 import net.minecraft.network.play.server.S07PacketRespawn;
 import net.minecraft.network.play.server.S1FPacketSetExperience;
@@ -168,7 +167,7 @@ public class ServerConfigurationManagerDedicated extends net.minecraft.server.de
         entityplayermp1.addSelfToInternalCraftingInventory();
         entityplayermp1.setHealth(entityplayermp1.getHealth());
         
-        if (ServerPlayerSettings.playerSettingsMapping.containsKey(p_72368_1_) && ServerPlayerSettings.playerSettingsMapping.get(p_72368_1_).keepinventory) {
+        if (ServerPlayerSettings.containsSettingsForPlayer(p_72368_1_) && ServerPlayerSettings.getPlayerSettings(p_72368_1_).keepinventory) {
         	entityplayermp1.inventory.copyInventory(p_72368_1_.inventory);
         	((com.mrnobody.morecommands.patch.EntityPlayerMP) entityplayermp1).setKeepInventory(true);
         }

@@ -1,10 +1,5 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.monster.EntityCreeper;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraftforge.event.world.ExplosionEvent;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
@@ -13,6 +8,11 @@ import com.mrnobody.morecommands.util.GlobalSettings;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.monster.EntityCreeper;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraftforge.event.world.ExplosionEvent;
 
 @Command(
 		name = "creeper",
@@ -35,10 +35,7 @@ public class CommandCreeper extends ServerCommand implements Listener<ExplosionE
 			
 			if (creeper.getAttackTarget() instanceof EntityPlayerMP) {
 				EntityPlayerMP player = (EntityPlayerMP) creeper.getAttackTarget();
-				
-				if (ServerPlayerSettings.playerSettingsMapping.containsKey(player)) {
-					if (!ServerPlayerSettings.playerSettingsMapping.get(player).creeperExplosion) event.setCanceled(true);
-				}
+				if (!ServerPlayerSettings.getPlayerSettings(player).creeperExplosion) event.setCanceled(true);
 			}
 		}
 	}
@@ -55,7 +52,7 @@ public class CommandCreeper extends ServerCommand implements Listener<ExplosionE
 	
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
     	
         if (params.length > 0) {
         	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")

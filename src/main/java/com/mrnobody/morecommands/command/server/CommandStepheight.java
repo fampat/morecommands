@@ -1,13 +1,13 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 
 @Command(
 		name = "stepheight",
@@ -39,7 +39,7 @@ public class CommandStepheight extends ServerCommand {
 				else throw new CommandException("command.stepheight.invalidArg", sender);
 			}
 			
-			MoreCommands.getMoreCommands().getPacketDispatcher().sendS11Stepheight((EntityPlayerMP) sender.getMinecraftISender(), height);
+			MoreCommands.getMoreCommands().getPacketDispatcher().sendS12Stepheight((EntityPlayerMP) sender.getMinecraftISender(), height);
 		}
 		else throw new CommandException("command.stepheight.invalidUsage", sender);
 	}

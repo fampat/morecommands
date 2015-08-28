@@ -3,21 +3,22 @@ package com.mrnobody.morecommands.util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
-import net.minecraft.entity.player.EntityPlayer;
+import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.wrapper.Coordinate;
+
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
-
-import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.wrapper.Coordinate;
 
 /**
  * Reads and writes the settings for each player on a server
@@ -27,21 +28,48 @@ import com.mrnobody.morecommands.wrapper.Coordinate;
  */
 public class ServerPlayerSettings {
 	/**
-	 * A map from the player uuid to the player object
-	 */
-	public static final Map<UUID, EntityPlayerMP> playerUUIDMapping = new HashMap<UUID, EntityPlayerMP>();
-	
-	/**
 	 * A map containing the settings for each player
 	 */
-	public static final Map<EntityPlayerMP, ServerPlayerSettings> playerSettingsMapping = new HashMap<EntityPlayerMP, ServerPlayerSettings>();
+	private static final Map<EntityPlayerMP, ServerPlayerSettings> playerSettingsMapping = new HashMap<EntityPlayerMP, ServerPlayerSettings>();
+	
+	/**
+	 * Gets the player settings
+	 * 
+	 * @return the player settings
+	 */
+	public static ServerPlayerSettings getPlayerSettings(EntityPlayerMP player) {
+		ServerPlayerSettings settings = playerSettingsMapping.get(player);
+		if (settings == null) {settings = readPlayerSettings(player); storePlayerSettings(player, settings);}
+		return settings;
+	}
+	
+	/**
+	 * Puts the settings into a map to store them
+	 */
+	public static void storePlayerSettings(EntityPlayerMP player, ServerPlayerSettings settings) {
+		playerSettingsMapping.put(player, settings);
+	}
+	
+	/**
+	 * removes the settings for the player
+	 */
+	public static void removePlayerSettings(EntityPlayerMP player) {
+		playerSettingsMapping.remove(player);
+	}
+	
+	/**
+	 * @return whether settings for this player are stored
+	 */
+	public static boolean containsSettingsForPlayer(EntityPlayerMP player) {
+		return playerSettingsMapping.containsKey(player);
+	}
 	
 	/**
 	 * Gets the settings for a player
 	 * 
 	 * @return a ServerPlayerSettings object
 	 */
-	public static ServerPlayerSettings getPlayerSettings(EntityPlayerMP player) {
+	public static ServerPlayerSettings readPlayerSettings(EntityPlayerMP player) {
 		File playerSettings = new File(Reference.getServerPlayerDir(), player.getUniqueID().toString() + ".dat");
 		ServerPlayerSettings settings = new ServerPlayerSettings(player);
 		NBTTagCompound playerData;
@@ -157,11 +185,11 @@ public class ServerPlayerSettings {
 		}
 	}
 	
-	public ServerPlayerSettings(EntityPlayer player) {
+	private ServerPlayerSettings(EntityPlayerMP player) {
 		this.player = player;
 	}
 	
-	private EntityPlayer player;
+	private EntityPlayerMP player;
 	public Set<String> clientCommands = new HashSet<String>();
 	
 	public Map<Integer, String> serverKeybindMapping = new HashMap<Integer, String>();
@@ -171,14 +199,17 @@ public class ServerPlayerSettings {
 	public Map<String, String> varMapping = new HashMap<String, String>();
 	public Map<String, double[]> waypoints = new HashMap<String, double[]>();
 	public Map<String, NBTTagList> inventories = new HashMap<String, NBTTagList>();
+	public List<Class<? extends EntityLiving>> disableAttacks = new ArrayList<Class<? extends EntityLiving>>();
 	
 	public int[] pathData = new int[6];
 	public boolean climb = false;
 	public boolean clouds = true;
 	public boolean creeperExplosion = true;
 	public boolean dodrops = true;
+	public boolean damage = true;
 	public boolean falldamage = true;
 	public boolean firedamage = true;
+	public boolean hunger = true;
 	public boolean fly = false;
 	public boolean noFall = false;
 	public boolean justDisabled = false;

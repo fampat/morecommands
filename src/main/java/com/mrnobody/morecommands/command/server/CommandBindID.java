@@ -1,16 +1,16 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.CommandHandler;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.server.MinecraftServer;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.util.Keyboard;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.CommandHandler;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
 
 @Command(
 		name = "bindid",
@@ -34,7 +34,7 @@ public class CommandBindID extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
 		
 		if (params.length > 1) {
 			try {
@@ -72,7 +72,7 @@ public class CommandBindID extends ServerCommand {
 	
 	@Override
 	public Requirement[] getRequirements() {
-		return new Requirement[] {Requirement.MODDED_CLIENT};
+		return new Requirement[] {Requirement.HANDSHAKE_FINISHED};
 	}
 	
 	@Override

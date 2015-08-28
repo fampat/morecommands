@@ -1,14 +1,15 @@
 package com.mrnobody.morecommands.wrapper;
 
+import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.util.LanguageManager;
+import com.mrnobody.morecommands.util.ServerPlayerSettings;
+
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
-
-import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.util.LanguageManager;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
 /**
  * A wrapper for the {@link ICommandSender} interface
@@ -37,8 +38,9 @@ public class CommandSender {
 	}
 	
 	public void sendChatComponent(IChatComponent component) {
-		if (CommandSender.output && !ServerPlayerSettings.playerSettingsMapping.containsKey(sender)) sender.addChatMessage(component);
-		else if (CommandSender.output && ServerPlayerSettings.playerSettingsMapping.get(sender).output) sender.addChatMessage(component);
+		if (!(sender instanceof EntityPlayerMP)) {if (CommandSender.output) sender.addChatMessage(component);}
+		else if (CommandSender.output && !ServerPlayerSettings.containsSettingsForPlayer((EntityPlayerMP) sender)) sender.addChatMessage(component);
+		else if (CommandSender.output && ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender).output) sender.addChatMessage(component);
 	}
 	
 	public void sendStringMessage(String message, ChatStyle stye) {

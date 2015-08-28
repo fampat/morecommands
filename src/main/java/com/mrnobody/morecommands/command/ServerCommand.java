@@ -1,16 +1,15 @@
 package com.mrnobody.morecommands.command;
 
+import com.mrnobody.morecommands.core.AppliedPatches;
+import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.util.LanguageManager;
+import com.mrnobody.morecommands.wrapper.CommandException;
+import com.mrnobody.morecommands.wrapper.CommandSender;
+
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
-
-import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.core.Patcher;
-import com.mrnobody.morecommands.util.LanguageManager;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 /**
  * Base class for all server commands
@@ -30,9 +29,7 @@ public abstract class ServerCommand extends CommandBase {
     
     public final void processCommand(ICommandSender sender, String[] params) {
     	if (MoreCommands.isModEnabled() && this.isEnabled(sender)) {
-        	try{
-        		if (!ServerPlayerSettings.playerSettingsMapping.containsKey(sender) && sender instanceof EntityPlayerMP)
-        			ServerPlayerSettings.playerSettingsMapping.put((EntityPlayerMP) sender, ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender));
+        	try {
         		this.execute(new CommandSender(sender), params);
         	}
         	catch (CommandException e) {
@@ -71,7 +68,7 @@ public abstract class ServerCommand extends CommandBase {
     		return false;
     	}
     	
-    	Patcher.PlayerPatches clientInfo = Patcher.playerPatchMapping.get(sender);
+    	AppliedPatches.PlayerPatches clientInfo = AppliedPatches.playerPatchMapping.get(sender);
     	
     	Requirement[] requierements = this.getRequirements();
     	if (clientInfo == null && requierements.length > 0) return false;
@@ -79,14 +76,14 @@ public abstract class ServerCommand extends CommandBase {
     	
     	for (Requirement requierement : requierements) {
     		if (requierement == Requirement.PATCH_SERVERCONFIGMANAGER) {
-    			if (!Patcher.serverConfigManagerPatched()) {
+    			if (!AppliedPatches.serverConfigManagerPatched()) {
     				sendChatMsg(sender, LanguageManager.getTranslation(lang, "command.generic.serverConfigManagerNotPatched"));
     	    		return false;
     			}
     		}
     		
     		if (requierement == Requirement.PATCH_SERVERCOMMANDHANDLER) {
-    			if (!Patcher.serverCommandManagerPatched()) {
+    			if (!AppliedPatches.serverCommandManagerPatched()) {
     				sendChatMsg(sender, LanguageManager.getTranslation(lang, "command.generic.serverCommandManagerNotPatched"));
     	    		return false;
     			}
@@ -95,6 +92,20 @@ public abstract class ServerCommand extends CommandBase {
     		if (requierement == Requirement.MODDED_CLIENT) {
     			if (!clientInfo.clientModded()) {
     				sendChatMsg(sender, LanguageManager.getTranslation(lang, "command.generic.clientNotModded"));
+    	    		return false;
+    			}
+    		}
+    		
+    		if (requierement == Requirement.HANDSHAKE_FINISHED) {
+    			if (!clientInfo.handshakeFinished()) {
+    				sendChatMsg(sender, LanguageManager.getTranslation(lang, "command.generic.handshakeNotFinished"));
+    	    		return false;
+    			}
+    		}
+    		
+    		if (requierement == Requirement.HANDSHAKE_FINISHED_IF_CLIENT_MODDED) {
+    			if (clientInfo.clientModded() && !clientInfo.handshakeFinished()) {
+    				sendChatMsg(sender, LanguageManager.getTranslation(lang, "command.generic.handshakeNotFinished"));
     	    		return false;
     			}
     		}

@@ -1,10 +1,6 @@
 package com.mrnobody.morecommands.util;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
-import net.minecraft.entity.player.EntityPlayer;
 
 /**
  * A class containing global settings
@@ -15,6 +11,10 @@ import net.minecraft.entity.player.EntityPlayer;
 public class GlobalSettings {
 	public static boolean welcome_message = true;
 	public static boolean enableVars = true;
+	public static boolean retryHandshake = true;
+	public static int startupTimeout = 10;
+	public static int handshakeTimeout = 3;
+	public static int handshakeRetries = 3;
 	
 	public static boolean creeperExplosion = true;
 	public static boolean dodrops = true;
@@ -32,6 +32,10 @@ public class GlobalSettings {
 		
 		GlobalSettings.welcome_message = settings.getBoolean("welcome_message", true);
 		GlobalSettings.enableVars = settings.getBoolean("enableVars", true);
+		GlobalSettings.retryHandshake = settings.getBoolean("retryHandshake", true);
+		GlobalSettings.startupTimeout = settings.getInteger("startupTimeout", 10);
+		GlobalSettings.handshakeTimeout = settings.getInteger("handshakeTimeout", 3);
+		GlobalSettings.handshakeRetries = settings.getInteger("handshakeRetries", 3);
 		
 		//The other settings are not intended to be saved
 		
@@ -52,6 +56,10 @@ public class GlobalSettings {
 		
 		settings.set("welcome_message", GlobalSettings.welcome_message);
 		settings.set("enableVars", GlobalSettings.enableVars);
+		settings.set("retryHandshake", GlobalSettings.retryHandshake);
+		settings.set("startupTimeout", GlobalSettings.startupTimeout);
+		settings.set("handshakeTimeout", GlobalSettings.handshakeTimeout);
+		settings.set("handshakeRetries", GlobalSettings.handshakeRetries);
 		
 		//The other settings are not intended to be saved
 		

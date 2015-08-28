@@ -1,8 +1,5 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
@@ -12,6 +9,8 @@ import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import cpw.mods.fml.common.gameevent.TickEvent;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 
 @Command(
 		name = "scuba",
@@ -29,8 +28,8 @@ public class CommandScuba extends ServerCommand implements Listener<TickEvent> {
 	public void onEvent(TickEvent e) {
 		if (e instanceof TickEvent.PlayerTickEvent) {
 			TickEvent.PlayerTickEvent event = (TickEvent.PlayerTickEvent) e;
-			if (!ServerPlayerSettings.playerSettingsMapping.containsKey(event.player)) return;
-			if (event.player.isInWater() && ServerPlayerSettings.playerSettingsMapping.get(event.player).scuba) 
+			if (!(event.player instanceof EntityPlayerMP)) return;
+			if (event.player.isInWater() && ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) event.player).scuba) 
 				event.player.setAir(this.AIR_MAX);
 		}
 	}
@@ -47,7 +46,7 @@ public class CommandScuba extends ServerCommand implements Listener<TickEvent> {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.playerSettingsMapping.get(sender.getMinecraftISender());
+		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
     	
         if (params.length > 0) {
         	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
