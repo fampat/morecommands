@@ -3,7 +3,6 @@ package com.mrnobody.morecommands.util;
 import java.io.File;
 import java.util.Date;
 
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 
 /**
@@ -24,7 +23,6 @@ public class Reference {
 	public static final File getServerPlayerDir() {return Reference.INSTANCE.PLAYER_DIR_SERVER;}
 	public static final File getClientPlayerDir() {return Reference.INSTANCE.PLAYER_DIR_CLIENT;}
 	public static final File getMacroDir() {return Reference.INSTANCE.MACRO_DIR;}
-	public static final File getSavesDir() {return Reference.INSTANCE.SAVES_DIR;}
 	
 	private static Reference INSTANCE;
 	
@@ -33,7 +31,6 @@ public class Reference {
 	
 	private File MOD_DIR;
 	private File MACRO_DIR;
-	private File SAVES_DIR;
 	
 	private Reference(FMLPreInitializationEvent event) {
 		this.MOD_DIR = new File(event.getModConfigurationDirectory(), "morecommands");
@@ -47,8 +44,6 @@ public class Reference {
 		
 		this.PLAYER_DIR_CLIENT = new File(this.MOD_DIR, "playerdata_client");
 		if (!this.PLAYER_DIR_CLIENT.exists()) this.PLAYER_DIR_CLIENT.mkdirs();
-		
-		this.SAVES_DIR = FMLCommonHandler.instance().getSavesDirectory();
 	}
 	
 	public static final void init(FMLPreInitializationEvent event) {
