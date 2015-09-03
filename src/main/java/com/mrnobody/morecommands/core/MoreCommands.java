@@ -20,7 +20,6 @@ import com.mrnobody.morecommands.util.LanguageManager;
 import com.mrnobody.morecommands.util.Reference;
 
 import net.minecraft.command.ICommandSender;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
@@ -194,7 +193,6 @@ public class MoreCommands {
 	
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
-		Reference.setSavesDir(FMLCommonHandler.instance().getSavesDirectory());
 		this.handlersLoaded = MoreCommands.proxy.registerHandlers();
 		MoreCommands.proxy.init(event);
 	}

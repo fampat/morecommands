@@ -3,7 +3,6 @@ package com.mrnobody.morecommands.util;
 import java.io.File;
 import java.util.Date;
 
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 /**
@@ -24,7 +23,6 @@ public class Reference {
 	public static final File getServerPlayerDir() {return Reference.INSTANCE.PLAYER_DIR_SERVER;}
 	public static final File getClientPlayerDir() {return Reference.INSTANCE.PLAYER_DIR_CLIENT;}
 	public static final File getMacroDir() {return Reference.INSTANCE.MACRO_DIR;}
-	public static final File getSavesDir() {return Reference.INSTANCE.SAVES_DIR;}
 	
 	private static Reference INSTANCE;
 	
@@ -33,7 +31,6 @@ public class Reference {
 	
 	private File MOD_DIR;
 	private File MACRO_DIR;
-	private File SAVES_DIR;
 	
 	private Reference(FMLPreInitializationEvent event) {
 		this.MOD_DIR = new File(event.getModConfigurationDirectory(), "morecommands");
@@ -51,9 +48,5 @@ public class Reference {
 	
 	public static final void init(FMLPreInitializationEvent event) {
 		if (INSTANCE == null) Reference.INSTANCE = new Reference(event);
-	}
-	
-	public static final void setSavesDir(File dir) {
-		Reference.INSTANCE.SAVES_DIR = dir;
 	}
 }
