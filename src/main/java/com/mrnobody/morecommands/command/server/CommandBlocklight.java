@@ -6,11 +6,14 @@ import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.item.Item;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import cpw.mods.fml.common.registry.GameRegistry;
 
 @Command(
 		name="blocklight",
@@ -31,8 +34,6 @@ public class CommandBlocklight extends ServerCommand {
 		}
 	}
   
-	public void unregisterFromHandler() {}
-  
 	public boolean canSenderUse(ICommandSender sender) {
 		return true;
 	}
@@ -50,7 +51,9 @@ public class CommandBlocklight extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 1) {
-			Block block = (Block) Block.blockRegistry.getObject(params[0].toLowerCase().startsWith("minecraft:") ? params[0].toLowerCase() : "minecraft:" + params[0].toLowerCase());
+			String modid = params[0].split(":").length > 1 ? params[0].split(":")[0] : "minecraft";
+			String name = params[0].split(":").length > 1 ? params[0].split(":")[1] : params[0];
+			Block block = GameRegistry.findBlock(modid, name);
 			
 			if (block == null) {
 				try {block = Block.getBlockById(Integer.parseInt(params[0]));}

@@ -100,6 +100,13 @@ public class PacketHandlerServer {
 		retryThread.interrupt();
 	}
 	
+	public static void executeStartupCommands() {
+		for (String command : MoreCommands.getMoreCommands().getStartupCommands()) {
+			MinecraftServer.getServer().getCommandManager().executeCommand(MinecraftServer.getServer(), command);
+			MoreCommands.getMoreCommands().getLogger().info("Executed startup command '" + command + "'");
+		}
+	}
+	
 	private EntityPlayerMP getPlayerByUUID(UUID uuid) {
 		for (EntityPlayerMP player : (List<EntityPlayerMP>) MinecraftServer.getServer().getConfigurationManager().playerEntityList)
 			if (uuid.equals(player.getUniqueID())) return player;

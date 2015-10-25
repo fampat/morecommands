@@ -525,6 +525,14 @@ command.flammable.reset=Entflammbarkeit erfolgreich geaendert
 command.flammable.notFound=Block nicht gefunden
 command.flammable.invalidUsage=Falsche Benutzung. Benutze 'help flammable' um Hilfe zu bekommen.
 
+command.fluidmovement.description=Deaktiviert Wasser/Lava Movement
+command.fluidmovement.example=/fluidmovement false
+command.fluidmovement.syntax=/fluidmovement [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.fluidmovement.videoURL=youtu.be/L7K0GXpzInE
+command.fluidmovement.on=Fluessigkeits-Movement aktiviert
+command.fluidmovement.off=Fluessigkeits-Movement deaktiviert
+command.fluidmovement.failure=Uengultiges Argument.
+
 command.fly.description=Erlaubt es, zu fliegen
 command.fly.example=/fly on
 command.fly.syntax=/fly [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
@@ -694,6 +702,12 @@ command.invisible.on=Du bist unsichtbar
 command.invisible.off=Du bist nicht mehr unsichtbar
 command.invisible.failure=Ungueltiges Argument
 
+command.invrotate.description=Rotiert das Inventar
+command.invrotate.example=/invrotate item right
+command.invrotate.syntax=/invrotate [line|item|ANZAHL] [left|right|up|down]
+command.invrotate.videoURL=youtu.be/osbunopzC7k
+command.invrotate.invalidUsage=Falsche Benutzung. Benutze 'help invrotate' um Hilfe zu bekommen.
+
 command.itemdamage.description=Schaltet Itemschaden an/aus
 command.itemdamage.example=/itemdamage off
 command.itemdamage.syntax=/itemdamage [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
@@ -819,6 +833,15 @@ command.pick.NAN=Die Anzahl muss eine Zahl sein
 command.pick.cantgive=Kann Item nicht geben
 command.pick.notInSight=Kein Block in Sicht
 
+command.pickup.description=Verhindert das Aufnehmen von Items
+command.pickup.example=/pickup grass
+command.pickup.syntax=/pickup <ITEM>
+command.pickup.videoURL=youtu.be/nMk28YPwv6w
+command.pickup.notFound=Unbekanntes Item
+command.pickup.removed=Item wird aufgenommen
+command.pickup.added=Item wird nicht aufgenommen
+command.pickup.invalidUsage=Falsche Benutzung. Benutze 'help pickup' um Hilfe zu bekommen.
+
 command.reach.description=Legt deine Abbaudistanz fest
 command.reach.example=/reach 20
 command.reach.syntax=/reach <DISTANZ|RESET>
@@ -916,18 +939,21 @@ command.spawnportal.endError=Konnte Ender-Portal nicht erstellen
 command.spawnportal.unknownPortal=Unbekannter Portal-Typ
 command.spawnportal.noArgs=Kein Portal angegeben
 
-command.speed.description=Legt die Lauf- oder Fluggeschwindigkeit fest
+command.speed.description=Legt die Lauf-, Flug-, oder Minecart-Geschwindigkeit fest
 command.speed.example=/speed fly set 10
-command.speed.syntax=/speed <WALK|FLY> <GET|RESET|SET WERT>
-command.speed.videoURL=youtu.be/ZJg8SXVra5s
+command.speed.syntax=/speed <WALK|FLY|MINECART> <GET|RESET|SET WERT>
+command.speed.videoURL=youtu.be/E9qVWEEarl0
 command.speed.NAN=Die Geschwindigkeit muss eine Zahl sein
 command.speed.walkSet=Laufgeschwindigkeit erfolgreich festgelegt
 command.speed.flySet=Fluggeschwindigkeit erfolgreich festgelegt
+command.speed.minecartSet=Minecart-Geschwindigkeit erfolgreich festgelegt
 command.speed.noArg=Geschwindigkeit nicht angegeben
 command.speed.getFly=Deine Fluggeschwindigkeit ist %f
 command.speed.getWalk=Deine Laufgeschwindigkeit ist %f
+command.speed.getMinecart=Deine Minecart-Geschwindigkeit ist %f
 command.speed.walkReset=Laufgeschwindigkeit erfolgreich zurueckgesetzt
 command.speed.flyReset=Fluggeschwindigkeit erfolgreich zurueckgesetzt
+command.speed.minecartReset=Minecart-Geschwindigkeit erfolgreich zurueckgesetzt
 command.speed.invalidUsage=Falsche Benutzung. Benutze 'help speed' um Hilfe zu bekommen.
 command.speed.error=Ein Fehler ist bei der Ausfuehrung aufgetreten
 
@@ -944,8 +970,13 @@ command.stacksize.example=/stacksize dirt 128
 command.stacksize.syntax=/stacksize <ITEM> <GROESSE>
 command.stacksize.videoURL=Noch nicht verfuegbar
 
+command.stackcombine.description=Kombiniert Item-Stacks
+command.stackcombine.example=/stackcombime
+command.stackcombine.syntax=/stackcombime
+command.stackcombine.videoURL=youtu.be/XMqEjCbgXBE
+
 command.stepheight.description=Erlaubt es, die Schritthoehe festzulegen
-command.stepheight.example=/stepheight dirt 128
+command.stepheight.example=/stepheight 10
 command.stepheight.syntax=/stepheight [WERT|RESET]
 command.stepheight.videoURL=youtu.be/aYCvmfSWAb4
 command.stepheight.setto=Schritthoehe erfolgreich auf %f festgelegt

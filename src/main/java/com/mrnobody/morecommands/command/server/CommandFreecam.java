@@ -48,9 +48,6 @@ public class CommandFreecam extends ServerCommand {
 	public Requirement[] getRequirements() {
 		return new Requirement[] {Requirement.MODDED_CLIENT, Requirement.PATCH_ENTITYCLIENTPLAYERMP};
 	}
-	
-	@Override
-	public void unregisterFromHandler() {}
 
 	@Override
 	public ServerType getAllowedServerType() {

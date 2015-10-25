@@ -10,7 +10,7 @@ public class Listeners {
 	 * 
 	 * @author MrNobody98
 	 */
-	public static interface Listener<T extends Event> {
+	public static interface EventListener<T extends Event> {
 		/**
 		 * Called when the event is fired
 		 */

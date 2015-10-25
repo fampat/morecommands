@@ -12,6 +12,7 @@ import com.mrnobody.morecommands.util.XrayHelper;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommandSender;
 import net.minecraftforge.client.ClientCommandHandler;
@@ -37,6 +38,9 @@ public class ClientProxy extends CommonProxy {
 			this.mod.getLogger().info("Client Commands successfully registered");
 		XrayHelper.init();
 	}
+	
+	@Override
+	protected void serverStarted(FMLServerStartedEvent event) {} //NOOP
 
 	@Override
 	public boolean commandsLoaded() {

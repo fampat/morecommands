@@ -4,15 +4,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockFire;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.init.Blocks;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import cpw.mods.fml.common.registry.GameRegistry;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockFire;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.init.Blocks;
 
 @Command(
 		name = "flammable",
@@ -57,7 +58,9 @@ public class CommandFlammable extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 0) {
-			Block block = (Block) Block.blockRegistry.getObject(params[0].toLowerCase().startsWith("minecraft:") ? params[0].toLowerCase() : "minecraft:" + params[0].toLowerCase());
+			String modid = params[0].split(":").length > 1 ? params[0].split(":")[0] : "minecraft";
+			String name = params[0].split(":").length > 1 ? params[0].split(":")[1] : params[0];
+			Block block = GameRegistry.findBlock(modid, name);
 			
 			if (block == null) {
 				try {block = Block.getBlockById(Integer.parseInt(params[0]));}
@@ -99,9 +102,6 @@ public class CommandFlammable extends ServerCommand {
 	public Requirement[] getRequirements() {
 		return new Requirement[0];
 	}
-	
-	@Override
-	public void unregisterFromHandler() {}
 
 	@Override
 	public ServerType getAllowedServerType() {

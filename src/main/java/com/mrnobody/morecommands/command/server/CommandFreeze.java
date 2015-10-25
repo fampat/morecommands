@@ -6,7 +6,7 @@ import java.util.List;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
@@ -25,7 +25,7 @@ import net.minecraft.world.World;
 		syntax = "command.freeze.syntax",
 		videoURL = "command.freeze.videoURL"
 		)
-public class CommandFreeze extends ServerCommand implements Listener<TickEvent> {
+public class CommandFreeze extends ServerCommand implements EventListener<TickEvent> {
 	private List<World> worldsToFreeze = new ArrayList<World>();
 	
 	public CommandFreeze() {
@@ -91,11 +91,6 @@ public class CommandFreeze extends ServerCommand implements Listener<TickEvent> 
         	else this.worldsToFreeze.add(world);
         	sender.sendLangfileMessage(this.worldsToFreeze.contains(world) ? "command.freeze.on" : "command.freeze.off");
         }
-	}
-	
-	@Override
-	public void unregisterFromHandler() {
-		EventHandler.TICK.getHandler().unregister(this);
 	}
 
 	@Override

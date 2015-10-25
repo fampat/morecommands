@@ -10,7 +10,7 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
@@ -21,7 +21,7 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax="command.ignorespawn.syntax",
 		videoURL="command.ignorespawn.videoURL"
 		)
-public class CommandIgnorespawn extends ServerCommand implements Listener<EntityJoinWorldEvent> {
+public class CommandIgnorespawn extends ServerCommand implements EventListener<EntityJoinWorldEvent> {
 	private List<Class<? extends net.minecraft.entity.Entity>> ignoreSpawn = new ArrayList<Class<? extends net.minecraft.entity.Entity>>();
   
 	public CommandIgnorespawn() {
@@ -32,11 +32,6 @@ public class CommandIgnorespawn extends ServerCommand implements Listener<Entity
 	public void onEvent(EntityJoinWorldEvent event) {
 		if (this.ignoreSpawn.contains(event.entity.getClass()))
 			event.setCanceled(true);
-	}
-  
-	@Override
-	public void unregisterFromHandler() {
-		EventHandler.ENTITYJOIN.getHandler().unregister(this);
 	}
   
 	@Override

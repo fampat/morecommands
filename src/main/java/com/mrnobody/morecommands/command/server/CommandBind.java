@@ -3,7 +3,7 @@ package com.mrnobody.morecommands.command.server;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.handler.PacketHandler;
 import com.mrnobody.morecommands.util.KeyEvent;
 import com.mrnobody.morecommands.util.Keyboard;
@@ -23,7 +23,7 @@ import net.minecraft.server.MinecraftServer;
 		syntax = "command.bind.syntax",
 		videoURL = "command.bind.videoURL"
 		)
-public class CommandBind extends ServerCommand implements Listener<KeyEvent> {
+public class CommandBind extends ServerCommand implements EventListener<KeyEvent> {
 	private final CommandHandler commandHandler = (CommandHandler) MinecraftServer.getServer().getCommandManager();
 	
 	public CommandBind() {
@@ -93,10 +93,6 @@ public class CommandBind extends ServerCommand implements Listener<KeyEvent> {
 	@Override
 	public ServerType getAllowedServerType() {
 		return ServerType.ALL;
-	}
-	
-	public void unregisterFromHandler() {
-		PacketHandler.KEYINPUT.getHandler().unregister(this);
 	}
 	
 	@Override

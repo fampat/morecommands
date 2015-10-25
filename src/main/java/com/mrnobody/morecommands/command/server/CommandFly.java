@@ -3,7 +3,7 @@ package com.mrnobody.morecommands.command.server;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -20,7 +20,7 @@ import net.minecraftforge.event.entity.living.LivingFallEvent;
 		syntax = "command.fly.syntax",
 		videoURL = "command.fly.videoURL"
 		)
-public class CommandFly extends ServerCommand implements Listener<LivingFallEvent>
+public class CommandFly extends ServerCommand implements EventListener<LivingFallEvent>
 {
 	public CommandFly() {EventHandler.FALL.getHandler().register(this);}
 	
@@ -80,11 +80,6 @@ public class CommandFly extends ServerCommand implements Listener<LivingFallEven
 	@Override
 	public Requirement[] getRequirements() {
 		return new Requirement[0];
-	}
-	
-	@Override
-	public void unregisterFromHandler() {
-		EventHandler.FALL.getHandler().unregister(this);
 	}
 
 	@Override

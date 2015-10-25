@@ -91,12 +91,6 @@ public class CommandNoattack extends ServerCommand implements TwoEventListener<L
 	public Requirement[] getRequirements() {
 		return new Requirement[0];
 	}
-	
-	@Override
-	public void unregisterFromHandler() {
-		EventHandler.SET_TARGET.getHandler().unregister(this);
-		EventHandler.ATTACK.getHandler().unregister(this);
-	}
 
 	@Override
 	public ServerType getAllowedServerType() {

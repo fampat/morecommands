@@ -9,7 +9,7 @@ import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.AppliedPatches;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.network.PacketDispatcher;
 import com.mrnobody.morecommands.util.ClientPlayerSettings;
 import com.mrnobody.morecommands.util.Keyboard;
@@ -25,7 +25,7 @@ import cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent;
 		syntax = "command.bind.syntax",
 		videoURL = "command.bind.videoURL"
 		)
-public class CommandBind extends ClientCommand implements Listener<KeyInputEvent> {
+public class CommandBind extends ClientCommand implements EventListener<KeyInputEvent> {
 	private final CommandHandler commandHandler = ClientCommandHandler.instance;
 	
 	@Override

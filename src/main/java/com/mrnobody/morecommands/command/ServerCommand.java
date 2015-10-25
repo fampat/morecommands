@@ -16,12 +16,7 @@ import net.minecraft.util.EnumChatFormatting;
  * 
  * @author MrNobody98
  */
-public abstract class ServerCommand extends CommandBase {
-    /**
-     * Called when the server stops to unregister commands from handlers
-     */
-	public abstract void unregisterFromHandler();
-	
+public abstract class ServerCommand extends CommandBase {	
     /**
      * @return Whether the command sender can use the command
      */

@@ -59,9 +59,6 @@ public class CommandCheats extends ServerCommand {
 	public ServerType getAllowedServerType() {
 		return ServerType.INTEGRATED;
 	}
-
-	@Override
-	public void unregisterFromHandler() {}
 	
 	@Override
 	public int getPermissionLevel() {

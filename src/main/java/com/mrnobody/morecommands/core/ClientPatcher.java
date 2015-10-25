@@ -3,6 +3,7 @@ package com.mrnobody.morecommands.core;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
+import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.command.client.CommandAlias;
 import com.mrnobody.morecommands.network.PacketHandlerClient;
 import com.mrnobody.morecommands.patch.ClientCommandManager;
@@ -106,7 +107,8 @@ public class ClientPatcher extends CommonPatcher {
 	 */
 	@SubscribeEvent
 	public void playerConnect(ClientConnectedToServerEvent event) {
-		PacketHandlerClient.runStartupThread();
+		if (this.mod.getRunningServer() != ServerType.INTEGRATED) 
+			PacketHandlerClient.runStartupThread(event.manager.getSocketAddress().toString());
 		ClientPlayerSettings.readSettings(event.manager.getSocketAddress().toString());
 		CommandAlias.registerAliases();
 	}
@@ -121,5 +123,6 @@ public class ClientPatcher extends CommonPatcher {
 		AppliedPatches.setHandshakeFinished(false);
 		PacketHandlerClient.reregisterAndClearRemovedCmds();
 		this.clientNetHandlerPatchApplied = false;
+		MoreCommands.getProxy().playerNotified = false;
 	}
 }

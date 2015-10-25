@@ -79,9 +79,6 @@ public class CommandBindID extends ServerCommand {
 	public ServerType getAllowedServerType() {
 		return ServerType.ALL;
 	}
-
-	@Override
-	public void unregisterFromHandler() {}
 	
 	@Override
 	public int getPermissionLevel() {

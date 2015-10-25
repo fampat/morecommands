@@ -6,7 +6,7 @@ import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.util.DummyCommand;
 import com.mrnobody.morecommands.util.DummyCommand.DummyServerCommand;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
@@ -25,7 +25,7 @@ import net.minecraftforge.event.CommandEvent;
 		syntax = "command.alias.syntax",
 		videoURL = "command.alias.videoURL"
 		)
-public class CommandAlias extends ServerCommand implements Listener<CommandEvent> {
+public class CommandAlias extends ServerCommand implements EventListener<CommandEvent> {
 	private final net.minecraft.command.CommandHandler commandHandler = (net.minecraft.command.CommandHandler) MinecraftServer.getServer().getCommandManager();
 	
 	public CommandAlias() {
@@ -119,10 +119,6 @@ public class CommandAlias extends ServerCommand implements Listener<CommandEvent
 	@Override
 	public ServerType getAllowedServerType() {
 		return ServerType.ALL;
-	}
-	
-	public void unregisterFromHandler() {
-		EventHandler.COMMAND.getHandler().unregister(this);
 	}
 	
 	/**

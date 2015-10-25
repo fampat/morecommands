@@ -54,9 +54,6 @@ public class CommandCriticalhit extends ServerCommand {
 	public Requirement[] getRequirements() {
 		return new Requirement[] {Requirement.PATCH_ENTITYPLAYERMP};
 	}
-	
-	@Override
-	public void unregisterFromHandler() {}
 
 	@Override
 	public ServerType getAllowedServerType() {

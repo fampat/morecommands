@@ -49,9 +49,6 @@ public class CommandLight extends ServerCommand {
 	public Requirement[] getRequirements() {
 		return new Requirement[] {Requirement.MODDED_CLIENT};
 	}
-	
-	@Override
-	public void unregisterFromHandler() {}
 
 	@Override
 	public ServerType getAllowedServerType() {

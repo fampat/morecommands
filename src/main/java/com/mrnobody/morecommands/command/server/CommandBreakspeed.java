@@ -3,7 +3,7 @@ package com.mrnobody.morecommands.command.server;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -19,7 +19,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 		syntax = "command.breakspeed.syntax",
 		videoURL = "command.breakspeed.videoURL"
 		)
-public class CommandBreakspeed extends ServerCommand implements Listener<BreakSpeed> {
+public class CommandBreakspeed extends ServerCommand implements EventListener<BreakSpeed> {
 	public CommandBreakspeed() {EventHandler.BREAKSPEED.getHandler().register(this);}
 	
 	@Override
@@ -75,11 +75,6 @@ public class CommandBreakspeed extends ServerCommand implements Listener<BreakSp
 	@Override
 	public Requirement[] getRequirements() {
 		return new Requirement[0];
-	}
-	
-	@Override
-	public void unregisterFromHandler() {
-		EventHandler.BREAKSPEED.getHandler().unregister(this);
 	}
 
 	@Override

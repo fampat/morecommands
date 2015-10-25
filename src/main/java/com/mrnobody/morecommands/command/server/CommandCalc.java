@@ -170,9 +170,6 @@ public class CommandCalc extends ServerCommand {
 	}
   
 	@Override
-	public void unregisterFromHandler() {}
-  
-	@Override
 	public boolean canSenderUse(ICommandSender sender) {
 		return true;
 	}

@@ -37,6 +37,7 @@ public final class PacketDispatcher {
 	private static final byte S10EXECUTECLIENTCOMMAND = 0x10;
 	private static final byte S11GRAVITY              = 0x11;
 	private static final byte S12STEPHEIGHT           = 0x12;
+	private static final byte S13FLUIDMOVEMENT        = 0x13;
 	
 	private static final byte XRAY_SHOWCONFIG       = 0;
 	private static final byte XRAY_CHANGESETTINGS   = 1;
@@ -97,6 +98,7 @@ public final class PacketDispatcher {
 			case S10EXECUTECLIENTCOMMAND: processS10ExecuteClientCommand(payload); break;
 			case S11GRAVITY:              processS11Gravity(payload); break;
 			case S12STEPHEIGHT:           processS12Stepheight(payload); break;
+			case S13FLUIDMOVEMENT:        processS13FluidMovement(payload); break;
 			default:                      break;
 		}
 	}
@@ -214,6 +216,11 @@ public final class PacketDispatcher {
 	private void processS12Stepheight(ByteBuf payload) {
 		float stepheight = payload.readFloat();
 		this.packetHandlerClient.setStepheight(stepheight);
+	}
+	
+	private void processS13FluidMovement(ByteBuf payload) {
+		boolean fluidmovement = payload.readBoolean();
+		this.packetHandlerClient.setFluidMovement(fluidmovement);
 	}
 	
 	public void sendC00Handshake(boolean clientPlayerPatched) {
@@ -382,6 +389,14 @@ public final class PacketDispatcher {
 	    writeID(payload, S12STEPHEIGHT);
 	    
 	    payload.writeFloat(stepheight);
+		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
+	}
+	
+	public void sendS13FluidMovement(EntityPlayerMP player, boolean fluidmovement) {
+	    ByteBuf payload = Unpooled.buffer();
+	    writeID(payload, S13FLUIDMOVEMENT);
+	    
+	    payload.writeBoolean(fluidmovement);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	  

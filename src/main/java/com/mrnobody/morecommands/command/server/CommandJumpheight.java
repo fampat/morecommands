@@ -17,10 +17,6 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		videoURL = "command.jumpheight.videoURL"
 		)
 public class CommandJumpheight extends ServerCommand {
-
-	@Override
-	public void unregisterFromHandler() {}
-
 	@Override
 	public String getCommandName() {
 		return "jumpheight";

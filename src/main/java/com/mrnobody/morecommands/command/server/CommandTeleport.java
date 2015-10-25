@@ -84,9 +84,6 @@ public class CommandTeleport extends ServerCommand {
 	}
 	
 	@Override
-	public void unregisterFromHandler() {}
-
-	@Override
 	public ServerType getAllowedServerType() {
 		return ServerType.ALL;
 	}

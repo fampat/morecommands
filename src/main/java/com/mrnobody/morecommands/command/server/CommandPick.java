@@ -1,5 +1,11 @@
 package com.mrnobody.morecommands.command.server;
 
+import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.wrapper.CommandException;
+import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.wrapper.Player;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFlowerPot;
 import net.minecraft.command.ICommandSender;
@@ -11,12 +17,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.World;
-
-import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
 		name = "pick",
@@ -40,7 +40,7 @@ public class CommandPick extends ServerCommand {
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
 		MovingObjectPosition pick = player.rayTrace(128.0D, 0.0D, 1.0F);
-		int amount = 64;
+		int amount = 1;
 		
 		if (params.length > 0) {
 			try {amount = Integer.parseInt(params[0]);}
@@ -58,9 +58,6 @@ public class CommandPick extends ServerCommand {
 	public Requirement[] getRequirements() {
 		return new Requirement[0];
 	}
-	
-	@Override
-	public void unregisterFromHandler() {}
 
 	@Override
 	public ServerType getAllowedServerType() {
@@ -110,8 +107,20 @@ public class CommandPick extends ServerCommand {
             ItemStack stack = player.inventory.getStackInSlot(x);
             if (stack != null && stack.isItemEqual(result) && ItemStack.areItemStackTagsEqual(stack, result))
             {
+            	if (amount > stack.getMaxStackSize()) amount = stack.getMaxStackSize();
                 player.inventory.currentItem = x;
-                stack.stackSize += amount;
+                
+                if (stack.stackSize + amount > stack.getMaxStackSize()) {
+                	int oldStackSize = stack.stackSize;
+                	stack.stackSize = stack.getMaxStackSize();
+                	
+                	if (player.inventory.getFirstEmptyStack() > 0) {
+                		ItemStack copy = ItemStack.copyItemStack(stack); copy.stackSize = (oldStackSize + amount) - stack.getMaxStackSize();
+                		player.inventory.mainInventory[player.inventory.getFirstEmptyStack()] = copy;
+                	}
+                }
+                else stack.stackSize += amount;
+                
                 return true;
             }
         }

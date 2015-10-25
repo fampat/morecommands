@@ -17,6 +17,7 @@ import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingSetAttackTargetEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
+import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.world.BlockEvent.PlaceEvent;
@@ -41,7 +42,8 @@ public enum EventHandler {
 	PLAYER_ATTACK(MinecraftForge.EVENT_BUS, new Handler<AttackEntityEvent>(AttackEntityEvent.class, false)),
 	RENDERWORLD(MinecraftForge.EVENT_BUS, new Handler<RenderWorldLastEvent>(RenderWorldLastEvent.class, true)),
 	TICK(FMLCommonHandler.instance().bus(), new Handler<TickEvent>(TickEvent.class, false)),
-	SOUND(MinecraftForge.EVENT_BUS, new Handler<PlaySoundEvent17>(PlaySoundEvent17.class, true));
+	SOUND(MinecraftForge.EVENT_BUS, new Handler<PlaySoundEvent17>(PlaySoundEvent17.class, true)),
+	PICKUP(MinecraftForge.EVENT_BUS, new Handler<EntityItemPickupEvent>(EntityItemPickupEvent.class, false));
 	
 	private EventBus bus;
 	private Handler handler;

@@ -100,9 +100,6 @@ public class CommandEffect extends ServerCommand {
 	public Requirement[] getRequirements() {
 		return new Requirement[0];
 	}
-	
-	@Override
-	public void unregisterFromHandler() {}
 
 	@Override
 	public ServerType getAllowedServerType() {

@@ -45,10 +45,6 @@ import net.minecraft.world.storage.WorldInfo;
 		videoURL = "command.world.videoURL"
 		)
 public class CommandWorld extends ServerCommand {
-
-	@Override
-	public void unregisterFromHandler() {}
-
 	@Override
 	public String getCommandName() {
 		return "world";

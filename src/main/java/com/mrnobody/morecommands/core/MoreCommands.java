@@ -5,9 +5,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
 
@@ -16,6 +19,7 @@ import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.network.PacketDispatcher;
 import com.mrnobody.morecommands.util.DynamicClassLoader;
+import com.mrnobody.morecommands.util.GlobalSettings;
 import com.mrnobody.morecommands.util.LanguageManager;
 import com.mrnobody.morecommands.util.Reference;
 
@@ -27,6 +31,7 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
+import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.relauncher.Side;
@@ -42,11 +47,13 @@ import net.minecraft.command.ICommandSender;
 public class MoreCommands {
 	@Instance(Reference.MODID)
 	private static MoreCommands instance;
+	public static final String WEBSITE = "http://bit.ly/morecommands";
 	
 	@SidedProxy(clientSide="com.mrnobody.morecommands.core.ClientProxy", serverSide="com.mrnobody.morecommands.core.CommonProxy", modId=Reference.MODID)
 	private static CommonProxy proxy;
 	
 	public static final DynamicClassLoader CLASSLOADER = new DynamicClassLoader(MoreCommands.class.getClassLoader());
+	private static final Pattern IP_PATTERN = Pattern.compile("^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,5}[ \t]*\\{$");
 	
 	private PacketDispatcher dispatcher;
 	private UUID playerUUID;
@@ -60,8 +67,11 @@ public class MoreCommands {
 	private List<Class<? extends ServerCommand>> serverCommandClasses = new ArrayList<Class<? extends ServerCommand>>();
 	
 	private List<String> disabledCommands;
+	private List<String> startupCommands;
+	private List<String> startupMultiplayerCommands;
+	private Map<String, List<String>> startupServerCommands;
 	
-	//Need this because forge injects the instance after injecting the proxy, but it uses
+	//Need this because forge injects the instance after injecting the proxy, but the proxy uses
 	//MoreCommands#getMoreCommands in its constructor -> Causes a NullpointerException
 	public MoreCommands() {MoreCommands.instance = this;}
 	
@@ -184,9 +194,15 @@ public class MoreCommands {
 		this.logger = event.getModLog();
 		Reference.init(event);
 		LanguageManager.readTranslations();
+		GlobalSettings.readSettings();
 		this.dispatcher = new PacketDispatcher();
 		this.loadCommands();
 		this.disabledCommands = this.readDisabledCommands();
+		
+		Object[] startupCommands = this.parseStartupFiles();
+		this.startupCommands = (List<String>) startupCommands[0];
+		this.startupMultiplayerCommands = (List<String>) startupCommands[1];
+		this.startupServerCommands = (Map<String, List<String>>) startupCommands[2];
 		
 		MoreCommands.proxy.preInit(event);
 	}
@@ -210,6 +226,11 @@ public class MoreCommands {
 	@EventHandler
 	private void serverInit(FMLServerStartingEvent event) {
 		MoreCommands.proxy.serverInit(event);
+	}
+	
+	@EventHandler
+	private void serverStarted(FMLServerStartedEvent event) {
+		MoreCommands.proxy.serverStarted(event);
 	}
 	
 	@EventHandler
@@ -265,5 +286,52 @@ public class MoreCommands {
 		catch (IOException ex) {ex.printStackTrace(); this.getLogger().info("Could not read disable.cfg");}
 		
 		return disabled;
+	}
+	
+	private Object[] parseStartupFiles() {
+		final List<String> startupCommands = new ArrayList<String>();
+		final List<String> startupCommandsM = new ArrayList<String>();
+		final Map<String, List<String>> startupCommandsMap = new HashMap<String, List<String>>();
+		
+		try {
+			File startup = new File(Reference.getModDir(), "startup.cfg");
+			File startupMultiplayer = new File(Reference.getModDir(), "startup_multiplayer.cfg");
+			if (!startup.exists() || !startup.isFile()) startup.createNewFile();
+			if (!startupMultiplayer.exists() || !startupMultiplayer.isFile()) startup.createNewFile();
+		
+			BufferedReader br = new BufferedReader(new FileReader(startup));
+			String line; while ((line = br.readLine()) != null) {if (!line.startsWith("#")) startupCommands.add(line.trim());}
+			br.close();
+			
+			br = new BufferedReader(new FileReader(startupMultiplayer));
+			boolean bracketOpen = false;
+			String addr = null;
+			
+			while ((line = br.readLine()) != null) {
+				if (!bracketOpen && IP_PATTERN.matcher(line.trim()).matches()) {bracketOpen = true; addr = line.split("\\{")[0].trim();}
+				else if (bracketOpen && line.trim().equals("}")) {bracketOpen = false;}
+				else if (!bracketOpen && !line.startsWith("#")) startupCommandsM.add(line.trim());
+				else if (bracketOpen && !line.startsWith("#")) {
+					if (!startupCommandsMap.containsKey(addr)) startupCommandsMap.put(addr, new ArrayList<String>());
+					startupCommandsMap.get(addr).add(line.trim());
+				}
+			}
+			
+			br.close();
+		}
+		catch (IOException ex) {ex.printStackTrace(); MoreCommands.getMoreCommands().getLogger().info("Startup commands file could not be read");}
+		
+		return new Object[] {startupCommands, startupCommandsM, startupCommandsMap};
+	}
+	
+	public List<String> getStartupCommands() {
+		return new ArrayList<String>(this.startupCommands);
+	}
+	
+	public List<String> getStartupCommandsMultiplayer(String socketAddress) {
+		socketAddress = socketAddress.trim(); if (socketAddress.startsWith("/")) socketAddress = socketAddress.substring(1);
+		List<String> commands = new ArrayList<String>(this.startupMultiplayerCommands);
+		if (this.startupServerCommands.containsKey(socketAddress)) commands.addAll(this.startupServerCommands.get(socketAddress));
+		return commands;
 	}
 }

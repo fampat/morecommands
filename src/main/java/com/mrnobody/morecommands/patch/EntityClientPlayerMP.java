@@ -2,22 +2,15 @@ package com.mrnobody.morecommands.patch;
 
 import com.mrnobody.morecommands.wrapper.EntityCamera;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.potion.Potion;
 import net.minecraft.stats.StatFileWriter;
 import net.minecraft.stats.StatList;
-import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.Session;
-import net.minecraft.client.Minecraft;
 import net.minecraft.world.World;
-import net.minecraft.client.network.NetHandlerPlayClient;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.Entity;
-import net.minecraft.inventory.ContainerPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.event.ForgeEventFactory;
 
 /**
  * The patched class of {@link net.minecraft.client.entity.EntityClientPlayerMP} <br>
@@ -31,6 +24,7 @@ public class EntityClientPlayerMP extends net.minecraft.client.entity.EntityClie
 	private boolean overrideOnLadder = false;
 	private boolean freezeCam = false;
 	private boolean freeCam = false;
+	private boolean fluidmovement = true;
 	
 	private float freezeCamYaw;
 	private float freezeCamPitch;
@@ -47,6 +41,26 @@ public class EntityClientPlayerMP extends net.minecraft.client.entity.EntityClie
         //this.inventoryContainer = new ContainerPlayer(this.inventory, !world.isRemote, this);
         //this.openContainer = this.inventoryContainer;
     }
+    
+	public void setFluidMovement(boolean fluidmovement) {
+		this.fluidmovement = fluidmovement;
+	}
+	
+	public boolean getFluidMovement() {
+		return this.fluidmovement;
+	}
+    
+	@Override
+	public boolean isInWater() {
+		if (!this.fluidmovement) return false;
+		return super.handleWaterMovement();
+	}
+	
+	@Override
+	public boolean handleLavaMovement() {
+		if (!this.fluidmovement) return false;
+		return super.handleLavaMovement();
+	}
     
     public StatFileWriter getWriter() {
     	return this.writer;
