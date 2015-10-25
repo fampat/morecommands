@@ -7,7 +7,7 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.util.GlobalSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -19,7 +19,7 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.dodrops.syntax",
 		videoURL = "command.dodrops.videoURL"
 		)
-public class CommandDodrops extends ServerCommand implements Listener<EntityJoinWorldEvent> {
+public class CommandDodrops extends ServerCommand implements EventListener<EntityJoinWorldEvent> {
 	public CommandDodrops() {
 		EventHandler.ENTITYJOIN.getHandler().register(this);
 	}
@@ -50,11 +50,6 @@ public class CommandDodrops extends ServerCommand implements Listener<EntityJoin
 		return new Requirement[0];
 	}
 	
-	@Override
-	public void unregisterFromHandler() {
-		EventHandler.ENTITYJOIN.getHandler().unregister(this);
-	}
-
 	@Override
 	public ServerType getAllowedServerType() {
 		return ServerType.ALL;

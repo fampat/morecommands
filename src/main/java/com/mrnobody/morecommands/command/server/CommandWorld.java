@@ -48,9 +48,6 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		)
 public class CommandWorld extends ServerCommand {
 	@Override
-	public void unregisterFromHandler() {}
-
-	@Override
 	public String getName() {
 		return "world";
 	}

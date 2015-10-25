@@ -16,10 +16,6 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 	videoURL = "command.sprint.videoURL"
 		)
 public class CommandSprint extends ServerCommand {
-
-	@Override
-	public void unregisterFromHandler() {}
-
 	@Override
 	public String getName() {
 		return "sprint";

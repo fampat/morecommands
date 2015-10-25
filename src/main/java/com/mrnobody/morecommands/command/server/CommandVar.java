@@ -84,8 +84,6 @@ public class CommandVar extends ServerCommand {
 		return ServerType.ALL;
 	}
 	
-	public void unregisterFromHandler() {}
-	
 	@Override
 	public int getPermissionLevel() {
 		return 0;

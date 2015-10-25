@@ -18,9 +18,6 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		)
 public class CommandJumpheight extends ServerCommand {
 	@Override
-	public void unregisterFromHandler() {}
-
-	@Override
 	public String getName() {
 		return "jumpheight";
 	}

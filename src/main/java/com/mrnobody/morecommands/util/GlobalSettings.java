@@ -15,6 +15,7 @@ public class GlobalSettings {
 	public static int startupTimeout = 10;
 	public static int handshakeTimeout = 3;
 	public static int handshakeRetries = 3;
+	public static boolean searchUpdates = true;
 	
 	//public static boolean creeperExplosion = true;
 	//public static boolean freezeEntities = false;
@@ -36,6 +37,7 @@ public class GlobalSettings {
 		GlobalSettings.startupTimeout = settings.getInteger("startupTimeout", 10);
 		GlobalSettings.handshakeTimeout = settings.getInteger("handshakeTimeout", 3);
 		GlobalSettings.handshakeRetries = settings.getInteger("handshakeRetries", 3);
+		GlobalSettings.searchUpdates = settings.getBoolean("searchUpdates", true);
 		
 		//those settings are not intended to be read or written
 		
@@ -60,6 +62,7 @@ public class GlobalSettings {
 		settings.set("startupTimeout", GlobalSettings.startupTimeout);
 		settings.set("handshakeTimeout", GlobalSettings.handshakeTimeout);
 		settings.set("handshakeRetries", GlobalSettings.handshakeRetries);
+		settings.set("searchUpdates", GlobalSettings.searchUpdates);
 		
 		//those settings are not intended to be read or written
 		

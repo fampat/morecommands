@@ -14,6 +14,7 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
 import net.minecraftforge.event.world.BlockEvent.PlaceEvent;
 
@@ -52,7 +53,7 @@ public class CommandInfiniteitems extends ServerCommand implements TwoEventListe
 		public void run() {
 			Stack stack;
 			
-			while (!this.isInterrupted()) {
+			while (!this.isInterrupted() && !(MinecraftServer.getServer() == null || !MinecraftServer.getServer().isServerRunning())) {
 				try {
 					if (this.lastTime < System.currentTimeMillis()) {
 						
@@ -130,13 +131,6 @@ public class CommandInfiniteitems extends ServerCommand implements TwoEventListe
 	@Override
 	public Requirement[] getRequirements() {
 		return new Requirement[0];
-	}
-	
-	@Override
-	public void unregisterFromHandler() {
-		EventHandler.PLACE.getHandler().unregister(this);
-		EventHandler.DESTROY.getHandler().unregister(this);
-		this.observer.interrupt();
 	}
 
 	@Override

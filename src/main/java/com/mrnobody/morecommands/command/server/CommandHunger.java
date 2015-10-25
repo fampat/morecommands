@@ -5,7 +5,7 @@ import java.lang.reflect.Field;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.util.ReflectionHelper;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
@@ -24,7 +24,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 		syntax = "command.hunger.syntax",
 		videoURL = "command.hunger.videoURL"
 		)
-public class CommandHunger extends ServerCommand implements Listener<TickEvent> {
+public class CommandHunger extends ServerCommand implements EventListener<TickEvent> {
 	private final Field foodLevel = ReflectionHelper.getField(FoodStats.class, "foodLevel");
 	
 	public CommandHunger() {
@@ -99,11 +99,6 @@ public class CommandHunger extends ServerCommand implements Listener<TickEvent> 
 	@Override
 	public Requirement[] getRequirements() {
 		return new Requirement[0];
-	}
-	
-	@Override
-	public void unregisterFromHandler() {
-		EventHandler.TICK.getHandler().unregister(this);
 	}
 
 	@Override

@@ -1,8 +1,9 @@
 package com.mrnobody.morecommands.patch;
 
+import com.mrnobody.morecommands.wrapper.EntityCamera;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
-import net.minecraft.inventory.ContainerPlayer;
 import net.minecraft.potion.Potion;
 //import net.minecraft.inventory.ContainerPlayer;
 import net.minecraft.stats.StatFileWriter;
@@ -10,8 +11,6 @@ import net.minecraft.stats.StatList;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
-
-import com.mrnobody.morecommands.wrapper.EntityCamera;
 
 /**
  * The patched class of {@link net.minecraft.client.entity.EntityPlayerSP} <br>
@@ -28,6 +27,7 @@ public class EntityPlayerSP extends net.minecraft.client.entity.EntityPlayerSP {
 	private boolean freezeCam = false;
 	private boolean freeCam = false;
 	private boolean overrideNoclip = false;
+	private boolean fluidmovement = true;
 	
 	private boolean overrideSpectator = false;
 	private float freezeCamYaw;
@@ -47,6 +47,26 @@ public class EntityPlayerSP extends net.minecraft.client.entity.EntityPlayerSP {
         //this.inventoryContainer = new ContainerPlayer(this.inventory, !worldIn.isRemote, this);
         //this.openContainer = this.inventoryContainer;
     }
+    
+	public void setFluidMovement(boolean fluidmovement) {
+		this.fluidmovement = fluidmovement;
+	}
+	
+	public boolean getFluidMovement() {
+		return this.fluidmovement;
+	}
+	
+	@Override
+	public boolean isInWater() {
+		if (!this.fluidmovement) return false;
+		return super.handleWaterMovement();
+	}
+	
+	@Override
+	public boolean isInLava() {
+		if (!this.fluidmovement) return false;
+		return super.isInLava();
+	}
     
     public StatFileWriter getWriter() {
     	return this.writer;

@@ -1,14 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.item.Item;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.item.Item;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 
 @Command(
 		name = "give",
@@ -33,7 +34,9 @@ public class CommandGive extends ServerCommand {
 	public void execute(CommandSender sender, String[] params)throws CommandException {
 		if (params.length > 0) {
 			Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
-			Item item = (Item)Item.itemRegistry.getObject(params[0].toLowerCase().startsWith("minecraft:") ? params[0].toLowerCase() : "minecraft:" + params[0].toLowerCase());
+			String modid = params[0].split(":").length > 1 ? params[0].split(":")[0] : "minecraft";
+			String name = params[0].split(":").length > 1 ? params[0].split(":")[1] : params[0];
+			Item item = GameRegistry.findItem(modid, name);
 			
 			if (item == null) {
 				try {item = Item.getItemById(Integer.parseInt(params[0]));}
@@ -65,9 +68,6 @@ public class CommandGive extends ServerCommand {
 	public Requirement[] getRequirements() {
 		return new Requirement[0];
 	}
-	
-	@Override
-	public void unregisterFromHandler() {}
 
 	@Override
 	public ServerType getAllowedServerType() {

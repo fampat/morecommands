@@ -9,7 +9,7 @@ import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.patch.NetHandlerPlayServer;
 import com.mrnobody.morecommands.wrapper.CommandException;
@@ -23,7 +23,7 @@ import com.mrnobody.morecommands.wrapper.Player;
 		syntax = "command.noclip.syntax",
 		videoURL = "command.noclip.videoURL"
 		)
-public class CommandNoclip extends ServerCommand implements Listener<LivingAttackEvent> {
+public class CommandNoclip extends ServerCommand implements EventListener<LivingAttackEvent> {
 	
 	public CommandNoclip() {EventHandler.ATTACK.getHandler().register(this);}
 	
@@ -124,11 +124,6 @@ public class CommandNoclip extends ServerCommand implements Listener<LivingAttac
 				Requirement.PATCH_NETHANDLERPLAYSERVER,
 				Requirement.PATCH_RENDERGLOBAL
 			};
-	}
-	
-	@Override
-	public void unregisterFromHandler() {
-		EventHandler.ATTACK.getHandler().unregister(this);
 	}
 
 	@Override

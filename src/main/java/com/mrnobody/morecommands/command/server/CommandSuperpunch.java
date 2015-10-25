@@ -3,7 +3,7 @@ package com.mrnobody.morecommands.command.server;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -34,14 +34,9 @@ import net.minecraftforge.event.entity.player.AttackEntityEvent;
 	syntax = "command.superpunch.syntax",
 	videoURL = "command.superpunch.videoURL"
 	)
-public class CommandSuperpunch extends ServerCommand implements Listener<AttackEntityEvent> {
+public class CommandSuperpunch extends ServerCommand implements EventListener<AttackEntityEvent> {
 	public CommandSuperpunch() {
 		EventHandler.PLAYER_ATTACK.getHandler().register(this);
-	}
-	
-	@Override
-	public void unregisterFromHandler() {
-		EventHandler.PLAYER_ATTACK.getHandler().unregister(this);
 	}
 	
 	@Override

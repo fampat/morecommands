@@ -100,6 +100,13 @@ public class PacketHandlerServer {
 		retryThread.interrupt();
 	}
 	
+	public static void executeStartupCommands() {
+		for (String command : MoreCommands.getMoreCommands().getStartupCommands()) {
+			MinecraftServer.getServer().getCommandManager().executeCommand(MinecraftServer.getServer(), command);
+			MoreCommands.getMoreCommands().getLogger().info("Executed startup command '" + command + "'");
+		}
+	}
+	
 	/**
 	 * Is called if the server receives a handshake packet
 	 */

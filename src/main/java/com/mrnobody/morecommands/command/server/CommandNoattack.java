@@ -3,7 +3,7 @@ package com.mrnobody.morecommands.command.server;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.handler.Listeners.TwoEventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
@@ -91,12 +91,6 @@ public class CommandNoattack extends ServerCommand implements TwoEventListener<L
 	@Override
 	public Requirement[] getRequirements() {
 		return new Requirement[0];
-	}
-	
-	@Override
-	public void unregisterFromHandler() {
-		EventHandler.SET_TARGET.getHandler().unregister(this);
-		EventHandler.ATTACK.getHandler().unregister(this);
 	}
 
 	@Override

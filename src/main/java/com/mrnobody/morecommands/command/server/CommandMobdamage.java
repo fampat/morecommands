@@ -3,7 +3,7 @@ package com.mrnobody.morecommands.command.server;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -21,7 +21,7 @@ import net.minecraftforge.event.entity.living.LivingAttackEvent;
 		syntax = "command.mobdamage.syntax",
 		videoURL = "command.mobdamage.videoURL"
 		)
-public class CommandMobdamage extends ServerCommand implements Listener<LivingAttackEvent> {
+public class CommandMobdamage extends ServerCommand implements EventListener<LivingAttackEvent> {
 	private boolean mobdamage = true;
 	
 	public CommandMobdamage() {
@@ -76,11 +76,6 @@ public class CommandMobdamage extends ServerCommand implements Listener<LivingAt
 	@Override
 	public Requirement[] getRequirements() {
 		return new Requirement[0];
-	}
-	
-	@Override
-	public void unregisterFromHandler() {
-		EventHandler.ATTACK.getHandler().unregister(this);
 	}
 
 	@Override

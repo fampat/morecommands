@@ -527,6 +527,14 @@ command.flammable.reset=Successfully reseted the flammability
 command.flammable.notFound=Block not found
 command.flammable.invalidUsage=Invalid Usage. Type 'help flammable' to get help
 
+command.fluidmovement.description=Disables water/lava movement
+command.fluidmovement.example=/fluidmovement false
+command.fluidmovement.syntax=/fluidmovement [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.fluidmovement.videoURL=youtu.be/L7K0GXpzInE
+command.fluidmovement.on=Fluid movement successfully turned on
+command.fluidmovement.off=Fluid movement successfully turned off
+command.fluidmovement.failure=Invalid Argument.
+
 command.fly.description=Allows you to fly
 command.fly.example=/fly on
 command.fly.syntax=/fly [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
@@ -696,6 +704,12 @@ command.invisible.on=You are invisible
 command.invisible.off=You aren't invisible
 command.invisible.failure=Invalid Argument.
 
+command.invrotate.description=Rotates your inventory
+command.invrotate.example=/invrotate item right
+command.invrotate.syntax=/invrotate [line|item|NUMBER] [left|right|up|down]
+command.invrotate.videoURL=youtu.be/osbunopzC7k
+command.invrotate.invalidUsage=Invalid Usage. Type 'help invrotate' to get help
+
 command.itemdamage.description=Turns item damage on/off
 command.itemdamage.example=/itemdamage off
 command.itemdamage.syntax=/itemdamage [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
@@ -816,6 +830,15 @@ command.pick.NAN=The amount must be a number
 command.pick.cantgive=Can't give item
 command.pick.notInSight=No Block in sight
 
+command.pickup.description=Prevents items from being picked up
+command.pickup.example=/pickup grass
+command.pickup.syntax=/pickup <ITEM>
+command.pickup.videoURL=youtu.be/nMk28YPwv6w
+command.pickup.notFound=Item not found
+command.pickup.removed=Item will be picked up
+command.pickup.added=Item won't be picked up
+command.pickup.invalidUsage=Invalid Usage. Type 'help pickup' to get help
+
 command.reach.description=Sets your reach distance
 command.reach.example=/reach 20
 command.reach.syntax=/reach <DISTANCE|RESET>
@@ -919,18 +942,21 @@ command.spawnportal.endError=Could not create an End Portal
 command.spawnportal.unknownPortal=Unknown Portal Type
 command.spawnportal.noArgs=No portal specified
 
-command.speed.description=Sets the walk or fly speed
+command.speed.description=Sets the walk, fly or minecart speed
 command.speed.example=/speed fly set 10
-command.speed.syntax=/speed <WALK|FLY> <GET|RESET|SET VALUE>
-command.speed.videoURL=youtu.be/ZJg8SXVra5s
+command.speed.syntax=/speed <WALK|FLY|MINECART> <GET|RESET|SET VALUE>
+command.speed.videoURL=youtu.be/E9qVWEEarl0
 command.speed.NAN=The speed must be a number
 command.speed.walkSet=Walk speed successfully set
 command.speed.flySet=Fly speed successfully set
+command.speed.minecartSet=Minecart speed successfully set
 command.speed.noArg=Speed not specified
 command.speed.getFly=Your Fly Speed is %f
 command.speed.getWalk=Your Walk Speed is %f
+command.speed.getMinecart=Your Minecart speed is %f
 command.speed.walkReset=Walk speed reseted
 command.speed.flyReset=Fly speed reseted
+command.speed.minecartReset=Minecart speed reseted
 command.speed.invalidUsage=Invalid Usage. Type 'help speed' to get help
 command.speed.error=An error occurred performing this command
 
@@ -946,6 +972,11 @@ command.stacksize.description=Allows you to set the stacksize for an item
 command.stacksize.example=/stacksize dirt 128
 command.stacksize.syntax=/stacksize <ITEM> <SIZE>
 command.stacksize.videoURL=Not yet available
+
+command.stackcombine.description=Combines item stacks
+command.stackcombine.example=/stackcombime
+command.stackcombine.syntax=/stackcombime
+command.stackcombine.videoURL=youtu.be/XMqEjCbgXBE
 
 command.stepheight.description=Allows you to set your step height
 command.stepheight.example=/stepheight dirt 128

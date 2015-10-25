@@ -3,7 +3,7 @@ package com.mrnobody.morecommands.command.server;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -20,7 +20,7 @@ import net.minecraftforge.event.world.ExplosionEvent;
 		syntax = "command.creeper.syntax",
 		videoURL = "command.creeper.videoURL"
 		)
-public class CommandCreeper extends ServerCommand implements Listener<ExplosionEvent> {
+public class CommandCreeper extends ServerCommand implements EventListener<ExplosionEvent> {
 	public CommandCreeper() {
 		EventHandler.EXPLOSION.getHandler().register(this);
 	}
@@ -75,11 +75,6 @@ public class CommandCreeper extends ServerCommand implements Listener<ExplosionE
 		return new Requirement[0];
 	}
 	
-	@Override
-	public void unregisterFromHandler() {
-		EventHandler.EXPLOSION.getHandler().unregister(this);
-	}
-
 	@Override
 	public ServerType getAllowedServerType() {
 		return ServerType.ALL;

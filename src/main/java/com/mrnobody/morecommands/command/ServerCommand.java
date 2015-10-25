@@ -18,11 +18,6 @@ import net.minecraft.util.EnumChatFormatting;
  */
 public abstract class ServerCommand extends CommandBase {
     /**
-     * Invoked when the server stops to unregister commands from handlers
-     */
-	public abstract void unregisterFromHandler();
-	
-    /**
      * @return Whether the command sender can use the command
      */
 	public abstract boolean canSenderUse(ICommandSender sender);

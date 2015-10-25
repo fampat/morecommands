@@ -79,10 +79,7 @@ public class CommandCommand extends ServerCommand {
 	public int getPermissionLevel() {
 		return 2;
 	}
-
-	@Override
-	public void unregisterFromHandler() {}
-
+	
 	@Override
 	public boolean canSenderUse(ICommandSender sender) {
 		return true;

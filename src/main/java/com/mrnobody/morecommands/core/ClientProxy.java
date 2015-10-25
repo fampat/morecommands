@@ -15,6 +15,7 @@ import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
 
 /**
  * The proxy used for the client
@@ -37,6 +38,9 @@ public class ClientProxy extends CommonProxy {
 			this.mod.getLogger().info("Client Commands successfully registered");
 		XrayHelper.init();
 	}
+	
+	@Override
+	protected void serverStarted(FMLServerStartedEvent event) {} //NOOP
 
 	@Override
 	public boolean commandsLoaded() {

@@ -9,7 +9,7 @@ import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.core.AppliedPatches;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ClientPlayerSettings;
 import com.mrnobody.morecommands.util.DummyCommand;
 import com.mrnobody.morecommands.util.DummyCommand.DummyClientCommand;
@@ -23,7 +23,7 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.alias.syntax",
 		videoURL = "command.alias.videoURL"
 		)
-public class CommandAlias extends ClientCommand implements Listener<CommandEvent> {
+public class CommandAlias extends ClientCommand implements EventListener<CommandEvent> {
 	private final net.minecraft.command.CommandHandler commandHandler = ClientCommandHandler.instance;
 	
 	public CommandAlias() {

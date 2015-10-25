@@ -6,7 +6,7 @@ import java.util.Random;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.util.ReflectionHelper;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
@@ -33,7 +33,7 @@ import net.minecraftforge.event.world.BlockEvent.PlaceEvent;
 		syntax = "command.instantgrow.syntax",
 		videoURL = "command.instantgrow.videoURL"
 		)
-public class CommandInstantgrow extends ServerCommand implements Listener<PlaceEvent> {
+public class CommandInstantgrow extends ServerCommand implements EventListener<PlaceEvent> {
 	public CommandInstantgrow() {
 		EventHandler.PLACE.getHandler().register(this);
 	}
@@ -141,11 +141,6 @@ public class CommandInstantgrow extends ServerCommand implements Listener<PlaceE
 	@Override
 	public Requirement[] getRequirements() {
 		return new Requirement[0];
-	}
-	
-	@Override
-	public void unregisterFromHandler() {
-		EventHandler.PLACE.getHandler().unregister(this);
 	}
 
 	@Override

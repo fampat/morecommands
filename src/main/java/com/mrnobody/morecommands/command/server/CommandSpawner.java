@@ -19,10 +19,6 @@ import com.mrnobody.morecommands.wrapper.Entity;
 		videoURL = "command.spawner.videoURL"
 		)
 public class CommandSpawner extends ServerCommand {
-
-	@Override
-	public void unregisterFromHandler() {}
-
 	@Override
 	public String getName() {
 		return "spawner";

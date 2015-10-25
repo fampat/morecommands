@@ -51,8 +51,6 @@ public class CommandAscend extends ServerCommand {
 		return ServerType.ALL;
 	}
 	
-	public void unregisterFromHandler() {}
-	
 	@Override
 	public int getPermissionLevel() {
 		return 2;

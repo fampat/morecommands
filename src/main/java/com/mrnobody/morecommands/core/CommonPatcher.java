@@ -13,6 +13,7 @@ import com.mrnobody.morecommands.util.ReflectionHelper;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.event.ClickEvent;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
@@ -20,6 +21,7 @@ import net.minecraft.server.management.ServerConfigurationManager;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -145,8 +147,13 @@ public class CommonPatcher {
 		if (GlobalSettings.retryHandshake)
 			PacketHandlerServer.addPlayerToRetries(player);
 		
-		if (GlobalSettings.welcome_message)
-			event.player.addChatMessage((new ChatComponentText("More Commands (v" + Reference.VERSION + ") loaded")).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.DARK_AQUA)));
+		if (GlobalSettings.welcome_message) {
+			IChatComponent icc1 = (new ChatComponentText("More Commands (v" + Reference.VERSION + ") loaded")).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.DARK_AQUA));
+			IChatComponent icc2 = (new ChatComponentText(MoreCommands.WEBSITE)).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.YELLOW).setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, MoreCommands.WEBSITE)));
+			IChatComponent icc3 = (new ChatComponentText(" - ")).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.DARK_GRAY));
+			
+			event.player.addChatMessage(icc1.appendSibling(icc3).appendSibling(icc2));
+		}	
 	}
 	
 	/**

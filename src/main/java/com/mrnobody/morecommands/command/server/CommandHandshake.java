@@ -61,9 +61,6 @@ public class CommandHandshake extends ServerCommand {
 	public int getPermissionLevel() {
 		return 0;
 	}
-
-	@Override
-	public void unregisterFromHandler() {}
 	
 	@Override
 	public boolean canSenderUse(ICommandSender sender) {

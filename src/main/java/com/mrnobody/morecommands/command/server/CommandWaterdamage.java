@@ -3,7 +3,7 @@ package com.mrnobody.morecommands.command.server;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -20,7 +20,7 @@ import net.minecraftforge.event.entity.living.LivingAttackEvent;
 		syntax = "command.waterdamage.syntax",
 		videoURL = "command.waterdamage.videoURL"
 		)
-public class CommandWaterdamage extends ServerCommand implements Listener<LivingAttackEvent> {
+public class CommandWaterdamage extends ServerCommand implements EventListener<LivingAttackEvent> {
 	public CommandWaterdamage() {
 		EventHandler.ATTACK.getHandler().register(this);
 	}
@@ -69,11 +69,6 @@ public class CommandWaterdamage extends ServerCommand implements Listener<Living
 	@Override
 	public Requirement[] getRequirements() {
 		return new Requirement[0];
-	}
-	
-	@Override
-	public void unregisterFromHandler() {
-		EventHandler.ATTACK.getHandler().unregister(this);
 	}
 
 	@Override

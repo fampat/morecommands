@@ -145,9 +145,6 @@ public class CommandHelp extends ServerCommand {
 	public ServerType getAllowedServerType() {
 		return ServerType.ALL;
 	}
-
-	@Override
-	public void unregisterFromHandler() {}
 	
 	@Override
 	public int getPermissionLevel() {

@@ -3,7 +3,7 @@ package com.mrnobody.morecommands.command.server;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
@@ -19,7 +19,7 @@ import net.minecraftforge.event.entity.living.LivingAttackEvent;
 		syntax = "command.damage.syntax",
 		videoURL = "command.damage.videoURL"
 		)
-public class CommandDamage extends ServerCommand implements Listener<LivingAttackEvent> {
+public class CommandDamage extends ServerCommand implements EventListener<LivingAttackEvent> {
 	
 	//Disabling damage is possible on several ways
 	// - via PlayerCababilities.disableDamage (actually only good for creative mode, disables much more than damage, e.g. enemies won't attack you)
@@ -77,11 +77,6 @@ public class CommandDamage extends ServerCommand implements Listener<LivingAttac
 	@Override
 	public Requirement[] getRequirements() {
 		return new Requirement[0];
-	}
-	
-	@Override
-	public void unregisterFromHandler() {
-		EventHandler.ATTACK.getHandler().unregister(this);
 	}
 
 	@Override

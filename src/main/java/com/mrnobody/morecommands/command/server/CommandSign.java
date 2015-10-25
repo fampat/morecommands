@@ -30,10 +30,6 @@ import com.mrnobody.morecommands.wrapper.Player;
 		videoURL = "command.sign.videoURL"
 		)
 public class CommandSign extends ServerCommand {
-
-	@Override
-	public void unregisterFromHandler() {}
-
 	@Override
 	public String getName() {
 		return "sign";

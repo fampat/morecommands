@@ -14,6 +14,7 @@ import com.mrnobody.morecommands.core.MoreCommands;
 
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.Item;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -200,6 +201,7 @@ public class ServerPlayerSettings {
 	public Map<String, double[]> waypoints = new HashMap<String, double[]>();
 	public Map<String, NBTTagList> inventories = new HashMap<String, NBTTagList>();
 	public List<Class<? extends EntityLiving>> disableAttacks = new ArrayList<Class<? extends EntityLiving>>();
+	public List<Item> disablePickups = new ArrayList<Item>();
 	
 	public int[] pathData = new int[6];
 	public boolean climb = false;
@@ -231,6 +233,7 @@ public class ServerPlayerSettings {
 	public BlockPos lastPos = null;
 	public int superpunch = -1;
 	public boolean waterdamage = true;
+	public boolean fluidmovement = true;
 	
 	/**
 	 * Saves the settings

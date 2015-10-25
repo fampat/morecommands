@@ -3,7 +3,7 @@ package com.mrnobody.morecommands.command.server;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -24,7 +24,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 		syntax = "command.path.syntax",
 		videoURL = "command.path.videoURL"
 		)
-public class CommandPath extends ServerCommand implements Listener<TickEvent> {
+public class CommandPath extends ServerCommand implements EventListener<TickEvent> {
 	public CommandPath() {EventHandler.TICK.getHandler().register(this);}
 
 	@Override
@@ -137,11 +137,6 @@ public class CommandPath extends ServerCommand implements Listener<TickEvent> {
 	@Override
 	public Requirement[] getRequirements() {
 		return new Requirement[0];
-	}
-	
-	@Override
-	public void unregisterFromHandler() {
-		EventHandler.TICK.getHandler().unregister(this);
 	}
 
 	@Override

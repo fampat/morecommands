@@ -68,9 +68,6 @@ public class CommandKeepinventory extends ServerCommand {
 	public Requirement[] getRequirements() {
 		return new Requirement[] {Requirement.PATCH_ENTITYPLAYERMP, Requirement.PATCH_SERVERCONFIGMANAGER};
 	}
-	
-	@Override
-	public void unregisterFromHandler() {}
 
 	@Override
 	public ServerType getAllowedServerType() {

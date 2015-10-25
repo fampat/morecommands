@@ -53,9 +53,6 @@ public class CommandReach extends ServerCommand {
 	public Requirement[] getRequirements() {
 		return new Requirement[] {Requirement.MODDED_CLIENT, Requirement.PATCH_ENTITYPLAYERSP};
 	}
-	
-	@Override
-	public void unregisterFromHandler() {}
 
 	@Override
 	public ServerType getAllowedServerType() {

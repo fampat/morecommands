@@ -6,7 +6,7 @@ import net.minecraftforge.event.world.ExplosionEvent;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.util.GlobalSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -18,7 +18,7 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.explosions.syntax",
 		videoURL = "command.explosions.videoURL"
 		)
-public class CommandExplosions extends ServerCommand implements Listener<ExplosionEvent> {
+public class CommandExplosions extends ServerCommand implements EventListener<ExplosionEvent> {
 	public CommandExplosions() {
 		EventHandler.EXPLOSION.getHandler().register(this);
 	}
@@ -64,11 +64,6 @@ public class CommandExplosions extends ServerCommand implements Listener<Explosi
 		return new Requirement[0];
 	}
 	
-	@Override
-	public void unregisterFromHandler() {
-		EventHandler.EXPLOSION.getHandler().unregister(this);
-	}
-
 	@Override
 	public ServerType getAllowedServerType() {
 		return ServerType.ALL;

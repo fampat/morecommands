@@ -1,12 +1,13 @@
 package com.mrnobody.morecommands.handler;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.handler.Listeners.TwoEventListener;
 
 import net.minecraftforge.fml.common.eventhandler.Event;
@@ -18,8 +19,8 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
  * @author MrNobody98
  */
 public class Handler<T extends Event> {
-	private Map<TwoEventListener<T, T>, Listener<T>> doubleListener = new HashMap<TwoEventListener<T, T>, Listener<T>>();
-	private List<Listener<T>> listener = new ArrayList<Listener<T>>();
+	private Map<TwoEventListener<? extends Event, ? extends Event>, EventListener<T>> doubleListeners = new HashMap<TwoEventListener<? extends Event, ? extends Event>, EventListener<T>>();
+	private Set<EventListener<T>> listeners = Collections.synchronizedSet(new HashSet<EventListener<T>>());
 	private Class<T> eventClass;
 	private boolean clientOnly;
 	
@@ -47,18 +48,20 @@ public class Handler<T extends Event> {
 	 */
 	@SubscribeEvent
 	public final void onEvent(T event) {
-		Iterator<Listener<T>> listenerIterator = this.listener.iterator();
-		
-		while (listenerIterator.hasNext()) {
-			listenerIterator.next().onEvent(event);
+		synchronized (this.listeners) {
+			Iterator<EventListener<T>> listenerIterator = this.listeners.iterator();
+			
+			while (listenerIterator.hasNext()) {
+				listenerIterator.next().onEvent(event);
+			}
 		}
 	}
 
 	/**
 	 * Registers a listener to the handler
 	 */
-	public void register(Listener<T> listener) {
-		if (!this.listener.contains(listener)) this.listener.add(listener);
+	public void register(EventListener<T> listener) {
+		if (!this.listeners.contains(listener)) this.listeners.add(listener);
 	}
 	
 	/**
@@ -66,15 +69,15 @@ public class Handler<T extends Event> {
 	 * 
 	 * @param firstEvent true to invoke {@link TwoEventListener#onEvent1(Event)}, <br> false to invoke {@link TwoEventListener#onEvent2(Event)}
 	 */
-	public void register(final TwoEventListener<T, T> listener, boolean firstEvent) {
-		if (!this.doubleListener.containsKey(listener)) {
-			Listener<T> l = firstEvent ? new Listener<T>()
+	public void register(final TwoEventListener<? super Event, ? super Event> listener, boolean firstEvent) {
+		if (!this.doubleListeners.containsKey(listener)) {
+			EventListener<T> l = firstEvent ? new EventListener<T>()
 			{
 				public void onEvent(T event)
 				{
 					listener.onEvent1(event);
 				}
-			} : new Listener<T>()
+			} : new EventListener<T>()
 			{
 				public void onEvent(T event)
 				{
@@ -82,40 +85,53 @@ public class Handler<T extends Event> {
 				}
 			};
 	        
-			this.doubleListener.put(listener, l);
-			this.listener.add(l);
+			this.doubleListeners.put(listener, l);
+			this.listeners.add(l);
 		}
 	}
 	
 	/**
 	 * Unregisters a listener from the handler
 	 */
-	public void unregister(Listener<T> listener) {
-		if (this.listener.contains(listener)) this.listener.remove(listener);
+	public void unregister(EventListener<T> listener) {
+		if (this.listeners.contains(listener)) this.listeners.remove(listener);
 	}
 	
 	/**
 	 * Unregisters a listener for two events from the handler
 	 */
-	public void unregister(TwoEventListener<T, T> listener) {
-		if (this.doubleListener.containsKey(listener)) {
-			this.listener.remove(this.doubleListener.get(listener));
-			this.doubleListener.remove(listener);
+	public void unregister(TwoEventListener<? super Event, ? super Event> listener) {
+		if (this.doubleListeners.containsKey(listener)) {
+			this.listeners.remove(this.doubleListeners.get(listener));
+			this.doubleListeners.remove(listener);
 		}
 	}
 	
 	/**
-	 * @return Whether this listener is already registered
+	 * @return whether the event listener is registered
 	 */
-	public boolean isRegistered(Listener<T> listener) {
-		if (this.listener.contains(listener)) return true;
-		else return false;
+	public boolean isRegistered(EventListener<T> listener) {
+		return this.listeners.contains(listener);
 	}
 	
 	/**
-	 * @return Whether this two event listener is already registered
+	 * @return whether the double event listener is registered
 	 */
-	public boolean isRegistered(TwoEventListener<T, T> listener) {
-    	return this.doubleListener.containsKey(listener);
+	public boolean isRegistered(TwoEventListener<? super Event, ? super Event> listener) {
+		return this.doubleListeners.containsKey(listener);
+	}
+	
+	/**
+	 * @return A copy of the listener set
+	 */
+	public Set<EventListener<T>> getListeners() {
+		return new HashSet<EventListener<T>>(this.listeners);
+	}
+	
+	/**
+	 * @return A copy of the double listener set
+	 */
+	public Set<TwoEventListener<? extends Event, ? extends Event>> getDoubleListeners() {
+		return new HashSet<TwoEventListener<? extends Event, ? extends Event>>(this.doubleListeners.keySet());
 	}
 }

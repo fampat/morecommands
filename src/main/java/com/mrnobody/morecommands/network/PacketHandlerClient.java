@@ -1,10 +1,6 @@
 package com.mrnobody.morecommands.network;
 
 import java.awt.Color;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,13 +8,13 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.mrnobody.morecommands.command.ClientCommand;
+import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.core.AppliedPatches;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.patch.EntityPlayerSP;
 import com.mrnobody.morecommands.patch.PlayerControllerMP;
 import com.mrnobody.morecommands.util.ClientPlayerSettings;
 import com.mrnobody.morecommands.util.GlobalSettings;
-import com.mrnobody.morecommands.util.Reference;
 import com.mrnobody.morecommands.util.XrayHelper;
 import com.mrnobody.morecommands.util.XrayHelper.BlockSettings;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -67,7 +63,7 @@ public class PacketHandlerClient {
 	 * to execute startup commands. If it isn't received after a <br>
 	 * certain time, they are still executed
 	 */
-	public static void runStartupThread() {
+	public static void runStartupThread(final String socketAddress) {
 		final int timeout = GlobalSettings.startupTimeout < 0 ? 10000 : GlobalSettings.startupTimeout > 10 ? 10000 : GlobalSettings.startupTimeout * 1000;
 		
 		new Thread(new Runnable() {
@@ -81,23 +77,32 @@ public class PacketHandlerClient {
 					if (AppliedPatches.handshakeFinished()) break;
 				}
 				
-				//Execute commands specified in the startup.cfg
-				try {
-					File startup = new File(Reference.getModDir(), "startup.cfg");
-					if (!startup.exists() || !startup.isFile()) startup.createNewFile();
-					
-					BufferedReader br = new BufferedReader(new FileReader(startup));
-					String line;
-					while ((line = br.readLine()) != null) {
-						if (ClientCommandHandler.instance.executeCommand(Minecraft.getMinecraft().thePlayer, line) == 0)
-							Minecraft.getMinecraft().thePlayer.sendChatMessage(line.startsWith("/") ? line : "/" + line);
-						MoreCommands.getMoreCommands().getLogger().info("Executed startup command '" + line + "'");
-					}
-					br.close();
+				if (Minecraft.getMinecraft().thePlayer == null) return;
+				notifyPlayerAboutUpdate();
+				
+				//Execute commands specified in the startup_multiplayer.cfg
+				for (String command : MoreCommands.getMoreCommands().getStartupCommandsMultiplayer(socketAddress)) {
+					if (ClientCommandHandler.instance.executeCommand(Minecraft.getMinecraft().thePlayer, command) == 0)
+						Minecraft.getMinecraft().thePlayer.sendChatMessage(command.startsWith("/") ? command : "/" + command);
+					MoreCommands.getMoreCommands().getLogger().info("Executed startup command '" + command + "'");
 				}
-				catch (IOException ex) {ex.printStackTrace(); MoreCommands.getMoreCommands().getLogger().info("Startup commands couldn't be executed");}
 			}
 		}).start();
+	}
+	
+	public static void executeStartupCommands() {
+		notifyPlayerAboutUpdate();
+		
+		for (String command : MoreCommands.getMoreCommands().getStartupCommands()) {
+			if (ClientCommandHandler.instance.executeCommand(Minecraft.getMinecraft().thePlayer, command) == 0)
+				Minecraft.getMinecraft().thePlayer.sendChatMessage(command.startsWith("/") ? command : "/" + command);
+			MoreCommands.getMoreCommands().getLogger().info("Executed startup command '" + command + "'");
+		}
+	}
+	
+	private static void notifyPlayerAboutUpdate() {
+		if (MoreCommands.getProxy().getUpdateText() != null && !MoreCommands.getProxy().wasPlayerNotified())
+			Minecraft.getMinecraft().thePlayer.addChatMessage(MoreCommands.getProxy().getUpdateText());
 	}
 	
 	/**
@@ -136,6 +141,7 @@ public class PacketHandlerClient {
 	public void handshakeFinished() {
 		AppliedPatches.setHandshakeFinished(true);
 		MoreCommands.getMoreCommands().getLogger().info("Handshake finished");
+		if (MoreCommands.getMoreCommands().getRunningServer() == ServerType.INTEGRATED) PacketHandlerClient.executeStartupCommands();
 	}
 	
 	/**
@@ -328,5 +334,11 @@ public class PacketHandlerClient {
 	 */
 	public void setStepheight(float stepheight) {
 		Minecraft.getMinecraft().thePlayer.stepHeight = stepheight;
+	}
+	
+	public void setFluidMovement(boolean fluidmovement) {
+		if (Minecraft.getMinecraft().thePlayer instanceof EntityPlayerSP) {
+			((EntityPlayerSP) Minecraft.getMinecraft().thePlayer).setFluidMovement(fluidmovement);
+		}
 	}
 }

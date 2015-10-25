@@ -112,11 +112,6 @@ public class CommandStacksize extends ServerCommand/* implements Listener<GuiOpe
 	public Requirement[] getRequirements() {
 		return new Requirement[] {Requirement.PATCH_ENTITYPLAYERSP, Requirement.PATCH_ENTITYPLAYERMP};
 	}
-	
-	@Override
-	public void unregisterFromHandler() {
-		//EventHandler.GUIOPEN.getHandler().unregister(this);
-	}
 
 	@Override
 	public ServerType getAllowedServerType() {

@@ -10,7 +10,7 @@ import net.minecraftforge.client.event.sound.PlaySoundEvent;
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.Listener;
+import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ReflectionHelper;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -22,7 +22,7 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.music.syntax",
 		videoURL = "command.music.videoURL"
 		)
-public class CommandMusic extends ClientCommand implements Listener<PlaySoundEvent> {
+public class CommandMusic extends ClientCommand implements EventListener<PlaySoundEvent> {
 	private Field musicTickerField = ReflectionHelper.getField(Minecraft.class, "mcMusicTicker");
 	private Field playingField = ReflectionHelper.getField(MusicTicker.class, "currentMusic");
 	private Field playingTimerField = ReflectionHelper.getField(MusicTicker.class, "timeUntilNextMusic");
