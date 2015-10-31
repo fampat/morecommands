@@ -1,14 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.wrapper.Achievements;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 
 @Command(
 		name = "achievement",
@@ -33,7 +34,7 @@ public class CommandAchievement extends ServerCommand {
     	
     	if (params.length > 0) {
     		if(params[0].equals("list")) {
-    			Object[] nameList = Achievements.getAchievementNameList();
+    			String[] nameList = Achievements.getAchievementNameList();
     			int page = 1;
     			int PAGE_MAX = 15;
     			
@@ -50,11 +51,9 @@ public class CommandAchievement extends ServerCommand {
     		}
     		
     		else if (params[0].equals("unlockAll")) {
-    			for (Object ach : Achievements.getAchievementNameList()) {
-    				if (ach instanceof String) {
-    					player.addAchievement(Achievements.getAchievementRequirement((String) ach));
-    					player.addAchievement((String) ach);
-    				}
+    			for (String ach : Achievements.getAchievementNameList()) {
+    				player.addAchievement(Achievements.getAchievementRequirement(ach));
+    				player.addAchievement(ach);
     			}
     			sender.sendLangfileMessage("command.achievement.unlockAllSuccess");
     		}
@@ -63,9 +62,9 @@ public class CommandAchievement extends ServerCommand {
     			if (params.length > 1) {
     				boolean found = false;
     				
-    				for (Object ach : Achievements.getAchievementNameList()) {
-    					if (ach instanceof String && params[1].equalsIgnoreCase((String) ach)) {
-    						if (player.addAchievement((String) (ach))) {sender.sendLangfileMessage("command.achievement.unlockSuccess");}
+    				for (String ach : Achievements.getAchievementNameList()) {
+    					if (params[1].equalsIgnoreCase(ach)) {
+    						if (player.addAchievement(ach)) {sender.sendLangfileMessage("command.achievement.unlockSuccess");}
     						else {sender.sendLangfileMessage("command.achievement.parent", Achievements.getAchievementRequirement(params[1]));}
     						found = true; break;
     					}

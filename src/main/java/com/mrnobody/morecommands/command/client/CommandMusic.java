@@ -2,11 +2,7 @@ package com.mrnobody.morecommands.command.client;
 
 import java.lang.reflect.Field;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.MusicTicker;
-import net.minecraft.client.audio.SoundCategory;
-import net.minecraftforge.client.event.sound.PlaySoundEvent17;
-
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.handler.EventHandler;
@@ -14,6 +10,11 @@ import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ReflectionHelper;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.MusicTicker;
+import net.minecraft.client.audio.SoundCategory;
+import net.minecraftforge.client.event.sound.PlaySoundEvent17;
 
 @Command(
 		name = "music",

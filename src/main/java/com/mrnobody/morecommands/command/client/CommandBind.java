@@ -1,22 +1,21 @@
 package com.mrnobody.morecommands.command.client;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.command.CommandHandler;
-import net.minecraftforge.client.ClientCommandHandler;
-
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.AppliedPatches;
+import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.handler.EventHandler;
 import com.mrnobody.morecommands.handler.Listeners.EventListener;
-import com.mrnobody.morecommands.network.PacketDispatcher;
 import com.mrnobody.morecommands.util.ClientPlayerSettings;
 import com.mrnobody.morecommands.util.Keyboard;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent;
+import net.minecraft.client.Minecraft;
+import net.minecraft.command.CommandHandler;
+import net.minecraftforge.client.ClientCommandHandler;
 
 @Command(
 		name = "bind",

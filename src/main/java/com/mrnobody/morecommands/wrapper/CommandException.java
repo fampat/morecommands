@@ -23,7 +23,7 @@ public class CommandException extends Exception {
 	}
 	
 	public CommandException(String message, ICommandSender sender, Object... formatArgs) {
-		super(LanguageManager.getTranslation(MoreCommands.getMoreCommands().getCurrentLang(sender), message, formatArgs));
+		this(LanguageManager.translate(MoreCommands.getMoreCommands().getCurrentLang(sender), message, formatArgs));
 	}
 	
 	public CommandException(String message, CommandSender sender, Object... formatArgs) {

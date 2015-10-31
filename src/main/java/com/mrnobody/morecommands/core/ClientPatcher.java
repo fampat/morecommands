@@ -3,8 +3,8 @@ package com.mrnobody.morecommands.core;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.command.client.CommandAlias;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.network.PacketHandlerClient;
 import com.mrnobody.morecommands.patch.ClientCommandManager;
 import com.mrnobody.morecommands.patch.ServerConfigurationManagerIntegrated;

@@ -6,6 +6,7 @@ import com.google.common.base.Charsets;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.util.Reference;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
+import com.mrnobody.morecommands.util.Variables;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.network.FMLEventChannel;
@@ -367,7 +368,7 @@ public final class PacketDispatcher {
 	}
 	
 	public void sendS10ExecuteClientCommand(EntityPlayerMP player, String command) {
-		command = replaceVars(command, ServerPlayerSettings.getPlayerSettings(player));
+		command = Variables.replaceVarsSafe(command, ServerPlayerSettings.getPlayerSettings(player));
 		
 	    ByteBuf payload = Unpooled.buffer();
 	    writeID(payload, S10EXECUTECLIENTCOMMAND);
@@ -430,36 +431,5 @@ public final class PacketDispatcher {
 		byte[] bytes = string.getBytes(Charsets.UTF_8);
 		buffer.writeInt(bytes.length);
 		buffer.writeBytes(bytes);
-	}
-	
-	private String replaceVars(String string, ServerPlayerSettings settings) {
-		String varIdentifier = "";
-		String newString = "";
-		boolean isReadingVarIdentifier = false;
-		
-		for (char ch : string.toCharArray()) {
-			if (ch == '%') {
-				if (isReadingVarIdentifier) {
-					isReadingVarIdentifier = false;
-					
-					if (varIdentifier.isEmpty()) newString += "%";
-					else {
-						if (!settings.varMapping.containsKey(varIdentifier))
-							newString += "%" + varIdentifier + "%";
-						else
-							newString += settings.varMapping.get(varIdentifier);
-					}
-					
-					varIdentifier = "";
-				}
-				else isReadingVarIdentifier = true;
-			}
-			else {
-				if (isReadingVarIdentifier) varIdentifier += ch;
-				else newString += ch;
-			}
-		}
-		
-		return newString;
 	}
 }

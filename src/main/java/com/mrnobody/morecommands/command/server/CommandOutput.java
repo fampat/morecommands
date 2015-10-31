@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
@@ -36,23 +37,13 @@ public class CommandOutput extends ServerCommand {
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
     	boolean output;
-		
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		output = true;
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	output= false;
-            }
-            else throw new CommandException("command.output.failure", sender);
-        }
-        else output = !settings.output;
+    	
+		try {output = parseTrueFalse(params, 0, settings.output);}
+		catch (IllegalArgumentException ex) {throw new CommandException("command.output.failure", sender);}
         
         settings.output = output;
         
-		sender.getMinecraftISender().addChatMessage(new ChatComponentText(LanguageManager.getTranslation(
+		sender.getMinecraftISender().addChatMessage(new ChatComponentText(LanguageManager.translate(
 				MoreCommands.getMoreCommands().getCurrentLang(sender.getMinecraftISender()), output ? "command.output.on" : "command.output.off")));
 	}
 	

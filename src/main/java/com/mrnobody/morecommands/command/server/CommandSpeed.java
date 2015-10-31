@@ -3,6 +3,7 @@ package com.mrnobody.morecommands.command.server;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;

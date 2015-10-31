@@ -21,7 +21,7 @@ public class Achievements
 	/**
 	 * The name<->achievement mapping
 	 */
-	private static BiMap<String, Achievement> achievements;
+	private static final BiMap<String, Achievement> achievements;
 	
 	static {
 		ImmutableBiMap.Builder<String, Achievement> builder = ImmutableBiMap.builder();
@@ -71,7 +71,7 @@ public class Achievements
 	 * 
 	 * @return the achievement array
 	 */
-	public static Object[] getAchievementNameList() {
-		return achievements.keySet().toArray();
+	public static String[] getAchievementNameList() {
+		return achievements.keySet().toArray(new String[achievements.keySet().size()]);
 	}
 }

@@ -7,14 +7,15 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import net.minecraft.client.Minecraft;
-import net.minecraftforge.client.ClientCommandHandler;
-
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.util.Reference;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.client.Minecraft;
+import net.minecraftforge.client.ClientCommandHandler;
 
 @Command(
 	name = "macro",

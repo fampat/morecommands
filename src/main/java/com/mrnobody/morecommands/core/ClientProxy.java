@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.mrnobody.morecommands.command.ClientCommand;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.handler.EventHandler;
 import com.mrnobody.morecommands.util.Reference;
 import com.mrnobody.morecommands.util.XrayHelper;

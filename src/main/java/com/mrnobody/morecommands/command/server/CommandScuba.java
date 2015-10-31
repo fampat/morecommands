@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
@@ -48,23 +49,10 @@ public class CommandScuba extends ServerCommand implements EventListener<TickEve
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
     	
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		settings.scuba = true;
-            	sender.sendLangfileMessage("command.scuba.on");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	settings.scuba = false;
-            	sender.sendLangfileMessage("command.scuba.off");
-            }
-            else throw new CommandException("command.scuba.failure", sender);
-        }
-        else {
-        	settings.scuba = !settings.scuba;
-        	sender.sendLangfileMessage(settings.scuba ? "command.scuba.on" : "command.scuba.off");
-        }
+		try {settings.scuba = parseTrueFalse(params, 0, settings.scuba);}
+		catch (IllegalArgumentException ex) {throw new CommandException("command.scuba.failure", sender);}
+		
+		sender.sendLangfileMessage(settings.scuba ? "command.scuba.on" : "command.scuba.off");
 	}
 	
 	@Override

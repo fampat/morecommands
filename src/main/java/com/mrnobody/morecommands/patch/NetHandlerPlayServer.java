@@ -2,11 +2,12 @@ package com.mrnobody.morecommands.patch;
 
 import java.lang.reflect.Field;
 
-import com.mrnobody.morecommands.command.server.CommandNoclip;
+import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.util.ReflectionHelper;
+import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.wrapper.Coordinate;
+import com.mrnobody.morecommands.wrapper.Player;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.client.C03PacketPlayer;
@@ -45,9 +46,39 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
             super.processPlayer(packet);
         }
     }
+    
+	private static void checkSafe(EntityPlayerMP player) {
+		if (player.noClip && !player.capabilities.isFlying) {
+			player.noClip = false;
+			
+			MoreCommands.getMoreCommands().getPacketDispatcher().sendS07Noclip(player, false);
+			
+			(new CommandSender(player)).sendLangfileMessage("command.noclip.autodisable");
+			ascendPlayer(new Player(player));
+		}
+	}
+
+	private static boolean ascendPlayer(Player player) {
+		Coordinate playerPos = player.getPosition();
+		if(player.getWorld().isClearBelow(playerPos) && playerPos.getY() > 0) {
+			return false;
+		}
+		double y = playerPos.getY() - 1; // in case player was standing on ground
+		while (y < 260) {
+			if(player.getWorld().isClear(new Coordinate(playerPos.getX(), y++, playerPos.getZ()))) {
+				final double newY;
+				if (playerPos.getY() > 0) newY = y - 1;
+				else newY = y;
+				Coordinate newPos = new Coordinate(playerPos.getX() + 0.5F, newY, playerPos.getZ() + 0.5F);
+				player.setPosition(newPos);
+				break;
+			}
+		}
+		return true;
+	}
 
     public void handleNoclip(C03PacketPlayer packet) {
-    	CommandNoclip.checkSafe(this.playerEntity);
+    	checkSafe(this.playerEntity);
     	
         WorldServer var2 = this.mcServer.worldServerForDimension(this.playerEntity.dimension);
         if (!this.playerEntity.playerConqueredTheEnd) {

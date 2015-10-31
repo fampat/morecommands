@@ -2,10 +2,7 @@ package com.mrnobody.morecommands.command.client;
 
 import java.util.Map;
 
-import net.minecraft.client.Minecraft;
-import net.minecraftforge.client.ClientCommandHandler;
-import net.minecraftforge.event.CommandEvent;
-
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.core.AppliedPatches;
@@ -16,6 +13,9 @@ import com.mrnobody.morecommands.util.DummyCommand;
 import com.mrnobody.morecommands.util.DummyCommand.DummyClientCommand;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.event.CommandEvent;
 
 @Command(
 		name = "alias",

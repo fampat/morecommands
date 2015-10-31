@@ -60,17 +60,17 @@ public class CommandSender {
 	}
 	
 	public void sendLangfileMessage(String LangFileEntry, Object... formatArgs) {
-		String text = LanguageManager.getTranslation(MoreCommands.getMoreCommands().getCurrentLang(this.sender), LangFileEntry, formatArgs);
+		String text = LanguageManager.translate(MoreCommands.getMoreCommands().getCurrentLang(this.sender), LangFileEntry, formatArgs);
 		this.sendStringMessage(text);
 	}
 	
 	public void sendLangfileMessage(String LangFileEntry, ChatStyle style , Object... formatArgs) {
-		String text = LanguageManager.getTranslation(MoreCommands.getMoreCommands().getCurrentLang(this.sender), LangFileEntry, formatArgs);
+		String text = LanguageManager.translate(MoreCommands.getMoreCommands().getCurrentLang(this.sender), LangFileEntry, formatArgs);
 		this.sendStringMessage(text, style);
 	}
 	
 	public void sendLangfileMessage(String LangFileEntry, EnumChatFormatting color , Object... formatArgs) {
-		String text = LanguageManager.getTranslation(MoreCommands.getMoreCommands().getCurrentLang(this.sender), LangFileEntry, formatArgs);
+		String text = LanguageManager.translate(MoreCommands.getMoreCommands().getCurrentLang(this.sender), LangFileEntry, formatArgs);
 		this.sendStringMessage(text, color);
 	}
 	

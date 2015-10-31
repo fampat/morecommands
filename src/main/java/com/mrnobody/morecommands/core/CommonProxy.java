@@ -6,8 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.handler.EventHandler;
 import com.mrnobody.morecommands.handler.Handler;
 import com.mrnobody.morecommands.handler.Listeners.EventListener;
@@ -170,7 +170,7 @@ public class CommonProxy {
 	private void findMoreCommandsUpdates() {
 		MoreCommands.getMoreCommands().getLogger().info("Searching for MoreCommands updates");
 		
-		new Thread(new MoreCommandsUpdater(Loader.MC_VERSION, new MoreCommandsUpdater.UpdateListener() {
+		new Thread(new MoreCommandsUpdater(Loader.MC_VERSION, new MoreCommandsUpdater.UpdateCallback() {
 			@Override
 			public void udpate(String version, String website, String download) {
 				ChatComponentText text = new ChatComponentText(Reference.VERSION.equals(version) ? 
@@ -194,7 +194,7 @@ public class CommonProxy {
 					net.minecraft.client.Minecraft.getMinecraft().thePlayer.addChatMessage(text);
 				}
 			}
-		})).start();
+		}), "MoreCommands Update Thread").start();
 	}
 	
 	/**

@@ -1,11 +1,12 @@
 package com.mrnobody.morecommands.command.client;
 
-import net.minecraft.client.Minecraft;
-
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.client.Minecraft;
 
 
 @Command(

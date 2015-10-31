@@ -1,19 +1,10 @@
 package com.mrnobody.morecommands.command;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraftforge.common.MinecraftForge;
-
-import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
-import cpw.mods.fml.common.ModContainer;
-import cpw.mods.fml.common.eventhandler.Event;
-import cpw.mods.fml.common.eventhandler.EventBus;
+import net.minecraft.command.ICommandSender;
 
 /**
  * Base class for all commands
@@ -37,13 +28,6 @@ public abstract class CommandBase extends net.minecraft.command.CommandBase {
 		PATCH_CLIENTCOMMANDHANDLER,
 		PATCH_SERVERCOMMANDHANDLER
 	}
-	
-	/**
-	 * An enum of allowed server types for a command
-	 * 
-	 * @author MrNobody98
-	 */
-	public static enum ServerType {INTEGRATED, DEDICATED, ALL}
 	
 	/**
 	 * @return The required permission level
@@ -95,4 +79,19 @@ public abstract class CommandBase extends net.minecraft.command.CommandBase {
 	 * @return The permission level
 	 */
     public abstract int getPermissionLevel();
+    
+    public static boolean parseTrueFalse(String[] params, int index, boolean default_) throws IllegalArgumentException {
+        if (params.length > index) {
+        	if (params[index].equalsIgnoreCase("enable") || params[index].equalsIgnoreCase("1")
+            	|| params[index].equalsIgnoreCase("on") || params[index].equalsIgnoreCase("true")) {
+        		return true;
+            }
+            else if (params[index].equalsIgnoreCase("disable") || params[index].equalsIgnoreCase("0")
+            		|| params[index].equalsIgnoreCase("off") || params[index].equalsIgnoreCase("false")) {
+            	return false;
+            }
+            else throw new IllegalArgumentException("Invalid Argument");
+        }
+        else return !default_;
+    }
 }

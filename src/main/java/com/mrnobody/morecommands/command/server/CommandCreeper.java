@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
@@ -53,24 +54,11 @@ public class CommandCreeper extends ServerCommand implements EventListener<Explo
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
-    	
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		settings.creeperExplosion = true;
-            	sender.sendLangfileMessage("command.creeper.on");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	settings.creeperExplosion = false;
-            	sender.sendLangfileMessage("command.creeper.off");
-            }
-            else throw new CommandException("command.creeper.failure", sender);
-        }
-        else {
-        	settings.creeperExplosion = !settings.creeperExplosion;
-        	sender.sendLangfileMessage(settings.creeperExplosion ? "command.creeper.on" : "command.creeper.off");
-        }
+		
+		try {settings.creeperExplosion = parseTrueFalse(params, 0, settings.creeperExplosion);}
+		catch (IllegalArgumentException ex) {throw new CommandException("command.creeper.failure", sender);}
+		
+		sender.sendLangfileMessage(settings.climb ? "command.creeper.on" : "command.creeper.off");
 	}
 	
 	@Override
