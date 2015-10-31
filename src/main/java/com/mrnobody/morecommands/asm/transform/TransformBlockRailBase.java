@@ -39,7 +39,7 @@ public class TransformBlockRailBase extends CommonTransformer {
 			mv.visitCode();
 			mv.visitFieldInsn(Opcodes.GETSTATIC, "net/minecraft/block/BlockRailBase", "maxRailSpeed", "F");
 			mv.visitInsn(Opcodes.FRETURN);
-			mv.visitMaxs(1, 7);
+			mv.visitMaxs(1, 6);
 			mv.visitEnd();
 			
 			return null;
