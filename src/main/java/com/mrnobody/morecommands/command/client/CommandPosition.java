@@ -5,6 +5,7 @@ import java.text.DecimalFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.wrapper.CommandException;

@@ -1,13 +1,9 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.DamageSource;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.handler.EventHandler;
 import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.patch.EntityPlayerMP;
@@ -15,6 +11,11 @@ import com.mrnobody.morecommands.patch.NetHandlerPlayServer;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.DamageSource;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
 
 @Command(
 		name = "noclip",
@@ -50,48 +51,24 @@ public class CommandNoclip extends ServerCommand implements EventListener<Living
 		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
 		boolean allowNoclip = false;
 		
-		if(!player.capabilities.isFlying)
+		if (!player.capabilities.isFlying)
 			throw new CommandException("command.noclip.mustBeFlying", sender);
 		
-		if(!((NetHandlerPlayServer) player.playerNetServerHandler).enabled)
+		if (!((NetHandlerPlayServer) player.playerNetServerHandler).enabled)
 			throw new CommandException("command.noclip.reflectionError", sender);
 		
 		NetHandlerPlayServer handler = (NetHandlerPlayServer) player.playerNetServerHandler;
 		
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		handler.setOverrideNoclip(true);
-            	sender.sendLangfileMessage("command.noclip.enabled");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	handler.setOverrideNoclip(false);
-            	sender.sendLangfileMessage("command.noclip.disabled");
-            }
-            else throw new CommandException("command.noclip.failure", sender);
-        }
-        else {
-        	handler.setOverrideNoclip(!handler.getOverrideNoclip());
-        	sender.sendLangfileMessage(handler.getOverrideNoclip() ? "command.noclip.enabled" : "command.noclip.disabled");
-        }
+		try {handler.setOverrideNoclip(parseTrueFalse(params, 0, handler.getOverrideNoclip()));}
+		catch (IllegalArgumentException ex) {throw new CommandException("command.noclip.failure", sender);}
+		
+		sender.sendLangfileMessage(handler.getOverrideNoclip() ? "command.noclip.enabled" : "command.noclip.disabled");
     	
 		if(handler.getOverrideNoclip() == false) {
 			ascendPlayer(new Player(player));
 		}
 			
 		MoreCommands.getMoreCommands().getPacketDispatcher().sendS07Noclip(player, handler.getOverrideNoclip());
-	}
-
-	public static void checkSafe(NetHandlerPlayServer handler, net.minecraft.entity.player.EntityPlayerMP player) {
-		if(handler.getOverrideNoclip() && !player.capabilities.isFlying) {
-			handler.setOverrideNoclip(false);
-			
-			MoreCommands.getMoreCommands().getPacketDispatcher().sendS07Noclip(player, false);
-			
-			(new CommandSender(player)).sendLangfileMessage("command.noclip.autodisable");
-			ascendPlayer(new Player(player));
-		}
 	}
 
 	private static boolean ascendPlayer(Player player) {

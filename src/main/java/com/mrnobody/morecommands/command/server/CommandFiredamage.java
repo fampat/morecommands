@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.server;
 
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.handler.EventHandler;
@@ -47,23 +48,10 @@ public class CommandFiredamage extends ServerCommand implements EventListener<Li
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
     	
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		settings.firedamage = true;
-            	sender.sendLangfileMessage("command.firedamage.on");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	settings.firedamage = false;
-            	sender.sendLangfileMessage("command.firedamage.off");
-            }
-            else throw new CommandException("command.firedamage.failure", sender);
-        }
-        else {
-        	settings.firedamage = !settings.firedamage;
-        	sender.sendLangfileMessage(settings.firedamage ? "command.firedamage.on" : "command.firedamage.off");
-        }
+		try {settings.firedamage = parseTrueFalse(params, 0, settings.firedamage);}
+		catch (IllegalArgumentException ex) {throw new CommandException("command.firedamage.failure", sender);}
+		
+		sender.sendLangfileMessage(settings.firedamage  ? "command.firedamage.on" : "command.firedamage.off");
 	}
 	
 	@Override

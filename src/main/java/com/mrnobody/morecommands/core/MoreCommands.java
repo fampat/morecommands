@@ -15,7 +15,6 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.Logger;
 
 import com.mrnobody.morecommands.command.ClientCommand;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.network.PacketDispatcher;
 import com.mrnobody.morecommands.util.DynamicClassLoader;
@@ -70,6 +69,13 @@ public class MoreCommands {
 	private List<String> startupCommands;
 	private List<String> startupMultiplayerCommands;
 	private Map<String, List<String>> startupServerCommands;
+	
+	/**
+	 * An enum of allowed server types for a command
+	 * 
+	 * @author MrNobody98
+	 */
+	public static enum ServerType {INTEGRATED, DEDICATED, ALL}
 	
 	//Need this because forge injects the instance after injecting the proxy, but it uses
 	//MoreCommands#getMoreCommands in its constructor -> Causes a NullpointerException
@@ -196,7 +202,7 @@ public class MoreCommands {
 		LanguageManager.readTranslations();
 		GlobalSettings.readSettings();
 		this.dispatcher = new PacketDispatcher();
-		this.loadCommands();
+		if (this.loadCommands()) this.logger.info("Command Classes successfully loaded");
 		this.disabledCommands = this.readDisabledCommands();
 		
 		Object[] startupCommands = this.parseStartupFiles();
@@ -297,7 +303,7 @@ public class MoreCommands {
 			File startup = new File(Reference.getModDir(), "startup.cfg");
 			File startupMultiplayer = new File(Reference.getModDir(), "startup_multiplayer.cfg");
 			if (!startup.exists() || !startup.isFile()) startup.createNewFile();
-			if (!startupMultiplayer.exists() || !startupMultiplayer.isFile()) startup.createNewFile();
+			if (!startupMultiplayer.exists() || !startupMultiplayer.isFile()) startupMultiplayer.createNewFile();
 		
 			BufferedReader br = new BufferedReader(new FileReader(startup));
 			String line; while ((line = br.readLine()) != null) {if (!line.startsWith("#")) startupCommands.add(line.trim());}

@@ -1,11 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.ICommandSender;
 
 @Command(
 		name = "hardcore",
@@ -30,23 +31,10 @@ public class CommandHardcore extends ServerCommand {
     
 	@Override
     public void execute(CommandSender sender, String[] params) throws CommandException {
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		sender.getWorld().setHardcore(true);
-            	sender.sendLangfileMessage("command.hardcore.on");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	sender.getWorld().setHardcore(false);
-            	sender.sendLangfileMessage("command.hardcore.off");
-            }
-            else throw new CommandException("command.hardcore.failure", sender);
-        }
-        else {
-        	sender.getWorld().setHardcore(sender.getWorld().isHardcore());
-        	sender.sendLangfileMessage(sender.getWorld().isHardcore() ? "command.hardcore.on" : "command.hardcore.off");
-        }
+		try {sender.getWorld().setHardcore(parseTrueFalse(params, 0, sender.getWorld().isHardcore()));}
+		catch (IllegalArgumentException ex) {throw new CommandException("command.hardcore.failure", sender);}
+		
+		sender.sendLangfileMessage(sender.getWorld().isHardcore() ? "command.hardcore.on" : "command.hardcore.off"); 
     }
 	
 	@Override

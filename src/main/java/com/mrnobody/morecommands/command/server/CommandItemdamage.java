@@ -4,14 +4,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.item.Item;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.GlobalSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.item.Item;
 
 @Command(
 		name = "itemdamage",
@@ -45,23 +46,10 @@ public class CommandItemdamage extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		GlobalSettings.itemdamage = true;
-            	sender.sendLangfileMessage("command.itemdamage.on");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	GlobalSettings.itemdamage = false;
-            	sender.sendLangfileMessage("command.itemdamage.off");
-            }
-            else throw new CommandException("command.itemdamage.failure", sender);
-        }
-        else {
-        	GlobalSettings.itemdamage = !GlobalSettings.itemdamage;
-        	sender.sendLangfileMessage(GlobalSettings.itemdamage ? "command.itemdamage.on" : "command.itemdamage.off");
-        }
+		try {GlobalSettings.itemdamage = parseTrueFalse(params, 0, GlobalSettings.itemdamage);}
+		catch (IllegalArgumentException ex) {throw new CommandException("command.itemdamage.failure", sender);}
+		
+		sender.sendLangfileMessage(GlobalSettings.itemdamage ? "command.itemdamage.on" : "command.itemdamage.off");
         
         if (GlobalSettings.itemdamage) {
 			Iterator<Item> items = this.damageValues.keySet().iterator();

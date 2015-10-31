@@ -1,8 +1,6 @@
 package com.mrnobody.morecommands.wrapper;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
@@ -21,7 +19,7 @@ public class Achievements
 	/**
 	 * The name<->achievement mapping
 	 */
-	private static BiMap<String, Achievement> achievements;
+	private static final BiMap<String, Achievement> achievements;
 	
 	static {
 		ImmutableBiMap.Builder<String, Achievement> builder = ImmutableBiMap.builder();
@@ -71,7 +69,7 @@ public class Achievements
 	 * 
 	 * @return the achievement array
 	 */
-	public static Object[] getAchievementNameList() {
-		return achievements.keySet().toArray();
+	public static String[] getAchievementNameList() {
+		return achievements.keySet().toArray(new String[achievements.keySet().size()]);
 	}
 }

@@ -1013,7 +1013,7 @@ command.teleport.NAN=Die Koordinaten muessen Zahlen sein
 command.teleport.invalidParams=Es fehlen Koordinaten
 command.teleport.playerNotFound=Spieler nicht gefunden
 
-command.var.description=Schaltet Variablen im Chat ein/aus und setzt/loescht Variablen. Variablen koennen mit %var% genutzt werden (Prozent-Zeichen: "%%")
+command.var.description=Schaltet Variablen im Chat ein/aus und setzt/loescht Variablen. Variablen koennen mit %%var%% genutzt werden (Prozent-Zeichen: "%%%%")
 command.var.example=/var set x Hallo Welt
 command.var.syntax=/var [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE|SET <NAME> <WERT>|DEL <NAME>]
 command.var.videoURL=youtu.be/WRHwWMVUp-o

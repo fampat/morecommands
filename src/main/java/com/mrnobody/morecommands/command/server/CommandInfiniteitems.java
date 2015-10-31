@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.handler.EventHandler;
 import com.mrnobody.morecommands.handler.Listeners.TwoEventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
@@ -109,23 +110,10 @@ public class CommandInfiniteitems extends ServerCommand implements TwoEventListe
 		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
 		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
     	
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		settings.infiniteitems = true;
-            	sender.sendLangfileMessage("command.infiniteitems.on");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	settings.infiniteitems = false;
-            	sender.sendLangfileMessage("command.infiniteitems.off");
-            }
-            else throw new CommandException("command.infiniteitems.failure", sender);
-        }
-        else {
-        	settings.infiniteitems = !settings.infiniteitems;
-        	sender.sendLangfileMessage(settings.infiniteitems ? "command.infiniteitems.on" : "command.infiniteitems.off");
-        }
+		try {settings.infiniteitems = parseTrueFalse(params, 0, settings.infiniteitems);}
+		catch (IllegalArgumentException ex) {throw new CommandException("command.infiniteitems.failure", sender);}
+		
+		sender.sendLangfileMessage(settings.infiniteitems ? "command.infiniteitems.on" : "command.infiniteitems.off");
 	}
 	
 	@Override

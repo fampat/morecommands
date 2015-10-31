@@ -19,7 +19,7 @@ import org.w3c.dom.NodeList;
 import com.mrnobody.morecommands.core.MoreCommands;
 
 public class MoreCommandsUpdater implements Runnable {
-	public static interface UpdateListener {
+	public static interface UpdateCallback {
 		void udpate(String version, String website, String download);
 	}
 	
@@ -27,9 +27,9 @@ public class MoreCommandsUpdater implements Runnable {
 	private static final int MORECOMMANDSVERSION_MAJOR = Integer.parseInt(Reference.VERSION.split("\\.")[0]);
 	private static final int MORECOMMANDSVERSION_MINOR = Integer.parseInt(Reference.VERSION.split("\\.")[1]);
 	private final String MCVERSION;
-	private final UpdateListener listener;
+	private final UpdateCallback listener;
 	
-	public MoreCommandsUpdater(String mcversion, UpdateListener listener) {
+	public MoreCommandsUpdater(String mcversion, UpdateCallback listener) {
 		this.MCVERSION = mcversion;
 		this.listener = listener;
 	}

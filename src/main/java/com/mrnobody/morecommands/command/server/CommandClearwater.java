@@ -4,15 +4,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import net.minecraft.block.Block;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.init.Blocks;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.GlobalSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.block.Block;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.init.Blocks;
 
 @Command(
 		name = "clearwater",
@@ -41,23 +42,10 @@ public class CommandClearwater extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		GlobalSettings.clearwater = true;
-            	sender.sendLangfileMessage("command.clearwater.on");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	GlobalSettings.clearwater = false;
-            	sender.sendLangfileMessage("command.clearwater.off");
-            }
-            else throw new CommandException("command.clearwater.failure", sender);
-        }
-        else {
-        	GlobalSettings.clearwater = !GlobalSettings.clearwater;
-        	sender.sendLangfileMessage(GlobalSettings.clearwater ? "command.clearwater.on" : "command.clearwater.off");
-        }
+		try {GlobalSettings.clearwater = parseTrueFalse(params, 0, GlobalSettings.clearwater);}
+		catch (IllegalArgumentException ex) {throw new CommandException("command.clearwater.failure", sender);}
+		
+		sender.sendLangfileMessage(GlobalSettings.clearwater ? "command.clearwater.on" : "command.clearwater.off");
         
     	Block block;
     	Iterator<Block> blocks = this.lightOpacities.keySet().iterator();

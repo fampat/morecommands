@@ -8,9 +8,9 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.mrnobody.morecommands.command.ClientCommand;
-import com.mrnobody.morecommands.command.CommandBase.ServerType;
 import com.mrnobody.morecommands.core.AppliedPatches;
 import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.patch.EntityPlayerSP;
 import com.mrnobody.morecommands.patch.PlayerControllerMP;
 import com.mrnobody.morecommands.util.ClientPlayerSettings;

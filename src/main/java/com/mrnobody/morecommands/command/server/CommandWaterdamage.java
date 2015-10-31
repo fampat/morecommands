@@ -2,6 +2,7 @@ package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.handler.EventHandler;
 import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
@@ -47,23 +48,10 @@ public class CommandWaterdamage extends ServerCommand implements EventListener<L
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
     	
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		settings.waterdamage = true;
-            	sender.sendLangfileMessage("command.waterdamage.on");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	settings.waterdamage = false;
-            	sender.sendLangfileMessage("command.waterdamage.off");
-            }
-            else throw new CommandException("command.waterdamage.failure", sender);
-        }
-        else {
-        	settings.waterdamage = !settings.waterdamage;
-        	sender.sendLangfileMessage(settings.waterdamage ? "command.waterdamage.on" : "command.waterdamage.off");
-        }
+		try {settings.waterdamage = parseTrueFalse(params, 0, settings.waterdamage);}
+		catch (IllegalArgumentException ex) {throw new CommandException("command.waterdamage.failure", sender);}
+		
+		sender.sendLangfileMessage(settings.waterdamage ? "command.waterdamage.on" : "command.waterdamage.off");
 	}
 	
 	@Override

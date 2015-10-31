@@ -2,20 +2,19 @@ package com.mrnobody.morecommands.patch;
 
 import java.lang.reflect.Field;
 
-import com.mrnobody.morecommands.command.server.CommandNoclip;
-import com.mrnobody.morecommands.patch.EntityPlayerMP;
+import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.util.ReflectionHelper;
+import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.wrapper.Player;
 
-import net.minecraft.command.CommandNotFoundException;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketThreadUtil;
 import net.minecraft.network.play.client.C03PacketPlayer;
-import net.minecraft.network.play.client.C0EPacketClickWindow;
-import net.minecraft.network.play.client.C18PacketSpectate;
 import net.minecraft.network.play.server.S18PacketEntityTeleport;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.BlockPos;
 import net.minecraft.world.WorldServer;
 
 /**
@@ -66,9 +65,42 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
         }
     }
     
+    private static void checkSafe(NetHandlerPlayServer handler, net.minecraft.entity.player.EntityPlayerMP player) {
+		if(handler.getOverrideNoclip() && !player.capabilities.isFlying) {
+			handler.setOverrideNoclip(false);
+			
+			MoreCommands.getMoreCommands().getPacketDispatcher().sendS07Noclip(player, false);
+			
+			(new CommandSender(player)).sendLangfileMessage("command.noclip.autodisable");
+			ascendPlayer(new Player(player));
+		}
+	}
+
+	private static boolean ascendPlayer(Player player) {
+		BlockPos playerPos = player.getPosition();
+		if(player.getWorld().isClearBelow(playerPos) && playerPos.getY() > 0) {
+			return false;
+		}
+		double y = playerPos.getY() - 1;
+		while (y < 260) {
+			if(player.getWorld().isClear(new BlockPos(playerPos.getX(), y++, playerPos.getZ()))) {
+				final double newY;
+				if(playerPos.getY() > 0) {
+					newY = y - 1;
+				} else {
+					newY = y;
+				}
+				BlockPos newPos = new BlockPos(playerPos.getX() + 0.5F, newY, playerPos.getZ() + 0.5F);
+				player.setPosition(newPos);
+				break;
+			}
+		}
+		return true;
+	}
+    
     public void handleNoclip(C03PacketPlayer packetIn)
     {
-    	CommandNoclip.checkSafe(this, this.playerEntity);
+    	checkSafe(this, this.playerEntity);
     	
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.playerEntity.getServerForPlayer());
         WorldServer worldserver = this.mcServer.worldServerForDimension(this.playerEntity.dimension);

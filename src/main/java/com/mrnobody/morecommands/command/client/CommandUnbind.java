@@ -1,5 +1,6 @@
 package com.mrnobody.morecommands.command.client;
 
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.util.ClientPlayerSettings;

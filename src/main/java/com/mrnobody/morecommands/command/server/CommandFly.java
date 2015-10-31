@@ -2,6 +2,7 @@ package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.handler.EventHandler;
 import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
@@ -55,18 +56,8 @@ public class CommandFly extends ServerCommand implements EventListener<LivingFal
 		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
 		boolean fly;
 		
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		fly = true;
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	fly = false;
-            }
-            else throw new CommandException("command.freeze.failure", sender);
-        }
-        else fly = !player.getAllowFlying();
+		try {fly = parseTrueFalse(params, 0, player.getAllowFlying());}
+		catch (IllegalArgumentException ex) {throw new CommandException("command.fly.failure", sender);}
         
     	settings.fly = fly;
     	if (fly) {settings.noFall = true;}

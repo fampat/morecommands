@@ -5,6 +5,7 @@ import java.util.Map;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.event.CommandEvent;
 
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.core.AppliedPatches;

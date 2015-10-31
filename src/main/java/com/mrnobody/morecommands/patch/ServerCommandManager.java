@@ -12,6 +12,7 @@ import com.mrnobody.morecommands.util.DummyCommand;
 import com.mrnobody.morecommands.util.GlobalSettings;
 import com.mrnobody.morecommands.util.LanguageManager;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
+import com.mrnobody.morecommands.util.Variables;
 
 import net.minecraft.command.CommandResultStats;
 import net.minecraft.command.ICommand;
@@ -34,47 +35,9 @@ import net.minecraft.util.EnumChatFormatting;
  *
  */
 public class ServerCommandManager extends net.minecraft.command.ServerCommandManager {	
-	private static class VarCouldNotBeResolvedException extends Exception {
-		private String var;
-		
-		public VarCouldNotBeResolvedException(String var) {
-			this.var = var;
-		}
-	}
-	
 	public ServerCommandManager(net.minecraft.command.ICommandManager parent) {
 		super();
 		for (Object command : parent.getCommands().values()) this.registerCommand((ICommand) command);
-	}
-	
-	private static String replaceVars(String string, ServerPlayerSettings settings) throws VarCouldNotBeResolvedException {
-		String varIdentifier = "";
-		String newString = "";
-		boolean isReadingVarIdentifier = false;
-		
-		for (char ch : string.toCharArray()) {
-			if (ch == '%') {
-				if (isReadingVarIdentifier) {
-					isReadingVarIdentifier = false;
-					
-					if (varIdentifier.isEmpty()) newString += "%";
-					else {
-						if (!settings.varMapping.containsKey(varIdentifier))
-							throw new VarCouldNotBeResolvedException(varIdentifier);
-						newString += settings.varMapping.get(varIdentifier);
-					}
-					
-					varIdentifier = "";
-				}
-				else isReadingVarIdentifier = true;
-			}
-			else {
-				if (isReadingVarIdentifier) varIdentifier += ch;
-				else newString += ch;
-			}
-		}
-		
-		return newString;
 	}
 	
 	@Override
@@ -88,9 +51,9 @@ public class ServerCommandManager extends net.minecraft.command.ServerCommandMan
         }
         
         if (GlobalSettings.enableVars && sender instanceof EntityPlayerMP && ServerPlayerSettings.containsSettingsForPlayer((EntityPlayerMP) sender)) {
-        	try {rawCommand = replaceVars(rawCommand, ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender));}
-            catch (VarCouldNotBeResolvedException vcnbre) {
-            	ChatComponentText text = new ChatComponentText(LanguageManager.getTranslation(MoreCommands.getMoreCommands().getCurrentLang(sender), "command.var.cantBeResolved", vcnbre.var));
+        	try {rawCommand = Variables.replaceVars(rawCommand, ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender));}
+            catch (Variables.VarCouldNotBeResolvedException vcnbre) {
+            	ChatComponentText text = new ChatComponentText(LanguageManager.translate(MoreCommands.getMoreCommands().getCurrentLang(sender), "command.var.cantBeResolved", vcnbre.getVar()));
             	text.getChatStyle().setColor(RED); sender.addChatMessage(text);
             }
         }

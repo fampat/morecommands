@@ -35,16 +35,6 @@ public class ServerConfigurationManagerDedicated extends net.minecraft.server.de
 	private WorldSettings.GameType gameType;
 	private MinecraftServer mcServer;
 	
-	private boolean keepinventory = false;
-	
-	public void setKeepInventory(boolean keepinventory) {
-		this.keepinventory = keepinventory;
-	}
-	
-	public boolean getKeepInventory() {
-		return this.keepinventory;
-	}
-	
 	public ServerConfigurationManagerDedicated(DedicatedServer server) {
 		super(server);
 		this.mcServer = server;

@@ -5,6 +5,7 @@ import java.util.Random;
 
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.handler.EventHandler;
 import com.mrnobody.morecommands.handler.Listeners.EventListener;
 import com.mrnobody.morecommands.patch.EntityPlayerMP;
@@ -58,23 +59,10 @@ public class CommandInstantgrow extends ServerCommand implements EventListener<P
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
     	
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		settings.instantgrow = true;
-            	sender.sendLangfileMessage("command.instantgrow.on");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	settings.instantgrow = false;
-            	sender.sendLangfileMessage("command.instantgrow.off");
-            }
-            else throw new CommandException("command.instantgrow.failure", sender);
-        }
-        else {
-        	settings.instantgrow = !settings.instantgrow;
-        	sender.sendLangfileMessage(settings.instantgrow ? "command.instantgrow.on" : "command.instantgrow.off");
-        }
+		try {settings.instantgrow = parseTrueFalse(params, 0, settings.instantgrow);}
+		catch (IllegalArgumentException ex) {throw new CommandException("command.instantgrow.failure", sender);}
+		
+		sender.sendLangfileMessage(settings.instantgrow ? "command.instantgrow.on" : "command.instantgrow.off");
 	}
 	
 	private void growPlant(World world, int x, int y, int z, Random rand) {

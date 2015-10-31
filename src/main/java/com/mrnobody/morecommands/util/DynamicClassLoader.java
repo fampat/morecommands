@@ -1,11 +1,9 @@
 package com.mrnobody.morecommands.util;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.FilenameFilter;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -14,8 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
-import net.minecraftforge.fml.relauncher.Side;
 
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.CommandBase;
@@ -37,20 +33,20 @@ public class DynamicClassLoader {
 	/**
 	 * Lists of command classes
 	 */
-	private ArrayList<Class<?>> clientCommandClasses = new ArrayList<Class<?>>();
-	private ArrayList<Class<?>> serverCommandClasses = new ArrayList<Class<?>>();
+	private List<Class<?>> clientCommandClasses = new ArrayList<Class<?>>();
+	private List<Class<?>> serverCommandClasses = new ArrayList<Class<?>>();
 	
 	private int rsrcWriteIndex = 0;
 	
 	public DynamicClassLoader(ClassLoader loader) {
-		CLASSLOADER = loader;
+		this.CLASSLOADER = loader;
 	}
 	
 	/**
 	 * @return The class loader
 	 */
 	public ClassLoader getClassLoader() {
-		return CLASSLOADER;
+		return this.CLASSLOADER;
 	}
 	
 	/**
@@ -73,9 +69,17 @@ public class DynamicClassLoader {
 		if (commandType.equals("client") && this.clientCommandClasses.size() > 0) return this.clientCommandClasses;
 		else if (commandType.equals("server") && this.serverCommandClasses.size() > 0) return this.serverCommandClasses;
 		
-		ArrayList<Class<?>> commandClasses = this.getClasses(pkg);
+		List<Class<?>> commandClasses = this.getClasses(pkg);
 		
 		if (commandClasses != null) {
+			List<Class<?>> remove = new ArrayList<Class<?>>(commandClasses.size());
+			
+			for (Class<?> commandClass : commandClasses)
+				if (commandClass.getName().contains("$")) remove.add(commandClass);
+			
+			commandClasses.removeAll(remove);
+			remove = null;
+			
 			if (commandType.equals("client")) {
 				this.clientCommandClasses.addAll(commandClasses);
 				return this.clientCommandClasses;
@@ -95,7 +99,7 @@ public class DynamicClassLoader {
 	 * @param pkg The package
 	 * @return A list of the loaded classes
 	 */
-	public ArrayList<Class<?>> getClasses(String pkg) {
+	public List<Class<?>> getClasses(String pkg) {
 		pkg = pkg.replace(".", "/");
 		
 		String modClass = MoreCommands.class.getName().replace(".", "/");
@@ -103,7 +107,7 @@ public class DynamicClassLoader {
 		
 		if (location == null) return null;
 		
-		ArrayList<Class<?>> classes = null;
+		List<Class<?>> classes = null;
 		
 		try {
 			if(location.toString().toLowerCase().startsWith("jar")) {
@@ -113,7 +117,6 @@ public class DynamicClassLoader {
 			}
 			else {
 				File directory = new File(location.getFile().substring(0, location.getFile().length() - ".class".length() - modClass.length()) + pkg);
-				
 				classes = loadClassFromDirectory(directory, pkg);
 			}
 		}
@@ -123,13 +126,13 @@ public class DynamicClassLoader {
 	}
 	
 	/**
-	 * Loads resources from a package. Must be text files
+	 * Loads resources from a package
 	 * 
 	 * @param pkg The package
 	 * @param extension The file extension
 	 * @return A map of file names to file objects
 	 */
-	public Map<String, File> getResources(String pkg, String extension) {
+	public Map<String, File> getResources(String pkg, FilenameFilter filter) {
 		pkg = pkg.replace(".", "/");
 		
 		String modClass = MoreCommands.class.getName().replace(".", "/");
@@ -143,11 +146,10 @@ public class DynamicClassLoader {
 			if(location.toString().toLowerCase().startsWith("jar")) {
 				String jarLocation = location.toString().replaceAll("jar:", "").split("!")[0];
 				File root = new File((new URL(jarLocation)).toURI());
-				classes = loadResourceFromJAR(root, pkg, extension);
+				classes = loadResourceFromJAR(root, pkg, filter);
 			}
 			else {
 				File directory = new File(location.getFile().substring(0, location.getFile().length() - ".class".length() - modClass.length()) + pkg);
-				
 				classes = loadResourceFromDirectory(directory, pkg);
 			}
 		}
@@ -163,10 +165,9 @@ public class DynamicClassLoader {
 	 * @param pkg The package
 	 * @return A list of the loaded classes
 	 */
-	private ArrayList<Class<?>> loadClassesFromJAR(File jar, String pkg) {
+	private List<Class<?>> loadClassesFromJAR(File jar, String pkg) {
 		pkg = pkg.replace(".", "/");
-		
-		ArrayList<Class<?>> classes = new ArrayList<Class<?>>();
+		List<Class<?>> classes = new ArrayList<Class<?>>();
 		
 		try {
 			JarFile jf = new JarFile(jar);
@@ -176,10 +177,8 @@ public class DynamicClassLoader {
 				JarEntry je = em.nextElement();
 				try {
 					String entry = je.getName();
-					if(!entry.startsWith(pkg)) {
-						continue;
-					}
-					if (!entry.contains("$")) classes.add(loadClass(entry, null));
+					if(!entry.startsWith(pkg)) continue;
+					classes.add(loadClass(entry, null));
 				} catch (Throwable t) {}
 			}
 			
@@ -190,19 +189,40 @@ public class DynamicClassLoader {
 		}
 		return classes;
 	}
-
+	
 	/**
-	 * Loads resources from a package. Must be text files
+	 * Loads classes from a directory
+	 * 
+	 * @param directory The directory
+	 * @param pkg The package
+	 * @return A list of the loaded classes
+	 */
+	private List<Class<?>> loadClassFromDirectory(File directory, String pkg) {
+		List<Class<?>> classes = new ArrayList<Class<?>>();
+		
+		try {
+			File files[] = directory.listFiles();
+			for (File file : files) {
+				try {
+					if (file.isFile()) classes.add(loadClass(file.getName(), pkg));
+					else classes.addAll(loadClassFromDirectory(file.getParentFile(), pkg));
+				} catch (Exception e) {e.printStackTrace();}
+			}
+		} catch (Exception e) {e.printStackTrace();}
+		return classes;
+	}
+	
+	/**
+	 * Loads resources from a package
 	 * 
 	 * @param jar The jar file
 	 * @param pkg The package
 	 * @param extension The file extension
 	 * @return A map of file names to file objects
 	 */
-	private Map<String, File> loadResourceFromJAR(File jar, String pkg, String extension) {
+	private Map<String, File> loadResourceFromJAR(File jar, String pkg, FilenameFilter filter) {
 		pkg = pkg.replace(".", "/");
-		
-		HashMap<String, File> classes = new HashMap<String, File>();
+		Map<String, File> classes = new HashMap<String, File>();
 		
 		try {
 			JarFile jf = new JarFile(jar);
@@ -212,9 +232,7 @@ public class DynamicClassLoader {
 				JarEntry je = em.nextElement();
 				try {
 					String entry = je.getName();
-					if (!entry.startsWith(pkg) || !entry.endsWith(extension)) {
-						continue;
-					}
+					if (!entry.startsWith(pkg) || !filter.accept(jar, entry)) continue;
 					classes.put(entry.substring(pkg.length() + 1), loadResource(entry, null));
 				} catch (Throwable t) {}
 			}
@@ -228,127 +246,85 @@ public class DynamicClassLoader {
 	}
 	
 	/**
-	 * Loads resources from a package. Must be text files
+	 * Loads resources from a package
 	 * 
 	 * @param directory The directory
 	 * @param pkg The package
 	 * @return A map of file names to file objects
 	 */
-	private Map<String, File> loadResourceFromDirectory(File directory, String pack) {
-		HashMap<String, File> classes = new HashMap<String, File>();
+	private Map<String, File> loadResourceFromDirectory(File directory, String pkg) {
+		Map<String, File> classes = new HashMap<String, File>();
 		
 		try {
 			File files[] = directory.listFiles();
 			for (File file : files) {
 				try {
-					if (file.isFile()) {
-						classes.put(file.getName(), loadResource(file.getName(), pack));
-					} else {
-						classes.putAll(loadResourceFromDirectory(file.getParentFile(), pack));
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+					if (file.isFile()) classes.put(file.getName(), loadResource(file.getName(), pkg));
+					else classes.putAll(loadResourceFromDirectory(file.getParentFile(), pkg));
+				} catch (Exception e) {e.printStackTrace();}
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		} catch (Exception e) {e.printStackTrace();}
 		return classes;
 	}
 	
 	/**
-	 * Loads classes from a directory
-	 * 
-	 * @param directory The directory
-	 * @param pkg The package
-	 * @return A list of the loaded classes
-	 */
-	private ArrayList<Class<?>> loadClassFromDirectory(File directory, String pack) {
-		ArrayList<Class<?>> classes = new ArrayList<Class<?>>();
-		
-		try {
-			File files[] = directory.listFiles();
-			for (File file : files) {
-				try {
-					if (file.isFile()) {
-						if (!file.getName().contains("$")) classes.add(loadClass(file.getName(), pack));
-					} else {
-						classes.addAll(loadClassFromDirectory(file.getParentFile(), pack));
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return classes;
-	}
-	
-	/**
-	 * Loads a resource. Must be a text file
+	 * Loads a resource
 	 * 
 	 * @param resource The resource directory
 	 * @param pack The package
 	 * @return the file object
 	 */
 	public File loadResource(String resource, String pack) throws Exception {
-		if (pack != null) {
-			pack = pack.endsWith("/") ? pack.substring(0, pack.length() - 1) : pack;
-		}
+		if (pack != null) pack = pack.endsWith("/") ? pack.substring(0, pack.length() - 1) : pack;
 		resource = pack == null ? resource : pack + "/" + resource;
-		if(resource.startsWith(".")) {
-			resource = resource.substring(1);
-		}
+		if (resource.startsWith(".")) resource = resource.substring(1);
 		
-		File temp;
+		File temp = null;
+		InputStream is = null;
+		FileOutputStream fos = null;
+		
 		try {
-			BufferedReader input = new BufferedReader(new InputStreamReader(this.CLASSLOADER.getResourceAsStream(resource)));
-			temp = File.createTempFile("rsrc" + this.rsrcWriteIndex, ".tmp");
-			BufferedWriter output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(temp)));
-			String line;
+			byte[] buffer = new byte[1024]; int bytes;
+			is = this.CLASSLOADER.getResourceAsStream(resource);
+			temp = File.createTempFile("rsrc" + this.rsrcWriteIndex++, ".tmp");
+			temp.deleteOnExit();
+			fos = new FileOutputStream(temp);
 			
-			while ((line = input.readLine()) != null) {
-				output.write(line);
-				output.newLine();
-			}
-						
-			input.close();
-			output.close();
-            temp.deleteOnExit();
-			this.rsrcWriteIndex++;
+			while ((bytes = is.read(buffer)) > 0)
+				fos.write(buffer, 0, bytes);
+            
 		} catch (Throwable t) {
 			t.printStackTrace();
 			return null;
-		}    
+		}
+		finally {
+			if (is != null) is.close();
+			if (fos != null) fos.close();
+		}
 		return temp;
 	}
 	
 	/**
 	 * Loads a class
 	 * 
-	 * @param calzz The class name
+	 * @param clazz The class name
 	 * @param pack The package
 	 * @return the loaded class
 	 */
 	public Class<?> loadClass(String clazz, String pack) throws Exception {
-		if (!clazz.endsWith(".class")) {
-			throw new Exception("'" + clazz + "' is not a class.");
-		}
+		if (!clazz.endsWith(".class")) throw new Exception("'" + clazz + "' is not a class.");
 		clazz = clazz.split("\\.")[0];
-		if (pack != null) {
-			pack = pack.endsWith("/") ? pack.substring(0, pack.length() - 1) : pack;
-		}
+		if (pack != null) pack = pack.endsWith("/") ? pack.substring(0, pack.length() - 1) : pack;
+		
 		clazz = pack == null ? clazz : pack + "." + clazz;
 		clazz = clazz.replaceAll("/", ".");
-		if(clazz.startsWith(".")) {
-			clazz = clazz.substring(1);
-		}
+		if(clazz.startsWith(".")) clazz = clazz.substring(1);
 		
 		Class<?> c;
-		try {
-			c = this.CLASSLOADER.loadClass(clazz);
-		} catch (Throwable t) {
+		
+		try {c = this.CLASSLOADER.loadClass(clazz);}
+		catch (Throwable t) {
+			t.printStackTrace();
 			return null;
 		}    
 		return c;

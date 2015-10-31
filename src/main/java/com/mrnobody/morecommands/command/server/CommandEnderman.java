@@ -4,15 +4,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import net.minecraft.block.Block;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.monster.EntityEnderman;
-
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.GlobalSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.block.Block;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.monster.EntityEnderman;
 
 @Command(
 		name = "enderman",
@@ -45,23 +46,10 @@ public class CommandEnderman extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-        if (params.length > 0) {
-        	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
-            	|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
-        		GlobalSettings.endermanpickup = true;
-            	sender.sendLangfileMessage("command.enderman.on");
-            }
-            else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
-            		|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
-            	GlobalSettings.endermanpickup = false;
-            	sender.sendLangfileMessage("command.enderman.off");
-            }
-            else throw new CommandException("command.enderman.failure", sender);
-        }
-        else {
-        	GlobalSettings.endermanpickup = !GlobalSettings.endermanpickup;
-        	sender.sendLangfileMessage(GlobalSettings.endermanpickup ? "command.enderman.on" : "command.enderman.off");
-        }
+		try {GlobalSettings.endermanpickup = parseTrueFalse(params, 0, GlobalSettings.endermanpickup);}
+		catch (IllegalArgumentException ex) {throw new CommandException("command.enderman.failure", sender);}
+		
+		sender.sendLangfileMessage(GlobalSettings.endermanpickup ? "command.enderman.on" : "command.enderman.off");
         
 		Iterator<Block> blocks = Block.blockRegistry.iterator();
 		

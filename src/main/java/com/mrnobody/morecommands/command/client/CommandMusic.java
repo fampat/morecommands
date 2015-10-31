@@ -7,6 +7,7 @@ import net.minecraft.client.audio.MusicTicker;
 import net.minecraft.client.audio.SoundCategory;
 import net.minecraftforge.client.event.sound.PlaySoundEvent;
 
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.Command;
 import com.mrnobody.morecommands.handler.EventHandler;

@@ -1013,7 +1013,7 @@ command.teleport.NAN=The coordinates must be numbers
 command.teleport.invalidParams=Arguments are missing.
 command.teleport.playerNotFound=Player not found
 
-command.var.description=Toggles variables in the console and sets/deletes variables. Variables can be used with %var% (percent sign: "%%")
+command.var.description=Toggles variables in the console and sets/deletes variables. Variables can be used with %%var%% (percent sign: "%%%%")
 command.var.example=/var set x Hello World
 command.var.syntax=/var [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE|SET <NAME> <VALUE>|DEL <NAME>]
 command.var.videoURL=youtu.be/WRHwWMVUp-o

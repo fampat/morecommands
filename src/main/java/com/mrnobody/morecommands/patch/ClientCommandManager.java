@@ -17,6 +17,7 @@ import com.mrnobody.morecommands.util.ClientPlayerSettings;
 import com.mrnobody.morecommands.util.DummyCommand;
 import com.mrnobody.morecommands.util.GlobalSettings;
 import com.mrnobody.morecommands.util.LanguageManager;
+import com.mrnobody.morecommands.util.Variables;
 
 /**
  * The patched class of {@link ClientCommandHandler} <br>
@@ -32,47 +33,9 @@ import com.mrnobody.morecommands.util.LanguageManager;
  *
  */
 public class ClientCommandManager extends ClientCommandHandler {
-	private static class VarCouldNotBeResolvedException extends Exception {
-		private String var;
-		
-		public VarCouldNotBeResolvedException(String var) {
-			this.var = var;
-		}
-	}
-	
 	public ClientCommandManager(ClientCommandHandler parent) {
 		super();
 		for (Object command : parent.getCommands().values()) this.registerCommand((ICommand) command);
-	}
-	
-	private static String replaceVars(String string) throws VarCouldNotBeResolvedException {
-		String varIdentifier = "";
-		String newString = "";
-		boolean isReadingVarIdentifier = false;
-		
-		for (char ch : string.toCharArray()) {
-			if (ch == '%') {
-				if (isReadingVarIdentifier) {
-					isReadingVarIdentifier = false;
-					
-					if (varIdentifier.isEmpty()) newString += "%";
-					else {
-						if (!ClientPlayerSettings.varMapping.containsKey(varIdentifier))
-							throw new VarCouldNotBeResolvedException(varIdentifier);
-						newString += ClientPlayerSettings.varMapping.get(varIdentifier);
-					}
-					
-					varIdentifier = "";
-				}
-				else isReadingVarIdentifier = true;
-			}
-			else {
-				if (isReadingVarIdentifier) varIdentifier += ch;
-				else newString += ch;
-			}
-		}
-		
-		return newString;
 	}
 	
     @Override
@@ -85,11 +48,11 @@ public class ClientCommandManager extends ClientCommandHandler {
             message = message.substring(1);
         }
         
-        VarCouldNotBeResolvedException vcnbre = null;
+        Variables.VarCouldNotBeResolvedException vcnbre = null;
         
         if (GlobalSettings.enableVars) {
-        	try {message = replaceVars(message);}
-            catch (VarCouldNotBeResolvedException e) {vcnbre = e;}
+        	try {message = Variables.replaceVars(message);}
+            catch (Variables.VarCouldNotBeResolvedException e) {vcnbre = e;}
         }     
 
         String[] temp = message.split(" ");
@@ -106,7 +69,7 @@ public class ClientCommandManager extends ClientCommandHandler {
             }
             
             if (vcnbre != null) {
-            	ChatComponentText text = new ChatComponentText(LanguageManager.getTranslation(MoreCommands.getMoreCommands().getCurrentLang(sender), "command.var.cantBeResolved", vcnbre.var));
+            	ChatComponentText text = new ChatComponentText(LanguageManager.translate(MoreCommands.getMoreCommands().getCurrentLang(sender), "command.var.cantBeResolved", vcnbre.getVar()));
             	text.getChatStyle().setColor(RED); sender.addChatMessage(text);
             }
 
