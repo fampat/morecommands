@@ -59,7 +59,7 @@ public class EntityPlayerSP extends net.minecraft.client.entity.EntityPlayerSP {
 	@Override
 	public boolean isInWater() {
 		if (!this.fluidmovement) return false;
-		return super.handleWaterMovement();
+		return super.isInWater();
 	}
 	
 	@Override
