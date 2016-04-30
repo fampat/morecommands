@@ -22,8 +22,6 @@ import net.minecraftforge.common.ForgeHooks;
  */
 public class EntityPlayerSP extends net.minecraft.client.entity.EntityPlayerSP {
 	private boolean overrideOnLadder = false;
-	private boolean instantkill = false;
-	private boolean criticalhit = false;
 	private boolean freezeCam = false;
 	private boolean freeCam = false;
 	private boolean overrideNoclip = false;
@@ -42,12 +40,8 @@ public class EntityPlayerSP extends net.minecraft.client.entity.EntityPlayerSP {
         super(mcIn, worldIn, p_i46278_3_, p_i46278_4_);
         this.handler = p_i46278_3_;
         this.writer = p_i46278_4_;
-        
-        //this.inventory = new net.minecraft.entity.player.InventoryPlayer(this); //don't use patched class of InventoryPlayer as there is no need for it currently
-        //this.inventoryContainer = new ContainerPlayer(this.inventory, !worldIn.isRemote, this);
-        //this.openContainer = this.inventoryContainer;
     }
-    
+
 	public void setFluidMovement(boolean fluidmovement) {
 		this.fluidmovement = fluidmovement;
 	}
@@ -55,7 +49,7 @@ public class EntityPlayerSP extends net.minecraft.client.entity.EntityPlayerSP {
 	public boolean getFluidMovement() {
 		return this.fluidmovement;
 	}
-	
+    
 	@Override
 	public boolean isInWater() {
 		if (!this.fluidmovement) return false;
@@ -81,8 +75,7 @@ public class EntityPlayerSP extends net.minecraft.client.entity.EntityPlayerSP {
         return !this.overrideNoclip && super.isEntityInsideOpaqueBlock();
     }
     
-	
-	public void OverrideOnLadder(boolean flag) {
+	public void setOverrideOnLadder(boolean flag) {
 		this.overrideOnLadder = flag;
 	}
 	
@@ -132,6 +125,11 @@ public class EntityPlayerSP extends net.minecraft.client.entity.EntityPlayerSP {
 	public void setGravity(double gravity) {
 		this.gravity = gravity;
 	}
+	
+    @Override
+    public boolean isUser() {
+    	return !(this.freeCam || this.freezeCam);
+    }
 	
 	@Override
 	public void moveEntity(double x, double y, double z) {

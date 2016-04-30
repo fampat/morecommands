@@ -3,26 +3,38 @@ package com.mrnobody.morecommands.network;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Set;
 
+import com.mrnobody.morecommands.asm.transform.TransformTextureCompass;
+import com.mrnobody.morecommands.asm.transform.TransformTextureCompass.CompassTargetCallBack;
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.core.AppliedPatches;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.event.DamageItemEvent;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.event.ItemStackChangeSizeEvent;
+import com.mrnobody.morecommands.event.Listeners.EventListener;
+import com.mrnobody.morecommands.network.PacketDispatcher.BlockUpdateType;
 import com.mrnobody.morecommands.patch.EntityPlayerSP;
 import com.mrnobody.morecommands.patch.PlayerControllerMP;
 import com.mrnobody.morecommands.util.ClientPlayerSettings;
+import com.mrnobody.morecommands.util.ClientPlayerSettings.XrayInfo;
 import com.mrnobody.morecommands.util.GlobalSettings;
-import com.mrnobody.morecommands.util.XrayHelper;
-import com.mrnobody.morecommands.util.XrayHelper.BlockSettings;
+import com.mrnobody.morecommands.util.PlayerSettings;
+import com.mrnobody.morecommands.util.Reference;
+import com.mrnobody.morecommands.util.Xray;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.EntityCamera;
 import com.mrnobody.morecommands.wrapper.World;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.item.Item;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.client.ClientCommandHandler;
 
@@ -33,9 +45,9 @@ import net.minecraftforge.client.ClientCommandHandler;
  *
  */
 public class PacketHandlerClient {
-	private static final List<ClientCommand> removedCmds = new ArrayList<ClientCommand>();
+	/** These commands are those that get removed when the server has MoreCommands installed to execute the server side versions of them */
+	private static final List<ClientCommand<?>> removedCmds = new ArrayList<ClientCommand<?>>();
 	
-	//Data for the freecam command
 	private EntityPlayerSP freecamOriginalPlayer;
 	private boolean prevIsFlying;
 	private boolean prevAllowFlying;
@@ -43,18 +55,49 @@ public class PacketHandlerClient {
 	private float prevWalkSpeed;
 	private boolean prevNoclip;
 	
-	//Data for the freezecam command
 	private EntityPlayerSP freezecamOriginalPlayer;
 	
-	//Data for the light command
 	private boolean isEnlightened = false;
 	private int lightenedWorld = 0;
+	
+	private final EventListener<ItemStackChangeSizeEvent> onStackSizeChangeListener = new EventListener<ItemStackChangeSizeEvent>() {
+		@Override
+		public void onEvent(ItemStackChangeSizeEvent event) {
+			if (event.entityPlayer instanceof net.minecraft.client.entity.EntityPlayerSP) {
+				event.newSize = event.oldSize; event.setCanceled(true);
+			}
+		}
+	};
+	
+	private static final Set<Item> disableDamage = new HashSet<Item>();
+	private final EventListener<DamageItemEvent> onItemDamageListener = new EventListener<DamageItemEvent>() {
+		@Override
+		public void onEvent(DamageItemEvent event) {
+			if (event.entity instanceof net.minecraft.client.entity.EntityPlayerSP && disableDamage.contains(event.stack.getItem()))
+				event.setCanceled(true);
+		}
+	};
+	
+	private BlockPos compassTarget = null;
+	
+	private final CompassTargetCallBack compassTargetCallback = new CompassTargetCallBack() {
+		@Override
+		public BlockPos getTarget(net.minecraft.world.World world) {
+			if (PacketHandlerClient.this.compassTarget == null) return world.getSpawnPoint();
+			else return PacketHandlerClient.this.compassTarget;
+		}
+	};
+	
+	public PacketHandlerClient() {
+		TransformTextureCompass.setCompassTargetCallback(this.compassTargetCallback);
+		EventHandler.DAMAGE_ITEM.register(this.onItemDamageListener);
+	}
 	
 	/**
 	 * re-registers the unregistered client commands and clears the list
 	 */
 	public static void reregisterAndClearRemovedCmds() {
-		for (ClientCommand cmd : PacketHandlerClient.removedCmds) ClientCommandHandler.instance.registerCommand(cmd);
+		for (ClientCommand<?> cmd : PacketHandlerClient.removedCmds) ClientCommandHandler.instance.registerCommand(cmd);
 		PacketHandlerClient.removedCmds.clear();
 	}
 	
@@ -62,6 +105,8 @@ public class PacketHandlerClient {
 	 * Runs a thread waiting for a handshake from the server <br>
 	 * to execute startup commands. If it isn't received after a <br>
 	 * certain time, they are still executed
+	 * 
+	 * @param socketAddress the server's socket address
 	 */
 	public static void runStartupThread(final String socketAddress) {
 		final int timeout = GlobalSettings.startupTimeout < 0 ? 10000 : GlobalSettings.startupTimeout > 10 ? 10000 : GlobalSettings.startupTimeout * 1000;
@@ -81,25 +126,32 @@ public class PacketHandlerClient {
 				notifyPlayerAboutUpdate();
 				
 				//Execute commands specified in the startup_multiplayer.cfg
-				for (String command : MoreCommands.getMoreCommands().getStartupCommandsMultiplayer(socketAddress)) {
+				for (String command : MoreCommands.INSTANCE.getStartupCommandsMultiplayer(socketAddress)) {
 					if (ClientCommandHandler.instance.executeCommand(Minecraft.getMinecraft().thePlayer, command) == 0)
 						Minecraft.getMinecraft().thePlayer.sendChatMessage(command.startsWith("/") ? command : "/" + command);
-					MoreCommands.getMoreCommands().getLogger().info("Executed startup command '" + command + "'");
+					MoreCommands.INSTANCE.getLogger().info("Executed startup command '" + command + "'");
 				}
 			}
-		}).start();
+		}, "MoreCommands Startup Commands Thread").start();
 	}
 	
+	/**
+	 * Executes the startup commands that shall be executed on server startup.
+	 * This method is invoked only for the integrated server, not for dedicated servers.
+	 */
 	public static void executeStartupCommands() {
 		notifyPlayerAboutUpdate();
 		
-		for (String command : MoreCommands.getMoreCommands().getStartupCommands()) {
+		for (String command : MoreCommands.INSTANCE.getStartupCommands()) {
 			if (ClientCommandHandler.instance.executeCommand(Minecraft.getMinecraft().thePlayer, command) == 0)
 				Minecraft.getMinecraft().thePlayer.sendChatMessage(command.startsWith("/") ? command : "/" + command);
-			MoreCommands.getMoreCommands().getLogger().info("Executed startup command '" + command + "'");
+			MoreCommands.INSTANCE.getLogger().info("Executed startup command '" + command + "'");
 		}
 	}
 	
+	/**
+	 * Notifies the player that a MoreCommands update is available with a chat message
+	 */
 	private static void notifyPlayerAboutUpdate() {
 		if (MoreCommands.getProxy().getUpdateText() != null && !MoreCommands.getProxy().wasPlayerNotified())
 			Minecraft.getMinecraft().thePlayer.addChatMessage(MoreCommands.getProxy().getUpdateText());
@@ -107,16 +159,21 @@ public class PacketHandlerClient {
 	
 	/**
 	 * Is called if the client receives a handshake packet
+	 * @param version the server's MorCommands version
 	 */
-	public void handshake(UUID uuid) {
-		MoreCommands.getMoreCommands().setPlayerUUID(uuid);
+	public void handshake(String version) {
+		if (!Reference.VERSION.equals(version)) {
+			MoreCommands.INSTANCE.getLogger().warn("Server has incompatible MoreCommands version: " + version + ", version " + Reference.VERSION + " is required");
+			return;
+		}
+		
 		AppliedPatches.setServerModded(true);
 		
 		//Remove commands, which shall be removed if the server side version shall be used
 		List<String> remove = new ArrayList<String>();
 		for (Object command : ClientCommandHandler.instance.getCommands().keySet()) {
-			if (ClientCommandHandler.instance.getCommands().get((String) command) instanceof ClientCommand) {
-				ClientCommand cmd = (ClientCommand) ClientCommandHandler.instance.getCommands().get((String) command);
+			if (ClientCommandHandler.instance.getCommands().get((String) command) instanceof ClientCommand<?>) {
+				ClientCommand<?> cmd = (ClientCommand<?>) ClientCommandHandler.instance.getCommands().get((String) command);
 				if (!cmd.registerIfServerModded()) {remove.add(cmd.getName()); PacketHandlerClient.removedCmds.add(cmd);}
 			}
 		}
@@ -125,12 +182,12 @@ public class PacketHandlerClient {
 			for (String rem : remove)
 				ClientCommandHandler.instance.getCommands().remove(rem);
 			
-			MoreCommands.getMoreCommands().getLogger().info("Unregistered following client commands because server side versions are used:\n" + remove);
+			MoreCommands.INSTANCE.getLogger().info("Unregistered following client commands because server side versions are used:\n" + remove);
 		}
 			
 		//Let the server know that the mod is installed client side
-		MoreCommands.getMoreCommands().getLogger().info("Sending client handshake");
-		MoreCommands.getMoreCommands().getPacketDispatcher().sendC00Handshake(
+		MoreCommands.INSTANCE.getLogger().info("Sending client handshake");
+		MoreCommands.INSTANCE.getPacketDispatcher().sendC00Handshake(
 				Minecraft.getMinecraft().thePlayer instanceof EntityPlayerSP,
 				Minecraft.getMinecraft().renderGlobal instanceof com.mrnobody.morecommands.patch.RenderGlobal);
 	}
@@ -140,21 +197,22 @@ public class PacketHandlerClient {
 	 */
 	public void handshakeFinished() {
 		AppliedPatches.setHandshakeFinished(true);
-		MoreCommands.getMoreCommands().getLogger().info("Handshake finished");
-		if (MoreCommands.getMoreCommands().getRunningServer() == ServerType.INTEGRATED) PacketHandlerClient.executeStartupCommands();
+		MoreCommands.INSTANCE.getLogger().info("Handshake finished");
+		if (MoreCommands.getServerType() == ServerType.INTEGRATED) PacketHandlerClient.executeStartupCommands();
 	}
 	
 	/**
-	 * Enables climbing on every wall
+	 * Enables/Disables climbing on every wall
+	 * @param climb whether to enable or disable climb mode
 	 */
 	public void handleClimb(boolean climb) {
 		if (Minecraft.getMinecraft().thePlayer instanceof EntityPlayerSP) {
-			((EntityPlayerSP) Minecraft.getMinecraft().thePlayer).OverrideOnLadder(climb);
+			((EntityPlayerSP) Minecraft.getMinecraft().thePlayer).setOverrideOnLadder(climb);
 		}
 	}
 	
 	/**
-	 * Enables/Disables to freecam around the map
+	 * Toggles freecaming around the map
 	 */
 	public void handleFreecam() {
 		if (this.freecamOriginalPlayer != null) {
@@ -187,7 +245,7 @@ public class PacketHandlerClient {
 	}
 	
 	/**
-	 * Enables/Disables a frozen camera
+	 * Toggles a frozen camera
 	 */
 	public void handleFreezeCam() {
 		if (this.freezecamOriginalPlayer != null) {
@@ -206,93 +264,100 @@ public class PacketHandlerClient {
 			Minecraft.getMinecraft().setRenderViewEntity(camera);
 		}
 	}
-
+	
 	/**
 	 * Shows the xray config
 	 */
 	public void handleXray() {
-		XrayHelper.getInstance().showConfig();
+		Xray.getXray().showConfig();
 	}
 	
 	/**
 	 * Enables/Disables xray and sets the radius
+	 * @param xrayEnabled whether to enable or disable xray
+	 * @param blockRadius the xray block radius
 	 */
 	public void handleXray(boolean xrayEnabled, int blockRadius) {
-		XrayHelper.getInstance().changeSettings(blockRadius, xrayEnabled);
+		Xray.getXray().changeXraySettings(blockRadius, xrayEnabled);
 	}
 	
 	/**
 	 * loads/saves an xray setting
+	 * @param load true to load a setting, false to save a setting
+	 * @param setting the setting name to load/save
 	 */
 	public void handleXray(boolean load, String setting) {
+		ClientPlayerSettings settings = MoreCommands.getEntityProperties(ClientPlayerSettings.class, PlayerSettings.MORECOMMANDS_IDENTIFIER, Minecraft.getMinecraft().thePlayer);
+		if (settings == null) return;
+		
 		if (load) {
-			if (ClientPlayerSettings.xrayColorMapping.containsKey(setting)
-				&& ClientPlayerSettings.xrayRadiusMapping.containsKey(setting)) {
-				int radius = ClientPlayerSettings.xrayRadiusMapping.get(setting);
-				Map<Block, Integer> colors = ClientPlayerSettings.xrayColorMapping.get(setting);
+			if (settings.xray.containsKey(setting)) {
+				int radius = settings.xray.get(setting).radius;
+				Map<Block, Integer> colors = settings.xray.get(setting).colors;
 				
-				for (XrayHelper.BlockSettings bs : XrayHelper.getInstance().blockMapping.values()) bs.draw = false;
+				for (Block b : Xray.getXray().getAllBlocks()) Xray.getXray().changeBlockSettings(b, false);
 				
 				for (Map.Entry<Block, Integer> entry : colors.entrySet())
-					XrayHelper.getInstance().blockMapping.put(entry.getKey(), new XrayHelper.BlockSettings(entry.getKey(), new Color(entry.getValue()), true));
+					Xray.getXray().changeBlockSettings(entry.getKey(), true, new Color(entry.getValue()));
 				
-				XrayHelper.getInstance().changeSettings(radius, XrayHelper.getInstance().xrayEnabled);
+				Xray.getXray().changeXraySettings(radius);
 				(new CommandSender(Minecraft.getMinecraft().thePlayer)).sendLangfileMessage("command.xray.loaded", setting);
 			}
 			else (new CommandSender(Minecraft.getMinecraft().thePlayer)).sendLangfileMessage("command.xray.notFound", EnumChatFormatting.RED, setting);
 		}
 		else {
-			ClientPlayerSettings.xrayRadiusMapping.put(setting, XrayHelper.getInstance().blockRadius);
 			Map<Block, Integer> colors = new HashMap<Block, Integer>();
 			
-			for (Map.Entry<Block, BlockSettings> entry : XrayHelper.getInstance().blockMapping.entrySet()) {
-				if (entry.getValue().draw) {
-					Color c = entry.getValue().color;
-					colors.put(entry.getKey(), (c.getBlue() << 16) + (c.getGreen() << 8) + c.getRed());
+			for (Block b : Xray.getXray().getAllBlocks()) {
+				if (Xray.getXray().drawBlock(b)) {
+					Color c = Xray.getXray().getColor(b);
+					colors.put(b, (c.getBlue() << 16) | (c.getGreen() << 8) | c.getRed());
 				}
 			}
 			
-			ClientPlayerSettings.xrayColorMapping.put(setting, colors);
-			ClientPlayerSettings.saveSettings();
+			settings.xray.put(setting, new XrayInfo(Xray.getXray().getRadius(), colors));
 			(new CommandSender(Minecraft.getMinecraft().thePlayer)).sendLangfileMessage("command.xray.saved", setting);
 		}
 	}
 
 	/**
 	 * Enables/Disables noclip
+	 * @param allowNoclip whether to enable or disable noclip
 	 */
 	public void handleNoclip(boolean allowNoclip) {
-		if (Minecraft.getMinecraft().thePlayer instanceof EntityPlayerSP) 
-			((EntityPlayerSP) Minecraft.getMinecraft().thePlayer).setOverrideNoclip(allowNoclip);
+		if (!(Minecraft.getMinecraft().thePlayer instanceof EntityPlayerSP)) return;
+		Minecraft.getMinecraft().thePlayer.noClip = allowNoclip;
+		((EntityPlayerSP) Minecraft.getMinecraft().thePlayer).setOverrideNoclip(allowNoclip);
 	}
-
+	
 	/**
-	 * Lightens the world or reverses lighting
+	 * Lightens the world or reverses world lighting
 	 */
 	public void handleLight() {
 		World clientWorld = new World(Minecraft.getMinecraft().thePlayer.worldObj);
 			
-		if(clientWorld.getMinecraftWorld().hashCode() != lightenedWorld) {
-			isEnlightened = false;
+		if(clientWorld.getMinecraftWorld().hashCode() != this.lightenedWorld) {
+			this.isEnlightened = false;
 		}
 			
-		if (!isEnlightened) {
+		if (!this.isEnlightened) {
 			float[] lightBrightnessTable = clientWorld.getMinecraftWorld().provider.getLightBrightnessTable();
 			
 			for (int i = 0; i < lightBrightnessTable.length; i++) {
 				lightBrightnessTable[i] = 1.0F;
 			}
 				
-			lightenedWorld = clientWorld.getMinecraftWorld().hashCode();
+			this.lightenedWorld = clientWorld.getMinecraftWorld().hashCode();
 		}
 		else {
 			clientWorld.getMinecraftWorld().provider.registerWorld(clientWorld.getMinecraftWorld());
 		}
-		isEnlightened = !isEnlightened;
+		this.isEnlightened = !this.isEnlightened;
 	}
 
 	/**
 	 * Sets the block reach distance
+	 * @param reachDistance the reach distance
 	 */
 	public void handleReach(float reachDistance) {
 		if (Minecraft.getMinecraft().playerController instanceof PlayerControllerMP) {
@@ -301,27 +366,8 @@ public class PacketHandlerClient {
 	}
 
 	/**
-	 * Executes a client command
-	 */
-	public void executeClientCommand(String command) {
-		ClientCommandHandler.instance.executeCommand(Minecraft.getMinecraft().thePlayer, command);
-	}
-
-	/**
-	 * sends all client commands to the server (e.g. for key bindings)
-	 */
-	public void sendClientCommands() {
-		for (Object command : ClientCommandHandler.instance.getCommands().values()) {
-			if (command instanceof ClientCommand) {
-				MoreCommands.getMoreCommands().getPacketDispatcher().sendC01ClientCommand(((ClientCommand) command).getName());
-			}
-		}
-		
-		MoreCommands.getMoreCommands().getPacketDispatcher().sendC02FinishHandshake();
-	}
-
-	/**
 	 * sets the jump height
+	 * @param gravity the jump height
 	 */
 	public void setGravity(double gravity) {
 		if (Minecraft.getMinecraft().thePlayer instanceof EntityPlayerSP) {
@@ -331,14 +377,73 @@ public class PacketHandlerClient {
 
 	/**
 	 * sets the step height
+	 * @param stepheight the step height
 	 */
 	public void setStepheight(float stepheight) {
 		Minecraft.getMinecraft().thePlayer.stepHeight = stepheight;
 	}
 	
+	/**
+	 * Disables or enables fluid movement
+	 * @param whether to enable or disable fluid movement handling
+	 */
 	public void setFluidMovement(boolean fluidmovement) {
 		if (Minecraft.getMinecraft().thePlayer instanceof EntityPlayerSP) {
 			((EntityPlayerSP) Minecraft.getMinecraft().thePlayer).setFluidMovement(fluidmovement);
 		}
+	}
+	
+	/**
+	 * Disables or enables infiniteitems
+	 * @param infiniteitems to enable or disable infinite items
+	 */
+	public void setInfiniteitems(boolean infiniteitems) {
+		if (infiniteitems)
+			EventHandler.ITEMSTACK_CHANGE_SIZE.register(this.onStackSizeChangeListener);
+		else
+			EventHandler.ITEMSTACK_CHANGE_SIZE.unregister(this.onStackSizeChangeListener);
+	}
+	
+	/**
+	 * Disables or enables item damage
+	 * @param itemdamage whether to enable or disable item damage
+	 */
+	public void setItemDamage(Item item, boolean itemdamage) {
+		if (itemdamage) disableDamage.add(item);
+		else disableDamage.remove(item);
+	}
+	
+	/**
+	 * sets the compass target
+	 * @param x the x coordinate of the target
+	 * @param z the z coordinate of the target
+	 */
+	public void setCompassTarget(int x, int z) {
+		this.compassTarget = new BlockPos(x, 0, z);
+	}
+	
+	/**
+	 * resets the compass target to default (world spawn point)
+	 */
+	public void resetCompassTarget() {
+		this.compassTarget = null;
+	}
+	
+	/**
+	 * Stores the server's world name on the client
+	 * @param worldName the server world's name
+	 */
+	public void changeWorld(String worldName) {
+		MoreCommands.getProxy().setCurrentWorld(worldName);
+	}
+	
+	/**
+	 * Updates a block property
+	 * @param block the block of which the property should be updated
+	 * @param type the property type to update
+	 * @param value the new value
+	 */
+	public void updateBlock(Block block, BlockUpdateType type, int value) {
+		type.update(block, value);
 	}
 }

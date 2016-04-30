@@ -1,12 +1,14 @@
 package com.mrnobody.morecommands.command.client;
 
-import net.minecraft.client.Minecraft;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.ClientCommand;
+import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.client.Minecraft;
 
 @Command(
 		name = "fog",
@@ -15,7 +17,7 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.fog.syntax",
 		videoURL = "command.fog.videoURL"
 		)
-public class CommandFog extends ClientCommand {
+public class CommandFog extends StandardCommand implements ClientCommandProperties {
 
 	@Override
 	public String getName() {
@@ -28,7 +30,7 @@ public class CommandFog extends ClientCommand {
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params)throws CommandException {
+	public void execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 0) {
 			int distance = 0;
 			
@@ -42,12 +44,12 @@ public class CommandFog extends ClientCommand {
 			
 			sender.sendLangfileMessage("command.fog.success");
 		}
-		else throw new CommandException("command.fog.invalidUsage", sender);
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -61,7 +63,7 @@ public class CommandFog extends ClientCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 }

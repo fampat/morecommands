@@ -1,14 +1,16 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.util.BlockPos;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Entity;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.util.BlockPos;
 
 @Command(
 		name = "jump",
@@ -17,7 +19,7 @@ import com.mrnobody.morecommands.wrapper.Entity;
 		syntax = "command.jump.syntax",
 		videoURL = "command.jump.videoURL"
 		)
-public class CommandJump extends ServerCommand {
+public class CommandJump extends StandardCommand implements ServerCommandProperties {
 
 	@Override
 	public String getName() {
@@ -31,7 +33,7 @@ public class CommandJump extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Entity entity = new Entity((net.minecraft.entity.Entity) sender.getMinecraftISender());
+		Entity entity = new Entity(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.Entity.class));
 		BlockPos hit = entity.traceBlock(128);
 		
 		if (hit == null) throw new CommandException("command.jump.notInSight", sender);
@@ -47,8 +49,8 @@ public class CommandJump extends ServerCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -57,12 +59,12 @@ public class CommandJump extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof net.minecraft.entity.Entity;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, net.minecraft.entity.Entity.class);
 	}
 }

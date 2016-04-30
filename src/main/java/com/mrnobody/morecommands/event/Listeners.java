@@ -1,8 +1,8 @@
-package com.mrnobody.morecommands.handler;
+package com.mrnobody.morecommands.event;
 
 import net.minecraftforge.fml.common.eventhandler.Event;
 
-public class Listeners {
+public final class Listeners {
 	private Listeners() {}
 	
 	/**
@@ -14,7 +14,7 @@ public class Listeners {
 		/**
 		 * Called when the event is fired
 		 */
-		public void onEvent(T paramT);
+		public void onEvent(T event);
 	}
 	
 	/**
@@ -26,11 +26,11 @@ public class Listeners {
 		/**
 		 * Called when event 1 is fired
 		 */
-		public void onEvent1(T1 paramT1);
+		public void onEvent1(T1 event);
     
 		/**
 		 * Called when event 2 is fired
 		 */
-		public void onEvent2(T2 paramT2);
+		public void onEvent2(T2 event);
 	}
 }

@@ -1,10 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.EventListener;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -24,16 +26,16 @@ import net.minecraftforge.event.entity.living.LivingAttackEvent;
 		syntax = "command.killattacker.syntax",
 		videoURL = "command.killattacker.videoURL"
 		)
-public class CommandKillattacker extends ServerCommand implements EventListener<LivingAttackEvent> {
+public class CommandKillattacker extends StandardCommand implements ServerCommandProperties, EventListener<LivingAttackEvent> {
 	public CommandKillattacker() {
-		EventHandler.ATTACK.getHandler().register(this);
+		EventHandler.ATTACK.register(this);
 	}
 
 	@Override
 	public void onEvent(LivingAttackEvent event) {
 		if (!(event.entity instanceof EntityPlayerMP)) return;
 		
-		if (ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) event.entity).killattacker) {
+		if (getPlayerSettings((EntityPlayerMP) event.entity).killattacker) {
 			if (event.source.getSourceOfDamage() != null && (event.source.getSourceOfDamage() instanceof EntityCreature || event.source.getSourceOfDamage() instanceof EntityArrow)) {
 				if (event.source.getSourceOfDamage() instanceof EntityCreature) 
 					event.source.getSourceOfDamage().attackEntityFrom(DamageSource.causePlayerDamage((EntityPlayer) event.entity), Float.MAX_VALUE);
@@ -55,7 +57,7 @@ public class CommandKillattacker extends ServerCommand implements EventListener<
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
+		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
     	
 		try {settings.killattacker = parseTrueFalse(params, 0, settings.killattacker);}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.killattacker.failure", sender);}
@@ -64,8 +66,8 @@ public class CommandKillattacker extends ServerCommand implements EventListener<
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -74,12 +76,12 @@ public class CommandKillattacker extends ServerCommand implements EventListener<
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

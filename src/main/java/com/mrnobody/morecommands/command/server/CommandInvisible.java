@@ -1,13 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.Entity;
 
 @Command(
 		name = "invisible",
@@ -16,7 +18,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 		syntax = "command.invisible.syntax",
 		videoURL = "command.invisible.videoURL"
 		)
-public class CommandInvisible extends ServerCommand {
+public class CommandInvisible extends StandardCommand implements ServerCommandProperties {
 	@Override
 	public String getName() {
 		return "invisible";
@@ -29,17 +31,17 @@ public class CommandInvisible extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
+		Entity entity = getSenderAsEntity(sender.getMinecraftISender(), Entity.class);
 		
-		try {player.setInvisible(parseTrueFalse(params, 0, player.isInvisible()));}
+		try {entity.setInvisible(parseTrueFalse(params, 0, entity.isInvisible()));}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.invisible.failure", sender);}
 		
-		sender.sendLangfileMessage(player.isInvisible() ? "command.invisible.on" : "command.invisible.off");
+		sender.sendLangfileMessage(entity.isInvisible() ? "command.invisible.on" : "command.invisible.off");
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -48,12 +50,12 @@ public class CommandInvisible extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, Entity.class);
 	}
 }

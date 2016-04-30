@@ -1,11 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.EventListener;
-import com.mrnobody.morecommands.handler.Listeners.TwoEventListener;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.event.Listeners.TwoEventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -25,10 +26,10 @@ import net.minecraftforge.event.entity.living.LivingSetAttackTargetEvent;
 		syntax = "command.noattack.syntax",
 		videoURL = "command.noattack.videoURL"
 		)
-public class CommandNoattack extends ServerCommand implements TwoEventListener<LivingSetAttackTargetEvent, LivingAttackEvent> {
+public class CommandNoattack extends StandardCommand implements ServerCommandProperties, TwoEventListener<LivingSetAttackTargetEvent, LivingAttackEvent> {
 	public CommandNoattack() {
-		EventHandler.SET_TARGET.getHandler().register(this, true);
-		EventHandler.ATTACK.getHandler().register(this, false);
+		EventHandler.SET_TARGET.registerFirst(this);
+		EventHandler.ATTACK.registerSecond(this);
 	}
 
 	@Override
@@ -44,7 +45,7 @@ public class CommandNoattack extends ServerCommand implements TwoEventListener<L
 	@Override
 	public void onEvent1(LivingSetAttackTargetEvent event) {
 		if (event.target instanceof EntityPlayerMP && event.entityLiving instanceof EntityLiving) {
-			if (ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) event.target).disableAttacks.contains(event.entityLiving.getClass())) {
+			if (getPlayerSettings((EntityPlayerMP) event.target).disableAttacks.contains(event.entityLiving.getClass())) {
 				((EntityLiving) event.entityLiving).setAttackTarget(null);
 				event.entityLiving.setRevengeTarget(null);
 			}
@@ -54,7 +55,7 @@ public class CommandNoattack extends ServerCommand implements TwoEventListener<L
 	@Override
 	public void onEvent2(LivingAttackEvent event) {
 		if (event.entityLiving instanceof EntityPlayerMP && event.source.getEntity() instanceof EntityLiving) {
-			if (ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) event.entityLiving).disableAttacks.contains(event.source.getEntity().getClass())) {
+			if (getPlayerSettings((EntityPlayerMP) event.entityLiving).disableAttacks.contains(event.source.getEntity().getClass())) {
 				((EntityLiving) event.source.getEntity()).setAttackTarget(null);
 				((EntityLiving) event.source.getEntity()).setRevengeTarget(null);
 				event.setCanceled(true);
@@ -64,7 +65,7 @@ public class CommandNoattack extends ServerCommand implements TwoEventListener<L
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
+		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
     	
 		if (params.length > 0) {
 			Class<? extends Entity> entityClass = (Class<? extends Entity>) com.mrnobody.morecommands.wrapper.Entity.getEntityClass(params[0]);
@@ -86,12 +87,12 @@ public class CommandNoattack extends ServerCommand implements TwoEventListener<L
 				sender.sendLangfileMessage("command.noattack.added");
 			}
 		}
-		else throw new CommandException("command.noattack.invalidUsage", sender);
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
 	}
 
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -100,12 +101,12 @@ public class CommandNoattack extends ServerCommand implements TwoEventListener<L
 	}
 
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

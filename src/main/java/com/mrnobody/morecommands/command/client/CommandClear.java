@@ -1,12 +1,14 @@
 package com.mrnobody.morecommands.command.client;
 
-import net.minecraft.client.Minecraft;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.ClientCommand;
+import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.client.Minecraft;
 
 
 @Command(
@@ -16,7 +18,7 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.clear.syntax",
 		videoURL = "command.clear.videoURL"
 		)
-public class CommandClear extends ClientCommand {
+public class CommandClear extends StandardCommand implements ClientCommandProperties {
 
 	@Override
 	public String getName() {
@@ -34,8 +36,8 @@ public class CommandClear extends ClientCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[] {};
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[] {};
 	}
 
 	@Override
@@ -49,7 +51,7 @@ public class CommandClear extends ClientCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 }

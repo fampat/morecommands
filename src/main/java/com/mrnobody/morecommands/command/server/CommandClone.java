@@ -1,16 +1,20 @@
 package com.mrnobody.morecommands.command.server;
 
+import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.wrapper.CommandException;
+import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.wrapper.EntityLivingBase;
+import com.mrnobody.morecommands.wrapper.World;
+
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.BlockPos;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.World;
 
 @Command(
 		name = "clone",
@@ -19,7 +23,7 @@ import com.mrnobody.morecommands.wrapper.World;
 		syntax = "command.clone.syntax",
 		videoURL = "command.clone.videoURL"
 		)
-public class CommandClone extends ServerCommand {
+public class CommandClone extends StandardCommand implements ServerCommandProperties {
 
 	@Override
 	public String getName() {
@@ -40,43 +44,42 @@ public class CommandClone extends ServerCommand {
 			catch (NumberFormatException nfe) {throw new CommandException("command.clone.invalidArg", sender);}
 		}
 		
-		com.mrnobody.morecommands.wrapper.Entity player = new com.mrnobody.morecommands.wrapper.Entity((Entity) sender.getMinecraftISender());
-		Entity entity = player.traceEntity(128.0D);
+		EntityLivingBase living = new EntityLivingBase(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.EntityLivingBase.class));
+		Entity entity = living.traceEntity(128.0D);
 		
-		if (entity == null) {
-			sender.sendLangfileMessage("command.clone.noNPCFound", new Object[0]);
-			return;
-		}
+		if (entity == null)
+			throw new CommandException("command.clone.noNPCFound", sender);
 		
+		NBTTagCompound compound = new NBTTagCompound(); entity.writeToNBT(compound);
 		String name = EntityList.getEntityString(entity);
-		World world = player.getWorld();
-		BlockPos coord = player.getPosition();
+		World world = living.getWorld();
+		BlockPos coord = new BlockPos(entity.posX, entity.posY, entity.posZ);
 		
 		for (int i = 0; i < quantity; i++) {
-			if (!com.mrnobody.morecommands.wrapper.Entity.spawnEntity(name, coord, world))
-				throw new CommandException("An Error occurred during cloning NPC '" + name + "'");
+			if (!com.mrnobody.morecommands.wrapper.Entity.spawnEntity(name, coord, world, compound, false))
+				throw new CommandException("command.clone.errored", sender, name);
 		}
 		
 		sender.sendLangfileMessage("command.clone.success");
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
-	
+
 	@Override
 	public ServerType getAllowedServerType() {
 		return ServerType.ALL;
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof Entity;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, net.minecraft.entity.EntityLivingBase.class);
 	}
 }

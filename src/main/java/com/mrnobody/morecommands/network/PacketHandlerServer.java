@@ -3,20 +3,24 @@ package com.mrnobody.morecommands.network;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.command.server.CommandWorld;
-import com.mrnobody.morecommands.core.AppliedPatches;
+import com.mrnobody.morecommands.command.AbstractCommand;
+import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.handler.PacketHandler;
 import com.mrnobody.morecommands.util.GlobalSettings;
-import com.mrnobody.morecommands.util.KeyEvent;
+import com.mrnobody.morecommands.util.LanguageManager;
+import com.mrnobody.morecommands.util.PlayerSettings;
+import com.mrnobody.morecommands.util.Reference;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ChatComponentText;
 
 /**
  * This class handles all incoming packets from the clients
@@ -32,7 +36,7 @@ public class PacketHandlerServer {
 	 * @author MrNobody98
 	 */
 	private static final class HandshakeRetry {
-		private int timeout, remainingTime, retries;
+		private final int timeout; private int remainingTime, retries;
 		
 		public HandshakeRetry(int timeout, int retries) {
 			this.timeout = this.remainingTime = timeout;
@@ -40,11 +44,25 @@ public class PacketHandlerServer {
 		}
 	}
 	
-	private static Thread retryThread;
 	private static final Map<EntityPlayerMP, HandshakeRetry> handshakeRetries = new ConcurrentHashMap<EntityPlayerMP, HandshakeRetry>();
+	private static final ScheduledExecutorService retryExecutor = Executors.newSingleThreadScheduledExecutor();
+	private static ScheduledFuture<?> retryHandshake;
+	
+	static {
+		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+			@Override
+			public void run() {
+				retryExecutor.shutdown();
+				
+				try {retryExecutor.awaitTermination(5, TimeUnit.SECONDS);}
+				catch (InterruptedException ex) {}
+			}
+		}));
+	}
 	
 	/**
 	 * Adds a player to the retry handshake thread
+	 * @param player the player
 	 */
 	public static void addPlayerToRetries(EntityPlayerMP player) {
 		handshakeRetries.put(player, new HandshakeRetry(
@@ -56,121 +74,94 @@ public class PacketHandlerServer {
 	 * starts a thread which will retry the handshake for the players added via {@link #addPlayerToRetries}
 	 */
 	public static void startHandshakeRetryThread() {
-		retryThread = new Thread(new Runnable() {
+		retryHandshake = retryExecutor.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
-				long t = System.currentTimeMillis() + 1000;
-				List<EntityPlayerMP> removeRetries = new ArrayList<EntityPlayerMP>();
+				Thread.currentThread().setName("MoreCommand Handshake Retry Thread");
 				
-				while (!retryThread.isInterrupted()) {
-					if (System.currentTimeMillis() > t) {
-						for (Map.Entry<EntityPlayerMP, HandshakeRetry> retry : handshakeRetries.entrySet()) {
-							if (retry.getValue().retries == 0) {
-								removeRetries.add(retry.getKey());
-								MoreCommands.getMoreCommands().getLogger().info("Handhsake failed for player '" + retry.getKey().getName() + "'");
-							}
-							else if (retry.getValue().remainingTime == 0) {
-								MoreCommands.getMoreCommands().getLogger().info("Retrying handshake for player '" + retry.getKey().getName() + "'");
-								MoreCommands.getMoreCommands().getPacketDispatcher().sendS00Handshake(retry.getKey());
-								retry.getValue().retries--; retry.getValue().remainingTime = retry.getValue().timeout;
-							}
-							else retry.getValue().remainingTime--;
-						}
-						
-						for (EntityPlayerMP player : removeRetries)
-							handshakeRetries.remove(player);
-						
-						removeRetries.clear();
-						
-						t += 1000;
+				List<EntityPlayerMP> removeRetries = new ArrayList<EntityPlayerMP>();
+
+				for (Map.Entry<EntityPlayerMP, HandshakeRetry> retry : handshakeRetries.entrySet()) {
+					if (retry.getValue().retries == 0) {
+						removeRetries.add(retry.getKey());
+						MoreCommands.INSTANCE.getLogger().info("Handshake failed for player '" + retry.getKey().getName() + "'");
 					}
-					
+					else if (retry.getValue().remainingTime == 0) {
+						MoreCommands.INSTANCE.getLogger().info("Retrying handshake for player '" + retry.getKey().getName() + "'");
+						MoreCommands.INSTANCE.getPacketDispatcher().sendS00Handshake(retry.getKey());
+						retry.getValue().retries--; retry.getValue().remainingTime = retry.getValue().timeout;
+					}
+					else retry.getValue().remainingTime--;
 				}
+				
+				for (EntityPlayerMP player : removeRetries)
+					handshakeRetries.remove(player);
+				
+				removeRetries.clear();
 			}
-		});
-		
-		retryThread.setPriority(Thread.MIN_PRIORITY);
-		retryThread.start();
+		}, 0, 1, TimeUnit.SECONDS);
 	}
 	
 	/**
 	 * stops the retry handshake thread
 	 */
 	public static void stopHandshakeRetryThread() {
-		retryThread.interrupt();
+		retryHandshake.cancel(true);
+		handshakeRetries.clear();
 	}
 	
+	/**
+	 * Executes the startup commands that are intended to be executed on the server's startup.
+	 * This method is only invoked on dedicated servers
+	 */
 	public static void executeStartupCommands() {
-		for (String command : MoreCommands.getMoreCommands().getStartupCommands()) {
+		for (String command : MoreCommands.INSTANCE.getStartupCommands()) {
 			MinecraftServer.getServer().getCommandManager().executeCommand(MinecraftServer.getServer(), command);
-			MoreCommands.getMoreCommands().getLogger().info("Executed startup command '" + command + "'");
+			MoreCommands.INSTANCE.getLogger().info("Executed startup command '" + command + "'");
 		}
 	}
 	
 	/**
 	 * Is called if the server receives a handshake packet
 	 */
-	public void handshake(UUID uuid, boolean patched, boolean renderGlobalPatched) {
-		MoreCommands.getMoreCommands().getLogger().info("Client handshake received for player '" + MinecraftServer.getServer().getConfigurationManager().getPlayerByUUID(uuid).getName() + "'");
+	public void handshake(EntityPlayerMP player, boolean patched, boolean renderGlobalPatched, String version) {
+		if (!Reference.VERSION.equals(version)) {
+			MoreCommands.INSTANCE.getLogger().warn("Player " + player.getName() + " has incompatible MoreCommands version: " + version + ", version " + Reference.VERSION + " is required");
+			return;
+		}
 		
-		AppliedPatches.playerPatchMapping.get(MinecraftServer.getServer().getConfigurationManager().getPlayerByUUID(uuid)).setClientModded(true);
-		AppliedPatches.playerPatchMapping.get(MinecraftServer.getServer().getConfigurationManager().getPlayerByUUID(uuid)).setClientPlayerPatched(patched);
-		AppliedPatches.playerPatchMapping.get(MinecraftServer.getServer().getConfigurationManager().getPlayerByUUID(uuid)).setRenderGlobalPatched(renderGlobalPatched);
+		MoreCommands.INSTANCE.getLogger().info("Client handshake received for player '" + player.getName() + "'");
 		
-		MoreCommands.getMoreCommands().getLogger().info("Receiving client commands for player '" + MinecraftServer.getServer().getConfigurationManager().getPlayerByUUID(uuid).getName() + "'");
-		MoreCommands.getMoreCommands().getPacketDispatcher().sendS01ClientCommand(MinecraftServer.getServer().getConfigurationManager().getPlayerByUUID(uuid));
+		PlayerPatches patches = MoreCommands.getEntityProperties(PlayerPatches.class, PlayerPatches.PLAYERPATCHES_IDENTIFIER, player);
+		patches.setClientModded(true);
+		patches.setClientPlayerPatched(patched);
+		patches.setRenderGlobalPatched(renderGlobalPatched);
+		
+		handshakeRetries.remove(player);
+		MoreCommands.INSTANCE.getPacketDispatcher().sendS01HandshakeFinished(player);
 	}
 	
 	/**
-	 * Called when the handshake is finished
+	 * Called if the client wants to enable/disable chat output
+	 * @param player the player
+	 * @param output whether to enable or disable chat output
 	 */
-	public void finishHandshake(UUID uuid) {
-		handshakeRetries.remove(MinecraftServer.getServer().getConfigurationManager().getPlayerByUUID(uuid));
-		AppliedPatches.playerPatchMapping.get(MinecraftServer.getServer().getConfigurationManager().getPlayerByUUID(uuid)).setHandshakeFinished(true);
-		MoreCommands.getMoreCommands().getLogger().info("Received the following client commands for player '" + MinecraftServer.getServer().getConfigurationManager().getPlayerByUUID(uuid).getName() + "':\n" + 
-														ServerPlayerSettings.getPlayerSettings(MinecraftServer.getServer().getConfigurationManager().getPlayerByUUID(uuid)).clientCommands);
-		MoreCommands.getMoreCommands().getLogger().info("Handshake completed for player '" + MinecraftServer.getServer().getConfigurationManager().getPlayerByUUID(uuid).getName() + "'");
-		MoreCommands.getMoreCommands().getPacketDispatcher().sendS02HandshakeFinished(MinecraftServer.getServer().getConfigurationManager().getPlayerByUUID(uuid));
-	}
-	
-	/**
-	 * Called if the client sends a client commands
-	 */
-	public void clientCommand(UUID uuid, String command) {
-		ServerPlayerSettings.getPlayerSettings(MinecraftServer.getServer().getConfigurationManager().getPlayerByUUID(uuid)).clientCommands.add(command);
-	}
-
-	/**
-	 * Called if the client pressed a key
-	 */
-	public void input(UUID playerUUID, int key) {
-		EntityPlayerMP player = MinecraftServer.getServer().getConfigurationManager().getPlayerByUUID(playerUUID);
-		PacketHandler.KEYINPUT.getHandler().onEvent(new KeyEvent(player, key));
-	}
-
-	/**
-	 * Called if the client wants to disable chat output
-	 */
-	public void output(UUID playerUUID, boolean output) {
-		EntityPlayerMP player = MinecraftServer.getServer().getConfigurationManager().getPlayerByUUID(playerUUID);
-		
+	public void output(EntityPlayerMP player, boolean output) {
 		if (player != null) {
-			ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings(player);
+			ServerPlayerSettings settings = MoreCommands.getEntityProperties(ServerPlayerSettings.class, PlayerSettings.MORECOMMANDS_IDENTIFIER	, player);
 			if (settings != null) settings.output = output;
 		}
 	}
 
 	/**
-	 * Called if the client wants to know the seed or the world name of a world on the integrated server
+	 * Called if the client wants to know or modify world information (not available client side)
+	 * @param player the player
+	 * @param output whether to enable or disable chat output
 	 */
-	public void handleWorld(UUID uuid, String params) {
-		EntityPlayerMP player = MinecraftServer.getServer().getConfigurationManager().getPlayerByUUID(uuid);
-		if (player != null && MinecraftServer.getServer() != null && MinecraftServer.getServer().getCommandManager() != null) {
-			Object command = MinecraftServer.getServer().getCommandManager().getCommands().get("world");
-			
-			if (command instanceof CommandWorld) {
-				((ServerCommand) command).execute(player, params.split(" "));
-			}
-		}
+	public void handleWorld(EntityPlayerMP player, String[] params) {
+		if (MinecraftServer.getServer().getCommandManager().getCommands().get("world") instanceof AbstractCommand)
+			MinecraftServer.getServer().getCommandManager().executeCommand(player, "world " + AbstractCommand.rejoinParams(params));
+		else
+			player.addChatMessage(new ChatComponentText(LanguageManager.translate(MoreCommands.INSTANCE.getCurrentLang(player), "command.world.notFound")));
 	}
 }

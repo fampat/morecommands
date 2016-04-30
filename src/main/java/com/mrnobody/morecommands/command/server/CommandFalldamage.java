@@ -1,10 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.EventListener;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -20,16 +22,16 @@ import net.minecraftforge.event.entity.living.LivingFallEvent;
 		syntax = "command.falldamage.syntax",
 		videoURL = "command.falldamage.videoURL"
 		)
-public class CommandFalldamage extends ServerCommand implements EventListener<LivingFallEvent> {
+public class CommandFalldamage extends StandardCommand implements ServerCommandProperties, EventListener<LivingFallEvent> {
 	public CommandFalldamage() {
-		EventHandler.FALL.getHandler().register(this);
+		EventHandler.FALL.register(this);
 	}
 	
 	@Override
 	public void onEvent(LivingFallEvent event) {
 		if (event.entity instanceof EntityPlayerMP) {
 			EntityPlayerMP player = (EntityPlayerMP) event.entity;
-			if (!ServerPlayerSettings.getPlayerSettings(player).falldamage) event.setCanceled(true);
+			if (!getPlayerSettings(player).falldamage) event.setCanceled(true);
 		}
 	}
 	
@@ -45,7 +47,7 @@ public class CommandFalldamage extends ServerCommand implements EventListener<Li
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
+		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
     	
 		try {settings.falldamage = parseTrueFalse(params, 0, settings.falldamage);}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.falldamage.failure", sender);}
@@ -54,8 +56,8 @@ public class CommandFalldamage extends ServerCommand implements EventListener<Li
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -64,12 +66,12 @@ public class CommandFalldamage extends ServerCommand implements EventListener<Li
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

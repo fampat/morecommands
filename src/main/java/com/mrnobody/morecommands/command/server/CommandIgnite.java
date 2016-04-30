@@ -1,16 +1,17 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.block.Block;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.BlockPos;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Entity;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.init.Blocks;
+import net.minecraft.util.BlockPos;
 
 @Command(
 		name = "ignite",
@@ -19,9 +20,7 @@ import com.mrnobody.morecommands.wrapper.Entity;
 		syntax = "command.ignite.syntax",
 		videoURL = "command.ignite.videoURL"
 		)
-public class CommandIgnite extends ServerCommand {
-	private final Block BLOCK_FIRE = Blocks.fire;
-
+public class CommandIgnite extends StandardCommand implements ServerCommandProperties {
 	@Override
 	public String getName() {
 		return "ignite";
@@ -34,19 +33,23 @@ public class CommandIgnite extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Entity entity = new Entity((net.minecraft.entity.Entity) sender.getMinecraftISender());
-		BlockPos ignite = entity.traceBlock(128.0D);
+		BlockPos ignite;
+		
+		if (params.length > 2)
+			ignite = getCoordFromParams(sender.getMinecraftISender(), params, 0);
+		else
+			ignite = new Entity(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.Entity.class)).traceBlock(128D);
 		
 		if (ignite != null) {
 			BlockPos fire = new BlockPos(ignite.getX(), ignite.getY() + 1, ignite.getZ());
-			if (entity.getWorld().isAirBlock(fire)) entity.getWorld().setBlock(fire, BLOCK_FIRE);
+			if (sender.getWorld().isAirBlock(fire)) sender.getWorld().setBlock(fire, Blocks.fire);
 		}
 		else throw new CommandException("command.ignite.notInSight", sender);
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -55,12 +58,12 @@ public class CommandIgnite extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof net.minecraft.entity.Entity;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return params.length > 2 ? true : isSenderOfEntityType(sender, net.minecraft.entity.Entity.class);
 	}
 }

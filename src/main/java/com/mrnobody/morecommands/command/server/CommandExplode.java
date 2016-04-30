@@ -1,14 +1,16 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.util.BlockPos;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Entity;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.util.BlockPos;
 
 @Command(
 		name = "explode",
@@ -17,7 +19,7 @@ import com.mrnobody.morecommands.wrapper.Entity;
 		syntax = "command.explode.syntax",
 		videoURL = "command.explode.videoURL"
 		)
-public class CommandExplode extends ServerCommand {
+public class CommandExplode extends StandardCommand implements ServerCommandProperties {
 
 	@Override
 	public String getName() {
@@ -31,11 +33,11 @@ public class CommandExplode extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Entity entity = new Entity((net.minecraft.entity.Entity) sender.getMinecraftISender());
+		Entity entity = new Entity(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.Entity.class));
 		int size = 4;
 		BlockPos spawn = entity.traceBlock(128.0D);
+		boolean success = spawn != null;
 		double x = 0.0D, y = 0.0D, z = 0.0D;
-		boolean success = (spawn != null);
 		if (spawn != null) {
 			x = spawn.getX();
 			y = spawn.getY();
@@ -65,22 +67,22 @@ public class CommandExplode extends ServerCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
-	
+
 	@Override
 	public ServerType getAllowedServerType() {
 		return ServerType.ALL;
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof net.minecraft.entity.Entity;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, net.minecraft.entity.Entity.class);
 	}
 }

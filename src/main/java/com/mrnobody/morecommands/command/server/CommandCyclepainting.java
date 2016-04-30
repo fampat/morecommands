@@ -3,17 +3,18 @@ package com.mrnobody.morecommands.command.server;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.item.EntityPainting;
-import net.minecraft.entity.item.EntityPainting.EnumArt;
-import net.minecraft.util.EnumFacing;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Entity;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityPainting;
+import net.minecraft.entity.item.EntityPainting.EnumArt;
 
 @Command(
 		name = "cyclepainting",
@@ -22,7 +23,7 @@ import com.mrnobody.morecommands.wrapper.Entity;
 		syntax = "command.cyclepainting.syntax",
 		videoURL = "command.cyclepainting.videoURL"
 		)
-public class CommandCyclepainting extends ServerCommand {
+public class CommandCyclepainting extends StandardCommand implements ServerCommandProperties {
 
 	@Override
 	public String getName() {
@@ -36,10 +37,10 @@ public class CommandCyclepainting extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Entity entity = new Entity((net.minecraft.entity.Entity) sender.getMinecraftISender());
+		com.mrnobody.morecommands.wrapper.Entity entity = new com.mrnobody.morecommands.wrapper.Entity(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.EntityLivingBase.class));
 		
 		boolean sneaking = entity.getMinecraftEntity().isSneaking();
-		net.minecraft.entity.Entity hit = entity.traceEntity(128.0D);
+		Entity hit = entity.traceEntity(128.0D);
 		
 		if (!(hit instanceof EntityPainting) || hit.isDead)
 			throw new CommandException("command.cyclepainting.noPainting", sender);
@@ -48,7 +49,6 @@ public class CommandCyclepainting extends ServerCommand {
 		EntityPainting newPicture = new EntityPainting(picture.worldObj, picture.func_174857_n(), picture.field_174860_b);
 				
 		EnumArt oldArt = picture.art;
-		EnumFacing direction = picture.field_174860_b;
 		int current = 0;
 				
 		List<EnumArt> arts = new ArrayList<EnumArt>();
@@ -61,35 +61,35 @@ public class CommandCyclepainting extends ServerCommand {
 		        
 		if (arts.size() <= 1) {
 			newPicture.art = oldArt;
-			entity.getWorld().getMinecraftWorld().removeEntity(picture);
-			sender.getWorld().getMinecraftWorld().spawnEntityInWorld(newPicture);
+			entity.getMinecraftEntity().worldObj.removeEntity(picture);
+			entity.getMinecraftEntity().worldObj.spawnEntityInWorld(newPicture);
 			throw new CommandException("command.cyclepainting.noMoreArts", sender);
 		}
 		        
 		int newArt = sneaking ? (current == 0 ? arts.size() - 1 : current - 1) : (current == arts.size() - 1 ? 0 : current + 1);
 
 		newPicture.art = arts.get(newArt);
-		sender.getWorld().getMinecraftWorld().removeEntity(picture);
-		sender.getWorld().getMinecraftWorld().spawnEntityInWorld(newPicture);
+		entity.getMinecraftEntity().worldObj.removeEntity(picture);
+		entity.getMinecraftEntity().worldObj.spawnEntityInWorld(newPicture);
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
-	
+
 	@Override
 	public ServerType getAllowedServerType() {
 		return ServerType.ALL;
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof net.minecraft.entity.Entity;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, net.minecraft.entity.Entity.class);
 	}
 }

@@ -1,14 +1,16 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 
 @Command(
 		name = "stepheight",
@@ -17,7 +19,7 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.stepheight.syntax",
 		videoURL = "command.stepheight.videoURL"
 		)
-public class CommandStepheight extends ServerCommand {
+public class CommandStepheight extends StandardCommand implements ServerCommandProperties {
 
 	@Override
 	public String getName() {
@@ -28,7 +30,7 @@ public class CommandStepheight extends ServerCommand {
 	public String getUsage() {
 		return "command.stepheight.syntax";
 	}
-
+	
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		float height;
@@ -40,14 +42,15 @@ public class CommandStepheight extends ServerCommand {
 				else throw new CommandException("command.stepheight.invalidArg", sender);
 			}
 			
-			MoreCommands.getMoreCommands().getPacketDispatcher().sendS12Stepheight((EntityPlayerMP) sender.getMinecraftISender(), height);
+			getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class).stepHeight = height;
+			MoreCommands.INSTANCE.getPacketDispatcher().sendS10Stepheight(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class), height);
 		}
-		else throw new CommandException("command.stepheight.invalidUsage", sender);
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[] {Requirement.MODDED_CLIENT};
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[] {CommandRequirement.MODDED_CLIENT};
 	}
 	
 	@Override
@@ -56,12 +59,12 @@ public class CommandStepheight extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

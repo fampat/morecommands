@@ -1,17 +1,22 @@
-command.generic.notEnabled=More Commands is not enabled (Probably because Commands and Handlers couldn't be loaded)
 command.generic.notClient=You executed a client command as non-client Player o_O
 command.generic.notIntegrated=This command is only allowed on the integrated server (Singleplayer)
 command.generic.notDedicated=This command is only allowed on a dedicated server (Multiplayer)
 command.generic.renderGlobalNotPatched=The patch to the Global Renderer (RenderGlobal) wasn't applied and this command can therefore not be executed
 command.generic.clientPlayerNotPatched=The patch to the Client Player (EntityPlayerSP) wasn't applied and this command can therefore not be executed
 command.generic.clientCommandHandlerNotPatched=The patch to the Client Command Handler (ClientCommandHandler) wasn't applied and this command can therefore not be executed
-command.generic.notServer=This command must be executed as player or you must specify a player by writing "@p[name=BLABLA,name=BLABLA2,...]" as last argument
-command.generic.noPlayerInfoAvailable=No Settings information to this player is available, although it's required. Therefore the command can't be executed
+command.generic.serverCommandManagerNotPatched=The patch to the Server Command Handler (ServerCommandManager) wasn't applied and this command can therefore not be executed
 command.generic.serverConfigManagerNotPatched=The patch to the Server Configuration Manager (ServerConfigurationManager) wasn't applied and this command can therefore not be executed
-command.generic.clientNotModded=You don't have the More Commands Mod installed at your PC (client Side), but this Command requires this mod installed client Side. Install it or you can't use this command
+command.generic.clientNotModded=You don't have the MoreCommands Mod installed on your PC (client Side), but this Command requires this mod installed client Side. Install it or you can't use this command
 command.generic.serverPlayerNotPatched=The patch to the Server Player (EntityPlayerMP) wasn't applied and this command can therefore not be executed
 command.generic.netServerPlayHandlerNotPatched=The patch to the Server Player Net Handler (NetHandlerPlayServer) wasn't applied and this command can therefore not be executed
-command.generic.handshakeNotFinished=The handshake was not successful, therefore this command can't be executed. Try "/handshake redo" to fix this error.
+command.generic.invalidUsage=Invalid Usage. Type 'help %s' to get help
+command.generic.NaN=A non-numeric argument was passed where a numeric one was expected
+command.generic.multiple.null=Internal Error (This should not happen)
+command.generic.notAPlayer=The Command Sender is not a player which is required to execute this command
+command.generic.notFound=Command not found.
+command.generic.cantUse=The Command Sender can't use this command (e.g. wrong arguments or the command sender is not a player or entity)
+command.generic.serverDoesntHaveToBeModded=The current configuration of MoreCommands does not require the Server to have MoreCommands installed but this is required to execute this command
+command.generic.clientsDontHaveToBeModded=The current configuration of MoreCommands does not require the Clients (the Players) to have MoreCommands installed but this is required to execute this command
 
 command.generic.help.pageheader======Help (Page %d of %d)======
 command.generic.help.commandheader==========Command Help==========
@@ -25,33 +30,31 @@ command.generic.help.moreinfo=Use /help <page> or /help <command> to get more he
 command.generic.help.noDescription=This Command doesn't have a description D:
 command.generic.help.noExample=This Command doesn't have an example D:
 command.generic.help.noVideo=This Command doesn't have a video D:
-command.generic.notFound=Command not found.
 
 command.alias.description=Adds an alias for a command
+command.alias.global.description=Adds a global alias for a command
 command.alias.example=/alias t toggledownfall
+command.alias.global.example=/alias_global t toggledownfall
 command.alias.syntax=/alias <NAME> <COMMAND> [PARAMETERS]
-command.alias.videoURL=youtu.be/gDp5evEEu-E
+command.alias.global.syntax=/alias_global <NAME> <COMMAND> [PARAMETERS]
+command.alias.videoURL=youtu.be/a8ke0GlgR2E
+command.alias.global.videoURL=youtu.be/a8ke0GlgR2E
+command.alias.aliasesDisabled=Player aliases are disabled
+command.alias.global.aliasesDisabled=Global aliases are disabled
 command.alias.overwrite=This name is already reserved to a command
 command.alias.success=Alias successfully set
 command.alias.infiniteRecursion=The name for an alias can't be the command Name ...
-command.alias.invalidUsage=Invalid Usage. Type 'help alias' to get help
 
 command.bind.description=Adds a keyboard binding for a command
+command.bind.id.description=Adds a keyboard binding for a command by the key id
 command.bind.example=/bind p gamemode 0
+command.bind.id.example=/bindid 65 gamemode 0
 command.bind.syntax=/bind <KEYCODE> <COMMAND> [PARAMETERS]
-command.bind.videoURL=youtu.be/sTAte3Wm0iY
+command.bind.id.sytax=/bindid <KEYID> <COMMAND> [PARAMETERS]
+command.bind.videoURL=youtu.be/grYct97oZWs
+command.bind.id.videoURL=youtu.be/x-esdJunbqM
 command.bind.success=Binding successfully added
-command.bind.invalidChar=Invalid Keycode
-command.bind.invalidUsage=Invalid Usage. Type 'help bind' to get help
-
-command.bindid.description=Adds a keyboard binding for a command by the key id
-command.bindid.example=/bindid 25 kill
-command.bindid.syntax=/bindid <KEYID> <COMMAND> [PARAMETERS]
-command.bindid.videoURL=youtu.be/sTAte3Wm0iY
-command.bindid.success=Binding successfully added
-command.bindid.invalidChar=Invalid Key ID
-command.bindid.invalidUsage=Invalid Usage. Type 'help bindid' to get help
-command.bindid.invalidID=Unknown Key ID.
+command.bind.invalidKey=Invalid Key
 
 command.chelp.description=Gives help to client commands
 command.chelp.example=/chelp clear
@@ -89,38 +92,33 @@ command.command.alreadyEnabled=This Command is already enabled
 command.command.alreadyDisabled=This Command is already disabled or not found
 command.command.serverNotModded=The Server doesn't have MoreCommands installed which means that commands which are registered on the Server can't be deactivated and locally the command wasn't found
 command.command.wantedToDisable=You can't disable the command which disables other commands ;)
-command.command.invalidUsage=Invalid Usage. Type 'help command' to get help
 
-command.morecommands.description=Gives information about this mod
+command.morecommands.description=Displays information about MoreCommands
 command.morecommands.example=/morecommands
 command.morecommands.syntax=/morecommands
 command.morecommands.videoURL=youtu.be/Fg8MVc3VI3Q
 
-command.fog.description=changes the Render distance
+command.fog.description=Changes the Render distance
 command.fog.example=/fog tiny
 command.fog.syntax=/fog <TINY|SMALL|NORMAL|FAR>
 command.fog.videoURL=youtu.be/6okUNR7-5kg
 command.fog.invalidArg=Invalid Argument.
 command.fog.success=Render distance successfully changed
-command.fog.invalidUsage=Invalid Usage. Type 'help fog' to get help
 
 command.helpSideClient.description=Displays information about how to get help with this mod
 command.helpSideClient.example=/help
 command.helpSideClient.syntax=/help
 command.helpSideClient.videoURL=youtu.be/qDs_D1kI3Ag
-command.helpSideClient.info=The More Commands Mod adds Client and Server Commands. Client Commands work without installing the mod server side, but they aren't displayed in the help menu. To get help for Client Commands, use 'chelp' or 'help client', for regular Server Commands 'shelp' or 'help server'. If you want to disable all client side Commands, use '/clientcommands disable'
+command.helpSideClient.info=The MoreCommands Mod adds Client and Server Commands. Client Commands work without installing the mod server side, but they aren't displayed in the help menu. To get help for Client Commands, use 'chelp' or 'help client', for regular Server Commands 'shelp' or 'help server'. If you want to disable all client side Commands, use '/clientcommands disable'
 
 command.macro.description=Adds/Executes/Removes/Edits a macro
 command.macro.syntax=/macro <ADD NAME [COMMAND1;COMMAND2;...]|EDIT NAME [COMMAND1;COMMAND2;...]|DELETE NAME|EXECUTE NAME>
-command.macro.example=/macro add test fly;noclip;achievement unlockAll;damage
+command.macro.example=/macro add test fly;noclip;achievement *;damage
 command.macro.videoURL=youtu.be/dWTPpWa1H64
 command.macro.deleteSuccess=Macro %s successfully removed
-command.macro.executeError=There was an Error executing this macro
 command.macro.notFound=Couldn't find macro %s
 command.macro.exists=Couldn't add macro %s, because it exists already: Use '/macro edit' to edit macros
-command.macro.writeError=There was an Error saving this macro
 command.macro.createSuccess=Macro %s successfully created
-command.macro.invalidUsage=Invalid Usage. Type 'help macro' to get help
 
 command.music.description=Stops/Plays/Skips Music or sets the music volume
 command.music.example=/music play
@@ -131,7 +129,6 @@ command.music.stopped=Music stopped.
 command.music.skipped=Current Track skipped.
 command.music.volumeset=Volume successfully set
 command.music.invalidArg=Invalid Argument.
-command.music.invalidUsage=Invalid Usage. Type 'help music' to get help
 command.music.isplaying=Music is already playing
 
 command.output.description=Turns chat output from this mod on/off
@@ -142,7 +139,7 @@ command.output.on=Chat output successfully turned on
 command.output.off=Chat output successfully turned off
 command.output.failure=Invalid Argument.
 
-command.position.description=Shows you current position
+command.position.description=Shows your current position
 command.position.example=/position
 command.position.syntax=/position
 command.position.videoURL=youtu.be/x6ffLV-TNjM
@@ -153,30 +150,34 @@ command.shelp.syntax=/shelp [PAGE|COMMAND]
 command.shelp.videoURL=youtu.be/6Q8cHSVmoeU
 
 command.unalias.description=Removes an alias
+command.unalias.global.description=Removes a global alias
 command.unalias.example=/unalias test
+command.unalias.global.example=/unalias_global test
 command.unalias.syntax=/unalias <ALIAS>
-command.unalias.videoURL=youtu.be/gDp5evEEu-E
+command.unalias.global.syntax=/unalias_global <ALIAS>
+command.unalias.videoURL=youtu.be/a8ke0GlgR2E
+command.unalias.global.videoURL=youtu.be/a8ke0GlgR2E
 command.unalias.success=Alias successfully removed
 command.unalias.notFound=Alias not found
-command.unalias.invalidUsage=Invalid Usage. Type 'help unalias' to get help
 
 command.unbind.description=Removes a key binding
+command.unbind.id.description=Removes a key binding by the key id
 command.unbind.example=/unbind p
-command.unbind.syntax=/unbind <KEYCODE|KEYID>
-command.unbind.videoURL=youtu.be/sTAte3Wm0iY
-command.unbind.success=Key successfully removed
+command.unbind.id.example=/unbindid 65
+command.unbind.syntax=/unbind <KEYCODE>
+command.unbind.id.syntax=/unbindid <KEYID>
+command.unbind.videoURL=youtu.be/grYct97oZWs
+command.unbind.id.videoURL=youtu.be/x-esdJunbqM
+command.unbind.success=Binding successfully removed
 command.unbind.bindingNotFound=Key binding not found
-command.unbind.invalidUsage=Invalid Usage. Type 'help unbind' to get help
 
 command.world.description=Performs several operations on worlds
 command.world.example=/world new test 0123456789
 command.world.syntax=/world <LOAD NAME|BACKUP|SAVE|EXIT|NEW NAME [SEED]|LIST|SEED|NAME>
 command.world.videoURL=youtu.be/iHC0ZuhZc_M
-command.world.NAN=The seed must be a number
+command.world.NAN=The seed must be a number. Using random seed.
 command.world.cantcreate=Can't create world because folder exists already
 command.world.invalidArg=Invalid Argument.
-command.world.invalidUsage=Invalid Usage. Type 'help world' to get help
-command.world.serverNotModded=This Command works only on servers having the MoreCommands Mod installed
 command.world.setseed=Seed successfully set to %s
 command.world.currentseed=The current world seed is %s
 command.world.setname=World name successfully set to %s
@@ -187,16 +188,20 @@ command.world.backupfailed=Backup failed
 command.world.saved=World saved
 command.world.saves=World Saves: 
 command.world.loaderNotFound=Could not find the save loader
+command.world.notFound=The world command could not be found server side
+command.world.serverNotModded=This command requires a server side installation of MoreCommands for this arguments which doesn't exist
 
-command.achievement.description=Unlocks or lists achievements
-command.achievement.example=/achievement unlockAll
-command.achievement.syntax=/achievement <unlock <NAME>|unlockAll|list>
-command.achievement.videoURL=youtu.be/neq4oPO6Geg
-command.achievement.invalidUsage=Invalid Usage. Type 'help achievement' to get help
+command.achievement.description=Unlocks/Locks or lists achievements
+command.achievement.example=/achievement unlock *
+command.achievement.syntax=/achievement <unlock <*|NAME>|lock <*|NAME>|list>
+command.achievement.videoURL=youtu.be/lnaNONPt924
+command.achievement.doesNotExist=Achievement %s does not exist
+command.achievement.alreadyUnlocked=Achievement %s already unlocked
+command.achievement.dontHave=You don't have Achievement %s unlocked
 command.achievement.unlockAllSuccess=All achievements successfully unlocked
-command.achievement.unlockSuccess=Achievement successfully unlocked
-command.achievement.parent=Achievement could not be unlocked, parent achievement %s must be unlocked first
-command.achievement.unlockFailure=Achievement could not be found
+command.achievement.unlockSuccess=Achievement %s successfully unlocked
+command.achievement.lockAllSuccess=All achievements successfully locked
+command.achievement.lockSuccess=Achievement %s successfully locked
 command.achievement.more=Use '/achievement list PAGE' and replace PAGE with the page number to see more achievement Names
 
 command.air.description=Sets your air (under water)
@@ -207,7 +212,6 @@ command.air.success=Air successfully set
 command.air.get=Your air is %s
 command.air.invalidParam=Invalid Argument
 command.air.notInWater=Your are not in water
-command.air.invalidUsage=Invalid Usage. Type 'help air' to get help
 
 command.ascend.description=Moves you to the next platform above your position
 command.ascend.example=/ascend
@@ -221,24 +225,23 @@ command.biome.syntax=/biome <INFO|LIST>
 command.biome.videoURL=youtu.be/y-sqmkXJeAs
 command.biome.info=Your current Biome is: %s (ID %d)
 command.biome.more=Use '/biome list PAGE' and replace PAGE with the page number to see more biome Names
-command.biome.invalidUsage=Invalid Usage. Type 'help biome' to get help
 
-command.blocklight.description=Sets the light level of a block (must replace for changes to take effect)
-command.blocklight.example=/blocklight torch 0
-command.blocklight.syntax=/blocklight <BLOCK> <LIGHT LEVEL>
-command.blocklight.videoURL=youtu.be/990Ns3Iebyo
-command.blocklight.invalidArg=The light level must be a number
-command.blocklight.success=Successfully changed the light level
-command.blocklight.reset=Successfully reseted the light level
+command.blocklight.description=BE CAREFUL, THIS COMMAND CAN MESS UP LIGHTING. Sets the light level or opacity of a block (how much light a block emits or absorbs; must replace block for changes to take effect).
+command.blocklight.example=/blocklight level torch 0
+command.blocklight.syntax=/blocklight <level|opacity> <BLOCK> <reset|VALUE>
+command.blocklight.videoURL=youtu.be/AFNk3UcZToc
+command.blocklight.invalidArg=Invalid Argument
+command.blocklight.levelSuccess=Successfully changed the block light level
+command.blocklight.opacitySuccess=Successfully changed the block opacity
+command.blocklight.levelReset=Successfully reseted the block light level
+command.blocklight.opacityReset=Successfully reseted the block opacity
 command.blocklight.notFound=Block not found
-command.blocklight.invalidUsage=Invalid Usage. Type 'help blocklight' to get help
 
 command.breakspeed.description=Sets the break speed for blocks
 command.breakspeed.example=/breakspeed 20
 command.breakspeed.syntax=/breakspeed <VALUE|MIN|MAX|RESET>
 command.breakspeed.videoURL=youtu.be/BnJ6yq5cBmI
 command.breakspeed.invalidArg=The break speed must be a number
-command.breakspeed.invalidUsage=Invalid Usage. Type 'help breakspeed' to get help
 command.breakspeed.setto=Break Speed successfully set to %s
 command.breakspeed.reset=Break Speed successfully reseted
 
@@ -250,12 +253,11 @@ command.breathe.noNumber=The amount of air you want to get must be a number
 command.breathe.notInWater=You are not in water
 
 command.bring.description=Brings nearby Entities to your crosshair position (by default items)
-command.bring.example=/bring creeper 50
-command.bring.syntax=/bring [ENTITY|RADIUS|ENTITY RADIUS]
-command.bring.videoURL=youtu.be/Vqen-jjS5rs
+command.bring.example=/bring creeper 50 ~ 200 ~
+command.bring.syntax=/bring <TARGET|ENTITY [RADIUS]> [X Y Z]
+command.bring.videoURL=youtu.be/8YqDPEMD2dc
 command.bring.NAN=The radius must be a number
 command.bring.unknownEntity=Unknown Entity Type
-command.bring.invalidRadius=The radius must be between 0 and 256
 
 command.calc.description=A calculator (operators: %,+,-,*,/,^)
 command.calc.example=/calc 5(7*8^(1/2)+(158.879-35.487)%7)
@@ -283,23 +285,15 @@ command.chest.description=Performs several operations on chests
 command.chest.example=/chest swap
 command.chest.syntax=/chest <DROP|FILL|GET|SWAP|CLEAR>
 command.chest.videoURL=youtu.be/quWnfURTc9o
-command.chest.invalidUsage=Invalid Usage. Type 'help chest' to get help
 command.chest.noBlockInSight=No block in sight
 command.chest.noChest=Block is not a chest
 
 command.cleardrops.description=Removes item drops around you
-command.cleardrops.example=/cleardrops
-command.cleardrops.syntax=/cleardrops
-command.cleardrops.videoURL=youtu.be/NGVN86MGx-k
+command.cleardrops.example=/cleardrops 50 sapling
+command.cleardrops.syntax=/cleardrops [RADIUS] [*|ITEM] [*|META] [NBT] [equal]
+command.cleardrops.videoURL=youtu.be/6GTCOyTvGb8
 command.cleardrops.removed=%s Item(s) removed
-
-command.clearwater.description=Turns clear water on/off
-command.clearwater.example=/clearwater on
-command.clearwater.syntax=/clearwater [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
-command.clearwater.videoURL=youtu.be/9BSIxKG7GEE
-command.clearwater.on=Clear water turned on
-command.clearwater.off=Clear water turned off
-command.clearwater.failure=Invalid Argument.
+command.cleardrops.NAN=Metadata and/or radius must be numeric
 
 command.climb.description=Allows you to climb on any block
 command.climb.example=/climb on
@@ -316,27 +310,35 @@ command.clone.videoURL=youtu.be/gJ5Dn9FpaBs
 command.clone.invalidArg=The amount must be a number
 command.clone.noNPCFound=No NPC found
 command.clone.success=NPC successfully cloned
+command.clone.errored=Could not spawn entity %s
+
+command.compass.description=Sets the compass target
+command.compass.example=/compass set home
+command.compass.syntax=/compass [RESET|SET [X Y Z|WAYPOINT]]
+command.compass.videoURL=youtu.be/y34sobu595U
+command.compass.NAN=The coordinates must be numeric
+command.compass.waypointNotFound=Waypoint %s could not be found
 
 command.confuse.description=Confuses nearby Entities
 command.confuse.example=/confuse 20
 command.confuse.syntax=/confuse [RADIUS]
 command.confuse.videoURL=youtu.be/7gH0BDU5_bI
-command.confuse.invalidArg=The radius must be a number
 command.confuse.invalidRadius=The maximum Radius is 50
 command.confuse.confused=Confused %d entities within radius %f
+command.confuse.NAN=The radius must be a number
 
 command.confusesuicide.description=Makes Entities attacking themselves
 command.confusesuicide.example=/confusesuicide 20
 command.confusesuicide.syntax=/confusesuicide [RADIUS]
 command.confusesuicide.videoURL=youtu.be/jsWL8mJHLXg
-command.confusesuicide.invalidArg=The radius must be a number
 command.confusesuicide.invalidRadius=The maximum Radius is 50
 command.confusesuicide.confused=Confused %d entities within radius %f
+command.confusesuicide.NAN=The radius must be a number
 
 command.creeper.description=Creepers won't blow you up (but they will die)
 command.creeper.example=/creeper off
-command.creeper.syntax=/creeper [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
-command.creeper.videoURL=youtu.be/1T7bxY72H1A
+command.creeper.syntax=/creeper [global] [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.creeper.videoURL=youtu.be/fhhFjEdunjw
 command.creeper.on=Creeper explosions turned on
 command.creeper.off=Creeper explosions turned off
 command.creeper.failure=Invalid Argument.
@@ -355,8 +357,6 @@ command.cyclepainting.syntax=/cyclepainting
 command.cyclepainting.videoURL=youtu.be/MSbpAicBdoE
 command.cyclepainting.noPainting=You have to look on a painting
 command.cyclepainting.noMoreArts=No more pictures found
-command.cyclepainting.reflectionError=Internal Error. Cyclepainting can't be used
-command.cyclepainting.rejoin=You have to rejoin the world to see changes.
 
 command.damage.description=Turns damage on/off
 command.damage.example=/damage off
@@ -379,18 +379,22 @@ command.descend.syntax=/descend
 command.descend.videoURL=youtu.be/pEVqePI_n1E
 command.descend.descended=You descended %d blocks
 
-command.destroy.description=Destroys the current or all items in your inventory
-command.destroy.example=/destroy all
-command.destroy.syntax=/destroy [all]
-command.destroy.videoURL=youtu.be/b-BMg4LyXdU
-command.destroy.destroyed=Item(s) destroyed
+command.destroy.description=Destroys items in inventories (by default only the currently held one)
+command.destroy.example=/destroy @b[type=Chest,r=50] stone
+command.destroy.syntax=/destroy [TARGET] [*|SLOT|ITEM META NBT [equal]]
+command.destroy.videoURL=youtu.be/5ZgT_I5IdOY
+command.destroy.noCurrentItem=No item selected
+command.destroy.NAN=Metadata must be numeric
+command.destroy.invalidSlot=Invalid Slot %s
+command.destroy.invalidNBT=The specified NBT data is not a Compound Tag
+command.destroy.itemNotFound=Item %s could not be found
 
 command.difficulty.description=Sets the difficulty
 command.difficulty.example=/difficulty hard
 command.difficulty.syntax=/difficulty <PEACEFUL|0|EASY|1|NORMAL|2|HARD|3>
 command.difficulty.videoURL=youtu.be/DUgyfPEzWZE
 command.difficulty.setto=Difficulty successfully set to %s
-command.difficulty.invalidUsage=Invalid Usage. Type 'help difficulty' to get help
+command.difficulty.invalidDifficulty=Invalid difficulty %s
 
 command.dimension.description=Travels to another dimension
 command.dimension.example=/dimension nether
@@ -415,56 +419,54 @@ command.dropstore.stored=Items stored
 
 command.duplicate.description=Duplicates the currently held item
 command.duplicate.example=/duplicate
-command.duplicate.syntax=/duplicate
+command.duplicate.syntax=/duplicate [ALL]
 command.duplicate.videoURL=youtu.be/4RZWEJ6xs-s
 command.duplicate.duplicated=Items duplicated
+command.duplicate.notSelected=No Item selected
 
 command.effect.description=Applies an effect to you
-command.effect.example=/effect confusion
-command.effect.syntax=/effect <add <NAME|ID DURATION [STRENGTH]>|remove <NAME|ID>|removeAll|list>
-command.effect.videoURL=youtu.be/_YqlnWTIgyM
+command.effect.example=/effect add confusion
+command.effect.syntax=/effect <add <NAME|ID> [DURATION] [STRENGTH] [PARTICLES]|remove <*|NAME|ID>|list>
+command.effect.videoURL=youtu.be/g7-diXrEKCU
 command.effect.more=Use '/effect list PAGE' and replace PAGE with the page number to see more effect Names
 command.effect.addSuccess=Effect successfully added
 command.effect.removeSuccess=Effect successfully removed
-command.effect.removeFailure=Effect couldn't be removed
-command.effect.invalidUsage=Invalid Usage. Type 'help effect' to get help
 command.effect.removeAllSuccess=All effects successfully removed
 command.effect.NAN=The potion ID must be a number
 command.effect.notFound=Potion not found
 
 command.enchant.description=Adds an enchantment to the currently held item
-command.enchant.example=/enchant protect.fire
-command.enchant.syntax=/enchant <add <NAME>|remove <NAME>|list>
-command.enchant.videoURL=youtu.be/7jQvmVqR3LI
+command.enchant.example=/enchant add protect.fire
+command.enchant.syntax=/enchant <add <NAME> [LEVEL]|remove <*|NAME>|list>
+command.enchant.videoURL=youtu.be/OTo6FfGOl4w
 command.enchant.more=Use '/enchant list PAGE' and replace PAGE with the page number to see more enchantment Names
 command.enchant.addSuccess=Enchantment successfully added
 command.enchant.removeSuccess=Enchantment successfully removed
-command.enchant.invalidUsage=Invalid Usage. Type 'help enchant' to get help
+command.enchant.removeAllSuccess=All enchantments successfully removed
+command.enchant.cantApply=Can't apply this enchantment to the selected item
 command.enchant.NAN=The enchantment ID must be a number
 command.enchant.notFound=Enchantment not found
 
-command.enderchest.description=Opens the enderchest
-command.enderchest.example=/enderchest
-command.enderchest.syntax=/enderchest
-command.enderchest.videoURL=youtu.be/ZtXtgOl0jWs
-
-command.endercrystal.description=Spawns an Ender Crystal where you're looking at
-command.endercrystal.example=/endercrystal
-command.endercrystal.syntax=/endercrystal
-command.endercrystal.videoURL=youtu.be/egDL1ZvDvVk
-command.endercrystal.notFound=No Block in sight
-
-command.enderman.description=Turns enderman pickup on/off
-command.enderman.example=/enderman off
-command.enderman.syntax=/enderman [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
-command.enderman.videoURL=youtu.be/H8FqPoWyNR4
-command.enderman.on=Endermen will pickup blocks
-command.enderman.off=Endermen won't pickup blocks
+command.enderman.description=Turns enderman pickup or enderman teleports on/off
+command.enderman.example=/enderman pickup off
+command.enderman.syntax=/enderman <PICKUP|TELEPORT> [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.enderman.videoURL=youtu.be/v9k_O8dOVa4
+command.enderman.pickup.on=Endermen will pickup blocks
+command.enderman.pickup.off=Endermen won't pickup blocks
+command.enderman.teleport.on=Endermen will teleport
+command.enderman.teleport.off=Endermen won't teleport
 command.enderman.failure=Invalid Argument.
+
+command.execute.decription=Executes a command on other players or entities
+command.execute.example=/execute @e[tye=Chicken,r=50] /kill
+command.execute.syntax=/execute <TARGET|PLAYER> [relative X Y Z] <COMMAND> [PARAMETERS]
+command.execute.videoURL=youtu.be/g3C6jTBXeok
+command.execute.invalidTarget=Invalid Target
+command.execute.playerNotFound=Player %s not found
 
 command.explode.description=Makes an explosion where you're looking
 command.explode.example=/explode 10
-command.explode.syntax=/explode [STRENGTH [X|Y|Z]]
+command.explode.syntax=/explode [STRENGTH] [X Y Z]
 command.explode.videoURL=youtu.be/tEFNgyvxuow
 command.explode.NAN=Strength and coordinates must be numbers
 command.explode.booooom=Booooom!
@@ -510,10 +512,10 @@ command.firedamage.on=You will take fire damage
 command.firedamage.off=You won't take fire damage
 command.firedamage.failure=Invalid Argument.
 
-command.firework.description=Launches a firework rocket
+command.firework.description=Launches a rocket
 command.firework.example=/firework
-command.firework.syntax=/firework
-command.firework.videoURL=youtu.be/-UmWMFzYQg0
+command.firework.syntax=/firework [X Y Z]
+command.firework.videoURL=youtu.be/nsDPfNwyXeM
 command.firework.notFound=No Block in Sight
 
 command.flammable.description=Sets the flammability of a block
@@ -525,7 +527,6 @@ command.flammable.invalidArg=The encouragement and the flammability must be a nu
 command.flammable.success=Successfully changed the flammability
 command.flammable.reset=Successfully reseted the flammability
 command.flammable.notFound=Block not found
-command.flammable.invalidUsage=Invalid Usage. Type 'help flammable' to get help
 
 command.fluidmovement.description=Disables water/lava movement
 command.fluidmovement.example=/fluidmovement false
@@ -544,12 +545,14 @@ command.fly.off=Fly mode successfully turned off
 command.fly.failure=Invalid Argument.
 
 command.freeze.description=Freezes Entities
-command.freeze.example=/freeze
-command.freeze.syntax=/freeze
-command.freeze.videoURL=youtu.be/egouVQSCY4Q
-command.freeze.on=Entities successfully frozen
-command.freeze.off=Entities successfully unfrozen
+command.freeze.example=/freeze ghast
+command.freeze.syntax=/freeze [ENTITY]
+command.freeze.videoURL=youtu.be/JSTjnjWdjsw
+command.freeze.on=Entities of type %s successfully frozen
+command.freeze.off=Entities of type %s successfully unfrozen
 command.freeze.failure=Invalid Argument.
+command.freeze.unknownEntity=Unknown Entity
+command.freeze.invalidEntity=Invalid Entity %s
 
 command.freecam.description=Allows you to freecam around the map
 command.freecam.example=/freecam
@@ -567,12 +570,12 @@ command.freezecam.on=Freezecam successfully turned on
 
 command.give.description=Gives you items
 command.give.example=/give stone 64
-command.give.syntax=/give <ITEM [AMOUNT] [METADATA]>
-command.give.videoURL=youtu.be/TxwR-kRd7Xg
+command.give.syntax=/give <ITEM> [AMOUNT] [METADATA] [NBT]
+command.give.videoURL=youtu.be/8Sn_2z6wg8M
 command.give.notFound=Item not found
 command.give.noMeta=The specified item doesn't have subtypes
-command.give.success=Item successfully given
-command.give.invalidUsage=Invalid Usage. Type 'help give' to get help
+command.give.noCompound=The specified NBT data must be a compound tag
+command.give.NAN=Metadata and Amount must be numeric
 
 command.grow.description=Grows plants around you
 command.grow.example=/grow 20
@@ -587,7 +590,6 @@ command.handshake.syntax=/handshake <STATUS|REDO>
 command.handshake.videoURL=youtu.be/VqklcUfliKQ
 command.handshake.errored=Handshake failed
 command.handshake.completed=Handshake completed
-command.handshake.importantSent=Handshake partly completed
 command.handshake.handshakeFinished=Handshake already sent
 command.handshake.sendingHandshake=Handshake is sent
 command.handshake.invalidArgs=Invalid Usage. Type 'help handshake' to get help
@@ -613,7 +615,6 @@ command.health.syntax=/health <GET|MAX|MIN|VALUE>
 command.health.videoURL=youtu.be/5coj_lvQ0wU
 command.health.invalidParam=Invalid Argument.
 command.health.success=Health successfully set
-command.health.invalidUsage=Invalid Usage. Type 'help health' to get help
 command.health.get=Your health is %f
 
 command.helpSideServer.description=Gives help to commands
@@ -634,7 +635,6 @@ command.hunger.videoURL=youtu.be/Oh6U4baovgA
 command.hunger.invalidParam=Invalid Argument.
 command.hunger.success=Hunger successfully set
 command.hunger.error=An error occurred performing this command
-command.hunger.invalidUsage=Invalid Usage. Type 'help hunger' to get help
 command.hunger.get=Your hunger is %d
 command.hunger.off=You won't be hungry again
 command.hunger.on=You will be hungry again
@@ -652,7 +652,6 @@ command.ignorespawn.videoURL=youtu.be/j7A9hcgj8-Q
 command.ignorespawn.unknownEntity=Unknown Entity
 command.ignorespawn.removed=Entity Spawn allowed
 command.ignorespawn.added=Entity Spawn disallowed
-command.ignorespawn.invalidUsage=Invalid Usage. Type 'help ignorespawn' to get help
 
 command.infiniteitems.description=Turns infinite items on/off
 command.infiniteitems.example=/infiniteitems on
@@ -690,7 +689,7 @@ command.inventory.description=Saves/Loads Inventories
 command.inventory.example=/inventory save test
 command.inventory.syntax=/inventory <SAVE|LOAD|DELETE> [NAME]
 command.inventory.videoURL=youtu.be/wF7_zcEsLcE
-command.inventory.notSettingsFound=No Player Settings found
+command.inventory.noSettingsFound=No Player Settings found
 command.inventory.notFound=Inventory %s not found
 command.inventory.removeSuccess=Inventory %s successfully removed
 command.inventory.saveSuccess=Inventory %s successfully saved
@@ -708,22 +707,20 @@ command.invrotate.description=Rotates your inventory
 command.invrotate.example=/invrotate item right
 command.invrotate.syntax=/invrotate [line|item|NUMBER] [left|right|up|down]
 command.invrotate.videoURL=youtu.be/osbunopzC7k
-command.invrotate.invalidUsage=Invalid Usage. Type 'help invrotate' to get help
 
 command.itemdamage.description=Turns item damage on/off
-command.itemdamage.example=/itemdamage off
-command.itemdamage.syntax=/itemdamage [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
-command.itemdamage.videoURL=youtu.be/kLwgzlMlF4s
-command.itemdamage.on=Item damage successfully turned on
-command.itemdamage.off=Item damage successfully turned off
-command.itemdamage.failure=Invalid Argument.
+command.itemdamage.example=/itemdamage diamond_pickaxe
+command.itemdamage.syntax=/itemdamage <ITEM>
+command.itemdamage.videoURL=youtu.be/zLUMNy_Jz-g
+command.itemdamage.enabled=Item damage successfully turned on
+command.itemdamage.disabled=Item damage successfully turned off
+command.itemdamage.notFound=Item not found
 
 command.itemname.description=Sets the display name of the currently held item
 command.itemname.example=/itemname Killer Sword
 command.itemname.syntax=/itemname <NAME>
 command.itemname.videoURL=youtu.be/x8Q36b_b6p0
 command.itemname.noSelection=No Item selected
-command.itemname.invalidUsage=No Item name specified
 
 command.jump.description=Jumps to the block you're looking at
 command.jump.example=/jump
@@ -731,14 +728,13 @@ command.jump.syntax=/jump
 command.jump.videoURL=youtu.be/FgYVynAZL3U
 command.jump.notInSight=No Block in Sight
 
-command.jumpheight.description=Sets the height of your jumps
+command.jumpheight.description=Sets the hight of your jumps
 command.jumpheight.example=/jumpheight 10
 command.jumpheight.syntax=/jumpheight <HEIGHT>
 command.jumpheight.videoURL=youtu.be/r-tgSHdk-wY
 command.jumpheight.success=Jump Height successfully set
 command.jumpheight.reset=Jump Height successfully reseted
 command.jumpheight.NAN=The height must be a number
-command.jumpheight.invalidUsage=No Jump height specified
 
 command.keepinventory.description=Makes you keeping your inventory when you die
 command.keepinventory.example=/keepinventory on
@@ -748,6 +744,11 @@ command.keepinventory.on=You will keep your inventory on death
 command.keepinventory.off=You won't keep your inventory on death
 command.keepinventory.failure=Invalid Argument.
 
+command.kill.description=Kills the command sender
+command.kill.example=/kill
+command.kill.syntax=/kill
+command.kill.videoURL=youtu.be/JTFhHzjxDsc
+
 command.killall.description=Kills entities around you
 command.killall.example=/killall creeper
 command.killall.syntax=/killall <ENTITY [RADIUS]>
@@ -756,7 +757,6 @@ command.killall.unknownEntity=Unknown Entity
 command.killall.NAN=The radius must be a number
 command.killall.invalidRadius=The radius must be between 0 and 256
 command.killall.killed=Killed %d Entities
-command.killall.invalidUsage=Invalid Usage. Type 'help killall' to get help
 
 command.killattacker.description=Kills every Enemy which attacks you
 command.killattacker.example=/killattacker on
@@ -773,6 +773,12 @@ command.light.videoURL=youtu.be/Vwxf-zC14_Q
 command.light.lightup=Light on!
 command.light.restore=Original Light Levels restored
 
+command.melt.description=Melts or cooks items
+command.melt.example=/melt all
+command.melt.syntax=/melt [all]
+command.melt.videoURL=youtu.be/23Y-YozxYfw
+command.melt.molten=%d Items molten
+
 command.mobdamage.description=Turns mob damage on/off
 command.mobdamage.example=/mobdamage off
 command.mobdamage.syntax=/mobdamage [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
@@ -787,7 +793,50 @@ command.move.syntax=/move <DISTANCE <N|S|E|W|D|U>>
 command.move.videoURL=youtu.be/h2Cp0Qaniv8
 command.move.invalidDirection=Invalid Direction
 command.move.NAN=The distance must be a number
-command.move.invalidUsage=Invalid Usage. Type 'help move' to get help
+
+command.nbt.apply.inventory.description=Applies NBT and item transformations to inventories
+command.nbt.apply.inventory.example=/nbt_apply_inventory @p slot.hotbar.5 {display : {Name : "Supersword"}}
+command.nbt.apply.inventory.syntax=/nbt_apply_inventory [TARGET] [SLOT] <NBT|ITEM AMOUNT META NBT> [merge]
+command.nbt.apply.inventory.videoURL=youtu.be/HHqwzHWm1Ak
+
+command.nbt.apply.block.description=Applies NBT transformations to blocks or sets blocks
+command.nbt.apply.block.example=/nbt_apply_block -54 8 343 skull 0 replace {Owner : {Name : "ExamplePlayer"}}
+command.nbt.apply.block.syntax=/nbt_apply_block <TARGET|X Y Z> <NBT|BLOCK META PLACEMENT NBT> [merge]
+command.nbt.apply.block.videoURL=youtu.be/NXLj_QvHBLs
+
+command.nbt.apply.entity.description=Applies NBT transformations to entities
+command.nbt.apply.entity.example=/nbt_apply_entity @e[type=Pig,r=10] {Saddle: 1}
+command.nbt.apply.entity.syntax=/nbt_apply_entity <TARGET> <NBT> [merge]
+command.nbt.apply.entity.videoURL=youtu.be/8b9lH03rCx8
+
+command.nbt.test.inventory.description=Counts the number of inventories satisfying the given conditions
+command.nbt.test.inventory.example=/nbt_test_inventory @e[type=EntityHorse,r=50] slot.horse.3 {display : {Name : "Supersword"}} >5 <10
+command.nbt.test.inventory.syntax=/nbt_test_inventory [TARGET] <SLOT> <NBT|ITEM AMOUNT META NBT> [equal] [BOUNDS]
+command.nbt.test.inventory.videoURL=youtu.be/IcRWQnShwmc
+
+command.nbt.test.block.description=Counts blocks specified by the target selector
+command.nbt.test.block.example=/nbt_test_block @b[id=skull,r=10,nbt={Owner:{Name:"ExamplePlayer"}}] =2
+command.nbt.test.block.syntax=/nbt_test_block <TARGET> [equal] [BOUNDS]
+command.nbt.test.block.videoURL=youtu.be/PWog0Gyp_pQ
+
+command.nbt.test.entity.description=Counts entities specified by the target selector
+command.nbt.test.entity.example=/nbt_test_entity @e[type=Pig,nbt={Saddle:1}] >10 <50
+command.nbt.test.entity.syntax=/nbt_test_entity <TARGET> [equal] [BOUNDS]
+command.nbt.test.entity.videoURL=youtu.be/opVMnXz2ndQ
+
+command.nbt.noBounds=You don't have specified any bounds for the test
+command.nbt.matched=Test was successful
+command.nbt.noMatch=Test failed
+command.nbt.invalidTarget=Invalid Target
+command.nbt.NAN=There was a non-numeric argument where one was expected
+command.nbt.blockNotFound=Block %s could not be found
+command.nbt.mustBeEntityTarget=An entity test requires an entity target...
+command.nbt.invalidSlot=Invalid Slot: %s
+command.nbt.itemNotFound=Item %s not found
+command.nbt.notABound=No valid bounds specified
+command.nbt.noCompound=The specified NBT data is not a Compound Tag
+command.nbt.noCurrentItem=No item selected
+command.nbt.mustBeBlockTarget=A block test requires a block target...
 
 command.noattack.description=Prevents entities from attacking you
 command.noattack.example=/noattack Spider
@@ -797,18 +846,33 @@ command.noattack.unknownEntity=Unknown Entity
 command.noattack.notLiving=The Entity is not a living Entity
 command.noattack.removed=The Entity will attack you
 command.noattack.added=The Entity won't attack you
-command.noattack.invalidUsage=Invalid Usage. Type 'help noattack' to get help
 
 command.noclip.description=Turns Clipping on/off
 command.noclip.example=/noclip off
 command.noclip.syntax=/noclip [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.noclip.videoURL=youtu.be/mA5WYb-IOMU
-command.noclip.mustBeFlying=You must be flying in order to use noclip
+command.noclip.mustBeFlying=You must be flying to use noclip
 command.noclip.enabled=Noclip enabled
 command.noclip.disabled=Noclip disabled
 command.noclip.failure=Invalid Argument.
 command.noclip.autodisable=Noclip auto-disabled. (Player not flying)
 command.noclip.reflectionError=Internal Error. Noclip can't be used
+
+command.op.description=Makes a player an operator 
+command.op.example=/op ExamplePlayer 4
+command.op.syntax=/op <PLAYER> [PERMISSION_LEVEL]
+command.op.videoURL=youtu.be/qv9W9xORpH0
+command.op.playerNotFound=Player %s not found
+
+command.open.description=Opens a container (e.g. enderchest)
+command.open.example=/open enderchest
+command.open.syntax=/open [X Y Z|enderchest|workbench|anvil|enchantment_table]
+command.open.videoURL=youtu.be/ytSfysYcfSo
+command.open.cantOpenTEs=Can't open this container without coordinates
+command.open.invalidContainer=Invalid container %s
+command.open.invalidBlock=This block is not a container
+command.open.NAN=The coordinates must be numeric
+command.open.noBlock=No block in sight
 
 command.path.description=Creates a path under your feet
 command.path.example=/path stone 4
@@ -820,7 +884,16 @@ command.path.invalidRadius=Radius must be between 0 and 50
 command.path.noChange=You didn't change the path settings
 command.path.enabled=Path enabled
 command.path.disabled=Path disabled
-command.path.invalidUsage=Invalid Usage. Type 'help path' to get help
+
+command.permission.description=Sets the required permission level for a command
+command.permission.example=/permission set give 2
+command.permission.syntax=/permission <GET|RESET|SET> <COMMAND> [LEVEL]
+command.permission.videoURL=youtu.be/qv9W9xORpH0
+command.permission.getPermission=The permission level for command %s is %d
+command.permisson.permissionSet=The permission level for command %s is now %d
+command.permission.reseted=The permission level for command %s was reseted to %d
+command.permission.invalidCommand=The permission level for this command can't be set
+command.permission.notNumeric=The permission level must be a number
 
 command.pick.description=Adds the block you're looking at to your inventory (like in creative)
 command.pick.example=/pick 27
@@ -837,7 +910,6 @@ command.pickup.videoURL=youtu.be/nMk28YPwv6w
 command.pickup.notFound=Item not found
 command.pickup.removed=Item will be picked up
 command.pickup.added=Item won't be picked up
-command.pickup.invalidUsage=Invalid Usage. Type 'help pickup' to get help
 
 command.reach.description=Sets your reach distance
 command.reach.example=/reach 20
@@ -859,11 +931,11 @@ command.repair.example=/repair all
 command.repair.syntax=/repair [all]
 command.repair.videoURL=youtu.be/rNRoG1jbhss
 
-command.return.description=Returns to the location before the teleport
-command.return.example=/return
-command.return.syntax=/return
-command.return.videoURL=youtu.be/M2J2dld-wgE
-command.return.noLastPos=You didn't do a teleport recently
+command.return.description=Returns to the location before a teleport or death
+command.return.example=/return deathpoint
+command.return.syntax=/return [teleport|deathpoint]
+command.return.videoURL=youtu.be/WJAi9NM7huU
+command.return.noLastPos=You didn't do a teleport or you didn't die recently
 
 command.ride.description=Let's you ride any entity you're looking at (Type ride again to dismount entity)
 command.ride.example=/ride
@@ -873,6 +945,26 @@ command.ride.mounted=Entity mounted
 command.ride.notLiving=Entity is not living
 command.ride.notFound=No Entity found
 command.ride.dismounted=Entity dismounted
+
+command.savemode.client.description=Changes the settings saving behavior for client side settings (whether to save dependent on server/world/dimension)
+command.savemode.server.description=Changes the settings saving behavior for server side settings (whether to save dependent on world/dimension)
+command.savemode.global.description=Changes the settings saving behavior for global settings (whether to save dependent on world/dimension)
+command.savemode.client.example=/savemode_client set bindings true true false
+command.savemode.server.example=/savemode_server set waypoints true false
+command.savemode.global.example=/savemode_global set aliases true false
+command.savemode.client.syntax=/savemode_client <LIST [PAGE]|RESET|SET> [SETTING] [true/false] [true/false] [true/false]
+command.savemode.server.syntax=/savemode_server <LIST [PAGE]|RESET|SET> [SETTING] [true/false] [true/false]
+command.savemode.global.syntax=/savemode_global <LIST [PAGE]|RESET|SET> [SETTING] [true/false] [true/false]
+command.savemode.client.videoURL=youtu.be/_u1UUioywWY
+command.savemode.global.videoURL=youtu.be/_u1UUioywWY
+command.savemode.server.videoURL=youtu.be/_u1UUioywWY
+command.savemode.notASetting=%s is not a valid setting
+command.savemode.reseted=Save Mode reseted for %s
+command.savemode.set=Save Mode successfully set for %s
+command.savemode.invalidArg=Invalid Argument
+command.savemode.server.more=Use '/savemode_server list PAGE' and replace PAGE with the page number to see more server setting names
+command.savemode.client.more=Use '/savemode_client list PAGE' and replace PAGE with the page number to see more client setting names
+command.savemode.global.more=Use '/savemode_global list PAGE' and replace PAGE with the page number to see more global setting names
 
 command.scuba.description=Allows you to breathe under water
 command.scuba.example=/scuba on
@@ -889,10 +981,9 @@ command.setspawn.videoURL=youtu.be/HMdmi-PSwsE
 command.setspawn.invalidPos=Invalid Position Data
 
 command.sign.description=Allows you to add and edit signs
-command.sign.example=/sign edit "Line1" "Line2" "Line3" "Line4"
-command.sign.syntax=/sign <ADD|EDIT> "LINE1" "LINE2" "LINE3" "LINE4"
-command.sign.videoURL=youtu.be/2zKi0JA4Acs
-command.sign.invalidUsage=Invalid Usage. Type 'help sign' to get help
+command.sign.example=/sign edit {This is Line1} {Line2} {A Line} {Blabla}
+command.sign.syntax=/sign <ADD|EDIT> {Line1} {Line2} {Line3} {Line4}
+command.sign.videoURL=youtu.be/4lv0mSMlPKA
 command.sign.addsuccess=Sign successfully added
 command.sign.editsuccess=Sign successfully edited
 command.sign.bottom=You can't place signs at the bottom of a block
@@ -900,39 +991,32 @@ command.sign.noBlockInSight=No Block in sight
 
 command.slippery.description=Sets the slippery of a block (Use little numbers!!!)
 command.slippery.example=/slippery grass 5
-command.slippery.syntax=/slippery <BLOCK <SLIPPERY>|RESET>
+command.slippery.syntax=/slippery <BLOCK <slipperiness>|RESET>
 command.slippery.videoURL=youtu.be/bvj8pfPRprQ
 command.slippery.invalidArg=Invalid Argument.
-command.slippery.success=Slippery successfully set
-command.slippery.reset=Slippery successfully reseted
+command.slippery.success=Slipperiness successfully set
+command.slippery.reset=Slipperiness successfully reseted
 command.slippery.notFound=Block not found
-command.slippery.invalidUsage=Invalid Usage. Type 'help slippery' to get help
-
-command.melt.description=Melts or cooks items
-command.melt.example=/melt all
-command.melt.syntax=/melt [all]
-command.melt.videoURL=youtu.be/23Y-YozxYfw
-command.melt.molten=%d Items molten
 
 command.spawn.description=Spawns entities
 command.spawn.example=/spawn creeper 5
-command.spawn.syntax=/spawn <LIST|RANDOM|ENTITY <AMOUNT> [X|Y|Z]>
-command.spawn.videoURL=youtu.be/W-dx4J-9yd4
+command.spawn.syntax=/spawn <list [PAGE]|random|ENTITY [AMOUNT] [X Y Z] [NBT] [merge]>
+command.spawn.videoURL=youtu.be/RYdEBJmko44
 command.spawn.unknownEntityID=Unknown Entity ID
 command.spawn.unknownEntity=Unknown Entity
-command.spawn.invalidPos=Invalid Position Data
 command.spawn.couldNotSpawn=Could not spawn Entity %s
-command.spawn.invalidUsage=Invalid Usage. Type 'help spawn' to get help
+command.spawn.NAN=The amount must be a number
+command.spawn.more=Use '/spawn list PAGE' and replace PAGE with the page number to see more entity names
+command.spawn.noCompound=The specified NBT data is not a Compound Tag
 
 command.spawner.description=Changes the Entity a Spawner spawns (Write the first letter upper case!)
 command.spawner.example=/spawner Skeleton
-command.spawner.syntax=/spawner <ENTITY>
+command.spawner.syntax=/spawner <ENTITY> [X Y Z]
 command.spawner.videoURL=youtu.be/e81RnvCVMf8
 command.spawner.unknownEntityID=Unknown Entity ID
 command.spawner.unknownEntity=Unknown Entity
 command.spawner.success=Spawner Entity successfully changed (may need to reopen world)
 command.spawner.notASpawner=The block you're looking at is not a spawner
-command.spawner.invalidUsage=Invalid Usage. Type 'help spawner' to get help
 
 command.spawnportal.description=Spawns a portal to another dimension (End portals have a fixed height)
 command.spawnportal.example=/spawnportal end
@@ -957,10 +1041,9 @@ command.speed.getMinecart=Your Minecart speed is %f
 command.speed.walkReset=Walk speed reseted
 command.speed.flyReset=Fly speed reseted
 command.speed.minecartReset=Minecart speed reseted
-command.speed.invalidUsage=Invalid Usage. Type 'help speed' to get help
 command.speed.error=An error occurred performing this command
 
-command.sprint.description=Allows you to sprint infinite
+command.sprint.description=Allows you to sprint infinitely
 command.sprint.example=/sprint on
 command.sprint.syntax=/sprint [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
 command.sprint.videoURL=youtu.be/qvOaMaUxNbY
@@ -968,24 +1051,18 @@ command.sprint.on=Sprinting enabled
 command.sprint.off=Sprinting disabled
 command.sprint.failure=Invalid Argument.
 
-command.stacksize.description=Allows you to set the stacksize for an item
-command.stacksize.example=/stacksize dirt 128
-command.stacksize.syntax=/stacksize <ITEM> <SIZE>
-command.stacksize.videoURL=Not yet available
-
 command.stackcombine.description=Combines item stacks
 command.stackcombine.example=/stackcombime
 command.stackcombine.syntax=/stackcombime
 command.stackcombine.videoURL=youtu.be/XMqEjCbgXBE
 
 command.stepheight.description=Allows you to set your step height
-command.stepheight.example=/stepheight dirt 128
+command.stepheight.example=/stepheight 10
 command.stepheight.syntax=/stepheight [VALUE|RESET]
 command.stepheight.videoURL=youtu.be/aYCvmfSWAb4
 command.stepheight.setto=Step height successfully set to %f
 command.stepheight.reset=Stepheight successfully reseted
 command.stepheight.invalidArg=Invalid Argument.
-command.stepheight.invalidUsage=Invalid Usage. Type 'help stepheight' to get help
 
 command.sudo.description=Allows you to execute a command as somebody else in LAN Mode
 command.sudo.example=/sudo player123 kill
@@ -1003,29 +1080,34 @@ command.superpunch.videoURL=youtu.be/bfJBBJ9DPig
 command.superpunch.reset=Superpunch strength was reseted
 command.superpunch.success=Superpunch was successfully set
 command.superpunch.NAN=The strength must be a number
-command.superpunch.invalidUsage=Invalid Usage. Type 'help superpunch' to get help
 
 command.teleport.description=Teleports you to coordinates or to another player
 command.teleport.example=/teleport 156 57 234
-command.teleport.syntax=/teleport <PLAYER|X Y Z>
-command.teleport.videoURL=youtu.be/h1UuzNxhM6I
+command.teleport.syntax=/teleport <PLAYER|X Y Z [YAW PITCH]>
+command.teleport.videoURL=youtu.be/WJAi9NM7huU
 command.teleport.NAN=The coordinates must be numbers
 command.teleport.invalidParams=Arguments are missing.
 command.teleport.playerNotFound=Player not found
 
-command.var.description=Toggles variables in the console and sets/deletes variables. Variables can be used with %%var%% (percent sign: "%%%%")
+command.var.description=Sets/Deletes variables. Variables can be used with %%var%% (percent sign: "%%%%")
+command.var.global.description=Sets/Deletes global server variables. Variables can be used with %%var%% (percent sign: "%%%%")
 command.var.example=/var set x Hello World
-command.var.syntax=/var [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE|SET <NAME> <VALUE>|DEL <NAME>]
-command.var.videoURL=youtu.be/WRHwWMVUp-o
-command.var.enabled=Variables in the console are enabled
-command.var.disabled=Variables in the console are disabled
+command.var.global.example=/var_global set x Hello World
+command.var.syntax=/var [SET <NAME> <VALUE>|DEL <NAME>|LIST [PAGE]|DELALL|CALC <NAME> <CALCULATION>]
+command.var.global.syntax=/var_global [SET <NAME> <VALUE>|LIST [PAGE]|DEL <NAME>|DELALL|CALC <NAME> <CALCULATION>]
+command.var.videoURL=youtu.be/_y9YCCLL3tA
+command.var.global.videoURL=youtu.be/_y9YCCLL3tA
+command.var.varsDisabled=Player variables are disabled
+command.var.global.varsDisabled=Global variables are disabled
 command.var.invalidArg=Invalid Argument.
 command.var.notFound=Variable "%s" not found
 command.var.get=Variable "%s" has value "%s"
 command.var.deleted=Variable "%s" deleted
 command.var.created=Variable "%s" set to value "%s"
-command.var.cantBeResolved=Variable "%s" can't be resolved
-command.var.invalidUsage=Invalid Usage. Type 'help var' to get help
+command.var.deletedAll=All variables deleted
+command.var.notNumeric=Invalid calculation
+command.var.cantBeResolved=Variables %s can't be resolved
+command.var.more=Use '/var(_global) list PAGE' and replace PAGE with the page number to see more variable names
 
 command.waterdamage.description=Turns water damage on/off
 command.waterdamage.example=/waterdamage off
@@ -1053,7 +1135,6 @@ command.weather.rainSuccess=Rain toggled
 command.weather.thunderSuccess=Thunder toggled
 command.weather.lightningSuccess=Lightning spawned
 command.weather.notInSight=No Block in sight
-command.weather.invalidUsage=Invalid Usage. Type 'help weather' to get help
 
 command.xray.description=Toggles and configures xray
 command.xray.example=/xray config
@@ -1061,7 +1142,6 @@ command.xray.syntax=/xray [ENABLE|DISABLE|CONFIG|LOAD <CONFIG>|SAVE <CONFIG>]
 command.xray.videoURL=youtu.be/ObXHBs9jpoo
 command.xray.enabled=Xray enabled
 command.xray.disabled=Xray disabled
-command.xray.invalidUsage=Invalid Usage. Type 'help xray' to get help
 command.xray.notFound=Xray setting "%s" not found
 command.xray.loaded=Xray setting "%s" loaded
 command.xray.saved=Xray setting "%s" saved

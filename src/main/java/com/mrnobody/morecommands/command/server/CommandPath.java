@@ -1,10 +1,13 @@
 package com.mrnobody.morecommands.command.server;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.EventListener;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -25,8 +28,8 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 		syntax = "command.path.syntax",
 		videoURL = "command.path.videoURL"
 		)
-public class CommandPath extends ServerCommand implements EventListener<TickEvent> {
-	public CommandPath() {EventHandler.TICK.getHandler().register(this);}
+public class CommandPath extends StandardCommand implements ServerCommandProperties, EventListener<TickEvent> {
+	public CommandPath() {EventHandler.TICK.register(this);}
 
 	@Override
 	public String getName() {
@@ -40,62 +43,51 @@ public class CommandPath extends ServerCommand implements EventListener<TickEven
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		EntityPlayerMP playerEntity = (EntityPlayerMP) sender.getMinecraftISender();
+		EntityPlayerMP playerEntity = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 		
 		if (params.length > 0) {
-			if (params[0].toLowerCase().startsWith("minecraft:")) params[0] = params[0].substring("minecraft:".length());
-			
-			String blockID = params[0].split(":")[0];
-			String metaID = null;
-			try {metaID = params[0].split(":")[1];} catch (ArrayIndexOutOfBoundsException e) {}
-			Block block = null;
+			Block block = getBlock(params[0]);
 			int meta = -1;
 			
-			try {
-				block = (Block) Block.blockRegistry.getObjectById(Integer.parseInt(blockID));
-			}
-			catch (NumberFormatException nfe) {
-				if (Block.getBlockFromName("minecraft:" + blockID) != null) 
-					block = Block.getBlockFromName("minecraft:" + blockID);
-				else throw new CommandException("command.path.unknownBlock", sender, block);
-			}
+			if (block == null)
+				throw new CommandException("command.path.unknownBlock", sender, params[0]);
 			
-			if (metaID != null) {
-				try {meta = Integer.parseInt(metaID);} 
+			if (params.length > 1) {
+				try {meta = Integer.parseInt(params[1]);} 
 				catch (NumberFormatException nfe) {throw new CommandException("command.path.invalidMeta", sender);}
 			}
 			
 			if (block == null || block instanceof BlockAir)
-				throw new CommandException("command.path.unknownBlock", sender, block.getUnlocalizedName());
+				throw new CommandException("command.path.unknownBlock", sender, params[0]);
 			
 			int size = 1;
 			
-			if (params.length > 1)  {
+			if (params.length > 2)  {
 				try {
-					if (Integer.parseInt(params[1]) > 0 && Integer.parseInt(params[1]) <= 50) size = Integer.parseInt(params[1]);
-					else throw new CommandException("command.path.invalidRadius", sender);
+					size = Integer.parseInt(params[2]);
+					if (size <= 0 || size > 50) throw new CommandException("command.path.invalidRadius", sender);
 				} catch (NumberFormatException nfe) {throw new CommandException("command.path.invalidRadius", sender);}
 			}
 			
-			ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings(playerEntity);
+			ServerPlayerSettings settings = getPlayerSettings(playerEntity);
 			int[] plrData = settings.pathData;
 			if(plrData[0] == Block.getIdFromBlock(block) && plrData[1] == meta && plrData[2] == size)
 				throw new CommandException("command.path.noChange", sender);
 			sender.sendLangfileMessage("command.path.enabled");
 			settings.pathData = new int[] {Block.getIdFromBlock(block), meta, size, -1, -1, -1};
-		} else if (ServerPlayerSettings.getPlayerSettings(playerEntity).pathData[0] > -1) {
+		} else if (getPlayerSettings(playerEntity).pathData[0] > -1) {
 			sender.sendLangfileMessage("command.path.disabled");
-			ServerPlayerSettings.getPlayerSettings(playerEntity).pathData[0] = -1;
-		} else throw new CommandException("command.path.invalidUsage", sender);
-	}
+			getPlayerSettings(playerEntity).pathData[0] = -1;
+		} else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+	}   
 		
 	@Override
 	public void onEvent(TickEvent e) {
-		if (e instanceof TickEvent.PlayerTickEvent) {
+		if (e instanceof TickEvent.PlayerTickEvent && ((TickEvent.PlayerTickEvent) e).player instanceof EntityPlayerMP) {
 			TickEvent.PlayerTickEvent event = (TickEvent.PlayerTickEvent) e;
 			
 			if (event.player instanceof EntityPlayerMP) {
-				int[] plrData = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) event.player).pathData;
+				int[] plrData = getPlayerSettings((EntityPlayerMP) event.player).pathData;
 				this.makePath(new Player((EntityPlayerMP) event.player), plrData);
 			}
 			else return;
@@ -136,8 +128,8 @@ public class CommandPath extends ServerCommand implements EventListener<TickEven
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -146,12 +138,12 @@ public class CommandPath extends ServerCommand implements EventListener<TickEven
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

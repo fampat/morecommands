@@ -4,15 +4,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.block.Block;
 import net.minecraft.command.ICommandSender;
-import net.minecraftforge.fml.common.registry.GameRegistry;
 
 @Command(
 		name = "slippery",
@@ -21,7 +22,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 		syntax = "command.slippery.syntax",
 		videoURL = "command.slippery.videoURL"
 		)
-public class CommandSlippery extends ServerCommand {
+public class CommandSlippery extends StandardCommand implements ServerCommandProperties {
 	private final Map<Block, Float> slipperies = new HashMap<Block, Float>();
 	
 	public CommandSlippery() {
@@ -46,14 +47,7 @@ public class CommandSlippery extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 1) {
-			String modid = params[0].split(":").length > 1 ? params[0].split(":")[0] : "minecraft";
-			String name = params[0].split(":").length > 1 ? params[0].split(":")[1] : params[0];
-			Block block = GameRegistry.findBlock(modid, name);
-			
-			if (block == null) {
-				try {block = Block.getBlockById(Integer.parseInt(params[0]));}
-				catch (NumberFormatException nfe) {}
-			}
+			Block block = getBlock(params[0]);
 			
 			if (block != null && this.slipperies.containsKey(block)) {
 				float slipperiness = 0.0F;
@@ -76,12 +70,12 @@ public class CommandSlippery extends ServerCommand {
 			}
 			else throw new CommandException("command.slippery.notFound", sender);
 		}
-		else throw new CommandException("command.slippery.invalidUsage", sender);
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 	
 	@Override
@@ -90,12 +84,12 @@ public class CommandSlippery extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
 		return true;
 	}
 }

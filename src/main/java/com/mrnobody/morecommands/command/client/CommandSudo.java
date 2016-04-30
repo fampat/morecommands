@@ -2,17 +2,18 @@ package com.mrnobody.morecommands.command.client;
 
 import java.util.Iterator;
 
-import net.minecraft.command.ICommandManager;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.integrated.IntegratedServer;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.ClientCommand;
+import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
+
+import net.minecraft.command.ICommandManager;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.integrated.IntegratedServer;
 
 @Command(
 		name = "sudo",
@@ -21,7 +22,7 @@ import com.mrnobody.morecommands.wrapper.Player;
 		syntax = "command.sudo.syntax",
 		videoURL = "command.sudo.videoURL"
 		)
-public class CommandSudo extends ClientCommand {
+public class CommandSudo extends StandardCommand implements ClientCommandProperties {
 
 	@Override
 	public String getName() {
@@ -36,16 +37,16 @@ public class CommandSudo extends ClientCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 1 && MinecraftServer.getServer() instanceof IntegratedServer && ((IntegratedServer) MinecraftServer.getServer()).getPublic()) {
-			Player player = null;
+			EntityPlayer player = null;
 			Object playerEntity;
 			Iterator players = MinecraftServer.getServer().getConfigurationManager().playerEntityList.iterator();
 			
 			while (players.hasNext()) {
 				playerEntity = players.next();
 				
-				if (playerEntity instanceof EntityPlayerMP) {
-					if (((EntityPlayerMP) playerEntity).getName().equalsIgnoreCase(params[0])) {
-						player = new Player((EntityPlayerMP) playerEntity);
+				if (playerEntity instanceof EntityPlayer) {
+					if (((EntityPlayer) playerEntity).getName().equalsIgnoreCase(params[0])) {
+						player = (EntityPlayer) playerEntity;
 						break;
 					}
 				}
@@ -67,7 +68,7 @@ public class CommandSudo extends ClientCommand {
 			}
 			
 			manager.executeCommand((new CommandSender(player)).getMinecraftISender(), command + parameters);
-			sender.sendLangfileMessage("command.sudo.executed", command + parameters, player.getPlayerName());
+			sender.sendLangfileMessage("command.sudo.executed", command + parameters, player.getName());
 		}
 		else if (!(MinecraftServer.getServer() instanceof IntegratedServer)) throw new CommandException("command.sudo.notInLAN", sender);
 		else if (!((IntegratedServer) MinecraftServer.getServer()).getPublic()) throw new CommandException("command.sudo.notInLAN", sender);
@@ -75,8 +76,8 @@ public class CommandSudo extends ClientCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -85,7 +86,7 @@ public class CommandSudo extends ClientCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 

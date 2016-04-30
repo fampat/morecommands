@@ -1,15 +1,17 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
 
 @Command(
 		name = "climb",
@@ -18,7 +20,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 		syntax = "command.climb.syntax",
 		videoURL = "command.climb.videoURL"
 		)
-public class CommandClimb extends ServerCommand {
+public class CommandClimb extends StandardCommand implements ServerCommandProperties {
 	@Override
 	public String getName() {
 		return "climb";
@@ -31,33 +33,33 @@ public class CommandClimb extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
-		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
-    	
-		try {settings.climb = parseTrueFalse(params, 0, settings.climb);}
+		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
+		ServerPlayerSettings settings = getPlayerSettings(player);
+		
+		try {player.setOverrideOnLadder(parseTrueFalse(params, 0, player.overrideOnLadder()));}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.climb.failure", sender);}
 		
-		sender.sendLangfileMessage(settings.climb ? "command.climb.on" : "command.climb.off");
-        MoreCommands.getMoreCommands().getPacketDispatcher().sendS03Climb(player, settings.climb);
+		sender.sendLangfileMessage(player.overrideOnLadder() ? "command.climb.on" : "command.climb.off");
+        MoreCommands.INSTANCE.getPacketDispatcher().sendS02Climb(player, player.overrideOnLadder());
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[] {Requirement.MODDED_CLIENT, Requirement.PATCH_ENTITYPLAYERSP};
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[] {CommandRequirement.MODDED_CLIENT, CommandRequirement.PATCH_ENTITYPLAYERSP, CommandRequirement.PATCH_ENTITYPLAYERMP};
 	}
-	
+
 	@Override
 	public ServerType getAllowedServerType() {
 		return ServerType.ALL;
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

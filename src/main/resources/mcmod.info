@@ -1,14 +1,14 @@
 [
 {
   "modid": "mrnobody_morecommands",
-  "name": "More Commands",
-  "description": "Mod to extend Minecraft Chat Commands",
-  "version": "2.6",
+  "name": "MoreCommands",
+  "description": "Mod to extend Minecraft Commands",
+  "version": "2.7",
   "mcversion": "${mcversion}",
-  "url": "",
+  "url": "http://bit.ly/morecommands",
   "updateUrl": "",
-  "authorList": ["MrNobody"],
-  "credits": "MrNobody",
+  "authorList": ["MrNobody98"],
+  "credits": "MrNobody98",
   "logoFile": "",
   "screenshots": [],
   "dependencies": []

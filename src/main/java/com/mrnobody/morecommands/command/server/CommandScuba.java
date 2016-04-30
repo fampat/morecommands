@@ -1,10 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.EventListener;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -20,18 +22,18 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 		syntax = "command.scuba.syntax",
 		videoURL = "command.scuba.videoURL"
 		)
-public class CommandScuba extends ServerCommand implements EventListener<TickEvent> {
-	private final int AIR_MAX = 300;
+public class CommandScuba extends StandardCommand implements ServerCommandProperties, EventListener<TickEvent> {
+	private static final int AIR_MAX = 300;
 	
-	public CommandScuba() {EventHandler.TICK.getHandler().register(this);}
+	public CommandScuba() {EventHandler.TICK.register(this);}
 	
 	@Override
 	public void onEvent(TickEvent e) {
 		if (e instanceof TickEvent.PlayerTickEvent) {
 			TickEvent.PlayerTickEvent event = (TickEvent.PlayerTickEvent) e;
 			if (!(event.player instanceof EntityPlayerMP)) return;
-			if (event.player.isInWater() && ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) event.player).scuba) 
-				event.player.setAir(this.AIR_MAX);
+			if (event.player.isInWater() && getPlayerSettings((EntityPlayerMP) event.player).scuba) 
+				event.player.setAir(AIR_MAX);
 		}
 	}
 
@@ -47,7 +49,7 @@ public class CommandScuba extends ServerCommand implements EventListener<TickEve
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
+		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
     	
 		try {settings.scuba = parseTrueFalse(params, 0, settings.scuba);}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.scuba.failure", sender);}
@@ -56,8 +58,8 @@ public class CommandScuba extends ServerCommand implements EventListener<TickEve
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -66,12 +68,12 @@ public class CommandScuba extends ServerCommand implements EventListener<TickEve
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

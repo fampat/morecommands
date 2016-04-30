@@ -3,6 +3,9 @@ package com.mrnobody.morecommands.util;
 import java.awt.Color;
 import java.io.IOException;
 
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -14,9 +17,6 @@ import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.client.config.GuiCheckBox;
-
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 /**
  * The xray configuration gui class
@@ -180,7 +180,7 @@ public class XrayConfGui extends GuiScreen {
 
 		@Override
 		protected int getSize() {
-			return XrayConfGui.this.xray.blockList.size();
+			return XrayConfGui.this.blockList.length;
 		}
 
 		@Override
@@ -189,10 +189,8 @@ public class XrayConfGui extends GuiScreen {
 			boolean buttonsEnabled = XrayConfGui.this.elementSelected >= 0 && XrayConfGui.this.elementSelected < this.getSize();
 			XrayConfGui.this.guiButtonConfigure.enabled = buttonsEnabled;
 			
-			if (doubleClick && buttonsEnabled) {
-				if (XrayConfGui.this.xray.blockList.get(XrayConfGui.this.elementSelected) != null)
-					XrayConfGui.this.loadConfigGUI(XrayConfGui.this.xray.blockMapping.get(XrayConfGui.this.xray.blockList.get(XrayConfGui.this.elementSelected)).draw);
-			}
+			if (doubleClick && buttonsEnabled)
+				XrayConfGui.this.loadConfigGUI(XrayConfGui.this.xray.drawBlock(XrayConfGui.this.blockList[XrayConfGui.this.elementSelected]));
 		}
 
 		@Override
@@ -202,7 +200,7 @@ public class XrayConfGui extends GuiScreen {
 		
 		@Override
 		protected int getContentHeight() {
-			return XrayConfGui.this.xray.blockList.size() * (this.fontRenderer.FONT_HEIGHT + 10);
+			return XrayConfGui.this.blockList.length * (this.fontRenderer.FONT_HEIGHT + 10);
 		}
 
 		@Override
@@ -215,10 +213,8 @@ public class XrayConfGui extends GuiScreen {
 
 		@Override
 		protected void drawSlot(int index, int left, int top, int p_180791_4_, int p_180791_5_, int p_180791_6_) {
-			if (XrayConfGui.this.xray.blockList.get(index) == null) return;
-			
-			String blockName = XrayConfGui.this.xray.blockList.get(index).getLocalizedName();
-			Item blockItem = Item.getItemFromBlock(XrayConfGui.this.xray.blockList.get(index));
+			String blockName = XrayConfGui.this.blockList[index].getLocalizedName();
+			Item blockItem = Item.getItemFromBlock(XrayConfGui.this.blockList[index]);
 			
 			if (blockItem != null) {
 		        itemRender.zLevel = 100.0F;
@@ -229,20 +225,22 @@ public class XrayConfGui extends GuiScreen {
 		        GL11.glDisable(GL11.GL_LIGHTING);
 		        itemRender.zLevel = 0.0F;
 			}
-			XrayConfGui.this.drawString(this.fontRenderer, blockName + " - " + (XrayConfGui.this.xray.blockMapping.get(XrayConfGui.this.xray.blockList.get(index)).draw ? "ENABLED" : "DISABLED"), left + 20, top + 3, 16777215);
+			XrayConfGui.this.drawString(this.fontRenderer, blockName + " - " + (XrayConfGui.this.xray.drawBlock(XrayConfGui.this.blockList[index]) ? "ENABLED" : "DISABLED"), left + 20, top + 3, 16777215);
 		}
 	}
 	
 	private Minecraft mc;
-	private XrayHelper xray;
-	private String heading = "More Commands: Xray Configuration";
+	private Xray xray;
+	private String heading = "MoreCommands: Xray Configuration";
 	private int elementSelected;
 	private GuiList guiList;
 	private GuiButton guiButtonConfigure;
+	private Block[] blockList;
 	
-	public XrayConfGui(Minecraft mc, XrayHelper xray) {
+	public XrayConfGui(Minecraft mc, Xray xray) {
 		this.mc = mc;
 		this.xray = xray;
+		this.blockList = xray.getAllBlocks();
 	}
 	
 	@Override
@@ -259,8 +257,8 @@ public class XrayConfGui extends GuiScreen {
 	protected void actionPerformed(GuiButton button) {
 		if (button.enabled) {
 			if (button.id == 1) {
-				if (XrayConfGui.this.xray.blockList.get(this.elementSelected) != null)
-					this.loadConfigGUI(XrayConfGui.this.xray.blockMapping.get(XrayConfGui.this.xray.blockList.get(this.elementSelected)).draw);
+				if (this.blockList[this.elementSelected] != null)
+					this.loadConfigGUI(this.xray.drawBlock(this.blockList[this.elementSelected]));
 			}
 			else if (button.id == 0) {
 				this.mc.thePlayer.closeScreen();
@@ -285,11 +283,7 @@ public class XrayConfGui extends GuiScreen {
 	}
 	
 	public void setBlockInfo(float red, float green, float blue, boolean draw) {
-		Block block = XrayConfGui.this.xray.blockList.get(this.elementSelected);
-		
-		if (block != null && XrayConfGui.this.xray.blockMapping.get(block) != null) {
-			XrayConfGui.this.xray.blockMapping.put(block, new XrayHelper.BlockSettings(block, new Color(red, green, blue), draw));
-		}
+		this.xray.changeBlockSettings(this.blockList[this.elementSelected], draw, new Color(red, green, blue));
 	}
 	
 	public void displayGUI() {this.initGui(); this.mc.displayGuiScreen(this);}

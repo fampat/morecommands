@@ -3,6 +3,7 @@ package com.mrnobody.morecommands.patch;
 import java.lang.reflect.Field;
 
 import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
 import com.mrnobody.morecommands.util.ReflectionHelper;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
@@ -27,14 +28,14 @@ import net.minecraft.world.WorldServer;
  */
 public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlayServer
 {
-	private static final Field FIELD_LASTPOSZ = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, "lastPosZ");
-	private static final Field FIELD_LASTPOSY = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, "lastPosY");
-	private static final Field FIELD_LASTPOSX = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, "lastPosX");
-	private static final Field FIELD_HASMOVED = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, "hasMoved");
-	private static final Field FIELD_147366_G = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, "field_147366_g");
-	private static final Field FIELD_175090_F = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, "field_175090_f");
-	private static final Field FIELD_NETWORKTICKCOUNT = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, "networkTickCount");
-	private static final Field FIELD_FLOATINGTICKCOUNT = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, "floatingTickCount");
+	private static final Field FIELD_LASTPOSZ = ReflectionHelper.getField(ObfuscatedField.NetHandlerPlayServer_lastPosX);
+	private static final Field FIELD_LASTPOSY = ReflectionHelper.getField(ObfuscatedField.NetHandlerPlayServer_lastPosY);
+	private static final Field FIELD_LASTPOSX = ReflectionHelper.getField(ObfuscatedField.NetHandlerPlayServer_lastPosZ);
+	private static final Field FIELD_HASMOVED = ReflectionHelper.getField(ObfuscatedField.NetHandlerPlayServer_hasMoved);
+	private static final Field FIELD_147366_G = ReflectionHelper.getField(ObfuscatedField.NetHandlerPlayServer_field_147366_g);
+	private static final Field FIELD_175090_F = ReflectionHelper.getField(ObfuscatedField.NetHandlerPlayServer_field_175090_f);
+	private static final Field FIELD_NETWORKTICKCOUNT = ReflectionHelper.getField(ObfuscatedField.NetHandlerPlayServer_networkTickCount);
+	private static final Field FIELD_FLOATINGTICKCOUNT = ReflectionHelper.getField(ObfuscatedField.NetHandlerPlayServer_floatingTickCount);
 	
     private MinecraftServer mcServer;
     public final boolean enabled;
@@ -68,8 +69,7 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
     private static void checkSafe(NetHandlerPlayServer handler, net.minecraft.entity.player.EntityPlayerMP player) {
 		if(handler.getOverrideNoclip() && !player.capabilities.isFlying) {
 			handler.setOverrideNoclip(false);
-			
-			MoreCommands.getMoreCommands().getPacketDispatcher().sendS07Noclip(player, false);
+			MoreCommands.INSTANCE.getPacketDispatcher().sendS06Noclip(player, false);
 			
 			(new CommandSender(player)).sendLangfileMessage("command.noclip.autodisable");
 			ascendPlayer(new Player(player));

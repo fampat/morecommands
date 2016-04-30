@@ -1,7 +1,9 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -15,7 +17,7 @@ import net.minecraft.command.ICommandSender;
 		syntax = "command.hardcore.syntax",
 		videoURL = "command.hardcore.videoURL"
 		)
-public class CommandHardcore extends ServerCommand {
+public class CommandHardcore extends StandardCommand implements ServerCommandProperties {
 
 	@Override
     public String getName()
@@ -34,12 +36,12 @@ public class CommandHardcore extends ServerCommand {
 		try {sender.getWorld().setHardcore(parseTrueFalse(params, 0, sender.getWorld().isHardcore()));}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.hardcore.failure", sender);}
 		
-		sender.sendLangfileMessage(sender.getWorld().isHardcore() ? "command.hardcore.on" : "command.hardcore.off"); 
+		sender.sendLangfileMessage(sender.getWorld().isHardcore() ? "command.hardcore.on" : "command.hardcore.off");  
     }
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -48,12 +50,12 @@ public class CommandHardcore extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
 		return true;
 	}
 }

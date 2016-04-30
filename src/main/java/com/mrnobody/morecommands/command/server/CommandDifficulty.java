@@ -1,14 +1,16 @@
 package com.mrnobody.morecommands.command.server;
 
+import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.wrapper.CommandException;
+import com.mrnobody.morecommands.wrapper.CommandSender;
+
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.EnumDifficulty;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 @Command(
 		name = "difficulty",
@@ -17,7 +19,7 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.difficulty.syntax",
 		videoURL = "command.difficulty.videoURL"
 		)
-public class CommandDifficulty extends ServerCommand {
+public class CommandDifficulty extends StandardCommand implements ServerCommandProperties {
 
 	@Override
 	public String getName() {
@@ -39,7 +41,7 @@ public class CommandDifficulty extends ServerCommand {
 			else if (params[0].equalsIgnoreCase("easy")|| params[0].equalsIgnoreCase("1")) diff = EnumDifficulty.EASY;
 			else if (params[0].equalsIgnoreCase("normal")|| params[0].equalsIgnoreCase("2")) diff = EnumDifficulty.NORMAL;
 			else if (params[0].equalsIgnoreCase("hard")|| params[0].equalsIgnoreCase("3")) diff = EnumDifficulty.HARD;
-			else throw new CommandException("command.difficulty.invalidDifficulty", sender);
+			else throw new CommandException("command.difficulty.invalidDifficulty", sender, params[0]);
 			
 			server.setDifficultyForAllWorlds(diff);
 			sender.getWorld().getMinecraftWorld().getWorldInfo().setDifficulty(diff);
@@ -54,26 +56,26 @@ public class CommandDifficulty extends ServerCommand {
 			
 			sender.sendLangfileMessage("command.difficulty.setto", difficulty);
 		}
-		else throw new CommandException("command.difficulty.invalidUsage", sender);
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
-	
+
 	@Override
 	public ServerType getAllowedServerType() {
 		return ServerType.ALL;
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
 		return true;
 	}
 }

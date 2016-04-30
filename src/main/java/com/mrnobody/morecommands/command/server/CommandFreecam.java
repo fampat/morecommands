@@ -1,15 +1,17 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 
 @Command(
 		name = "freecam",
@@ -18,7 +20,7 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.freecam.syntax",
 		videoURL = "command.freecam.videoURL"
 		)
-public class CommandFreecam extends ServerCommand {
+public class CommandFreecam extends StandardCommand implements ServerCommandProperties {
 	@Override
 	public String getName() {
 		return "freecam";
@@ -31,7 +33,7 @@ public class CommandFreecam extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
+		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
 		
 		if (settings.freecam) {
 			settings.freecam = false;
@@ -42,26 +44,26 @@ public class CommandFreecam extends ServerCommand {
             sender.sendLangfileMessage("command.freecam.on");
 		}
 		
-		MoreCommands.getMoreCommands().getPacketDispatcher().sendS04Freecam((EntityPlayerMP) sender.getMinecraftISender());
+		MoreCommands.INSTANCE.getPacketDispatcher().sendS03Freecam(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[] {Requirement.MODDED_CLIENT, Requirement.PATCH_ENTITYPLAYERSP};
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[] {CommandRequirement.MODDED_CLIENT, CommandRequirement.PATCH_ENTITYPLAYERSP};
 	}
-	
+
 	@Override
 	public ServerType getAllowedServerType() {
 		return ServerType.ALL;
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

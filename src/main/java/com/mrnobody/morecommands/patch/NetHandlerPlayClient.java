@@ -1,9 +1,12 @@
 package com.mrnobody.morecommands.patch;
 
-import io.netty.buffer.Unpooled;
-
 import java.lang.reflect.Field;
 
+import com.mojang.authlib.GameProfile;
+import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
+import com.mrnobody.morecommands.util.ReflectionHelper;
+
+import io.netty.buffer.Unpooled;
 import net.minecraft.client.ClientBrandRetriever;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiDownloadTerrain;
@@ -16,9 +19,6 @@ import net.minecraft.network.play.client.C17PacketCustomPayload;
 import net.minecraft.network.play.server.S01PacketJoinGame;
 import net.minecraft.world.WorldSettings;
 
-import com.mojang.authlib.GameProfile;
-import com.mrnobody.morecommands.util.ReflectionHelper;
-
 /**
  * The patched class of {@link net.minecraft.client.network.NetHandlerPlayClient} <br>
  * This class sets the {@link Minecraft#playerController} field, which again is responsible <br>
@@ -30,6 +30,7 @@ import com.mrnobody.morecommands.util.ReflectionHelper;
  *
  */
 public class NetHandlerPlayClient extends net.minecraft.client.network.NetHandlerPlayClient {
+	private final Field clientWorldController = ReflectionHelper.getField(ObfuscatedField.NetHandlerPlayClient_clientWorldController);
 	private Minecraft mc;
 	
 	public NetHandlerPlayClient(Minecraft mc, GuiScreen screen, NetworkManager manager, GameProfile profile) {
@@ -38,42 +39,15 @@ public class NetHandlerPlayClient extends net.minecraft.client.network.NetHandle
 		this.mc = mc;
 	}
 	
-	/**
-	 * Gets the clientWorldController in {@link net.minecraft.client.network.NetHandlerPlayClient}
-	 */
-	private WorldClient getClientWorldController() {
-		Field worldControllerField = ReflectionHelper.getField(net.minecraft.client.network.NetHandlerPlayClient.class, "clientWorldController");
-		boolean error = false;
-		if (worldControllerField != null) {
-			WorldClient worldClient = null;
-			try {
-				worldClient = (WorldClient) worldControllerField.get(this);
-			}
-			catch (IllegalAccessException e) {error = true;}
-			
-			if (!error) return worldClient;
-			else return null;
-		}
-		else return null;
-	}
-	
-	/**
-	 * Gets the clientWorldController field in {@link net.minecraft.client.network.NetHandlerPlayClient}
-	 */
-	private Field getClientWorldControllerField() {
-		Field worldControllerField = ReflectionHelper.getField(net.minecraft.client.network.NetHandlerPlayClient.class, "clientWorldController");
-		if (worldControllerField != null) return worldControllerField;
-		else return null;
-	}
-	
 	@Override
     public void handleJoinGame(S01PacketJoinGame packetIn)
     {
+		if (this.clientWorldController == null) super.handleJoinGame(packetIn);
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.mc);
-        this.mc.playerController = new PlayerControllerMP(this.mc, this); //Replaces the playerController with my own patched PlayerControllerMP
-        ReflectionHelper.setField(getClientWorldControllerField(), this, new WorldClient(this, new WorldSettings(0L, packetIn.getGameType(), false, packetIn.isHardcoreMode(), packetIn.getWorldType()), packetIn.getDimension(), packetIn.getDifficulty(), this.mc.mcProfiler));
+        this.mc.playerController = new com.mrnobody.morecommands.patch.PlayerControllerMP(this.mc, this); //Replaces the playerController with my own patched PlayerControllerMP
+        ReflectionHelper.set(ObfuscatedField.NetHandlerPlayClient_clientWorldController, this.clientWorldController, this, new WorldClient(this, new WorldSettings(0L, packetIn.getGameType(), false, packetIn.isHardcoreMode(), packetIn.getWorldType()), packetIn.getDimension(), packetIn.getDifficulty(), this.mc.mcProfiler));
         this.mc.gameSettings.difficulty = packetIn.getDifficulty();
-        this.mc.loadWorld(this.getClientWorldController());
+        this.mc.loadWorld(ReflectionHelper.get(ObfuscatedField.NetHandlerPlayClient_clientWorldController, this.clientWorldController, this));
         this.mc.thePlayer.dimension = packetIn.getDimension();
         this.mc.displayGuiScreen(new GuiDownloadTerrain(this));
         this.mc.thePlayer.setEntityId(packetIn.getEntityId());

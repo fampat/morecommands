@@ -1,16 +1,18 @@
 package com.mrnobody.morecommands.command.server;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.EventListener;
-import com.mrnobody.morecommands.patch.EntityPlayerMP;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 
 @Command(
@@ -20,7 +22,7 @@ import net.minecraftforge.event.entity.living.LivingAttackEvent;
 		syntax = "command.damage.syntax",
 		videoURL = "command.damage.videoURL"
 		)
-public class CommandDamage extends ServerCommand implements EventListener<LivingAttackEvent> {
+public class CommandDamage extends StandardCommand implements ServerCommandProperties, EventListener<LivingAttackEvent> {
 	
 	//Disabling damage is possible on several ways
 	// - via PlayerCababilities.disableDamage (actually only good for creative mode, disables much more than damage, e.g. enemies won't attack you)
@@ -29,7 +31,7 @@ public class CommandDamage extends ServerCommand implements EventListener<Living
 	// - via a LivingAttackEvent (disables damage and everything belonging to that, e.g. knockback, hurt sounds, etc.) <---- That's what we want
 	
 	public CommandDamage() {
-		EventHandler.ATTACK.getHandler().register(this);
+		EventHandler.ATTACK.register(this);
 	}
 	
 	@Override
@@ -43,28 +45,28 @@ public class CommandDamage extends ServerCommand implements EventListener<Living
     {
         return "command.damage.syntax";
     }
-	
+    
 	@Override
 	public void onEvent(LivingAttackEvent event) {
 		if (!(event.entity instanceof EntityPlayerMP)) return;
 		
-		if (!ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) event.entity).damage)
+		if (!getPlayerSettings((EntityPlayerMP) event.entity).damage)
 			event.setCanceled(true);
 	}
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
+		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
     	
 		try {settings.damage = parseTrueFalse(params, 0, settings.damage);}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.damage.failure", sender);}
 		
 		sender.sendLangfileMessage(settings.damage ? "command.damage.on" : "command.damage.off");
 	}
-
+	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -73,12 +75,12 @@ public class CommandDamage extends ServerCommand implements EventListener<Living
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

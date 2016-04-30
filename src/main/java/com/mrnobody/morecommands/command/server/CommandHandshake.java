@@ -1,12 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.core.AppliedPatches;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
-import com.mrnobody.morecommands.network.PacketDispatcher;
+import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
@@ -20,7 +20,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 		syntax = "command.handshake.syntax",
 		videoURL = "command.handshake.videoURL"
 		)
-public class CommandHandshake extends ServerCommand {
+public class CommandHandshake extends StandardCommand implements ServerCommandProperties {
 	@Override
 	public String getName() {
 		return "handshake";
@@ -33,24 +33,23 @@ public class CommandHandshake extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		PlayerPatches patches = AppliedPatches.playerPatchMapping.get(sender.getMinecraftISender());
+		PlayerPatches patches = MoreCommands.getEntityProperties(PlayerPatches.class, PlayerPatches.PLAYERPATCHES_IDENTIFIER, getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
 		
 		if (params.length > 0 && params[0].equalsIgnoreCase("status")) {
-			if (patches.handshakeFinished()) sender.sendLangfileMessage("command.handshake.completed");
-			else if (patches.clientModded()) sender.sendLangfileMessage("command.handshake.importantSent");
+			if (patches != null && patches.clientModded()) sender.sendLangfileMessage("command.handshake.completed");
 			else sender.sendLangfileMessage("command.handshake.errored");
 		}
 		else if (params.length > 0 && params[0].equalsIgnoreCase("redo")) {
-			if (patches.handshakeFinished()) throw new CommandException("command.handshake.handshakeFinished", sender);
+			if (patches != null && patches.clientModded()) throw new CommandException("command.handshake.handshakeFinished", sender);
 			sender.sendLangfileMessage("command.handshake.sendingHandshake");
-			MoreCommands.getMoreCommands().getPacketDispatcher().sendS00Handshake((EntityPlayerMP) sender.getMinecraftISender());
+			MoreCommands.INSTANCE.getPacketDispatcher().sendS00Handshake(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
 		}
 		else throw new CommandException("command.handshake.invalidArgs", sender);
 	}
 
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -59,12 +58,12 @@ public class CommandHandshake extends ServerCommand {
 	}
 
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

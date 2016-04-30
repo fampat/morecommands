@@ -1,14 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.patch.EntityPlayerMP;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.wrapper.EntityLivingBase;
+
+import net.minecraft.command.ICommandSender;
 
 @Command(
 		name = "health",
@@ -17,9 +18,9 @@ import com.mrnobody.morecommands.wrapper.Player;
 		syntax = "command.health.syntax",
 		videoURL = "command.health.videoURL"
 		)
-public class CommandHealth extends ServerCommand {
-	private final float MIN_HEALTH = 0.5f;
-	private final float MAX_HEALTH = 20.0f;
+public class CommandHealth extends StandardCommand implements ServerCommandProperties {
+	private static final float MIN_HEALTH = 0.5f;
+	private static final float MAX_HEALTH = 20.0f;
 	
 	@Override
 	public String getName() {
@@ -33,23 +34,23 @@ public class CommandHealth extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		EntityLivingBase entity = new EntityLivingBase(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.EntityLivingBase.class));
 		
 		if (params.length > 0) {
-			try {player.setHealth(Float.parseFloat(params[0])); sender.sendLangfileMessage("command.health.success");}
+			try {entity.setHealth(Float.parseFloat(params[0])); sender.sendLangfileMessage("command.health.success");}
 			catch (NumberFormatException e) {
-				if (params[0].equalsIgnoreCase("min")) {player.setHealth(MIN_HEALTH); sender.sendLangfileMessage("command.health.success");}
-				else if (params[0].equalsIgnoreCase("max")) {player.setHealth(MAX_HEALTH); sender.sendLangfileMessage("command.health.success");}
-				else if (params[0].equalsIgnoreCase("get")) {sender.sendLangfileMessage("command.health.get", player.getHealth());}
+				if (params[0].equalsIgnoreCase("min")) {entity.setHealth(MIN_HEALTH); sender.sendLangfileMessage("command.health.success");}
+				else if (params[0].equalsIgnoreCase("max")) {entity.setHealth(MAX_HEALTH); sender.sendLangfileMessage("command.health.success");}
+				else if (params[0].equalsIgnoreCase("get")) {sender.sendLangfileMessage("command.health.get", entity.getHealth());}
 				else throw new CommandException("command.health.invalidParam", sender);
 			}
 		}
-		else throw new CommandException("command.health.invalidUsage", sender);
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -58,12 +59,12 @@ public class CommandHealth extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, net.minecraft.entity.EntityLivingBase.class);
 	}
 }

@@ -1,10 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.EventListener;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -35,15 +37,15 @@ import net.minecraftforge.event.entity.player.AttackEntityEvent;
 	syntax = "command.superpunch.syntax",
 	videoURL = "command.superpunch.videoURL"
 	)
-public class CommandSuperpunch extends ServerCommand implements EventListener<AttackEntityEvent> {
+public class CommandSuperpunch extends StandardCommand implements ServerCommandProperties, EventListener<AttackEntityEvent> {
 	public CommandSuperpunch() {
-		EventHandler.PLAYER_ATTACK.getHandler().register(this);
+		EventHandler.PLAYER_ATTACK.register(this);
 	}
 	
 	@Override
 	public void onEvent(AttackEntityEvent event) {
 		if (event.entity instanceof EntityPlayerMP) {
-			ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) event.entity);
+			ServerPlayerSettings settings = getPlayerSettings((EntityPlayerMP) event.entity);
 			
 			if (settings.superpunch > 0) {
 				event.setCanceled(true);
@@ -61,10 +63,10 @@ public class CommandSuperpunch extends ServerCommand implements EventListener<At
 	public String getUsage() {
 		return "command.superpunch.syntax";
 	}
-
+	
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
+		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
         	
         if (params.length > 0) {
         	if (params[0].equalsIgnoreCase("reset")) {
@@ -81,12 +83,12 @@ public class CommandSuperpunch extends ServerCommand implements EventListener<At
         		}
         	}
         }
-        else throw new CommandException("command.superpunch.invalidUsage", sender);
+        else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
 	}
 
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -95,15 +97,15 @@ public class CommandSuperpunch extends ServerCommand implements EventListener<At
 	}
 
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
-    
+	
     private void attackWithSuperpunch(EntityPlayer player, Entity target, int factor)
     {
         //if (!net.minecraftforge.common.ForgeHooks.onPlayerAttackTarget(player, target)) return;
@@ -132,7 +134,7 @@ public class CommandSuperpunch extends ServerCommand implements EventListener<At
                 }
                 
                 //SUPERPUNCH :D
-                j = factor > 0 ? factor : j;
+                j *= factor;
 
                 if (f > 0.0F || f1 > 0.0F)
                 {

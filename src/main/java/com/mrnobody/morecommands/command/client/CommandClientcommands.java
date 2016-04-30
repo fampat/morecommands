@@ -4,14 +4,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import net.minecraft.command.ICommand;
-import net.minecraftforge.client.ClientCommandHandler;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.ClientCommand;
+import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.ICommand;
+import net.minecraftforge.client.ClientCommandHandler;
 
 @Command(
 		name = "clientcommands",
@@ -20,21 +23,9 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.clientcommands.syntax",
 		videoURL = "command.clientcommands.videoURL"
 		)
-public class CommandClientcommands extends ClientCommand
-{
+public class CommandClientcommands extends StandardCommand implements ClientCommandProperties {
 	private static boolean enabled = true;
-	
-	public static boolean clientCommandsEnabled() {return enabled;}
-	
-	private Map<String, ClientCommand> clientCommands;
-	
-	public CommandClientcommands() {
-		 this.clientCommands = new HashMap<String, ClientCommand>();
-	}
-	
-	public CommandClientcommands(Map<String, ClientCommand> clientCommands) {
-		 this.clientCommands = clientCommands;
-	}
+	private Map<String, ClientCommand<?>> clientCommands = new HashMap<String, ClientCommand<?>>();
 	
 	@Override
     public String getName()
@@ -68,10 +59,10 @@ public class CommandClientcommands extends ClientCommand
 	
 	private void enableClientCommands() {
 		for (ClientCommand command : this.clientCommands.values()) 
-			if (!(command instanceof CommandClientcommands)) ClientCommandHandler.instance.registerCommand(command);
+			if (command.getDelegate() != this) ClientCommandHandler.instance.registerCommand(command);
 		
 		this.clientCommands.clear();
-		enabled = true;
+		enabled = ClientCommand.clientCommandsEnabled = true;
 	}
 
 	private void disableClientCommands() {
@@ -79,18 +70,18 @@ public class CommandClientcommands extends ClientCommand
 		this.clientCommands.clear();
 		
 		for (Map.Entry<String, ICommand> entry : (Set<Map.Entry<String, ICommand>>) ClientCommandHandler.instance.getCommands().entrySet())
-			if (entry.getValue() instanceof ClientCommand) this.clientCommands.put(entry.getKey(), (ClientCommand) entry.getValue());
+			if (entry.getValue() instanceof ClientCommand<?> && ((ClientCommand<?>) entry.getValue()).getDelegate() != this)
+				this.clientCommands.put(entry.getKey(), (ClientCommand<?>) entry.getValue());
 		
 		for (String command : this.clientCommands.keySet()) 
 			ClientCommandHandler.instance.getCommands().remove(command);
 		
-		ClientCommandHandler.instance.registerCommand(new CommandClientcommands(this.clientCommands));
-		enabled = false;
+		enabled = ClientCommand.clientCommandsEnabled = false;
 	}
 
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -104,7 +95,7 @@ public class CommandClientcommands extends ClientCommand
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 }

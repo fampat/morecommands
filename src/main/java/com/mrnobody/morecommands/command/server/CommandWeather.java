@@ -1,16 +1,17 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.BlockPos;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.wrapper.Entity;
 import com.mrnobody.morecommands.wrapper.World;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.util.BlockPos;
 
 @Command(
 		name = "weather",
@@ -19,7 +20,8 @@ import com.mrnobody.morecommands.wrapper.World;
 		syntax = "command.weather.syntax",
 		videoURL = "command.weather.videoURL"
 		)
-public class CommandWeather extends ServerCommand {
+public class CommandWeather extends StandardCommand implements ServerCommandProperties {
+
 	@Override
 	public String getName() {
 		return "weather";
@@ -61,18 +63,21 @@ public class CommandWeather extends ServerCommand {
 	    		sender.sendLangfileMessage("command.weather.thunderSuccess");
 	    	}
 	    	
-	    	if (params[0].equalsIgnoreCase("lightning") && sender.getMinecraftISender() instanceof EntityPlayerMP) {
-	    		BlockPos hit = (new Player((EntityPlayerMP) sender.getMinecraftISender())).traceBlock(128);
+	    	if (params[0].equalsIgnoreCase("lightning")) {
+	    		BlockPos hit = params.length > 3 ? getCoordFromParams(sender.getMinecraftISender(), params, 1) : 
+	    				isSenderOfEntityType(sender.getMinecraftISender(), net.minecraft.entity.Entity.class) ?
+	    				new Entity(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.Entity.class)).traceBlock(128) :
+	    				sender.getPosition();
 	    		if (hit != null) {world.useLightning(hit); sender.sendLangfileMessage("command.weather.lightningSuccess");}
 	    		else throw new CommandException("command.weather.notInSight", sender);
 	    	}
 		}
-		else throw new CommandException("command.weather.invalidUsage", sender);
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
 	}
 
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 	
 	@Override
@@ -81,12 +86,12 @@ public class CommandWeather extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
 		return true;
 	}
 }

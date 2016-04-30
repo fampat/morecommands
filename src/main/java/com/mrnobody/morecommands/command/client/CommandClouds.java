@@ -1,12 +1,14 @@
 package com.mrnobody.morecommands.command.client;
 
-import net.minecraft.client.Minecraft;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.ClientCommand;
+import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.client.Minecraft;
 
 @Command(
 		name = "clouds",
@@ -15,9 +17,7 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.clouds.syntax",
 		videoURL = "command.clouds.videoURL"
 		)
-public class CommandClouds extends ClientCommand {
-	private boolean clouds = true;
-	
+public class CommandClouds extends StandardCommand implements ClientCommandProperties {
 	@Override
 	public String getName() {
 		return "clouds";
@@ -29,7 +29,7 @@ public class CommandClouds extends ClientCommand {
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {    		
+	public void execute(CommandSender sender, String[] params) throws CommandException {
 		try {Minecraft.getMinecraft().gameSettings.clouds = parseTrueFalse(params, 0, Minecraft.getMinecraft().gameSettings.clouds);}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.clouds.failure", sender);}
 		
@@ -37,8 +37,8 @@ public class CommandClouds extends ClientCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -52,7 +52,7 @@ public class CommandClouds extends ClientCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 }

@@ -1,17 +1,20 @@
 package com.mrnobody.morecommands.command.server;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.util.GlobalSettings;
+import com.mrnobody.morecommands.event.DamageItemEvent;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.event.Listeners.EventListener;
+import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 
 @Command(
@@ -21,18 +24,10 @@ import net.minecraft.item.Item;
 		syntax = "command.itemdamage.syntax",
 		videoURL = "command.itemdamage.videoURL"
 		)
-public class CommandItemdamage extends ServerCommand {
-	private final Map<Item, Integer> damageValues = new HashMap<Item, Integer>();
-	
+public class CommandItemdamage extends StandardCommand implements ServerCommandProperties, EventListener<DamageItemEvent> {
 	public CommandItemdamage() {
-		Iterator<Item> items = Item.itemRegistry.iterator();
-		
-		while (items.hasNext()) {
-			Item item = items.next();
-			this.damageValues.put(item, item.getMaxDamage());
-		}
+		EventHandler.DAMAGE_ITEM.register(this);
 	}
-	
 	
 	@Override
 	public String getName() {
@@ -43,33 +38,38 @@ public class CommandItemdamage extends ServerCommand {
 	public String getUsage() {
 		return "command.itemdamage.syntax";
 	}
-
+	
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		try {GlobalSettings.itemdamage = parseTrueFalse(params, 0, GlobalSettings.itemdamage);}
-		catch (IllegalArgumentException ex) {throw new CommandException("command.itemdamage.failure", sender);}
-		
-		sender.sendLangfileMessage(GlobalSettings.itemdamage ? "command.itemdamage.on" : "command.itemdamage.off");
-        
-        if (GlobalSettings.itemdamage) {
-			Iterator<Item> items = this.damageValues.keySet().iterator();
-			
-			while (items.hasNext()) {
-				Item item = items.next();
-				
-				item.setMaxDamage(this.damageValues.get(item));
-			}
-        }
-        else {
-			Iterator<Item> items = this.damageValues.keySet().iterator();
-			
-			while (items.hasNext()) items.next().setMaxDamage(-1);
-        }
+	public void onEvent(DamageItemEvent event) {
+		if (event.entity instanceof EntityPlayerMP && getPlayerSettings((EntityPlayerMP) event.entity).disableDamage.contains(event.stack.getItem()))
+			event.setCanceled(true);
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public void execute(CommandSender sender, String[] params) throws CommandException {
+		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
+		
+		if (params.length <= 0) throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+		Item item = getItem(params[0]); boolean disable;
+		
+		if (item == null)
+			throw new CommandException("command.itemdamage.notFound", sender);
+		
+		if (settings.disableDamage.contains(item)) {
+			settings.disableDamage.remove(item); disable = false;
+			sender.sendLangfileMessage("command.itemdamage.enabled");
+		}
+		else {
+			settings.disableDamage.add(item); disable = true;
+			sender.sendLangfileMessage("command.itemdamage.disabled");
+		}
+		
+		MoreCommands.INSTANCE.getPacketDispatcher().sendS16ItemDamage(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class), item, disable);
+	}
+	
+	@Override
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[] {CommandRequirement.MODDED_CLIENT};
 	}
 
 	@Override
@@ -78,12 +78,12 @@ public class CommandItemdamage extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return true;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

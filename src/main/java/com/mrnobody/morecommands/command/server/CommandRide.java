@@ -1,10 +1,13 @@
 package com.mrnobody.morecommands.command.server;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.wrapper.Player;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -18,7 +21,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 		syntax = "command.ride.syntax",
 		videoURL = "command.ride.videoURL"
 		)
-public class CommandRide extends ServerCommand {
+public class CommandRide extends StandardCommand implements ServerCommandProperties {
 
 	@Override
 	public String getName() {
@@ -32,8 +35,8 @@ public class CommandRide extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
-		Entity hit = (new com.mrnobody.morecommands.wrapper.Entity(player)).traceEntity(128.0D);
+		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
+		Entity hit = (new Player(player)).traceEntity(128.0D);
 		
 		if (player.ridingEntity != null) {
 			sender.sendLangfileMessage("command.ride.dismounted", new Object[0]);
@@ -52,8 +55,8 @@ public class CommandRide extends ServerCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -62,12 +65,12 @@ public class CommandRide extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
-		return 2;
+	public int getDefaultPermissionLevel() {
+		return 0;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

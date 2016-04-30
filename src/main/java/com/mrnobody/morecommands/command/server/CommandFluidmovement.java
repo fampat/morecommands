@@ -1,15 +1,17 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
 
 @Command(
 		name = "fluidmovement",
@@ -18,7 +20,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 		syntax = "command.fluidmovement.syntax",
 		videoURL = "command.fluidmovement.videoURL"
 		)
-public class CommandFluidmovement extends ServerCommand {
+public class CommandFluidmovement extends StandardCommand implements ServerCommandProperties {
     public String getName() {
         return "fluidmovement";
     }
@@ -29,19 +31,19 @@ public class CommandFluidmovement extends ServerCommand {
     
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
-		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings(player);
+		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
+		ServerPlayerSettings settings = getPlayerSettings(player);
     	
-		try {settings.fluidmovement = parseTrueFalse(params, 0, settings.fluidmovement);}
+		try {player.setFluidMovement(parseTrueFalse(params, 0, player.getFluidMovement()));}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.fluidmovement.failure", sender);}
 		
-		sender.sendLangfileMessage(settings.fluidmovement  ? "command.fluidmovement.on" : "command.fluidmovement.off");        
-        MoreCommands.getMoreCommands().getPacketDispatcher().sendS13FluidMovement(player, settings.fluidmovement);
+		sender.sendLangfileMessage(player.getFluidMovement() ? "command.fluidmovement.on" : "command.fluidmovement.off");        
+        MoreCommands.INSTANCE.getPacketDispatcher().sendS11FluidMovement(player, player.getFluidMovement());
 	}
     
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[] {Requirement.MODDED_CLIENT, Requirement.PATCH_ENTITYPLAYERSP};
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[] {CommandRequirement.MODDED_CLIENT, CommandRequirement.PATCH_ENTITYPLAYERSP, CommandRequirement.PATCH_ENTITYPLAYERMP};
 	}
 	
 	@Override
@@ -50,12 +52,12 @@ public class CommandFluidmovement extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

@@ -1,17 +1,20 @@
 package com.mrnobody.morecommands.command.server;
 
 import java.text.DecimalFormat;
+import java.util.Arrays;
+
+import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.wrapper.CommandException;
+import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.wrapper.Player;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.BlockPos;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
 		name = "setspawn",
@@ -20,7 +23,7 @@ import com.mrnobody.morecommands.wrapper.Player;
 		syntax = "command.setspawn.syntax",
 		videoURL = "command.setspawn.videoURL"
 		)
-public class CommandSetspawn extends ServerCommand {
+public class CommandSetspawn extends StandardCommand implements ServerCommandProperties {
 
 	@Override
 	public String getName() {
@@ -34,25 +37,30 @@ public class CommandSetspawn extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
-		BlockPos coord = player.getPosition();
+		boolean global = params.length > 0 && params[0].equalsIgnoreCase("global");
+		if (global) params = Arrays.copyOfRange(params, 1, params.length);
+		
+		Player player = global ? null : new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
+		BlockPos coord = sender.getPosition();
 		DecimalFormat f = new DecimalFormat("#.##");
 		
 		if (params.length > 2) {
-			try {coord = new BlockPos(Double.parseDouble(params[0]), Double.parseDouble(params[1]), Double.parseDouble(params[2]));}
+			try {coord = getCoordFromParams(sender.getMinecraftISender(), params, 0);}
 			catch (NumberFormatException nfe) {throw new CommandException("command.setspawn.invalidPos", sender);}
 		}
 		
-		player.setSpawn(coord);
-		sender.sendStringMessage("Spawn point set to:"
+		if (!global) player.setSpawn(coord);
+		else sender.getWorld().setSpawn(coord);
+		
+		sender.sendStringMessage((global ? "Global " : "") + "Spawn point set to:"
 				+ " X = " + f.format(coord.getX())
 				+ "; Y = " + f.format(coord.getY())
 				+ "; Z = " + f.format(coord.getZ()));
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -61,12 +69,13 @@ public class CommandSetspawn extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		if (params.length > 0 && params[0].equalsIgnoreCase("global")) return true;
+		else return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

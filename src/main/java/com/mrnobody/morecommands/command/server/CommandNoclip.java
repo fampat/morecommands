@@ -1,18 +1,20 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.EventListener;
-import com.mrnobody.morecommands.patch.EntityPlayerMP;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.patch.NetHandlerPlayServer;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.DamageSource;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
@@ -24,9 +26,9 @@ import net.minecraftforge.event.entity.living.LivingAttackEvent;
 		syntax = "command.noclip.syntax",
 		videoURL = "command.noclip.videoURL"
 		)
-public class CommandNoclip extends ServerCommand implements EventListener<LivingAttackEvent> {
+public class CommandNoclip extends StandardCommand implements ServerCommandProperties, EventListener<LivingAttackEvent> {
 	
-	public CommandNoclip() {EventHandler.ATTACK.getHandler().register(this);}
+	public CommandNoclip() {EventHandler.ATTACK.register(this);}
 	
 	@Override
 	public void onEvent(LivingAttackEvent event) {
@@ -67,8 +69,8 @@ public class CommandNoclip extends ServerCommand implements EventListener<Living
 		if(handler.getOverrideNoclip() == false) {
 			ascendPlayer(new Player(player));
 		}
-			
-		MoreCommands.getMoreCommands().getPacketDispatcher().sendS07Noclip(player, handler.getOverrideNoclip());
+		
+		MoreCommands.INSTANCE.getPacketDispatcher().sendS06Noclip(player, handler.getOverrideNoclip());
 	}
 
 	private static boolean ascendPlayer(Player player) {
@@ -94,12 +96,12 @@ public class CommandNoclip extends ServerCommand implements EventListener<Living
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[] {
-				Requirement.MODDED_CLIENT,
-				Requirement.PATCH_ENTITYPLAYERSP,
-				Requirement.PATCH_NETHANDLERPLAYSERVER,
-				Requirement.PATCH_RENDERGLOBAL
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[] {
+				CommandRequirement.MODDED_CLIENT,
+				CommandRequirement.PATCH_ENTITYPLAYERSP,
+				CommandRequirement.PATCH_NETHANDLERPLAYSERVER,
+				CommandRequirement.PATCH_RENDERGLOBAL
 			};
 	}
 
@@ -109,12 +111,12 @@ public class CommandNoclip extends ServerCommand implements EventListener<Living
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

@@ -2,13 +2,15 @@ package com.mrnobody.morecommands.command.server;
 
 import java.text.DecimalFormat;
 
-import net.minecraft.command.ICommandSender;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.ICommandSender;
 
 @Command(
 		name = "position",
@@ -17,7 +19,7 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.position.syntax",
 		videoURL = "command.position.videoURL"
 		)
-public class CommandPosition extends ServerCommand {
+public class CommandPosition extends StandardCommand implements ServerCommandProperties {
 
 	@Override
 	public String getName() {
@@ -40,8 +42,8 @@ public class CommandPosition extends ServerCommand {
 	}
 
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -50,12 +52,12 @@ public class CommandPosition extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
 		return true;
 	}
 }

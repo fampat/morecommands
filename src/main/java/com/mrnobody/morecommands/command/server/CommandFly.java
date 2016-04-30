@@ -1,10 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.EventListener;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -21,14 +23,15 @@ import net.minecraftforge.event.entity.living.LivingFallEvent;
 		syntax = "command.fly.syntax",
 		videoURL = "command.fly.videoURL"
 		)
-public class CommandFly extends ServerCommand implements EventListener<LivingFallEvent> {
-	public CommandFly() {EventHandler.FALL.getHandler().register(this);}
+public class CommandFly extends StandardCommand implements ServerCommandProperties, EventListener<LivingFallEvent>
+{
+	public CommandFly() {EventHandler.FALL.register(this);}
 	
 	@Override
 	public void onEvent(LivingFallEvent event) {
 		if (event.entity instanceof EntityPlayerMP) {
 			EntityPlayerMP player = (EntityPlayerMP) event.entity;
-			ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings(player);
+			ServerPlayerSettings settings = getPlayerSettings(player);
 				
 		    if (settings.noFall) {event.setCanceled(true);}
 		    else if (settings.justDisabled) {
@@ -52,15 +55,15 @@ public class CommandFly extends ServerCommand implements EventListener<LivingFal
     
 	@Override
     public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
-		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
+		Player player = new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
+		ServerPlayerSettings settings = getPlayerSettings(player.getMinecraftPlayer());
 		boolean fly;
 		
 		try {fly = parseTrueFalse(params, 0, player.getAllowFlying());}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.fly.failure", sender);}
         
     	settings.fly = fly;
-    	if (fly) {settings.noFall = true;}
+    	if (fly) settings.noFall = true;
     	else {settings.noFall = false; if (!player.getMinecraftPlayer().onGround) settings.justDisabled = true;}
     	player.setAllowFlying(fly);
     	
@@ -68,22 +71,22 @@ public class CommandFly extends ServerCommand implements EventListener<LivingFal
     }
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
-	
+
 	@Override
 	public ServerType getAllowedServerType() {
 		return ServerType.ALL;
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
-
+	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

@@ -1,7 +1,9 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
@@ -17,7 +19,8 @@ import net.minecraft.command.ICommandSender;
 		syntax = "command.keepinventory.syntax",
 		videoURL = "command.keepinventory.videoURL"
 		)
-public class CommandKeepinventory extends ServerCommand {
+public class CommandKeepinventory extends StandardCommand implements ServerCommandProperties {
+
 	@Override
 	public String getName() {
 		return "keepinventory";
@@ -30,8 +33,8 @@ public class CommandKeepinventory extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
-		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
+		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);;
+		ServerPlayerSettings settings = getPlayerSettings(player);
 		boolean keepinventory;
 		
 		try {keepinventory = parseTrueFalse(params, 0, player.getKeepInventory());}
@@ -44,8 +47,8 @@ public class CommandKeepinventory extends ServerCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[] {Requirement.PATCH_ENTITYPLAYERMP, Requirement.PATCH_SERVERCONFIGMANAGER};
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[] {CommandRequirement.PATCH_ENTITYPLAYERMP, CommandRequirement.PATCH_SERVERCONFIGMANAGER};
 	}
 
 	@Override
@@ -54,12 +57,12 @@ public class CommandKeepinventory extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

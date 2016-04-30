@@ -3,9 +3,11 @@ package com.mrnobody.morecommands.command.server;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
@@ -21,7 +23,7 @@ import net.minecraft.server.MinecraftServer;
 		syntax = "command.command.syntax",
 		videoURL = "command.command.videoURL"
 		)
-public class CommandCommand extends ServerCommand {
+public class CommandCommand extends StandardCommand implements ServerCommandProperties {
 	private Map<String, ICommand> disabledCommands = new HashMap<String, ICommand>();
 	
 	@Override
@@ -61,14 +63,14 @@ public class CommandCommand extends ServerCommand {
 				}
 				else throw new CommandException("command.command.alreadyDisabled", sender);
 			}
-			else throw new CommandException("command.command.invalidUsage", sender);
+			else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
 		}
-		else throw new CommandException("command.command.invalidUsage", sender);
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
 	}
 
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -77,12 +79,12 @@ public class CommandCommand extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
-	
+
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
 		return true;
 	}
 }

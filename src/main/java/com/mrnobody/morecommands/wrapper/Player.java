@@ -1,53 +1,35 @@
 package com.mrnobody.morecommands.wrapper;
 
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.entity.player.EntityPlayer;
+import java.util.Iterator;
+
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.potion.PotionEffect;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.stats.Achievement;
 import net.minecraft.util.BlockPos;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.world.WorldSettings.GameType;
 
 /**
  * A wrapper for the {@link EntityPlayerMP} class
  * 
  * @author MrNobody98
  */
-public class Player extends com.mrnobody.morecommands.wrapper.Entity {
+public class Player extends com.mrnobody.morecommands.wrapper.EntityLivingBase {
 	private final EntityPlayerMP player;
 	
 	public Player(EntityPlayerMP player) {
 		super(player);
 		this.player = player;
 	}
-
-	/**
-	 * @return the players rotation yaw
-	 */
-	public float getYaw() {
-		return player.rotationYaw;
-	}
    
 	/**
-	 * Sets the players rotation yaw
+	 * Sends a chat message from this player
 	 */
-	public void setYaw(float yaw) {
-		player.rotationYaw = yaw;
-	}
-   
-	/**
-	 * @return the players rotation pitch
-	 */
-	public float getPitch() {
-		return player.rotationPitch;
-	}
-   
-	/**
-	 * Sets the players rotation pitch
-	 */
-	public void setPitch(float pitch) {
-		player.rotationPitch = pitch;
+	public void sendChatMessage(String message) {
+		this.player.addChatMessage(new ChatComponentText(message));
 	}
 	
 	/**
@@ -69,74 +51,85 @@ public class Player extends com.mrnobody.morecommands.wrapper.Entity {
 	 */
 	public void givePlayerItem(Item item, int quantity, int meta) {
 		ItemStack itemStack = new ItemStack(item, quantity, meta);
-		if (!player.inventory.addItemStackToInventory(itemStack)) {
-			player.dropItem(item, quantity);
+		
+		if (!this.player.inventory.addItemStackToInventory(itemStack)) {
+			this.player.dropItem(item, quantity);
 		}
 	}
-   
+	
 	/**
-	 * @return the players health
+	 * Gives an amount of items with metadata and nbt data to the player
 	 */
-	public float getHealth() {
-		return player.getHealth();
-	}
-   
-	/**
-	 * Sets the players health
-	 */
-	public void setHealth(float health) {
-		player.setHealth(health);
-	}
-   
-	/**
-	 * Heals the player by a certain amount
-	 */
-	public void heal(float quantity) {
-		setHealth(getHealth() + quantity);
+	public void givePlayerItem(Item item, int quantity, int meta, NBTTagCompound compound) {
+		ItemStack itemStack = new ItemStack(item, quantity, meta);
+		if (compound != null) itemStack.setTagCompound(compound);
+		
+		if (!this.player.inventory.addItemStackToInventory(itemStack)) {
+			this.player.dropItem(item, quantity);
+		}
 	}
    
 	/**
 	 * @return the players hunger
 	 */
 	public int getHunger() {
-		return player.getFoodStats().getFoodLevel();
+		return this.player.getFoodStats().getFoodLevel();
 	}
    
 	/**
 	 * Sets the players hunger
 	 */
 	public void setHunger(int food) {
-		player.getFoodStats().setFoodLevel(food);
+		this.player.getFoodStats().setFoodLevel(food);
 	}
    
 	/**
 	 * @return whether player damage is enabled
 	 */
 	public boolean getDamage() {
-		return !player.capabilities.disableDamage;
+		return !this.player.capabilities.disableDamage;
 	}
    
 	/**
 	 * Sets whether player damage is enabled
 	 */
 	public void setDamage(boolean damage) {
-		player.capabilities.disableDamage = !damage;
+		this.player.capabilities.disableDamage = !damage;
 	}
    
 	/**
 	 * Sets an inventory slot
 	 */
 	public boolean setInventorySlot(int slot, int id, int quantity, int damage) {
-		if (slot < 0 || slot >= player.inventory.mainInventory.length) {
+		if (slot < 0 || slot >= this.player.inventory.mainInventory.length) {
 			return false;
 		} else if ((Item) Item.itemRegistry.getObjectById(id) == null) {
 			if (id == 0) {
-				player.inventory.mainInventory[slot] = null;
+				this.player.inventory.mainInventory[slot] = null;
 				return true;
 			}
 		return false;
 		}
-		player.inventory.mainInventory[slot] = new ItemStack(Item.getItemById(id), quantity, damage);
+		this.player.inventory.mainInventory[slot] = new ItemStack(Item.getItemById(id), quantity, damage);
+		return true;
+	}
+
+	/**
+	 * @return the current game type
+	 */
+	public String getGameType() {
+		return this.player.theItemInWorldManager.getGameType().getName();
+	}
+   
+	/**
+	 * Sets the current game type
+	 */
+	public boolean setGameType(String gametype) {
+		GameType chosen = null;
+		if ((chosen = GameType.getByName(gametype)) == null) {
+			return false;
+		}
+		this.player.setGameType(chosen);
 		return true;
 	}
    
@@ -144,174 +137,118 @@ public class Player extends com.mrnobody.morecommands.wrapper.Entity {
 	 * @return the players name
 	 */
 	public String getPlayerName() {
-		return player.getName();
+		return this.player.getName();
 	}
    
 	/**
 	 * @return the players current item
 	 */
 	public Item getCurrentItem() {
-		return player.getCurrentEquippedItem().getItem();
+		return this.player.getCurrentEquippedItem().getItem();
 	}
    
 	/**
 	 * @return the players current slot
 	 */
 	public int getCurrentSlot() {
-		return player.inventory.currentItem;
+		return this.player.inventory.currentItem;
 	}
 	
 	/**
 	 * Sets the players current slot
 	 */
 	public void setCurrentSlot(int index, ItemStack item) {
-		player.inventory.setInventorySlotContents(index, item);
-	}
-	
-	/**
-	 * removes enchantments from the current item
-	 */
-	public void removeEnchantment() {
-		ItemStack stack = player.getCurrentEquippedItem();
-		int damage = stack.getItemDamage();
-		
-		ItemStack newItem = new ItemStack(stack.getItem());
-		setCurrentSlot(getCurrentSlot(), newItem);
-		newItem.damageItem(stack.getItemDamage(), player);
-	}
-	
-	/**
-	 * adds an enchantment from the current item
-	 */
-	public void addEnchantment(Enchantment enchantment, int level) {
-		player.getCurrentEquippedItem().addEnchantment(enchantment, level);
+		this.player.inventory.setInventorySlotContents(index, item);
 	}
    
 	/**
-	 * @return the players forward movement
-	 */
-	public float getMovementForward() {
-		return player.moveForward;
-	}
-   
-	/**
-	 * @return the players strafe movement
-	 */
-	public float getMovementStrafe() {
-		return player.moveStrafing;
-	}
-   
-	/**
-	 * Sets the players step height
-	 */
-	public void setStepHeight(float height) {
-		player.stepHeight = height;
-	}
-   
-	/**
-	 * @return the players step height
-	 */
-	public float getStepHeight() {
-		return player.stepHeight;
-	}
-   
-	/**
-	 * @return the {@link EntityPlayer} object
+	 * @return the {@link EntityPlayerMP} this object wraps
 	 */
 	public EntityPlayerMP getMinecraftPlayer() {
-		return player;
+		return this.player;
 	}
-   
+	
 	/**
-	 * Removes a potion effect
+	 * @return whether the player has this achievement
 	 */
-	public void removePotionEffect(int potion) {
-		player.removePotionEffect(potion);
-	}
-   
-	/**
-	 * Removes all potion effects
-	 */
-	public void removeAllPotionEffects() {
-		player.clearActivePotions();
-	}
-   
-	/**
-	 * Adds a potion effect
-	 */
-	public void addPotionEffect(int id, int duration, int strength) {
-		player.addPotionEffect(new PotionEffect(id, duration, strength));
-	}
-   
-	/**
-	 * Changes the players dimension
-	 */
-	public void changeDimension(int dimension) {
-		player.travelToDimension(dimension);
-	}
-   
-	/**
-	 * Sets the players air
-	 */
-	public void setAir(int air) {
-		player.setAir(air);
+	public boolean hasAchievement(Achievement ach) {
+		return this.player.getStatFile().hasAchievementUnlocked(ach);
 	}
    
 	/**
 	 * triggers an achievement
 	 */
-	public boolean addAchievement(String name) {
-		Achievement ach = Achievements.getAchievementByName(name);
-		Achievement requirement = Achievements.getAchievementByName(Achievements.getAchievementRequirement(name));
-		
-		if (player instanceof EntityPlayerMP) {
-			if (requirement != null) {
-				if (((EntityPlayerMP) player).getStatFile().hasAchievementUnlocked(requirement)) {
-					player.triggerAchievement(ach); return true;
-				}
-				else {return false;}
-			}
-			else {
-				player.triggerAchievement(ach); return true;
-			}
-		}
-		else {return false;}
+	public void addAchievement(Achievement ach) {
+		this.player.triggerAchievement(ach);
+	}
+	
+	/**
+	 * removes an achievement
+	 */
+	public void removeAchievement(Achievement ach) {
+        this.player.getStatFile().func_150873_a(this.player, ach, 0);
+        Iterator iterator = this.player.getWorldScoreboard().getObjectivesFromCriteria(ach.func_150952_k()).iterator();
+
+        while (iterator.hasNext())
+        {
+            ScoreObjective scoreobjective = (ScoreObjective) iterator.next();
+            this.player.getWorldScoreboard().getValueFromObjective(this.player.getName(), scoreobjective).setScorePoints(0);
+        }
+
+        if (this.player.getStatFile().func_150879_e())
+        {
+            this.player.getStatFile().func_150876_a(this.player);
+        }
 	}
 	
 	/**
 	 * @return the player's spawn point
 	 */
 	public BlockPos getSpawn() {
-		return this.player.getBedLocation();
+		return this.player.getBedLocation(this.player.dimension) != null ? this.player.getBedLocation(this.player.dimension) : null;
 	}
 	
 	/**
 	 * Sets the players spawn point
 	 */
 	public void setSpawn(BlockPos coord) {
-		this.player.setSpawnChunk(coord, true, player.dimension);
+		this.player.setSpawnChunk(coord, true, this.player.dimension);
+	}
+	
+	/**
+	 * Sets the players spawn point
+	 */
+	public void setSpawn(int x, int y, int z) {
+		this.player.setSpawnChunk(new BlockPos(x, y, z), true, this.player.dimension);
 	}
    
 	/**
 	 * @return whether player is allowed to fly
 	 */
 	public boolean getAllowFlying() {
-		return player.capabilities.allowFlying;
+		return this.player.capabilities.allowFlying;
 	}
    
 	/**
 	 * Sets whether player is allowed to fly
 	 */
 	public void setAllowFlying(boolean allow) {
-		player.capabilities.allowFlying = allow;
-		player.capabilities.isFlying = allow;
-		((EntityPlayerMP) player).sendPlayerAbilities();
+		this.player.capabilities.allowFlying = allow;
+		this.player.capabilities.isFlying = allow;
+		this.player.sendPlayerAbilities();
 	}
    
 	/**
 	 * @return whether player is in creative mode
 	 */
 	public boolean isCreativeMode() {
-		return player.capabilities.isCreativeMode;
+		return this.player.capabilities.isCreativeMode;
+	}
+   
+	/**
+	 * @return The display name
+	 */
+	public String getDisplayName() {
+		return this.player.getDisplayNameString();
 	}
 }

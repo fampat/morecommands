@@ -1,21 +1,34 @@
 package com.mrnobody.morecommands.core;
 
-import java.util.Iterator;
+import java.io.File;
+import java.lang.reflect.Constructor;
 import java.util.List;
+import java.util.Map;
 
 import com.mrnobody.morecommands.command.ClientCommand;
+import com.mrnobody.morecommands.command.MultipleCommands;
+import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.handler.EventHandler;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.util.ClientPlayerSettings;
+import com.mrnobody.morecommands.util.DummyCommand;
+import com.mrnobody.morecommands.util.JsonSettingsManager;
+import com.mrnobody.morecommands.util.PlayerSettings;
 import com.mrnobody.morecommands.util.Reference;
-import com.mrnobody.morecommands.util.XrayHelper;
+import com.mrnobody.morecommands.util.SettingsManager;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
+import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 
 /**
  * The proxy used for the client
@@ -24,7 +37,18 @@ import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
  *
  */
 public class ClientProxy extends CommonProxy {
-	private boolean clientCommandsRegistered = false;
+	private SettingsManager settingsManager;
+	
+	public ClientProxy() {
+		super();
+		
+		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+			@Override
+			public void run() {
+				ClientProxy.this.settingsManager.saveSettings();
+			}
+		}));
+	}
 	
 	@Override
 	protected void setPatcher() {
@@ -34,32 +58,38 @@ public class ClientProxy extends CommonProxy {
 	@Override
 	protected void postInit(FMLPostInitializationEvent event) {
 		super.postInit(event);
-		if (this.clientCommandsRegistered = this.registerClientCommands()) 
+		this.settingsManager = new JsonSettingsManager(new File(Reference.getModDir(), "settings_client.json"));
+		
+		try {
+			this.registerClientCommands();
 			this.mod.getLogger().info("Client Commands successfully registered");
-		XrayHelper.init();
+		}
+		catch (Exception ex) {this.mod.getLogger().warn("Failed to register Client Command", ex);}
 	}
 	
 	@Override
-	protected void serverStarted(FMLServerStartedEvent event) {} //NOOP
-
-	@Override
-	public boolean commandsLoaded() {
-		if (this.getRunningServerType() == ServerType.INTEGRATED) return this.clientCommandsRegistered && super.commandsLoaded();
-		else if (this.getRunningServerType() == ServerType.DEDICATED) return this.clientCommandsRegistered;
-		else return false;
+	protected void serverStopping(FMLServerStoppingEvent event) {
+		//A PlayerLoggedOutEvent is not posted for the local player on an integrated server
+		//But in CommonPatcher.playerLogout(), the ServerPlayerSettings are saved, so we have to "post" that event manually
+		
+		if (MinecraftServer.getServer() != null && !MinecraftServer.getServer().isDedicatedServer()) {
+			for (Object o : MinecraftServer.getServer().getConfigurationManager().playerEntityList)
+				if (MinecraftServer.getServer().getServerOwner().equals(((EntityPlayer) o).getName()))
+						this.patcher.playerLogout(new PlayerLoggedOutEvent((EntityPlayer) o));
+		}
 	}
 	
 	@Override
-	public boolean registerHandlers() {
+	public void registerHandlers() {
 		ModContainer container = Loader.instance().activeModContainer();
-		if (container == null || !container.getModId().equals(Reference.MODID)) return false;
-		boolean errored = false;
 		
-		for (EventHandler handler : EventHandler.values())
-			if (!EventHandler.register(handler, container)) {errored = true; break;}
+		if (container == null || !container.getModId().equals(Reference.MODID)){
+			this.mod.getLogger().warn("Error registering Event Handlers");
+			return;
+		}
 		
-		if (!errored) {this.mod.getLogger().info("Event Handlers registered"); return true;}
-		else return false;
+		EventHandler.registerDefaultForgeHandlers(container, true);
+		this.mod.getLogger().info("Event Handlers registered");
 	}
 	
 	/**
@@ -67,21 +97,28 @@ public class ClientProxy extends CommonProxy {
 	 * 
 	 * @return Whether the client commands were registered successfully
 	 */
-	private boolean registerClientCommands() {
-		List<Class<? extends ClientCommand>> clientCommands = this.mod.getClientCommandClasses();
-		if (clientCommands == null) return false;
-		Iterator<Class<? extends ClientCommand>> commandIterator = clientCommands.iterator();
+	private void registerClientCommands() throws Exception {
+		List<Class<? extends StandardCommand>> clientCommands = this.mod.getClientCommandClasses();
+		if (clientCommands == null) throw new RuntimeException("Client Command Classes not loaded");
 		
-		try {
-			while (commandIterator.hasNext()) {
-				ClientCommand clientCommand = commandIterator.next().newInstance();
-				if (this.mod.isCommandEnabled(clientCommand.getName()))
-						ClientCommandHandler.instance.registerCommand(clientCommand);
+		for (Class<? extends StandardCommand> cmdClass : clientCommands) {
+			try {
+				StandardCommand cmd = cmdClass.newInstance();
+				
+				if (cmd instanceof MultipleCommands) {
+					Constructor<? extends StandardCommand> ctr = cmdClass.getConstructor(int.class);
+					
+					for (int i = 0; i < ((MultipleCommands) cmd).getNames().length; i++)
+						if (this.mod.isCommandEnabled(((MultipleCommands) cmd).getNames()[i]))
+							ClientCommandHandler.instance.registerCommand(new ClientCommand(ClientCommand.upcast(ctr.newInstance(i))));
+				}
+				else if (this.mod.isCommandEnabled(cmd.getName()))
+					ClientCommandHandler.instance.registerCommand(new ClientCommand(ClientCommand.upcast(cmd)));
 			}
-			
-			return true;
+			catch (Exception ex) {
+				this.mod.getLogger().warn("Skipping Client Command " + cmdClass.getName() + " due to the following exception during loading", ex);
+			}
 		}
-		catch (Exception ex) {ex.printStackTrace(); return false;}
 	}
 
 	@Override
@@ -93,5 +130,47 @@ public class ClientProxy extends CommonProxy {
 	@Override
 	public String getLang(ICommandSender sender) {
 		return Minecraft.getMinecraft().getLanguageManager().getCurrentLanguage().getLanguageCode();
+	}
+	
+
+	@Override
+	public String getCurrentServerNetAddress() {
+		return Minecraft.getMinecraft().getCurrentServerData() != null ? Minecraft.getMinecraft().getCurrentServerData().serverIP : "singleplayer";
+	}
+	
+	@Override
+	public void registerAliases(EntityPlayer player) {
+		if (player instanceof EntityPlayerSP) {
+			ClientPlayerSettings settings = MoreCommands.getEntityProperties(ClientPlayerSettings.class, PlayerSettings.MORECOMMANDS_IDENTIFIER, player);
+			if (settings != null) this.registerAliases(settings);
+		}
+		else super.registerAliases(player);
+	}
+	
+	/**
+	 * Reads aliases for the client player and registers them
+	 */
+	private void registerAliases(ClientPlayerSettings settings) {
+		Map<String, String> aliases = settings.aliases;
+		net.minecraft.command.CommandHandler commandHandler = ClientCommandHandler.instance;
+		String command;
+		
+		for (String alias : aliases.keySet()) {
+			command = aliases.get(alias).split(" ")[0];
+			
+			if (!command.equalsIgnoreCase(alias) && commandHandler.getCommands().get(alias) == null) {
+				DummyCommand cmd = new DummyCommand(alias, true);
+				commandHandler.getCommands().put(alias, cmd);
+			}
+		}
+	}
+	
+	public SettingsManager createSettingsManagerForPlayer(EntityPlayer player) {
+		if (player instanceof EntityPlayerSP) return this.settingsManager;
+		else if (player instanceof EntityPlayerMP) {
+			if (((EntityPlayerMP) player).getName().equals(MinecraftServer.getServer().getServerOwner())) return this.settingsManager;
+			else return super.createSettingsManagerForPlayer(player);
+		}
+		else return super.createSettingsManagerForPlayer(player);
 	}
 }

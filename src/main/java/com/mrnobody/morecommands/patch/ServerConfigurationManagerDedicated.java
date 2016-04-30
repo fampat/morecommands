@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
+import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.util.PlayerSettings;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -155,7 +157,8 @@ public class ServerConfigurationManagerDedicated extends net.minecraft.server.de
         entityplayermp1.addSelfToInternalCraftingInventory();
         entityplayermp1.setHealth(entityplayermp1.getHealth());
         
-        if (ServerPlayerSettings.containsSettingsForPlayer(playerIn) && ServerPlayerSettings.getPlayerSettings(playerIn).keepinventory) {
+        ServerPlayerSettings settings = MoreCommands.getEntityProperties(ServerPlayerSettings.class, PlayerSettings.MORECOMMANDS_IDENTIFIER, playerIn);
+        if (settings != null && settings.keepinventory) {
         	entityplayermp1.inventory.copyInventory(playerIn.inventory);
         	((com.mrnobody.morecommands.patch.EntityPlayerMP) entityplayermp1).setKeepInventory(true);
         }

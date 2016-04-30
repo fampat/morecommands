@@ -1,16 +1,21 @@
 package com.mrnobody.morecommands.command.server;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import java.util.Arrays;
+
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.patch.EntityPlayerMP;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
-import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
 
 @Command(
 		name = "give",
@@ -19,7 +24,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 		syntax = "command.give.syntax",
 		videoURL = "command.give.videoURL"
 		)
-public class CommandGive extends ServerCommand {
+public class CommandGive extends StandardCommand implements ServerCommandProperties {
 
 	@Override
 	public String getName() {
@@ -34,40 +39,39 @@ public class CommandGive extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
 		if (params.length > 0) {
-			Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
-			String modid = params[0].split(":").length > 1 ? params[0].split(":")[0] : "minecraft";
-			String name = params[0].split(":").length > 1 ? params[0].split(":")[1] : params[0];
-			Item item = GameRegistry.findItem(modid, name);
-			
-			if (item == null) {
-				try {item = Item.getItemById(Integer.parseInt(params[0]));}
-				catch (NumberFormatException e) {}
-			}
+			Player player = new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
+			Item item = getItem(params[0]);
 			
 			if (item != null) {
+				int meta = 0; NBTBase nbt = null; int quantity = 1;
+				
 				if (params.length > 1) {
-					if (params.length > 2) {
-						if (item.getHasSubtypes()) {
-							try {player.givePlayerItem(item, Integer.parseInt(params[1]), Integer.parseInt(params[2]));}
-							catch(NumberFormatException e) {throw new CommandException("command.give.notFound", sender);}
-						}
-						else throw new CommandException("command.give.noMeta", sender);
-					}
-					else {
-						try {player.givePlayerItem(item, Integer.parseInt(params[1])); sender.sendLangfileMessage("command.give.success");}
-						catch (NumberFormatException e) {throw new CommandException("command.give.notFound", sender);}
-					}
+					try {quantity = Integer.parseInt(params[1]);}
+					catch(NumberFormatException e) {throw new CommandException("command.give.NAN", sender);}
 				}
-				else {player.givePlayerItem(item); sender.sendLangfileMessage("command.give.success");}
+				
+				if (params.length > 2) {
+					try {meta = Integer.parseInt(params[2]);}
+					catch(NumberFormatException e) {throw new CommandException("command.give.NAN", sender);}
+					if (!item.getHasSubtypes() && meta != 0) throw new CommandException("command.give.noMeta", sender);
+				}
+				
+				if (params.length > 3) {
+					String nbtString = rejoinParams(Arrays.copyOfRange(params, 3, params.length));
+					nbt = getNBTFromParam(params[3], sender.getMinecraftISender());
+					if (!(nbt instanceof NBTTagCompound)) throw new CommandException("command.give.noCompound", sender);
+				}
+				
+				player.givePlayerItem(item, quantity, meta, (NBTTagCompound) nbt);
 			}
 			else throw new CommandException("command.give.notFound", sender);
 		}
-		else throw new CommandException("command.give.invalidUsage", sender);
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -76,12 +80,12 @@ public class CommandGive extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

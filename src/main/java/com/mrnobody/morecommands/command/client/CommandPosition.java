@@ -2,14 +2,16 @@ package com.mrnobody.morecommands.command.client;
 
 import java.text.DecimalFormat;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.ClientCommand;
+import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 
 @Command(
 		name = "position",
@@ -18,7 +20,7 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.position.syntax",
 		videoURL = "command.position.videoURL"
 		)
-public class CommandPosition extends ClientCommand {
+public class CommandPosition extends StandardCommand implements ClientCommandProperties {
 
 	@Override
 	public String getName() {
@@ -42,8 +44,8 @@ public class CommandPosition extends ClientCommand {
 	}
 
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 	
 	@Override
@@ -57,7 +59,7 @@ public class CommandPosition extends ClientCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 }

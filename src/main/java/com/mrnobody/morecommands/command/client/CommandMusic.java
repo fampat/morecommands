@@ -2,19 +2,22 @@ package com.mrnobody.morecommands.command.client;
 
 import java.lang.reflect.Field;
 
+import com.mrnobody.morecommands.command.ClientCommandProperties;
+import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.event.Listeners.EventListener;
+import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
+import com.mrnobody.morecommands.util.ReflectionHelper;
+import com.mrnobody.morecommands.wrapper.CommandException;
+import com.mrnobody.morecommands.wrapper.CommandSender;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.MusicTicker;
 import net.minecraft.client.audio.SoundCategory;
 import net.minecraftforge.client.event.sound.PlaySoundEvent;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.ClientCommand;
-import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.EventListener;
-import com.mrnobody.morecommands.util.ReflectionHelper;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 @Command(
 		name = "music",
@@ -23,10 +26,9 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.music.syntax",
 		videoURL = "command.music.videoURL"
 		)
-public class CommandMusic extends ClientCommand implements EventListener<PlaySoundEvent> {
-	private Field musicTickerField = ReflectionHelper.getField(Minecraft.class, "mcMusicTicker");
-	private Field playingField = ReflectionHelper.getField(MusicTicker.class, "currentMusic");
-	private Field playingTimerField = ReflectionHelper.getField(MusicTicker.class, "timeUntilNextMusic");
+public class CommandMusic extends StandardCommand implements ClientCommandProperties, EventListener<PlaySoundEvent> {
+	private final Field musicTickerField = ReflectionHelper.getField(ObfuscatedField.Minecraft_mcMusicTicker);
+	private final Field playingTimerField = ReflectionHelper.getField(ObfuscatedField.MusicTicker_timeUntilNextMusic);
 	
 	private boolean stopSound = false;
 
@@ -39,7 +41,7 @@ public class CommandMusic extends ClientCommand implements EventListener<PlaySou
 	}
 	
 	public CommandMusic() {
-		EventHandler.SOUND.getHandler().register(this);
+		EventHandler.SOUND.register(this);
 	}
 	
 	@Override
@@ -103,10 +105,10 @@ public class CommandMusic extends ClientCommand implements EventListener<PlaySou
 			else throw new CommandException("command.music.invalidUsage", sender);
 		}
 	}
-	
+
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -120,7 +122,7 @@ public class CommandMusic extends ClientCommand implements EventListener<PlaySou
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 }

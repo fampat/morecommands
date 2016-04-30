@@ -1,7 +1,17 @@
 package com.mrnobody.morecommands.command.server;
 
+import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.wrapper.CommandException;
+import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.wrapper.Player;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFlowerPot;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -13,13 +23,6 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.World;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
-
 @Command(
 		name = "pick",
 		description = "command.pick.description",
@@ -27,7 +30,7 @@ import com.mrnobody.morecommands.wrapper.Player;
 		syntax = "command.pick.syntax",
 		videoURL = "command.pick.videoURL"
 		)
-public class CommandPick extends ServerCommand {
+public class CommandPick extends StandardCommand implements ServerCommandProperties {
 	@Override
 	public String getName() {
 		return "pick";
@@ -40,9 +43,9 @@ public class CommandPick extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		Player player = new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
 		MovingObjectPosition pick = player.rayTrace(128.0D, 0.0D, 1.0F);
-		int amount = 64;
+		int amount = 1;
 		
 		if (params.length > 0) {
 			try {amount = Integer.parseInt(params[0]);}
@@ -50,15 +53,15 @@ public class CommandPick extends ServerCommand {
 		}
 		
 		if (pick != null) {
-			if (!this.onPickBlock(pick, player.getMinecraftPlayer(), player.getWorld().getMinecraftWorld(), amount))
+			if (!this.onPickBlock(pick, player.getMinecraftPlayer(), player.getMinecraftPlayer().worldObj, amount))
 				throw new CommandException("command.pick.cantgive", sender);
 		}
 		else throw new CommandException("command.pick.notInSight", sender);
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -67,7 +70,7 @@ public class CommandPick extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
@@ -77,16 +80,15 @@ public class CommandPick extends ServerCommand {
 
         if (target.typeOfHit == MovingObjectType.BLOCK)
         {
-        	BlockPos pos = target.getBlockPos();
-            Block block = world.getBlockState(pos).getBlock();
+            IBlockState block = world.getBlockState(target.getBlockPos());
 
-            if (block.isAir(world, pos))
+            if (block.getBlock().isAir(world, target.getBlockPos()))
             {
                 return false;
             }
 
-            //result = block.getPickBlock(target, world, pos); //does not work on servers because methods used by this method are client side only
-            result = this.getPickBlock(block, target, world, pos);
+            //result = block.getPickBlock(target, world, target.blockX, target.blockY, target.blockZ); //can't be used, because getPickBlock() usese Block#isFlowerPot() which is client only
+            result = this.getPickBlock(block.getBlock(), target, world, target.getBlockPos());
         }
         else
         {
@@ -110,8 +112,20 @@ public class CommandPick extends ServerCommand {
             ItemStack stack = player.inventory.getStackInSlot(x);
             if (stack != null && stack.isItemEqual(result) && ItemStack.areItemStackTagsEqual(stack, result))
             {
+            	if (amount > stack.getMaxStackSize()) amount = stack.getMaxStackSize();
                 player.inventory.currentItem = x;
-                stack.stackSize += amount;
+                
+                if (stack.stackSize + amount > stack.getMaxStackSize()) {
+                	int oldStackSize = stack.stackSize;
+                	stack.stackSize = stack.getMaxStackSize();
+                	
+                	if (player.inventory.getFirstEmptyStack() > 0) {
+                		ItemStack copy = ItemStack.copyItemStack(stack); copy.stackSize = (oldStackSize + amount) - stack.getMaxStackSize();
+                		player.inventory.mainInventory[player.inventory.getFirstEmptyStack()] = copy;
+                	}
+                }
+                else stack.stackSize += amount;
+                
                 return true;
             }
         }
@@ -127,24 +141,20 @@ public class CommandPick extends ServerCommand {
         return true;
     }
     
-    private ItemStack getPickBlock(Block block, MovingObjectPosition target, World world, BlockPos pos)
-    {
-        Item item = Item.getItemFromBlock(block);
+    private ItemStack getPickBlock(Block block, MovingObjectPosition target, World world, BlockPos pos) {
+        Item item = block.getItem(world, pos);
 
-        if (item == null) {
-        	String unlocalized = block.getUnlocalizedName();
-        	if (unlocalized.startsWith("tile.")) unlocalized = block.getUnlocalizedName().substring(5);
-        	item = Item.getByNameOrId("minecraft:" + unlocalized);
+        if (item == null)
+        {
+            return null;
         }
-        
-        if (item == null) return null;
 
-        Block result = item instanceof ItemBlock && !(block instanceof BlockFlowerPot) ? Block.getBlockFromItem(item) : block;
-        return new ItemStack(item, 1, result.getDamageValue(world, pos));
-    }
+        block = item instanceof ItemBlock && !(block instanceof BlockFlowerPot) ? Block.getBlockFromItem(item) : block;
+        return new ItemStack(item, 1, block.getDamageValue(world, pos));
+	}
     
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

@@ -13,14 +13,10 @@ import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import com.mrnobody.morecommands.command.ClientCommand;
-import com.mrnobody.morecommands.command.CommandBase;
-import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 
 /**
- * This class loads loads command classes, packet classes <br>
- * and resources (only text files, e.g. language files)
+ * This class loads classes (e.g. all classes in a package) and resources (e.g. lang files)
  * 
  * @author MrNobody98
  */
@@ -53,21 +49,12 @@ public class DynamicClassLoader {
 	 * Loads command classes
 	 * 
 	 * @param pkg the package where the command classes are in
-	 * @param baseClass the command base class for the command classes. Must be {@link ClientCommand} or {@link ServerCommand}
+	 * @param clientClasses whether the classes in this package are client commands
 	 * @return A list of the loaded command classes
 	 */
-	public List<Class<?>> getCommandClasses(String pkg, Class<? extends CommandBase> baseClass) {
-		String commandType;
-		
-		if (ClientCommand.class.getSuperclass() != CommandBase.class) return null;
-		if (ServerCommand.class.getSuperclass() != CommandBase.class) return null;
-		
-		if (baseClass == ClientCommand.class.asSubclass(CommandBase.class)) commandType = "client";
-		else if (baseClass == ServerCommand.class.asSubclass(CommandBase.class)) commandType = "server";
-		else return null;
-		
-		if (commandType.equals("client") && this.clientCommandClasses.size() > 0) return this.clientCommandClasses;
-		else if (commandType.equals("server") && this.serverCommandClasses.size() > 0) return this.serverCommandClasses;
+	public List<Class<?>> getCommandClasses(String pkg, boolean clientClasses) {
+		if (clientClasses && this.clientCommandClasses.size() > 0) return this.clientCommandClasses;
+		else if (!clientClasses && this.serverCommandClasses.size() > 0) return this.serverCommandClasses;
 		
 		List<Class<?>> commandClasses = this.getClasses(pkg);
 		
@@ -80,15 +67,14 @@ public class DynamicClassLoader {
 			commandClasses.removeAll(remove);
 			remove = null;
 			
-			if (commandType.equals("client")) {
+			if (clientClasses) {
 				this.clientCommandClasses.addAll(commandClasses);
 				return this.clientCommandClasses;
 			}
-			else if (commandType.equals("server")) {
+			else {
 				this.serverCommandClasses.addAll(commandClasses);
 				return this.serverCommandClasses;
 			}
-			else return null;
 		}
 		else return null;
 	}

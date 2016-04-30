@@ -1,19 +1,12 @@
 package com.mrnobody.morecommands.wrapper;
 
-import java.lang.reflect.Field;
 import java.util.Random;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.effect.EntityLightningBolt;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockPos;
-import net.minecraft.world.gen.feature.WorldGenBigTree;
-import net.minecraft.world.gen.feature.WorldGenForest;
-import net.minecraft.world.gen.feature.WorldGenTaiga1;
-import net.minecraft.world.gen.feature.WorldGenTaiga2;
-import net.minecraft.world.gen.feature.WorldGenTrees;
-import net.minecraft.world.storage.WorldInfo;
 
 /**
  * A wrapper for minecraft worlds
@@ -56,6 +49,14 @@ public class World {
 	public boolean isAirBlock(int x, int y, int z) {
 		return this.world.isAirBlock(new BlockPos(x, y, z));
 	}
+	
+	/**
+	 * @return The metadata of the block at the given coordinates
+	 */
+	public int getBlockMeta(BlockPos coord) {
+		IBlockState state = this.world.getBlockState(coord);
+		return state.getBlock().getMetaFromState(state);
+	}
    
 	/**
 	 * @return Whether the world is in hardore mode
@@ -68,7 +69,7 @@ public class World {
 	 * Sets the hardcore mode
 	 */
 	public void setHardcore(boolean hardcore) {
-		changeWorldInfo("hardcore", hardcore);
+		this.world.getWorldInfo().setHardcore(hardcore);
 	}
    
 	/**
@@ -82,34 +83,7 @@ public class World {
 	 * Sets whether you're allowed to use cheats
 	 */
 	public void setCheats(boolean cheats) {
-		changeWorldInfo("allowCommands", cheats);
-	}
-   
-	/**
-	 * Changes NBT stored world info
-	 */
-	private void changeWorldInfo(String key, Object value) {
-		NBTTagCompound nbt = this.world.getWorldInfo().getNBTTagCompound();
-		if (value instanceof String) nbt.setString(key, (String) value);
-		else if (value instanceof Boolean) nbt.setBoolean(key, (Boolean) value);
-		else if (value instanceof Integer) nbt.setInteger(key, (Integer) value);
-		else if (value instanceof Long) nbt.setLong(key, (Long) value);
-		
-		WorldInfo info = new WorldInfo(nbt);
-      
-		try {
-			Field fields[] = net.minecraft.world.World.class.getDeclaredFields();
-         
-			for (Field field : fields) {
-				field.setAccessible(true);
-            
-				if (field.get(this.world) instanceof WorldInfo) {
-					field.set(this.world, info);
-					break;
-				}
-			}
-		}
-		catch (Exception e) {e.printStackTrace();}
+		this.world.getWorldInfo().setAllowCommands(cheats);
 	}
    
 	/**
@@ -137,6 +111,15 @@ public class World {
 	 */
 	public boolean setBlockWithMeta(BlockPos pos, Block block, int meta) {
 		return this.world.setBlockState(pos, block.getStateFromMeta(meta));
+	}
+	
+	/**
+	 * Destroys a block
+	 * @param drop whether to drop the block
+	 * @return whether the block was destroyed
+	 */
+	public boolean destroyBlock(BlockPos coord, boolean drop) {
+		return this.world.destroyBlock(coord, drop);
 	}
    
 	/**
@@ -235,42 +218,7 @@ public class World {
 	public void setSpawn(BlockPos coordinate) {
 		this.world.setSpawnPoint(coordinate);
 	}
-   
-	/**
-	 * Generates a big tree at the given coordinates
-	 */
-	public boolean generateBigTree(BlockPos coordinate) {
-		return (new WorldGenBigTree(true)).generate(this.world, this.random, coordinate);
-	}
-   
-	/**
-	 * Generates a normal tree at the given coordinates
-	 */
-	public boolean generateTree(BlockPos coordinate) {
-		return (new WorldGenTrees(true)).generate(this.world, this.random, coordinate);
-	}
-	   
-	/**
-	 * Generates a birch tree at the given coordinates
-	 */
-	public boolean generateBirchTree(BlockPos coordinate) {
-		return (new WorldGenForest(true, true)).generate(this.world, this.random, coordinate);
-	}
-   
-	/**
-	 * Generates a redwood tree at the given coordinates
-	 */
-	public boolean generateRedwoodTree(BlockPos coordinate) {
-		return (new WorldGenTaiga1()).generate(this.world, this.random, coordinate);
-	}
-   
-	/**
-	 * Generates a tall redwood tree at the given coordinates
-	 */
-	public boolean generateTallRedwoodTree(BlockPos coordinate) {
-		return (new WorldGenTaiga2(true)).generate(this.world, this.random, coordinate);
-	}
-   
+	
 	/**
 	 * Creates an explosion at the given coordinates
 	 */

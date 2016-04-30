@@ -10,6 +10,18 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 
+import com.mrnobody.morecommands.command.ClientCommandProperties;
+import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.AppliedPatches;
+import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedMethod;
+import com.mrnobody.morecommands.util.ReflectionHelper;
+import com.mrnobody.morecommands.wrapper.CommandException;
+import com.mrnobody.morecommands.wrapper.CommandSender;
+
 import net.minecraft.client.LoadingScreenRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiMainMenu;
@@ -19,15 +31,6 @@ import net.minecraft.world.WorldSettings;
 import net.minecraft.world.WorldSettings.GameType;
 import net.minecraft.world.WorldType;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.ClientCommand;
-import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.core.AppliedPatches;
-import com.mrnobody.morecommands.util.ReflectionHelper;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-
 @Command(
 		name = "world",
 		description = "command.world.description",
@@ -35,8 +38,9 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.world.syntax",
 		videoURL = "command.world.videoURL"
 		)
-public class CommandWorld extends ClientCommand {
-
+public class CommandWorld extends StandardCommand implements ClientCommandProperties {
+	private final Method saveWorlds = ReflectionHelper.getMethod(ObfuscatedMethod.MinecraftServer_saveAllWorlds);
+	
 	@Override
 	public String getName() {
 		return "world";
@@ -49,97 +53,80 @@ public class CommandWorld extends ClientCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		if (Minecraft.getMinecraft().isSingleplayer()) {
-			if (params.length > 0) {
-				if (params[0].equalsIgnoreCase("load") && params.length > 1) {
-					String world = "";
-					
-					for (int i = 1; i < params.length; i++) world += " " + params[i];
-					
-					if (Minecraft.getMinecraft().getSaveLoader().canLoadWorld(world.trim()))
-						Minecraft.getMinecraft().launchIntegratedServer(world.trim(), world.trim(), new WorldSettings(new Random().nextLong(), GameType.SURVIVAL, true, false, WorldType.DEFAULT));
-					else throw new CommandException("command.world.notLoadable", sender, world.trim());
-				}
-				else if (params[0].equalsIgnoreCase("backup") || params[0].equalsIgnoreCase("save")) {
-					LoadingScreenRenderer l = new LoadingScreenRenderer(Minecraft.getMinecraft());
-					l.displaySavingString("Please wait... Saving level");
+		if (params.length > 0) {
+			if (params[0].equalsIgnoreCase("load") && params.length > 1) {
+				String world = "";
 				
-					Method saveWorld = ReflectionHelper.getMethod(MinecraftServer.class, "saveAllWorlds", boolean.class);
-					if (saveWorld != null) {
-						try {saveWorld.invoke(MinecraftServer.getServer(), Boolean.FALSE);}
-						catch(Exception ex) {ex.printStackTrace();}
-					}
+				for (int i = 1; i < params.length; i++) world += " " + params[i];
 				
-					if (params[0].equalsIgnoreCase("backup")) {
-						l = new LoadingScreenRenderer(Minecraft.getMinecraft());
-						l.displaySavingString("Please wait... World is being backed up");
-						SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd-HHmmss-SSS");
-						String time = format.format(new Date());
-						copyDirectory(new File(Minecraft.getMinecraft().mcDataDir, "saves/" + MinecraftServer.getServer().getFolderName()), new File(Minecraft.getMinecraft().mcDataDir, "backup/" + MinecraftServer.getServer().getFolderName() + "/" + time), l);
-					}
-					else sender.sendLangfileMessage("command.world.saved");
-				}
-				else if (params[0].equalsIgnoreCase("exit")) {
-					Minecraft.getMinecraft().theWorld.sendQuittingDisconnectingPacket();
-					Minecraft.getMinecraft().loadWorld(null);
-					Minecraft.getMinecraft().displayGuiScreen(new GuiMainMenu());
-				}
-				else if (params[0].equalsIgnoreCase("new") && params.length > 1) {
-					long seed = 0;
-					
-					if (params.length > 2) {
-						try {seed = Long.parseLong(params[2]);}
-						catch (Exception ex) {
-							sender.sendLangfileMessage("command.world.NAN", EnumChatFormatting.RED); seed = (new Random()).nextLong();}
-					}
-					else seed = (new Random()).nextLong();
-					
-					File parent = new File(Minecraft.getMinecraft().mcDataDir, "saves");
-					String name = params[1];
-					File child = new File(parent, name);
-					
-					if (child.exists()) throw new CommandException("command.world.cantcreate", sender);
-					
-					Minecraft.getMinecraft().launchIntegratedServer(name, name, new WorldSettings(seed, GameType.SURVIVAL, true, false, WorldType.DEFAULT));
-				}
-				else if (params[0].equalsIgnoreCase("list")) {
-					File parent = new File(Minecraft.getMinecraft().mcDataDir, "saves");
-					File list[] = parent.listFiles();
-					String saves = null;
-					
-					for (int i = 0; i < list.length; i++) {
-						if (list[i].isDirectory()) {
-							if (saves == null) saves = list[i].getName();
-							else saves += ", " + list[i].getName();
-						}
-					}
-					sender.sendLangfileMessage("command.world.saves");
-					sender.sendStringMessage(saves);
-				}
-				else if (params[0].equalsIgnoreCase("seed") && MoreCommands.getMoreCommands().getPlayerUUID() != null) {
-					if (params.length > 2 && params[1].equalsIgnoreCase("set"))
-						MoreCommands.getMoreCommands().getPacketDispatcher().sendC05World("seed set " + params[2]);
-					else MoreCommands.getMoreCommands().getPacketDispatcher().sendC05World("seed");
-				}
-				else if (params[0].equalsIgnoreCase("name") && MoreCommands.getMoreCommands().getPlayerUUID() != null) {
-					if (params.length > 2 && params[1].equalsIgnoreCase("set"))
-						MoreCommands.getMoreCommands().getPacketDispatcher().sendC05World("name set " + params[2]);
-					else MoreCommands.getMoreCommands().getPacketDispatcher().sendC05World("name");
-				}
-				else throw new CommandException("command.world.invalidArg", sender);
+				if (Minecraft.getMinecraft().getSaveLoader().canLoadWorld(world.trim()))
+					Minecraft.getMinecraft().launchIntegratedServer(world.trim(), world.trim(), new WorldSettings(new Random().nextLong(), GameType.SURVIVAL, true, false, WorldType.DEFAULT));
+				else throw new CommandException("command.world.notLoadable", sender, world.trim());
 			}
-			else throw new CommandException("command.world.invalidUsage", sender);
+			else if (params[0].equalsIgnoreCase("backup") || params[0].equalsIgnoreCase("save")) {
+				LoadingScreenRenderer l = new LoadingScreenRenderer(Minecraft.getMinecraft());
+				l.displaySavingString("Please wait... Saving level");
+				ReflectionHelper.invoke(ObfuscatedMethod.MinecraftServer_saveAllWorlds, this.saveWorlds, MinecraftServer.getServer(), Boolean.FALSE);
+			
+				if (params[0].equalsIgnoreCase("backup")) {
+					l = new LoadingScreenRenderer(Minecraft.getMinecraft());
+					l.displaySavingString("Please wait... World is being backed up");
+					SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd-HHmmss-SSS");
+					String time = format.format(new Date());
+					copyDirectory(new File(Minecraft.getMinecraft().mcDataDir, "saves/" + MinecraftServer.getServer().getFolderName()), new File(Minecraft.getMinecraft().mcDataDir, "backup/" + MinecraftServer.getServer().getFolderName() + "/" + time), l);
+				}
+			}
+			else if (params[0].equalsIgnoreCase("exit")) {
+				if (MinecraftServer.getServer() != null) MinecraftServer.getServer().stopServer();
+				Minecraft.getMinecraft().loadWorld(null);
+				Minecraft.getMinecraft().displayGuiScreen(new GuiMainMenu());
+			}
+			else if (params[0].equalsIgnoreCase("new") && params.length > 1) {
+				long seed = 0;
+				
+				if (params.length > 2) {
+					try {seed = Long.parseLong(params[2]);}
+					catch (Exception ex) {sender.sendLangfileMessage("command.world.NAN", EnumChatFormatting.RED); seed = (new Random()).nextLong();}
+				}
+				else seed = (new Random()).nextLong();
+				
+				File parent = new File(Minecraft.getMinecraft().mcDataDir, "saves");
+				String name = params[1];
+				File child = new File(parent, name);
+				
+				if (child.exists())
+					throw new CommandException("command.world.cantcreate", sender);
+				
+				Minecraft.getMinecraft().launchIntegratedServer(name, name, new WorldSettings(seed, GameType.SURVIVAL, true, false, WorldType.DEFAULT));
+			}
+			else if (params[0].equalsIgnoreCase("list")) {
+				File parent = new File(Minecraft.getMinecraft().mcDataDir, "saves");
+				File list[] = parent.listFiles();
+				String saves = null;
+				
+				for (int i = 0; i < list.length; i++) {
+					if (list[i].isDirectory()) {
+						if (saves == null) saves = list[i].getName();
+						else saves += ", " + list[i].getName();
+					}
+				}
+				sender.sendLangfileMessage("command.world.saves");
+				sender.sendStringMessage(saves);
+			}
+			else if (params[0].equalsIgnoreCase("seed") || params[0].equals("name")) {
+				if (!AppliedPatches.serverModded())
+					throw new CommandException("command.world.serverNotModded", sender);
+				
+				MoreCommands.INSTANCE.getPacketDispatcher().sendC02World(params);
+			}
+			else throw new CommandException("command.world.invalidArg", sender);
 		}
-		else if (AppliedPatches.serverModded()) {
-			String command = "/world"; for (String param : params) command += " " + param;
-			Minecraft.getMinecraft().thePlayer.sendChatMessage(command);
-		}
-		else throw new CommandException("command.world.serverNotModded", sender);
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
 	}
 
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -148,13 +135,13 @@ public class CommandWorld extends ClientCommand {
 	}
 
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 
 	@Override
 	public boolean registerIfServerModded() {
-		return true;
+		return MoreCommands.getServerType() == ServerType.INTEGRATED;
 	}
 	
 	private boolean copyDirectory(File from, File to, LoadingScreenRenderer ipg) {
@@ -179,7 +166,6 @@ public class CommandWorld extends ClientCommand {
 		} catch (Exception e) {return false;}
 		return true;
 	}
-	
 	
 	@SuppressWarnings("resource")
 	private boolean copyFile(File sourceFile, File destFile) {

@@ -1,8 +1,10 @@
 package com.mrnobody.morecommands.command.server;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -18,7 +20,7 @@ import net.minecraft.nbt.NBTTagList;
 	example = "command.inventory.example",
 	videoURL = "command.inventory.videoURL"
 		)
-public class CommandInventory extends ServerCommand {
+public class CommandInventory extends StandardCommand implements ServerCommandProperties {
 	@Override
 	public String getName() {
 		return "inventory";
@@ -32,42 +34,38 @@ public class CommandInventory extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 1) {
-			ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
+			ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
 			if (settings == null) {throw new CommandException("command.inventory.noSettingsFound", sender);}
 			
 			if ((params[0].equalsIgnoreCase("delete") || params[0].equalsIgnoreCase("del") || params[0].equalsIgnoreCase("remove") || params[0].equalsIgnoreCase("rem"))) {
 				NBTTagList inventory = settings.inventories.get(params[1]);
 				if (inventory == null) throw new CommandException("command.inventory.notFound", sender, params[1]);
 				
-				settings.inventories.remove(params[1]);
-				settings.saveSettings();
-				
+				settings.inventories = settings.removeAndUpdate("inventories", params[1], NBTTagList.class, true);
 				sender.sendLangfileMessage("command.inventory.removeSuccess", params[1]);
 			}
 			else if (params[0].equalsIgnoreCase("load")) {
 				NBTTagList inventory = settings.inventories.get(params[1]);
-				if (inventory == null) throw new CommandException("command.inventory.notFound", sender, params[1]);
+				if (inventory == null) {throw new CommandException("command.inventory.notFound", sender, params[1]);}
 				
-				((EntityPlayerMP) sender.getMinecraftISender()).inventory.readFromNBT(inventory);
+				getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class).inventory.readFromNBT(inventory);
 				sender.sendLangfileMessage("command.inventory.loadSuccess", params[1]);
 			}
 			else if (params[0].equalsIgnoreCase("save")) {
 				NBTTagList inventory = new NBTTagList();
-				((EntityPlayerMP) sender.getMinecraftISender()).inventory.writeToNBT(inventory);
+				getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class).inventory.writeToNBT(inventory);
 				
-				settings.inventories.put(params[1], inventory);
-				settings.saveSettings();
-				
+				settings.inventories = settings.putAndUpdate("inventories", params[1], inventory, NBTTagList.class, true);
 				sender.sendLangfileMessage("command.inventory.saveSuccess", params[1]);
 			}
-			else throw new CommandException("command.inventory.invalidUsage", sender);
+			else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
 		}
-		else throw new CommandException("command.inventory.invalidUsage", sender);
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
 	}
 
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -76,12 +74,12 @@ public class CommandInventory extends ServerCommand {
 	}
 
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

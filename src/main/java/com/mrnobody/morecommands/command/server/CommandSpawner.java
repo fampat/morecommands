@@ -1,16 +1,20 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.EntityList;
-import net.minecraft.tileentity.TileEntityMobSpawner;
-import net.minecraft.util.BlockPos;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Entity;
+import com.mrnobody.morecommands.wrapper.EntityLivingBase;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.EntityList;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.tileentity.TileEntityMobSpawner;
+import net.minecraft.util.BlockPos;
 
 @Command(
 		description = "command.spawner.description",
@@ -19,7 +23,7 @@ import com.mrnobody.morecommands.wrapper.Entity;
 		syntax = "command.spawner.syntax",
 		videoURL = "command.spawner.videoURL"
 		)
-public class CommandSpawner extends ServerCommand {
+public class CommandSpawner extends StandardCommand implements ServerCommandProperties {
 	@Override
 	public String getName() {
 		return "spawner";
@@ -32,33 +36,37 @@ public class CommandSpawner extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-		Entity entity = new Entity((net.minecraft.entity.Entity) sender.getMinecraftISender());
-		BlockPos trace = entity.traceBlock(128.0D);
+		BlockPos trace;
+		
+		if (params.length > 3)
+			trace = getCoordFromParams(sender.getMinecraftISender(), params, 1);
+		else
+			trace = new EntityLivingBase(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.EntityLivingBase.class)).traceBlock(128D);
 
 		if (trace != null && params.length > 0) {
-			if (entity.getWorld().getTileEntity(trace) instanceof TileEntityMobSpawner) {
-				TileEntityMobSpawner spawner = (TileEntityMobSpawner) entity.getWorld().getTileEntity(trace);
+			if (sender.getWorld().getTileEntity(trace) instanceof TileEntityMobSpawner) {
+				TileEntityMobSpawner spawner = (TileEntityMobSpawner) sender.getWorld().getTileEntity(trace);
 				
 				if (Entity.getEntityClass(params[0]) == null) {
 					try {
 						params[0] = EntityList.getStringFromID(Integer.parseInt(params[0]));
-						if (params[0] == null) 
-							throw new CommandException("command.spawner.unknownEntityID", sender);
+						if (params[0] == null) throw new CommandException("command.spawner.unknownEntityID", sender);
 					} catch (NumberFormatException nfe) {throw new CommandException("command.spawner.unknownEntity", sender);}
 				}
 				
 				spawner.getSpawnerBaseLogic().setEntityName(params[0]);
 				spawner.getSpawnerBaseLogic().updateSpawner();
+				MinecraftServer.getServer().getConfigurationManager().sendPacketToAllPlayers(spawner.getDescriptionPacket());
 				sender.sendLangfileMessage("command.spawner.success");
 			}
 			else throw new CommandException("command.spawner.notASpawner", sender);
 		}
-		else throw new CommandException("command.spawner.invalidUsage", sender);
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
 	}
 
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -67,12 +75,12 @@ public class CommandSpawner extends ServerCommand {
 	}
 
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof net.minecraft.entity.Entity;
+	public boolean canSenderUse(String commanName, ICommandSender sender, String[] params) {
+		return params.length > 3 || isSenderOfEntityType(sender, net.minecraft.entity.EntityLivingBase.class);
 	}
 }

@@ -1,17 +1,18 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.patch.EntityPlayerMP;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 
 @Command(
 		name = "duplicate",
@@ -20,7 +21,7 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.duplicate.syntax",
 		videoURL = "command.duplicate.videoURL"
 		)
-public class CommandDuplicate extends ServerCommand {
+public class CommandDuplicate extends StandardCommand implements ServerCommandProperties {
 
 	@Override
 	public String getName() {
@@ -34,7 +35,7 @@ public class CommandDuplicate extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		EntityPlayer player = (EntityPlayer) sender.getMinecraftISender();
+		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 		
 		if (params.length > 0 && params[0].equalsIgnoreCase("all")) {
 			for (int i = 0; i < player.inventory.mainInventory.length; i++) {
@@ -58,19 +59,13 @@ public class CommandDuplicate extends ServerCommand {
 				EntityItem itemEntity = new EntityItem(player.worldObj, player.posX, player.posY, player.posZ, duplicate);
 				player.worldObj.spawnEntityInWorld(itemEntity);
 			}
-			
-			
 		}
 		else {
-			if (player.inventory.mainInventory[player.inventory.currentItem] == null) {
-				sender.sendLangfileMessage("command.duplicate.notSelected", new Object[0]);
-				return;
-			}
-			
+			if (player.inventory.mainInventory[player.inventory.currentItem] == null)
+				throw new CommandException("command.duplicate.notSelected", sender);
 			ItemStack item = player.inventory.mainInventory[player.inventory.currentItem];
 			ItemStack duplicate = new ItemStack(item.getItem(), item.stackSize, item.getItemDamage());
 			if (item.getTagCompound() != null) duplicate.setTagCompound((NBTTagCompound) item.getTagCompound().copy());
-			
 			EntityItem itemEntity = new EntityItem(player.worldObj, player.posX, player.posY, player.posZ, duplicate);
 			player.worldObj.spawnEntityInWorld(itemEntity);
 		}
@@ -79,22 +74,22 @@ public class CommandDuplicate extends ServerCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
-	
+
 	@Override
 	public ServerType getAllowedServerType() {
 		return ServerType.ALL;
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

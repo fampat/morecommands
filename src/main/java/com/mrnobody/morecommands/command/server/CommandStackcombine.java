@@ -1,8 +1,10 @@
 package com.mrnobody.morecommands.command.server;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
@@ -17,19 +19,17 @@ import net.minecraft.item.ItemStack;
 		syntax = "command.stackcombine.syntax",
 		videoURL = "command.stackcombine.videoURL"
 		)
-public class CommandStackcombine extends ServerCommand {
-    public String getName()
-    {
-        return "stackcombine";
-    }
+public class CommandStackcombine extends StandardCommand implements ServerCommandProperties {
+	public String getName() {
+		return "stackcombine";
+	}
     
-    public String getUsage()
-    {
-        return "command.stackcombine.syntax";
-    }
+	public String getUsage() {
+		return "command.stackcombine.syntax";
+	}
     
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
+		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 		
 		for (int i = 0; i < player.inventory.mainInventory.length; i++) {
 			ItemStack sloti = player.inventory.mainInventory[i];
@@ -56,8 +56,8 @@ public class CommandStackcombine extends ServerCommand {
 	}
     
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 	
 	@Override
@@ -66,12 +66,12 @@ public class CommandStackcombine extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }
