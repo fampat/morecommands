@@ -2,21 +2,24 @@ package com.mrnobody.morecommands.command.server;
 
 import java.util.Iterator;
 
+import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.wrapper.CommandException;
+import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.wrapper.Coordinate;
+
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.item.EntityTNTPrimed;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
 
 @Command(
 		name = "defuse",
@@ -25,7 +28,7 @@ import com.mrnobody.morecommands.wrapper.Coordinate;
 		syntax = "command.defuse.syntax",
 		videoURL = "command.defuse.videoURL"
 		)
-public class CommandDefuse extends ServerCommand {
+public class CommandDefuse extends StandardCommand implements ServerCommandProperties {
 
 	@Override
 	public String getCommandName() {
@@ -55,7 +58,7 @@ public class CommandDefuse extends ServerCommand {
 			Entity tntPrimed = tntPrimedIterator.next();
 			tntPrimed.setDead();
 			
-			EntityItem tnt = new EntityItem(world, tntPrimed.posX, tntPrimed.posY, tntPrimed.posZ, new ItemStack((Item) Item.itemRegistry.getObject("tnt"), 1));
+			EntityItem tnt = new EntityItem(world, tntPrimed.posX, tntPrimed.posY, tntPrimed.posZ, new ItemStack(Item.getItemFromBlock(Blocks.tnt), 1));
 			world.spawnEntityInWorld(tnt);
 		}
 		
@@ -63,8 +66,8 @@ public class CommandDefuse extends ServerCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -73,12 +76,12 @@ public class CommandDefuse extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
 		return true;
 	}
 }

@@ -2,9 +2,11 @@ package com.mrnobody.morecommands.command.client;
 
 import java.util.Iterator;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.ClientCommand;
+import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
@@ -20,7 +22,7 @@ import net.minecraft.server.integrated.IntegratedServer;
 		syntax = "command.sudo.syntax",
 		videoURL = "command.sudo.videoURL"
 		)
-public class CommandSudo extends ClientCommand {
+public class CommandSudo extends StandardCommand implements ClientCommandProperties {
 
 	@Override
 	public String getCommandName() {
@@ -74,8 +76,8 @@ public class CommandSudo extends ClientCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -84,7 +86,7 @@ public class CommandSudo extends ClientCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 

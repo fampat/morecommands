@@ -1,7 +1,9 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -15,7 +17,7 @@ import net.minecraft.command.ICommandSender;
 		syntax = "command.cheats.syntax",
 		videoURL = "command.cheats.videoURL"
 		)
-public class CommandCheats extends ServerCommand {
+public class CommandCheats extends StandardCommand implements ServerCommandProperties {
 
 	@Override
 	public boolean canCommandSenderUseCommand(ICommandSender sender) {return true;}
@@ -40,8 +42,8 @@ public class CommandCheats extends ServerCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -50,12 +52,12 @@ public class CommandCheats extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
 		return true;
 	}
 }

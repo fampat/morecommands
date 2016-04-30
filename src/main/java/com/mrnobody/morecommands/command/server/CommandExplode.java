@@ -1,15 +1,16 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.EntityLivingBase;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.Entity;
+import com.mrnobody.morecommands.wrapper.EntityLivingBase;
+
+import net.minecraft.command.ICommandSender;
 
 @Command(
 		name = "explode",
@@ -18,7 +19,7 @@ import com.mrnobody.morecommands.wrapper.Entity;
 		syntax = "command.explode.syntax",
 		videoURL = "command.explode.videoURL"
 		)
-public class CommandExplode extends ServerCommand {
+public class CommandExplode extends StandardCommand implements ServerCommandProperties {
 
 	@Override
 	public String getCommandName() {
@@ -32,7 +33,7 @@ public class CommandExplode extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Entity entity = new Entity((net.minecraft.entity.EntityLivingBase) sender.getMinecraftISender());
+		EntityLivingBase entity = new EntityLivingBase(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.EntityLivingBase.class));
 		int size = 4;
 		Coordinate spawn = entity.traceBlock(128.0D);
 		boolean success = spawn != null;
@@ -66,8 +67,8 @@ public class CommandExplode extends ServerCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -76,12 +77,12 @@ public class CommandExplode extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityLivingBase;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, net.minecraft.entity.EntityLivingBase.class);
 	}
 }

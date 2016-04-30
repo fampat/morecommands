@@ -1,10 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.EventListener;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -20,15 +22,15 @@ import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 		syntax = "command.breakspeed.syntax",
 		videoURL = "command.breakspeed.videoURL"
 		)
-public class CommandBreakspeed extends ServerCommand implements EventListener<BreakSpeed> {
-	public CommandBreakspeed() {EventHandler.BREAKSPEED.getHandler().register(this);}
+public class CommandBreakspeed extends StandardCommand implements ServerCommandProperties, EventListener<BreakSpeed> {
+	public CommandBreakspeed() {EventHandler.BREAKSPEED.register(this);}
 	
 	@Override
 	public void onEvent(BreakSpeed event) {
 		if (!(event.entityPlayer instanceof EntityPlayerMP)) return;
 		
-		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) event.entityPlayer);
-		event.newSpeed = settings.breakSpeedEnabled ? settings.breakspeed : event.originalSpeed;
+		ServerPlayerSettings settings = getPlayerSettings((EntityPlayerMP) event.entityPlayer);
+		event.newSpeed = settings.breakspeed > 0 ? settings.breakspeed : event.originalSpeed;
 	}
 
 	@Override
@@ -43,39 +45,28 @@ public class CommandBreakspeed extends ServerCommand implements EventListener<Br
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
-		
-		boolean enable = true;
-		boolean setspeed = false;
+		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
 		float speed = 0.0F;
 		
 		if (params.length > 0) {
-			if (params[0].equalsIgnoreCase("reset")) {enable = false;}
-			else if (params[0].equalsIgnoreCase("max")) {speed = Float.MAX_VALUE; enable = true; setspeed = true;}
-			else if (params[0].equalsIgnoreCase("min")) {speed = 0.0F; enable = true; setspeed = true;}
+			if (params[0].equalsIgnoreCase("reset")) {speed = -1F;}
+			else if (params[0].equalsIgnoreCase("max")) {speed = Float.MAX_VALUE;}
+			else if (params[0].equalsIgnoreCase("min")) {speed = Float.MIN_VALUE;}
 			else {
-				try {speed = Float.parseFloat(params[0]); enable = true; setspeed = true;}
+				try {speed = Float.parseFloat(params[0]);}
 				catch (NumberFormatException e) {throw new CommandException("command.breakspeed.invalidArg", sender);}
 			}
 		}
-		else throw new CommandException("command.breakspeed.invalidUsage", sender);
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		
-		if (enable) {
-			settings.breakSpeedEnabled = true;
-			if (setspeed) {
-				settings.breakspeed = speed;
-				sender.sendLangfileMessage("command.breakspeed.setto", speed);
-			}
-		}
-		else {
-			settings.breakSpeedEnabled = false;
-			sender.sendLangfileMessage("command.breakspeed.reset");
-		}
+		settings.breakspeed = speed;
+		sender.sendLangfileMessage(params.length > 0 && params[0].equalsIgnoreCase("reset") ? "command.breakspeed.reset" : 
+			"command.breakspeed.setto", params.length > 0 && params[0].equalsIgnoreCase("reset") ? new Object[0] : speed);
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -84,12 +75,12 @@ public class CommandBreakspeed extends ServerCommand implements EventListener<Br
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

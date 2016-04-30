@@ -3,9 +3,11 @@ package com.mrnobody.morecommands.command.client;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.ClientCommand;
+import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.Reference;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -21,7 +23,7 @@ import net.minecraft.util.EnumChatFormatting;
 		syntax = "command.morecommands.syntax",
 		videoURL = "command.morecommands.videoURL"
 		)
-public class CommandMorecommands extends ClientCommand {
+public class CommandMorecommands extends StandardCommand implements ClientCommandProperties {
 
 	@Override
 	public String getCommandName() {
@@ -60,8 +62,8 @@ public class CommandMorecommands extends ClientCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -75,7 +77,7 @@ public class CommandMorecommands extends ClientCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 }

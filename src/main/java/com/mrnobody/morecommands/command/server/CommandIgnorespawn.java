@@ -3,17 +3,19 @@ package com.mrnobody.morecommands.command.server;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.event.Listeners.EventListener;
+import com.mrnobody.morecommands.wrapper.CommandException;
+import com.mrnobody.morecommands.wrapper.CommandSender;
+
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.EntityList;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.EventListener;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 @Command(
 		name="ignorespawn",
@@ -22,11 +24,11 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax="command.ignorespawn.syntax",
 		videoURL="command.ignorespawn.videoURL"
 		)
-public class CommandIgnorespawn extends ServerCommand implements EventListener<EntityJoinWorldEvent> {
+public class CommandIgnorespawn extends StandardCommand implements ServerCommandProperties, EventListener<EntityJoinWorldEvent> {
 	private List<Class<? extends net.minecraft.entity.Entity>> ignoreSpawn = new ArrayList<Class<? extends net.minecraft.entity.Entity>>();
   
 	public CommandIgnorespawn() {
-		EventHandler.ENTITYJOIN.getHandler().register(this);
+		EventHandler.ENTITYJOIN.register(this);
 	}
   
 	@Override
@@ -36,7 +38,7 @@ public class CommandIgnorespawn extends ServerCommand implements EventListener<E
 	}
   
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
 		return true;
 	}
   
@@ -69,12 +71,12 @@ public class CommandIgnorespawn extends ServerCommand implements EventListener<E
 				sender.sendLangfileMessage("command.ignorespawn.added");
 			}
 		}
-		else throw new CommandException("command.ignorespawn.invalidUsage", sender);
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 	}
   
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
   
 	@Override
@@ -83,7 +85,7 @@ public class CommandIgnorespawn extends ServerCommand implements EventListener<E
 	}
   
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 }

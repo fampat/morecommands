@@ -2,25 +2,33 @@ package com.mrnobody.morecommands.util;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.FilenameFilter;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.mrnobody.morecommands.core.MoreCommands;
 
 /**
  * A class managing languages included in this mod.
- * Forge registers languages only client side. <br>
- * Clients which don't have this mod installed wouldn't
- * get a translation.
+ * The reason why this is needed is that minecraft's
+ * {@link net.minecraft.util.ChatComponentTranslation}
+ * translates only client side but MoreCommands does
+ * not have to be installed client side to work
+ * properly. Clients which don't have installed
+ * MoreCommands would not get a translation and this is
+ * why this custom language manager is used.
  * 
  * @author MrNobody98
  *
  */
-public class LanguageManager {
+public final class LanguageManager {
+	private LanguageManager() {}
+	
 	public static final String defaultLanguage = "en_US";
 	private static final Splitter equalSignSplitter = Splitter.on('=').limit(2);
 	
@@ -37,7 +45,7 @@ public class LanguageManager {
 	 * Reads translations
 	 */
 	public static void readTranslations() {
-		Map<String, File> langs = MoreCommands.CLASSLOADER.getResources("assets." + Reference.MODID + ".lang", filter);
+		Map<String, File> langs = MoreCommands.INSTANCE.getCommandClassLoader().getResources("assets." + Reference.MODID + ".lang", filter);
 		if (langs == null) return;
 		Map<String, String> map;
 		BufferedReader reader;
@@ -50,8 +58,7 @@ public class LanguageManager {
 				map = new HashMap<String, String>();
 				lang = langs.get(filename);
 				languages.put(filename.split("\\.")[0], map);
-				
-				reader = new BufferedReader(new FileReader(lang));
+				reader = new BufferedReader(new InputStreamReader(new FileInputStream(lang), Charsets.UTF_8));
 					
 				while ((line = reader.readLine()) != null) {
 					translate = (String[]) Iterables.toArray(equalSignSplitter.split(line), String.class);
@@ -59,14 +66,15 @@ public class LanguageManager {
 				}
 				
 				reader.close();
-				MoreCommands.getMoreCommands().getLogger().info("Language '" + filename.split("\\.")[0] + "' successfully loaded");
 			}
 			catch (Exception ex) {ex.printStackTrace();}
 		}
+		
+		MoreCommands.INSTANCE.getLogger().info("The following languages were loaded successfully: " + languages.keySet());
 	}
 	
 	/**
-	 * Gets a translation
+	 * Gets the translation for a key
 	 */
 	public static String translate(String locale, String untranlated, Object... formatArgs) {
 		Map<String, String> translation;

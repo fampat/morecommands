@@ -1,120 +1,154 @@
 package com.mrnobody.morecommands.command.server;
 
+import java.util.Arrays;
 import java.util.Map;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.MultipleCommands;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.EventListener;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.util.DummyCommand;
-import com.mrnobody.morecommands.util.DummyCommand.DummyServerCommand;
+import com.mrnobody.morecommands.util.GlobalSettings;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
+import net.minecraft.command.CommandNotFoundException;
+import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.command.ServerCommandManager;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.CommandEvent;
 
-@Command(
-		name = "alias",
-		description = "command.alias.description",
-		example = "command.alias.example",
-		syntax = "command.alias.syntax",
-		videoURL = "command.alias.videoURL"
+@Command.MultipleCommand(
+		name = {"alias", "alias_global", "unalias", "unalias_global"},
+		description = {"command.alias.description", "command.alias.global.description", "command.unalias.description", "command.unalias.global.description"},
+		example = {"command.alias.example", "command.alias.global.example", "command.unalias.example", "command.unalias.global.example"},
+		syntax = {"command.alias.syntax", "command.alias.global.syntax", "command.unalias.syntax", "command.unalias.global.syntax"},
+		videoURL = {"command.alias.videoURL", "command.alias.global.videoURL", "command.unalias.videoURL", "command.unalias.global.videoURL"}
 		)
-public class CommandAlias extends ServerCommand implements EventListener<CommandEvent> {
-	private final net.minecraft.command.CommandHandler commandHandler = (net.minecraft.command.CommandHandler) MinecraftServer.getServer().getCommandManager();
+public class CommandAlias extends MultipleCommands implements ServerCommandProperties, EventListener<CommandEvent> {
+	public CommandAlias(int typeIndex) {
+		super(typeIndex);
+	}
 	
 	public CommandAlias() {
-		EventHandler.COMMAND.getHandler().register(this);
+		super();
+		EventHandler.COMMAND.register(this);
 	}
 	
 	@Override
 	public void onEvent(CommandEvent event) {
-		if (event.command instanceof DummyServerCommand && event.sender instanceof EntityPlayerMP) {
-			DummyServerCommand cmd = (DummyServerCommand) event.command;
-			String command = cmd.getOriginalCommandName(event.sender);
+		if (event.command instanceof DummyCommand && !((DummyCommand) event.command).isClient()) {
+			String command = null;
+			
+			if (isSenderOfEntityType(event.sender, EntityPlayerMP.class)) {
+				PlayerPatches playerInfo = MoreCommands.INSTANCE.getEntityProperties(PlayerPatches.class, PlayerPatches.PLAYERPATCHES_IDENTIFIER, getSenderAsEntity(event.sender, EntityPlayerMP.class));
+				command = playerInfo != null && playerInfo.clientModded() ? null :
+				getPlayerSettings(getSenderAsEntity(event.sender, EntityPlayerMP.class)).aliases.get(event.command.getCommandName());
+				
+				if (command == null && GlobalSettings.enableGlobalAliases)
+					command = GlobalSettings.getAliases(MoreCommands.getProxy().getCurrentWorld(), event.sender.getEntityWorld().provider.getDimensionName()).get(event.command.getCommandName());
+				else if (!GlobalSettings.enablePlayerAliases)
+					command = null;
+			}
+			else if (GlobalSettings.enableGlobalAliases)
+				command = GlobalSettings.getAliases(MoreCommands.getProxy().getCurrentWorld(), event.sender.getEntityWorld().provider.getDimensionName()).get(event.command.getCommandName());
 			
 			if (command != null) {
 				event.exception = null;
 				event.setCanceled(true);
 				
-				for (String p : event.parameters) command += " " + p;
-				
-				if (cmd.getSenderSideMapping().get(event.sender))
-					MoreCommands.getMoreCommands().getPacketDispatcher().sendS10ExecuteClientCommand((EntityPlayerMP) event.sender, command);
-				else commandHandler.executeCommand(event.sender, command);
+				command += " " + rejoinParams(event.parameters);
+				MinecraftServer.getServer().getCommandManager().executeCommand(event.sender, command);
+			}
+			else {
+				event.exception = new CommandNotFoundException();
+				event.setCanceled(true);
 			}
 		}
-	}
-
-	@Override
-	public String getCommandName() {
-		return "alias";
-	}
-
-	@Override
-	public String getUsage() {
-		return "command.alias.syntax";
-	}
-
-	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
-    	
-		if (params.length > 1) {
-			String alias = params[0];
-			String command = params[1];
-			String parameters = "";
-			
-			if (params.length > 2) {
-				int index = 0;
-				
-				for (String param : params) {
-					if (index > 1) {parameters += " " + param;}
-					index++;
-				}
-			}
-			
-			if (!command.equalsIgnoreCase(alias)) {
-				if (commandHandler.getCommands().get(command) != null || settings.clientCommands.contains(command)) {
-					boolean clientSide = settings.clientCommands.contains(command);
-
-					if (!clientSide && commandHandler.getCommands().get(command) instanceof DummyServerCommand) {
-						command = ((DummyServerCommand) commandHandler.getCommands().get(command)).getOriginalCommandName(sender.getMinecraftISender());
-					}
-					
-					if (commandHandler.getCommands().get(alias) == null) {
-						DummyServerCommand cmd = new DummyServerCommand(alias, sender.getMinecraftISender(), command + parameters, clientSide);
-						commandHandler.getCommands().put(alias, cmd);
-					}
-					else if (commandHandler.getCommands().get(alias) instanceof DummyServerCommand) {
-						DummyServerCommand cmd = (DummyServerCommand) commandHandler.getCommands().get(alias);
-						cmd.setOriginalCommandName(sender.getMinecraftISender(), command + parameters);
-						cmd.getSenderSideMapping().put(sender.getMinecraftISender(), clientSide);
-					}
-					else throw new CommandException("command.alias.overwrite", sender);
-					
-					if (settings.clientCommands.contains(command)) settings.clientAliasMapping.put(alias, command + parameters);
-					else settings.serverAliasMapping.put(alias, command + parameters);
-					settings.saveSettings();
-					
-					sender.sendLangfileMessage("command.alias.success");
-				}
-				else throw new CommandException("command.generic.notFound", sender);
-			}
-			else throw new CommandException("command.alias.infiniteRecursion", sender);
-		}
-		else throw new CommandException("command.alias.invalidUsage", sender);
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[] {Requirement.HANDSHAKE_FINISHED_IF_CLIENT_MODDED};
+	public String[] getCommandNames() {
+		return new String[] {"alias", "alias_global", "unalias", "unalias_global"};
+	}
+
+	@Override
+	public String[] getUsages() {
+		return new String[] {"command.alias.syntax", "command.alias.global.syntax", "command.unalias.syntax", "command.unalias.global.syntax"};
+	}
+
+	@Override
+	public void execute(String commandName, CommandSender sender, String[] params) throws CommandException {
+		boolean global = commandName.endsWith("global"), remove = commandName.startsWith("unalias");
+		ServerPlayerSettings settings = global ? null : getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
+		ServerCommandManager commandManager = (ServerCommandManager) MinecraftServer.getServer().getCommandManager();
+		
+		if (!global) {
+			PlayerPatches playerInfo = MoreCommands.INSTANCE.getEntityProperties(PlayerPatches.class, PlayerPatches.PLAYERPATCHES_IDENTIFIER, getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
+			if (playerInfo != null && playerInfo.clientModded()) throw new CommandException(new CommandNotFoundException());
+		}
+		
+		if (global && !GlobalSettings.enableGlobalAliases)
+			throw new CommandException("command.alias.global.aliasesDisabled", sender);
+		else if (!global && !GlobalSettings.enablePlayerAliases)
+			throw new CommandException("command.alias.aliasesDisabled", sender);
+		
+		String world = MoreCommands.getProxy().getCurrentWorld(), dim = sender.getMinecraftISender().getEntityWorld().provider.getDimensionName();
+		Map<String, String> aliases = global ? GlobalSettings.getAliases(world, dim) : settings.aliases;
+		
+		if (remove) {
+			if (params.length > 0) {
+				String alias = params[0];
+				ICommand command = (ICommand) commandManager.getCommands().get(alias);
+				
+				if (command != null && command instanceof DummyCommand && aliases.containsKey(alias)) {
+					if (!global) settings.aliases = settings.removeAndUpdate("aliases", alias, String.class, true);
+					else GlobalSettings.removeAlias(world, dim, alias);
+					sender.sendLangfileMessage("command.unalias.success");
+				}
+				else throw new CommandException("command.unalias.notFound", sender);
+			}
+			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		}
+		else {
+			if (params.length > 1) {
+				String alias = params[0];
+				String command = params[1];
+				String parameters = params.length > 2 ? " " + rejoinParams(Arrays.copyOfRange(params, 2, params.length)) : "";
+				
+				if (!command.equalsIgnoreCase(alias)) {
+					if (commandManager.getCommands().get(alias) == null) {
+						DummyCommand cmd = new DummyCommand(alias, false);
+						commandManager.getCommands().put(alias, cmd);
+					}
+					else if (!(commandManager.getCommands().get(alias) instanceof DummyCommand))
+						throw new CommandException("command.alias.overwrite", sender);
+					
+					if (!global) settings.aliases = settings.putAndUpdate("aliases", alias, command + parameters, String.class, true);
+					else {
+						GlobalSettings.removeAlias(world, dim, alias); 
+						GlobalSettings.putAlias(GlobalSettings.getSaveProp("aliases").getLeft() ? world : null, 
+						GlobalSettings.getSaveProp("aliases").getRight() ? dim : null, alias, command + parameters);
+					}
+					sender.sendLangfileMessage("command.alias.success");
+				}
+				else throw new CommandException("command.alias.infiniteRecursion", sender);
+			}
+			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		}
+	}
+	
+	@Override
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[] {};
 	}
 	
 	@Override
@@ -122,60 +156,13 @@ public class CommandAlias extends ServerCommand implements EventListener<Command
 		return ServerType.ALL;
 	}
 	
-	/**
-	 * Reads aliases for the given server player and registers them
-	 */
-	public static void registerAliases(EntityPlayerMP player) {
-		Map<String, String> clientAliases = ServerPlayerSettings.getPlayerSettings(player).clientAliasMapping;
-		Map<String, String> serverAliases = ServerPlayerSettings.getPlayerSettings(player).serverAliasMapping;
-		
-		net.minecraft.command.CommandHandler commandHandler = (net.minecraft.command.CommandHandler) MinecraftServer.getServer().getCommandManager();
-		String command;
-		
-		for (String alias : serverAliases.keySet()) {
-			command = serverAliases.get(alias).split(" ")[0];
-			
-			if (!command.equalsIgnoreCase(alias)) {
-				if (commandHandler.getCommands().get(command) != null) {
-					if (commandHandler.getCommands().get(command) instanceof DummyServerCommand) {
-						command = ((DummyServerCommand) commandHandler.getCommands().get(command)).getOriginalCommandName(player);
-					}
-					
-					if (commandHandler.getCommands().get(alias) == null) {
-						DummyCommand cmd = new DummyServerCommand(alias, player, serverAliases.get(alias), false);
-						commandHandler.getCommands().put(alias, cmd);
-					}
-					else if (commandHandler.getCommands().get(alias) instanceof DummyServerCommand) {
-						DummyServerCommand cmd = (DummyServerCommand) commandHandler.getCommands().get(alias);
-						cmd.setOriginalCommandName(player, serverAliases.get(alias));
-					}
-				}
-			}
-		}
-		
-		for (String alias : clientAliases.keySet()) {
-			command = clientAliases.get(alias).split(" ")[0];
-			
-			if (!command.equalsIgnoreCase(alias)) {
-				if (commandHandler.getCommands().get(alias) == null) {
-					DummyCommand cmd = new DummyServerCommand(alias, player, clientAliases.get(alias), true);
-					commandHandler.getCommands().put(alias, cmd);
-				}
-				else if (commandHandler.getCommands().get(alias) instanceof DummyServerCommand) {
-					DummyServerCommand cmd = (DummyServerCommand) commandHandler.getCommands().get(alias);
-					cmd.setOriginalCommandName(player, serverAliases.get(alias));
-				}
-			}
-		}
-	}
-	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return commandName.endsWith("global") ? true : isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

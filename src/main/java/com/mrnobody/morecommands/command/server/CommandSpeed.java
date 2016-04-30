@@ -3,21 +3,23 @@ package com.mrnobody.morecommands.command.server;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.EventListener;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.event.Listeners.EventListener;
+import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
+import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedMethod;
 import com.mrnobody.morecommands.util.ReflectionHelper;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
 
-import net.minecraft.block.BlockRailBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.item.EntityMinecart;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.entity.player.PlayerCapabilities;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 
 @Command(
@@ -27,29 +29,27 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 		syntax = "command.speed.syntax",
 		videoURL = "command.speed.videoURL"
 		)
-public class CommandSpeed extends ServerCommand implements EventListener<EntityJoinWorldEvent> {
+public class CommandSpeed extends StandardCommand implements ServerCommandProperties, EventListener<EntityJoinWorldEvent> {
 	private final float walkSpeedDefault = 0.1F;
 	private final float flySpeedDefault = 0.05F;
 	private final float railSpeedDefault = 0.4F;
 	private final float minecartSpeedDefault = 1.2F;
 	
-	private float currentMinecartSpeed = minecartSpeedDefault;
+	private float currentMinecartSpeed = this.minecartSpeedDefault;
 	
-	private final Field walkSpeed = ReflectionHelper.getField(PlayerCapabilities.class, "walkSpeed");
-	private final Field flySpeed = ReflectionHelper.getField(PlayerCapabilities.class, "flySpeed");
-	private final Field minecartSpeed = ReflectionHelper.getField(EntityMinecart.class, "currentSpeedRail");
-	private final Method setRailSpeed = ReflectionHelper.getMethod(BlockRailBase.class, "setMaxRailSpeed", float.class);
+	private final Field walkSpeed = ReflectionHelper.getField(ObfuscatedField.PlayerCapabilities_walkSpeed);
+	private final Field flySpeed = ReflectionHelper.getField(ObfuscatedField.PlayerCapabilities_flySpeed);
+	private final Field minecartSpeed = ReflectionHelper.getField(ObfuscatedField.EntityMinecart_currentSpeedRail);
+	private final Method setRailSpeed = ReflectionHelper.getMethod(ObfuscatedMethod.BlockRailBase_setMaxRailSpeed);
 
 	public CommandSpeed() {
-		EventHandler.ENTITYJOIN.getHandler().register(this);
+		EventHandler.ENTITYJOIN.register(this);
 	}
 	
 	@Override
 	public void onEvent(EntityJoinWorldEvent event) {
-		if (event.entity instanceof EntityMinecart) {
-			try {this.minecartSpeed.setFloat(event.entity, this.currentMinecartSpeed);}
-			catch (Exception ex) {}
-		}
+		if (this.minecartSpeed != null && event.entity instanceof EntityMinecart)
+			ReflectionHelper.set(ObfuscatedField.EntityMinecart_currentSpeedRail, this.minecartSpeed, (EntityMinecart) event.entity, this.currentMinecartSpeed);
 	}
 	
 	@Override
@@ -64,8 +64,8 @@ public class CommandSpeed extends ServerCommand implements EventListener<EntityJ
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
-		if (this.walkSpeed == null || this.flySpeed == null)
+		Player player = params.length > 0 && params[0].equalsIgnoreCase("minecart") ? null : new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
+		if (this.minecartSpeed == null || this.setRailSpeed == null || this.walkSpeed == null || this.flySpeed == null)
 			throw new CommandException("command.speed.error", sender);
 		
 		if (params.length > 1) {
@@ -96,7 +96,8 @@ public class CommandSpeed extends ServerCommand implements EventListener<EntityJ
 							sender.sendLangfileMessage("command.speed.minecartSet");
 						}
 						
-						player.getMinecraftPlayer().sendPlayerAbilities();
+						if (player != null)
+							player.getMinecraftPlayer().sendPlayerAbilities();
 					}
 					else throw new CommandException("command.speed.noArg", sender);
 				}
@@ -125,18 +126,19 @@ public class CommandSpeed extends ServerCommand implements EventListener<EntityJ
 						sender.sendLangfileMessage("command.speed.minecartReset");
 					}
 					
-					player.getMinecraftPlayer().sendPlayerAbilities();
+					if (player != null)
+						player.getMinecraftPlayer().sendPlayerAbilities();
 				}
-				else throw new CommandException("command.speed.invalidUsage", sender);
+				else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 			}
-			else throw new CommandException("command.speed.invalidUsage", sender);
+			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
-		else throw new CommandException("command.speed.invalidUsage", sender);
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 	
 	@Override
@@ -145,12 +147,12 @@ public class CommandSpeed extends ServerCommand implements EventListener<EntityJ
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return params.length > 0 && params[0].equalsIgnoreCase("minecart") ? true : isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

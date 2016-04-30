@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
+import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.util.PlayerSettings;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -15,12 +17,15 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.play.server.S05PacketSpawnPosition;
 import net.minecraft.network.play.server.S07PacketRespawn;
+import net.minecraft.network.play.server.S1DPacketEntityEffect;
 import net.minecraft.network.play.server.S1FPacketSetExperience;
 import net.minecraft.network.play.server.S2BPacketChangeGameState;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.management.ItemInWorldManager;
 import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldSettings;
@@ -157,13 +162,45 @@ public class ServerConfigurationManagerIntegrated extends net.minecraft.server.i
         entityplayermp1.addSelfToInternalCraftingInventory();
         entityplayermp1.setHealth(entityplayermp1.getHealth());
         
-        if (ServerPlayerSettings.containsSettingsForPlayer(p_72368_1_) && ServerPlayerSettings.getPlayerSettings(p_72368_1_).keepinventory) {
+        ServerPlayerSettings settings = MoreCommands.getEntityProperties(ServerPlayerSettings.class, PlayerSettings.MORECOMMANDS_IDENTIFIER, p_72368_1_);
+        if (settings != null && settings.keepinventory) {
         	entityplayermp1.inventory.copyInventory(p_72368_1_.inventory);
         	((com.mrnobody.morecommands.patch.EntityPlayerMP) entityplayermp1).setKeepInventory(true);
         }
         
         FMLCommonHandler.instance().firePlayerRespawnEvent(entityplayermp1);
         return entityplayermp1;
+    }
+	
+    public void transferPlayerToDimension(EntityPlayerMP p_72356_1_, int p_72356_2_, Teleporter teleporter)
+    {
+        int j = p_72356_1_.dimension;
+        WorldServer worldserver = this.mcServer.worldServerForDimension(p_72356_1_.dimension);
+        p_72356_1_.dimension = p_72356_2_;
+        WorldServer worldserver1 = this.mcServer.worldServerForDimension(p_72356_1_.dimension);
+        p_72356_1_.playerNetServerHandler.sendPacket(new S07PacketRespawn(p_72356_1_.dimension, worldserver1.difficultySetting, worldserver1.getWorldInfo().getTerrainType(), p_72356_1_.theItemInWorldManager.getGameType())); // Forge: Use new dimensions information
+        
+        //MoreCommands Bug fix: client world has wrong spawn position, because WorldClient is recreated after receiving S07PacketRespawn
+        //with default spawn coordinates 8, 64, 8. This causes e.g. the compass to point to a wrong direction. Solution is sending a S05PacketSpawnPosition.
+        //Fixes https://bugs.mojang.com/browse/MC-679
+        p_72356_1_.playerNetServerHandler.sendPacket(new S05PacketSpawnPosition(worldserver1.getWorldInfo().getSpawnX(), worldserver1.getWorldInfo().getSpawnY(), worldserver1.getWorldInfo().getSpawnZ()));
+        
+        worldserver.removePlayerEntityDangerously(p_72356_1_);
+        p_72356_1_.isDead = false;
+        this.transferEntityToWorld(p_72356_1_, j, worldserver, worldserver1, teleporter);
+        this.func_72375_a(p_72356_1_, worldserver);
+        p_72356_1_.playerNetServerHandler.setPlayerLocation(p_72356_1_.posX, p_72356_1_.posY, p_72356_1_.posZ, p_72356_1_.rotationYaw, p_72356_1_.rotationPitch);
+        p_72356_1_.theItemInWorldManager.setWorld(worldserver1);
+        this.updateTimeAndWeatherForPlayer(p_72356_1_, worldserver1);
+        this.syncPlayerInventory(p_72356_1_);
+        Iterator iterator = p_72356_1_.getActivePotionEffects().iterator();
+
+        while (iterator.hasNext())
+        {
+            PotionEffect potioneffect = (PotionEffect)iterator.next();
+            p_72356_1_.playerNetServerHandler.sendPacket(new S1DPacketEntityEffect(p_72356_1_.getEntityId(), potioneffect));
+        }
+        FMLCommonHandler.instance().firePlayerChangedDimensionEvent(p_72356_1_, j, p_72356_2_);
     }
 	
     private void func_72381_a(EntityPlayerMP p_72381_1_, EntityPlayerMP p_72381_2_, World p_72381_3_)

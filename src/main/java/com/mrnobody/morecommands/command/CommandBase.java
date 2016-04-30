@@ -4,94 +4,71 @@ import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
+import cpw.mods.fml.relauncher.Side;
 import net.minecraft.command.ICommandSender;
 
 /**
- * Base class for all commands
+ * A wrapper class for {@link StandardCommand}s that delegates
+ * all method calls to the wrapped {@link StandardCommand}
  * 
  * @author MrNobody98
  */
-public abstract class CommandBase extends net.minecraft.command.CommandBase {
-	/**
-	 * An enum of requirements for a command to be executed properly
-	 * 
-	 * @author MrNobody98
-	 */
-	public static enum Requirement {
-		PATCH_NETHANDLERPLAYSERVER,
-		PATCH_ENTITYCLIENTPLAYERMP,
-		PATCH_ENTITYPLAYERMP,
-		MODDED_CLIENT,
-		HANDSHAKE_FINISHED,
-		HANDSHAKE_FINISHED_IF_CLIENT_MODDED,
-		PATCH_SERVERCONFIGMANAGER,
-		PATCH_CLIENTCOMMANDHANDLER,
-		PATCH_SERVERCOMMANDHANDLER
+public abstract class CommandBase<T extends StandardCommand> extends AbstractCommand {
+	private final T delegate;
+	
+	protected CommandBase(T delegate) {
+		if (delegate == null) throw new NullPointerException("delegate == null");
+		this.delegate = delegate;
+	}
+	
+	public T getDelegate() {
+		return this.delegate;
+	}
+
+	@Override
+	public String getCommandName() {
+		return this.delegate.getCommandName();
+	}
+	
+	@Override
+	public String getUsage() {
+		return this.delegate.getUsage();
+	}
+	
+	@Override
+	public final void processCommand(ICommandSender sender, String[] params) {
+    	if (this.checkRequirements(sender, params, this.getSide())) {
+        	try {this.execute(new CommandSender(sender), params);}
+        	catch (CommandException e) {
+        		if (e.getCause() instanceof net.minecraft.command.CommandException)
+        				throw (net.minecraft.command.CommandException) e.getCause();
+        		else if (e.getMessage() != null) throw new net.minecraft.command.CommandException(e.getMessage());
+        	}
+    	}
+    }
+	
+	@Override
+	public void execute(CommandSender sender, String[] params) throws CommandException {
+		this.delegate.execute(sender, params);
+	}
+
+	@Override
+	public CommandRequirement[] getRequirements() {
+		return this.delegate.getRequirements();
+	}
+
+	@Override
+	public ServerType getAllowedServerType() {
+		return this.delegate.getAllowedServerType();
+	}
+
+	@Override
+	public int getDefaultPermissionLevel() {
+		return this.delegate.getDefaultPermissionLevel();
 	}
 	
 	/**
-	 * @return The required permission level
+	 * @return the side on which the wrapped command should be executed
 	 */
-	@Override
-    public int getRequiredPermissionLevel() {return this.getPermissionLevel();}
-	
-	/**
-	 * @return The command name
-	 */
-    public abstract String getCommandName();
-
-	/**
-	 * @return The command usage
-	 */
-    public final String getCommandUsage(ICommandSender sender) {return this.getUsage();}
-    
-	/**
-	 * @return The command usage
-	 */
-    public abstract String getUsage();
-    
-	/**
-	 * Executes the command
-	 */
-    public abstract void execute(CommandSender sender, String[] params) throws CommandException;
-    
-	/**
-	 * @return The requirements for a command to be executed
-	 */
-    public abstract Requirement[] getRequirements();
-    
-	/**
-	 * processes the command
-	 */
-    public abstract void processCommand(ICommandSender sender, String[] params);
-    
-	/**
-	 * @return Whether this command is enabled
-	 */
-    public abstract boolean isEnabled(ICommandSender sender);
-    
-	/**
-	 * @return The Server Type on which this command can be executed
-	 */
-    public abstract ServerType getAllowedServerType();
-    
-	/**
-	 * @return The permission level
-	 */
-    public abstract int getPermissionLevel();
-    
-    public static boolean parseTrueFalse(String[] params, int index, boolean default_) throws IllegalArgumentException {
-        if (params.length > index) {
-        	if (params[index].equalsIgnoreCase("enable") || params[index].equalsIgnoreCase("1")
-            	|| params[index].equalsIgnoreCase("on") || params[index].equalsIgnoreCase("true")) {
-        		return true;
-            }
-            else if (params[index].equalsIgnoreCase("disable") || params[index].equalsIgnoreCase("0")
-            		|| params[index].equalsIgnoreCase("off") || params[index].equalsIgnoreCase("false")) {
-            	return false;
-            }
-            else throw new IllegalArgumentException("Invalid Argument");
-        }
-        else return !default_;
-    }
+	public abstract Side getSide();
 }

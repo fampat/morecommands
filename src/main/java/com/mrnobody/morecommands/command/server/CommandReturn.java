@@ -2,16 +2,22 @@ package com.mrnobody.morecommands.command.server;
 
 import java.text.DecimalFormat;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.wrapper.Coordinate;
 import com.mrnobody.morecommands.wrapper.Player;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 @Command(
 		name = "return",
@@ -20,7 +26,11 @@ import net.minecraft.entity.player.EntityPlayerMP;
 		syntax = "command.return.syntax",
 		videoURL = "command.return.videoURL"
 		)
-public class CommandReturn extends ServerCommand {
+public class CommandReturn extends StandardCommand implements ServerCommandProperties, EventListener<LivingDeathEvent> {
+	public CommandReturn() {
+		EventHandler.DEATH.register(this);
+	}
+	
 	@Override
 	public String getCommandName() {
 		return "return";
@@ -30,17 +40,29 @@ public class CommandReturn extends ServerCommand {
 	public String getUsage() {
 		return "command.return.syntax";
 	}
+	
+	public void onEvent(LivingDeathEvent event) {
+		if (event.entityLiving instanceof EntityPlayerMP) {
+			ServerPlayerSettings settings = getPlayerSettings((EntityPlayerMP) event.entityLiving);
+			settings.deathpoint = settings.lastPos = new Coordinate(event.entityLiving);
+		}
+	}
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
+		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
+		Coordinate pos = settings.lastPos;
 		
-		if (settings.lastPos == null) 
+		if (params.length > 0 && params[0].equalsIgnoreCase("deathpoint")) pos = settings.deathpoint;
+		else if (params.length > 0 && params[0].equalsIgnoreCase("teleport")) pos = settings.lastTeleport;
+		
+		if (pos == null) 
 			throw new CommandException("command.return.noLastPos", sender);
 		
-		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
-		player.setPosition(settings.lastPos);
-		settings.lastPos = player.getPosition();
+		Player player = new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
+		Coordinate currentPos = player.getPosition();
+		player.setPosition(pos);
+		settings.lastPos = currentPos;
 		
 		DecimalFormat f = new DecimalFormat("#.##");
 				
@@ -51,8 +73,8 @@ public class CommandReturn extends ServerCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -61,12 +83,12 @@ public class CommandReturn extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

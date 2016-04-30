@@ -3,10 +3,12 @@ package com.mrnobody.morecommands.command.client;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.ClientCommand;
+import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.AppliedPatches;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
@@ -21,18 +23,16 @@ import net.minecraftforge.client.ClientCommandHandler;
 		syntax = "command.command.syntax",
 		videoURL = "command.command.videoURL"
 		)
-public class CommandCommand extends ClientCommand {
+public class CommandCommand extends StandardCommand implements ClientCommandProperties {
 	private Map<String, ICommand> disabledCommands = new HashMap<String, ICommand>();
 	
 	@Override
-    public String getCommandName()
-    {
+    public String getCommandName() {
         return "command";
     }
 
 	@Override
-    public String getUsage()
-    {
+    public String getUsage() {
         return "command.command.syntax";
     }
 
@@ -65,14 +65,14 @@ public class CommandCommand extends ClientCommand {
 				}
 				else throw new CommandException("command.command.serverNotModded", sender);
 			}
-			else throw new CommandException("command.command.invalidUsage", sender);
+			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
-		else throw new CommandException("command.command.invalidUsage", sender);
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -86,7 +86,7 @@ public class CommandCommand extends ClientCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 }

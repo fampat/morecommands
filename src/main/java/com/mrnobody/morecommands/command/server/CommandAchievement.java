@@ -1,15 +1,31 @@
 package com.mrnobody.morecommands.command.server;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.wrapper.Achievements;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
+import com.mrnobody.morecommands.util.ReflectionHelper;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.stats.Achievement;
+import net.minecraft.stats.AchievementList;
+import net.minecraft.stats.StatBase;
+import net.minecraft.util.EnumChatFormatting;
 
 @Command(
 		name = "achievement",
@@ -18,69 +34,113 @@ import net.minecraft.entity.player.EntityPlayerMP;
 		syntax = "command.achievement.syntax",
 		videoURL = "command.achievement.videoURL"
 		)
-public class CommandAchievement extends ServerCommand {
-    public String getCommandName()
-    {
+public class CommandAchievement extends StandardCommand implements ServerCommandProperties {
+	private static final int PAGE_MAX = 15;
+	private static final ImmutableMap<String, Achievement> achievements;
+	private static final ImmutableList<String> achievementNameList;
+	
+	static {
+		ImmutableMap.Builder<String, Achievement> builder = ImmutableMap.builder();
+		
+		Map<String, StatBase> stats = (Map<String, StatBase>) ReflectionHelper.get(ObfuscatedField.StatList_oneShotStats, null);
+		if (stats != null) {
+			for (Map.Entry<String, StatBase> entry : stats.entrySet()) {
+				if (entry.getValue().isAchievement()) builder.put(entry.getKey().substring("achievement.".length()), (Achievement) entry.getValue());
+			}
+		}
+    	
+    	achievements = builder.build();
+    	achievementNameList = ImmutableList.<String>builder().addAll(achievements.keySet()).build();
+	}
+	
+    public String getCommandName() {
         return "achievement";
     }
     
-    public String getUsage()
-    {
+    public String getUsage() {
         return "command.achievement.syntax";
     }
     
     public void execute(CommandSender sender, String[] params) throws CommandException {
-    	Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+    	final Player player = new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
     	
     	if (params.length > 0) {
     		if(params[0].equals("list")) {
-    			String[] nameList = Achievements.getAchievementNameList();
-    			int page = 1;
-    			int PAGE_MAX = 15;
+    			int page = 0;
     			
     			if (params.length > 1) {
-    				try {page = Integer.parseInt(params[1]);} 
-    				catch (NumberFormatException e) {throw new CommandException("command.achievement.invalidUsage", sender);}
-    			}
-    			
-    			int to = PAGE_MAX * page <= nameList.length ? PAGE_MAX * page : nameList.length;
-    			int from = to - PAGE_MAX;
-    				
-    			for (int index = from; index < to; index++) {sender.sendStringMessage(" - '" + nameList[index] + "'");}
-    			sender.sendLangfileMessage("command.achievement.more");
-    		}
-    		
-    		else if (params[0].equals("unlockAll")) {
-    			for (String ach : Achievements.getAchievementNameList()) {
-    				player.addAchievement(Achievements.getAchievementRequirement(ach));
-    				player.addAchievement(ach);
-    			}
-    			sender.sendLangfileMessage("command.achievement.unlockAllSuccess");
-    		}
-    		
-    		else if (params[0].equals("unlock")) {
-    			if (params.length > 1) {
-    				boolean found = false;
-    				
-    				for (String ach : Achievements.getAchievementNameList()) {
-    					if (params[1].equalsIgnoreCase(ach)) {
-    						if (player.addAchievement(ach)) {sender.sendLangfileMessage("command.achievement.unlockSuccess");}
-    						else {sender.sendLangfileMessage("command.achievement.parent", Achievements.getAchievementRequirement(params[1]));}
-    						found = true; break;
-    					}
+    				try {
+    					page = Integer.parseInt(params[1]) - 1; 
+    					if (page < 0) page = 0;
+    					else if (page * PAGE_MAX > achievementNameList.size()) page = achievementNameList.size() / PAGE_MAX;
     				}
-    				if (!found) throw new CommandException("command.achievement.unlockFailure", sender);
+    				catch (NumberFormatException e) {throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());}
     			}
-    			else throw new CommandException("command.achievement.invalidUsage", sender);
+    			
+    			final int stop = (page + 1) * PAGE_MAX;;
+    			for (int i = page * PAGE_MAX; i < stop && i < achievementNameList.size(); i++)
+    				sender.sendStringMessage(" - '" + achievementNameList.get(i) + "'");
+    			
+    			sender.sendLangfileMessage("command.achievement.more", EnumChatFormatting.RED);
     		}
-    		else throw new CommandException("command.achievement.invalidUsage", sender);
+    		else if (params.length > 1 && params[0].equalsIgnoreCase("unlock")) {
+    			if (params[1].equals("*")) {
+                    Iterator<Achievement> iterator = ((List<Achievement>) AchievementList.achievementList).iterator();
+                    while (iterator.hasNext()) player.addAchievement(iterator.next());
+        			sender.sendLangfileMessage("command.achievement.unlockAllSuccess");
+    			}
+    			else {
+    				Achievement achievement = achievements.get(params[1]);
+    				if (achievement == null) throw new CommandException("command.achievement.doesNotExist", sender, params[1]);
+    				
+    				if (player.hasAchievement(achievement))
+    					throw new CommandException("command.achievement.alreadyUnlocked", sender, params[1]);
+    				
+    				List<Achievement> unlock = Lists.newArrayList();
+    				for (; achievement.parentAchievement != null && !player.hasAchievement(achievement); achievement = achievement.parentAchievement)
+    					unlock.add(achievement.parentAchievement);
+    				
+    				Iterator<Achievement> iterator = Lists.reverse(unlock).iterator();
+    				while (iterator.hasNext()) player.addAchievement(iterator.next());
+    				
+    				sender.sendLangfileMessage("command.achievement.unlockSuccess", params[1]);
+    			}
+    		}
+    		else if (params.length > 1 && params[0].equalsIgnoreCase("lock")) {
+    			if (params[1].equals("*")) {
+                    Iterator<Achievement> iterator = ((List<Achievement>) Lists.reverse(AchievementList.achievementList)).iterator();
+                    while (iterator.hasNext()) player.removeAchievement(iterator.next());
+        			sender.sendLangfileMessage("command.achievement.lockAllSuccess");
+    			}
+    			else {
+    				Achievement achievement = achievements.get(params[1]); final Achievement achievement_f = achievement;
+    				if (achievement == null) throw new CommandException("command.achievement.doesNotExist", sender, params[1]);
+    				
+    				if (!player.hasAchievement(achievement))
+    					throw new CommandException("command.achievement.dontHave", sender, params[1]);
+    				
+    				List<Achievement> lock = Lists.newArrayList(Iterators.filter(((List<Achievement>) AchievementList.achievementList).iterator(), new Predicate<Achievement>() {
+						@Override public boolean apply(Achievement input) {
+							return player.hasAchievement(input) && input != achievement_f;
+						}	
+    				}));
+    				
+    				for (; achievement.parentAchievement != null && player.hasAchievement(achievement.parentAchievement); achievement = achievement.parentAchievement)
+    					lock.remove(achievement.parentAchievement);
+    				
+                    Iterator<Achievement> iterator = lock.iterator();
+                    while (iterator.hasNext()) player.removeAchievement(iterator.next());
+        			sender.sendLangfileMessage("command.achievement.lockSuccess", params[1]);
+    			}
+    		}
+    		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
     	}
-    	else throw new CommandException("command.achievement.invalidUsage", sender);
+    	else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
     }
-
+    
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 	
 	@Override
@@ -89,12 +149,12 @@ public class CommandAchievement extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

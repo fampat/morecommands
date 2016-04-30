@@ -1,8 +1,8 @@
-package com.mrnobody.morecommands.handler;
+package com.mrnobody.morecommands.event;
 
 import cpw.mods.fml.common.eventhandler.Event;
 
-public class Listeners {
+public final class Listeners {
 	private Listeners() {}
 	
 	/**
@@ -12,9 +12,9 @@ public class Listeners {
 	 */
 	public static interface EventListener<T extends Event> {
 		/**
-		 * Called when the event is fired
+		 * Invoked when the event is fired
 		 */
-		public void onEvent(T paramT);
+		public void onEvent(T event);
 	}
 	
 	/**
@@ -22,15 +22,15 @@ public class Listeners {
 	 * 
 	 * @author MrNobody98
 	 */
-	public static interface TwoEventListener<T1 extends Event, T2 extends Event>{
+	public static interface TwoEventListener<T1 extends Event, T2 extends Event> {
 		/**
-		 * Called when event 1 is fired
+		 * Invoked when event 1 is fired
 		 */
-		public void onEvent1(T1 paramT1);
+		public void onEvent1(T1 event);
     
 		/**
-		 * Called when event 2 is fired
+		 * Invoked when event 2 is fired
 		 */
-		public void onEvent2(T2 paramT2);
+		public void onEvent2(T2 event);
 	}
 }

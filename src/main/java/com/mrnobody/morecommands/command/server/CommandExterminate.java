@@ -1,16 +1,18 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
+import com.mrnobody.morecommands.wrapper.EntityLivingBase;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
 
 @Command(
 		name = "exterminate",
@@ -19,7 +21,7 @@ import com.mrnobody.morecommands.wrapper.Coordinate;
 		syntax = "command.exterminate.syntax",
 		videoURL = "command.exterminate.videoURL"
 		)
-public class CommandExterminate extends ServerCommand {
+public class CommandExterminate extends StandardCommand implements ServerCommandProperties {
 
 	@Override
 	public String getCommandName() {
@@ -34,7 +36,7 @@ public class CommandExterminate extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		int strength = 4;
-		com.mrnobody.morecommands.wrapper.Entity entity = new com.mrnobody.morecommands.wrapper.Entity((EntityLivingBase) sender.getMinecraftISender());
+		EntityLivingBase entity = new EntityLivingBase(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.EntityLivingBase.class));
 		Entity hit = entity.traceEntity(128.0D);
 		
 		if (hit != null) {
@@ -54,8 +56,8 @@ public class CommandExterminate extends ServerCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -64,12 +66,12 @@ public class CommandExterminate extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityLivingBase;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, net.minecraft.entity.EntityLivingBase.class);
 	}
 }

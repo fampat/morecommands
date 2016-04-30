@@ -2,9 +2,12 @@ package com.mrnobody.morecommands.command.client;
 
 import java.util.Arrays;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.ClientCommand;
+import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
@@ -18,7 +21,7 @@ import net.minecraftforge.client.ClientCommandHandler;
 		syntax = "command.helpSideClient.syntax",
 		videoURL = "command.helpSideClient.videoURL"
 		)
-public class CommandHelp extends ClientCommand {
+public class CommandHelp extends StandardCommand implements ClientCommandProperties {
 	@Override
 	public String getCommandName() {
 		return "help";
@@ -31,7 +34,7 @@ public class CommandHelp extends ClientCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		if (!CommandClientcommands.clientCommandsEnabled()) {
+		if (!ClientCommand.clientCommandsEnabled) {
 			String args = "";
 			for (String param : params) args += " " + param;
 			Minecraft.getMinecraft().thePlayer.sendChatMessage("/help" + args);
@@ -50,8 +53,8 @@ public class CommandHelp extends ClientCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -65,7 +68,7 @@ public class CommandHelp extends ClientCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 }

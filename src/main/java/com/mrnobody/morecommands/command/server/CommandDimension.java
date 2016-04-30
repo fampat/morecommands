@@ -1,14 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
 
 @Command(
 		name = "dimension",
@@ -17,10 +18,10 @@ import com.mrnobody.morecommands.wrapper.Player;
 		syntax = "command.dimension.syntax",
 		videoURL = "command.dimension.videoURL"
 		)
-public class CommandDimension extends ServerCommand {
-	private final int DIMENSION_SURFACE = 0;
-	private final int DIMENSION_NETHER = -1;
-	private final int DIMENSION_END = 1;
+public class CommandDimension extends StandardCommand implements ServerCommandProperties {
+	private static final int DIMENSION_SURFACE = 0;
+	private static final int DIMENSION_NETHER = -1;
+	private static final int DIMENSION_END = 1;
 
 	@Override
 	public String getCommandName() {
@@ -35,11 +36,14 @@ public class CommandDimension extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
 		if (params.length > 0) {
-			Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+			Entity entity = getSenderAsEntity(sender.getMinecraftISender(), Entity.class);
 		
-			if (params[0].equalsIgnoreCase("normal") || params[0].equalsIgnoreCase("surface") || params[0].equalsIgnoreCase(String.valueOf(this.DIMENSION_SURFACE))) player.changeDimension(this.DIMENSION_SURFACE);
-			else if (params[0].equalsIgnoreCase("nether") || params[0].equalsIgnoreCase(String.valueOf(this.DIMENSION_NETHER))) player.changeDimension(this.DIMENSION_NETHER);
-			else if (params[0].equalsIgnoreCase("end") || params[0].equalsIgnoreCase(String.valueOf(this.DIMENSION_END))) player.changeDimension(this.DIMENSION_END);
+			if (params[0].equalsIgnoreCase("normal") || params[0].equalsIgnoreCase("surface") || params[0].equalsIgnoreCase(String.valueOf(this.DIMENSION_SURFACE))) 
+				entity.travelToDimension(DIMENSION_SURFACE);
+			else if (params[0].equalsIgnoreCase("nether") || params[0].equalsIgnoreCase(String.valueOf(this.DIMENSION_NETHER))) 
+				entity.travelToDimension(DIMENSION_NETHER);
+			else if (params[0].equalsIgnoreCase("end") || params[0].equalsIgnoreCase(String.valueOf(this.DIMENSION_END))) 
+				entity.travelToDimension(DIMENSION_END);
 			else throw new CommandException("command.dimension.unknown", sender);
 			
 			sender.sendLangfileMessage("command.dimension.changed");
@@ -48,8 +52,8 @@ public class CommandDimension extends ServerCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -58,12 +62,12 @@ public class CommandDimension extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, Entity.class);
 	}
 }

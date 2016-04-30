@@ -3,12 +3,14 @@ package com.mrnobody.morecommands.core;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import com.mrnobody.morecommands.command.client.CommandAlias;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.network.PacketHandlerClient;
 import com.mrnobody.morecommands.patch.ClientCommandManager;
 import com.mrnobody.morecommands.patch.ServerConfigurationManagerIntegrated;
 import com.mrnobody.morecommands.util.ClientPlayerSettings;
+import com.mrnobody.morecommands.util.GlobalSettings;
+import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
+import com.mrnobody.morecommands.util.PlayerSettings;
 import com.mrnobody.morecommands.util.ReflectionHelper;
 
 import cpw.mods.fml.client.FMLClientHandler;
@@ -19,12 +21,15 @@ import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.world.WorldEvent;
 
 /**
  * The Patcher used by the Client proxy
@@ -47,8 +52,8 @@ public class ClientPatcher extends CommonPatcher {
 	 * {@link net.minecraftforge.client.ClientCommandHandler}
 	 */
 	private void applyPostInitPatches() {
-		Field instance = ReflectionHelper.getField(ClientCommandHandler.class, "instance");
-		Field modifiers = ReflectionHelper.getField(Field.class, "modifiers");
+		Field instance = ReflectionHelper.getField(ObfuscatedField.ClientCommandHandler_instance);
+		Field modifiers = ReflectionHelper.getField(ObfuscatedField.Field_modifiers);
 		
 		try {
 			modifiers.setInt(instance, instance.getModifiers() & ~Modifier.FINAL);
@@ -80,7 +85,7 @@ public class ClientPatcher extends CommonPatcher {
 		if (!this.clientNetHandlerPatchApplied && FMLClientHandler.instance().getClientPlayHandler() != null && !(FMLClientHandler.instance().getClientPlayHandler() instanceof com.mrnobody.morecommands.patch.NetHandlerPlayClient)) {
 			NetHandlerPlayClient clientPlayHandler = (NetHandlerPlayClient) FMLClientHandler.instance().getClientPlayHandler();
 			
-			Field guiScreenField = ReflectionHelper.getField(clientPlayHandler.getClass(), "guiScreenServer");
+			Field guiScreenField = ReflectionHelper.getField(ObfuscatedField.NetHandlerPlayClient_guiScreenServer);
 			boolean error = false;
 			
 			if (guiScreenField != null) {
@@ -102,15 +107,47 @@ public class ClientPatcher extends CommonPatcher {
 	}
 	
 	/**
-	 * Reads the client player settings when the player connects to a server
-	 * and registers client aliases
+	 * Updates the {@link ClientPlayerSettings} every time
+	 * a {@link EntityClientPlayerMP} joins a world (e.g. on respawns or dimension changes)
+	 */
+	@SubscribeEvent
+	public void updateSettings(EntityJoinWorldEvent event) {
+		if (event.world.isRemote && event.entity instanceof EntityClientPlayerMP) {
+	    	ClientPlayerSettings settings = MoreCommands.getEntityProperties(ClientPlayerSettings.class, PlayerSettings.MORECOMMANDS_IDENTIFIER, (EntityClientPlayerMP) event.entity);
+	    	if (settings == null) {
+	    		settings = ClientPlayerSettings.getInstance((EntityClientPlayerMP) event.entity);
+	    		event.entity.registerExtendedProperties(PlayerSettings.MORECOMMANDS_IDENTIFIER, settings);
+	    	}
+			
+			settings.updateSettings(MoreCommands.getProxy().getCurrentServerNetAddress(), MoreCommands.getProxy().getCurrentWorld(), event.world.provider.getDimensionName());
+		}
+	}
+	
+	/**
+	 * Updates the {@link ClientPlayerSettings} of {@link Minecraft#thePlayer}
+	 * every time a client world is unloaded
+	 */
+	@SubscribeEvent
+	public void updateSettings(WorldEvent.Unload event) {
+		if (event.world == Minecraft.getMinecraft().theWorld) {
+	    	ClientPlayerSettings settings = MoreCommands.getEntityProperties(ClientPlayerSettings.class, PlayerSettings.MORECOMMANDS_IDENTIFIER, Minecraft.getMinecraft().thePlayer);
+	    	if (settings == null) {
+	    		settings = ClientPlayerSettings.getInstance(Minecraft.getMinecraft().thePlayer);
+	    		Minecraft.getMinecraft().thePlayer.registerExtendedProperties(PlayerSettings.MORECOMMANDS_IDENTIFIER, settings);
+	    	}
+			
+			settings.updateSettings(null, null, null);
+		}
+	}
+	
+	/**
+	 * Invoked when the player joins a server. Starts the startup commands execution thread if
+	 * the server is not the integrated server.
 	 */
 	@SubscribeEvent
 	public void playerConnect(ClientConnectedToServerEvent event) {
-		if (this.mod.getRunningServer() != ServerType.INTEGRATED) 
+		if (MoreCommands.getServerType() != ServerType.INTEGRATED)
 			PacketHandlerClient.runStartupThread(event.manager.getSocketAddress().toString());
-		ClientPlayerSettings.readSettings(event.manager.getSocketAddress().toString());
-		CommandAlias.registerAliases();
 	}
 	
 	/**
@@ -118,11 +155,12 @@ public class ClientPatcher extends CommonPatcher {
 	 */
 	@SubscribeEvent
 	public void playerDisconnect(ClientDisconnectionFromServerEvent event) {
-		this.mod.setPlayerUUID(null);
 		AppliedPatches.setServerModded(false);
 		AppliedPatches.setHandshakeFinished(false);
 		PacketHandlerClient.reregisterAndClearRemovedCmds();
 		this.clientNetHandlerPatchApplied = false;
 		MoreCommands.getProxy().playerNotified = false;
+		GlobalSettings.enablePlayerAliases = GlobalSettings.enablePlayerAliasesOriginal;
+		GlobalSettings.enablePlayerVars = GlobalSettings.enablePlayerVarsOriginal;
 	}
 }

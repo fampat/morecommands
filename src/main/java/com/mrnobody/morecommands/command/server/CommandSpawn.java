@@ -1,16 +1,23 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EntityLivingBase;
+import java.util.LinkedHashMap;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
 import com.mrnobody.morecommands.wrapper.Entity;
+import com.mrnobody.morecommands.wrapper.EntityLivingBase;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.EntityList;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumChatFormatting;
 
 @Command(
 		name = "spawn",
@@ -19,7 +26,9 @@ import com.mrnobody.morecommands.wrapper.Entity;
 		syntax = "command.spawn.syntax",
 		videoURL = "command.spawn.videoURL"
 		)
-public class CommandSpawn extends ServerCommand {
+public class CommandSpawn extends StandardCommand implements ServerCommandProperties {
+	private static final int PAGE_MAX = 15;
+	private static final LinkedHashMap<String, Integer> nameToIdMap = new LinkedHashMap<String, Integer>(Entity.getNameToIdEntityList());
 
 	@Override
 	public String getCommandName() {
@@ -35,36 +44,70 @@ public class CommandSpawn extends ServerCommand {
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 0) {
 			if (params[0].equalsIgnoreCase("list")) {
-				String list = "";
-				for (String name : Entity.getNameToIdEntityList().keySet()) {
-					list += name + " (" + Entity.getNameToIdEntityList().get(name) + "), ";
-				}
-				list = list.substring(0, list.length() - 2);
-				sender.sendStringMessage(list);
+    			int page = 0;
+    			nameToIdMap.putAll(Entity.getNameToIdEntityList());
+    			String[] names = nameToIdMap.keySet().toArray(new String[nameToIdMap.size()]);
+    			
+    			if (params.length > 1) {
+    				try {
+    					page = Integer.parseInt(params[1]) - 1; 
+    					if (page < 0) page = 0;
+    					else if (page * PAGE_MAX > names.length) page = names.length / PAGE_MAX;
+    				}
+    				catch (NumberFormatException e) {throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());}
+    			}
+    			
+    			final int stop = (page + 1) * PAGE_MAX;
+    			for (int i = page * PAGE_MAX; i < stop && i < names.length; i++)
+    				sender.sendStringMessage(" - '" + names[i] + "' " + " (ID " + nameToIdMap.get(names[i]) + ")");
+    			
+    			sender.sendLangfileMessage("command.spawn.more", EnumChatFormatting.RED);
 				return;
 			}
 			else if (params[0].equalsIgnoreCase("random")) {
-				params[0] = Entity.getEntityList().get((int)(Math.random() * Entity.getEntityList().size()));
+				params[0] = Entity.getNonAbstractEntityList().get((int)(Math.random() * Entity.getNonAbstractEntityList().size()));
 			}
 			else if (Entity.getEntityClass(params[0]) == null) {
 				try {
 					params[0] = EntityList.getStringFromID(Integer.parseInt(params[0]));
-					if (params[0] == null) 
-						throw new CommandException("command.spawn.unknownEntityID", sender);
+					if (params[0] == null) throw new CommandException("command.spawn.unknownEntityID", sender);
 				} catch (NumberFormatException nfe) {throw new CommandException("command.spawn.unknownEntity", sender);}
 			}
 			
-			int quantity = 1;
-			if (params.length > 1) {try {quantity = Integer.parseInt(params[1]);} catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.spawn.NAN", new Object[0]);}}
-			Coordinate coord;
+			params = reparseParamsWithNBTData(params);
 			
-			if (params.length > 4) {
-				try {coord = new Coordinate(Double.parseDouble(params[2]), Double.parseDouble(params[3]), Double.parseDouble(params[4]));}
-				catch (NumberFormatException nfe) {throw new CommandException("command.spawn.invalidPos", sender);}
+			int quantity = 1; Coordinate coord = null; NBTBase nbt = null; boolean mergeLists = false;
+			
+			if (params.length > 1) {
+				if (isNBTParam(params[1])) {
+					nbt = getNBTFromParam(params[1], sender.getMinecraftISender());
+					mergeLists = params.length > 2 ? isMergeLists(params[2]) : mergeLists;
+				}
+				else {
+					try {quantity = Integer.parseInt(params[1]);} 
+					catch (NumberFormatException nfe) {sender.sendLangfileMessage("command.spawn.NAN");}
+					
+					if (params.length > 2 && isNBTParam(params[2])) {
+						nbt = getNBTFromParam(params[2], sender.getMinecraftISender());
+						mergeLists = params.length > 3 ? isMergeLists(params[3]) : mergeLists;
+					}
+					else if (params.length > 4) {
+						coord = getCoordFromParams(sender.getMinecraftISender(), params, 2);
+						
+						if (params.length > 5) {
+							nbt = getNBTFromParam(params[5], sender.getMinecraftISender());
+							mergeLists = params.length > 6 ? isMergeLists(params[6]) : mergeLists;
+						}
+					}
+				}
 			}
-			else {
-				if (sender.getMinecraftISender() instanceof EntityLivingBase)
-					coord = new Entity((EntityLivingBase) sender.getMinecraftISender()).traceBlock(128);
+			
+			if (nbt != null && !(nbt instanceof NBTTagCompound))
+				throw new CommandException("command.spawn.noCompound", sender);
+			
+			if (coord == null) {
+				if (isSenderOfEntityType(sender.getMinecraftISender(), net.minecraft.entity.EntityLivingBase.class))
+					coord = new EntityLivingBase(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.EntityLivingBase.class)).traceBlock(128);
 				else coord = sender.getPosition();
 			
 				if (coord == null) {
@@ -74,16 +117,16 @@ public class CommandSpawn extends ServerCommand {
 			}
 			
 			for (int i = 0; i < quantity; i++) {
-				if (!Entity.spawnEntity(params[0], coord, sender.getWorld()))
+				if (!Entity.spawnEntity(params[0], coord, sender.getWorld(), (NBTTagCompound) nbt, mergeLists))
 					throw new CommandException("command.spawn.couldNotSpawn", sender, params[0]);
 			}
 		}
-		else throw new CommandException("command.spawn.invalidUsage", sender);
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 	
 	@Override
@@ -92,12 +135,12 @@ public class CommandSpawn extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
 		return true;
 	}
 }

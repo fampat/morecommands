@@ -1,330 +1,265 @@
 package com.mrnobody.morecommands.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.util.SettingsManager.AbstractElement;
+import com.mrnobody.morecommands.util.SettingsManager.NumericElement;
+import com.mrnobody.morecommands.util.SettingsManager.ObjectElement;
+import com.mrnobody.morecommands.util.SettingsManager.Serializable;
 import com.mrnobody.morecommands.wrapper.Coordinate;
 
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
-import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
 
 /**
- * Reads and writes the settings for each player on a server
+ * A settings class for settings that are used server side
  * 
  * @author MrNobody98
- *
  */
-public class ServerPlayerSettings {
-	/**
-	 * A map containing the settings for each player
-	 */
-	private static final Map<EntityPlayerMP, ServerPlayerSettings> playerSettingsMapping = new HashMap<EntityPlayerMP, ServerPlayerSettings>();
+public final class ServerPlayerSettings extends PlayerSettings {
+	/** A set of server side settings */
+	public static final ImmutableSet<String> SERVER_SETTINGS = ImmutableSet.of("waypoints", "inventories");
 	
-	/**
-	 * Gets the player settings
-	 * 
-	 * @return the player settings
-	 */
-	public static ServerPlayerSettings getPlayerSettings(EntityPlayerMP player) {
-		ServerPlayerSettings settings = playerSettingsMapping.get(player);
-		if (settings == null) {settings = readPlayerSettings(player); storePlayerSettings(player, settings);}
-		return settings;
-	}
-	
-	/**
-	 * Puts the settings into a map to store them
-	 */
-	public static void storePlayerSettings(EntityPlayerMP player, ServerPlayerSettings settings) {
-		playerSettingsMapping.put(player, settings);
-	}
-	
-	/**
-	 * removes the settings for the player
-	 */
-	public static void removePlayerSettings(EntityPlayerMP player) {
-		playerSettingsMapping.remove(player);
-	}
-	
-	/**
-	 * @return whether settings for this player are stored
-	 */
-	public static boolean containsSettingsForPlayer(EntityPlayerMP player) {
-		return playerSettingsMapping.containsKey(player);
-	}
-	
-	/**
-	 * Gets the settings for a player
-	 * 
-	 * @return a ServerPlayerSettings object
-	 */
-	public static ServerPlayerSettings readPlayerSettings(EntityPlayerMP player) {
-		File playerSettings = new File(Reference.getServerPlayerDir(), player.getUniqueID().toString() + ".dat");
-		ServerPlayerSettings settings = new ServerPlayerSettings(player);
-		NBTTagCompound playerData;
-		
-		if (!playerSettings.exists() || !playerSettings.isFile()) return settings;
-		
-		try {
-			playerData = CompressedStreamTools.readCompressed(new FileInputStream(playerSettings));
-			
-			//those settings are not intended to be read or written
-			
-			//settings.climb = playerData.hasKey("climb") ? playerData.getBoolean("climb") : false;
-			//settings.clouds = playerData.hasKey("clouds") ? playerData.getBoolean("clouds") : true;
-			//settings.creeperExplosion = playerData.hasKey("creeperExplosion") ? playerData.getBoolean("creeperExplosion") : true;
-			//settings.dodrops = playerData.hasKey("dodrops") ? playerData.getBoolean("dodrops") : true;
-			//settings.falldamage = playerData.hasKey("falldamage") ? playerData.getBoolean("falldamage") : true;
-			//settings.firedamage = playerData.hasKey("firedamage") ? playerData.getBoolean("firedamage") : true;
-			//settings.fly = playerData.hasKey("fly") ? playerData.getBoolean("fly") : false;
-			//settings.noFall = playerData.hasKey("noFall") ? playerData.getBoolean("noFall") : false;
-			//settings.justDisabled = playerData.hasKey("justDisabled") ? playerData.getBoolean("justDisabled") : false;
-			//settings.freecam = playerData.hasKey("freecam") ? playerData.getBoolean("freecam") : false;
-			//settings.freeezecam = playerData.hasKey("freeezecam") ? playerData.getBoolean("freeezecam") : false;
-			//settings.xrayBlockRadius = playerData.hasKey("xrayBlockRadius") ? playerData.getInteger("xrayBlockRadius") : 32;
-			//settings.xrayEnabled = playerData.hasKey("xrayEnabled") ? playerData.getBoolean("xrayEnabled") : false;
-			//settings.breakSpeedEnabled = playerData.hasKey("breakSpeedEnabled") ? playerData.getBoolean("breakSpeedEnabled") : false;
-			//settings.breakspeed = playerData.hasKey("breakspeed") ? playerData.getFloat("breakspeed") : 1.0F;
-			//settings.infiniteitems = playerData.hasKey("infiniteitems") ? playerData.getBoolean("infiniteitems") : false;
-			//settings.instantgrow = playerData.hasKey("instantgrow") ? playerData.getBoolean("instantgrow") : false;
-			//settings.instantkill = playerData.hasKey("instantkill") ? playerData.getBoolean("instantkill") : false;
-			//settings.keepinventory = playerData.hasKey("keepinventory") ? playerData.getBoolean("keepinventory") : false;
-			//settings.killattacker = playerData.hasKey("killattacker") ? playerData.getBoolean("killattacker") : false;
-			//settings.lightWorld = playerData.hasKey("lightWorld") ? playerData.getBoolean("lightWorld") : false;
-			//settings.mobdamage = playerData.hasKey("mobdamage") ? playerData.getBoolean("mobdamage") : true;
-			//settings.scuba = playerData.hasKey("scuba") ? playerData.getBoolean("scuba") : false;
-			//settings.output = playerData.hasKey("output") ? playerData.getBoolean("output") : true;
-			
-			NBTTagCompound world = playerData.hasKey(MinecraftServer.getServer().getFolderName()) ? playerData.getCompoundTag(MinecraftServer.getServer().getFolderName()) : null;
-			
-			if (world == null) return settings;
-			
-			NBTTagCompound serverbindings = world.hasKey("server_bindings") ? world.getCompoundTag("server_bindings") : null;
-			
-			if (serverbindings != null) {
-				for (Object o : serverbindings.func_150296_c()) {
-					settings.serverKeybindMapping.put(Integer.parseInt((String) o), serverbindings.getString((String) o));
-				}
-			}
-			
-			NBTTagCompound clientbindings = world.hasKey("client_bindings") ? world.getCompoundTag("client_bindings") : null;
-			
-			if (clientbindings != null) {
-				for (Object o : clientbindings.func_150296_c()) {
-					settings.clientKeybindMapping.put(Integer.parseInt((String) o), clientbindings.getString((String) o));
-				}
-			}
-			
-			NBTTagCompound serveraliases = world.hasKey("server_aliases") ? world.getCompoundTag("server_aliases") : null;
-			
-			if (serveraliases != null) {
-				for (Object o : serveraliases.func_150296_c()) {
-					settings.serverAliasMapping.put((String) o, serveraliases.getString((String) o));
-				}
-			}
-			
-			NBTTagCompound clientaliases = world.hasKey("client_aliases") ? world.getCompoundTag("client_aliases") : null;
-			
-			if (clientaliases != null) {
-				for (Object o : clientaliases.func_150296_c()) {
-					settings.clientAliasMapping.put((String) o, clientaliases.getString((String) o));
-				}
-			}
-			
-			NBTTagCompound vars = world.hasKey("vars") ? world.getCompoundTag("vars") : null;
-			
-			if (vars != null) {
-				for (Object o : vars.func_150296_c()) {
-					settings.varMapping.put((String) o, vars.getString((String) o));
-				}
-			}
-			
-			NBTTagCompound waypoints = world.hasKey("waypoints") ? world.getCompoundTag("waypoints") : null;
-			
-			if (waypoints != null) {
-				for (Object o : waypoints.func_150296_c()) {
-					NBTTagCompound waypointdata = waypoints.getCompoundTag((String) o);
-					
-					if (waypointdata.hasKey("posX") && waypointdata.hasKey("posX") && waypointdata.hasKey("posX") && waypointdata.hasKey("yaw") && waypointdata.hasKey("pitch")) {
-						settings.waypoints.put((String) o, new double[] {
-								waypointdata.getDouble("posX"),
-								waypointdata.getDouble("posY"),
-								waypointdata.getDouble("posZ"),
-								waypointdata.getDouble("yaw"),
-								waypointdata.getDouble("pitch"),
-						});
-					}
-				}
-			}
-			
-			NBTTagCompound inventories = world.hasKey("inventories") ? world.getCompoundTag("inventories") : null;
-			
-			if (inventories != null) {
-				for (Object o : inventories.func_150296_c()) {
-					settings.inventories.put((String) o, inventories.getTagList((String) o, 10));
-				}
-			}
-			
-			return settings;
-		}
-		catch (Exception ex) {
-			ex.printStackTrace();
-			MoreCommands.getMoreCommands().getLogger().warn("Failed to read player settings for player '" + player.getCommandSenderName() + "'");
-			return settings;
-		}
-	}
-	
-	private ServerPlayerSettings(EntityPlayerMP player) {
-		this.player = player;
-	}
-	
-	private EntityPlayerMP player;
-	public Set<String> clientCommands = new HashSet<String>();
-	
-	public Map<Integer, String> serverKeybindMapping = new HashMap<Integer, String>();
-	public Map<Integer, String> clientKeybindMapping = new HashMap<Integer, String>();
-	public Map<String, String> serverAliasMapping = new HashMap<String, String>();
-	public Map<String, String> clientAliasMapping = new HashMap<String, String>();
-	public Map<String, String> varMapping = new HashMap<String, String>();
+	/** The waypoints a player created */
 	public Map<String, double[]> waypoints = new HashMap<String, double[]>();
+	/** The inventories a player saved */
 	public Map<String, NBTTagList> inventories = new HashMap<String, NBTTagList>();
-	public List<Class<? extends EntityLiving>> disableAttacks = new ArrayList<Class<? extends EntityLiving>>();
-	public List<Item> disablePickups = new ArrayList<Item>();
+	/** The entity classes which are not allowed to attack a player */
+	public Set<Class<? extends EntityLiving>> disableAttacks = new HashSet<Class<? extends EntityLiving>>();
+	/** The items which are not allowed to be picked up */
+	public Set<Item> disablePickups = new HashSet<Item>();
+	/** The items of which damage is disabled */
+	public Set<Item> disableDamage = new HashSet<Item>();
 	
+	/** Data for the path command. Contains {block id, meta, path size, last x, last y, last z} */
 	public int[] pathData = new int[6];
-	public boolean climb = false;
-	public boolean clouds = true;
+	/** Whether to allow creepers to explode if they targeted the player this settings correspond to */
 	public boolean creeperExplosion = true;
-	public boolean dodrops = true;
+	/** Whether to enable/disable damage */
 	public boolean damage = true;
+	/** Whether to enable/disable fall damage */
 	public boolean falldamage = true;
+	/** Whether to enable/disable fire damage */
 	public boolean firedamage = true;
+	/** Whether to enable/disable hunger */
 	public boolean hunger = true;
+	/** Whether to enable/disable fly mode */
 	public boolean fly = false;
+	/** Whether to enable/disable falling (used to cancel fall damage if the player is flying) */
 	public boolean noFall = false;
+	/** Indicates whether fly mode was just disabled (used to cancel fall damage after flying was disabled but the player is still in air) */
 	public boolean justDisabled = false;
+	/** Whether to enable/disable freecam */
 	public boolean freecam = false;
+	/** Whether to enable/disable freezecam */
 	public boolean freeezecam = false;
+	/** The current xray block radius */
 	public int xrayBlockRadius = 32;
+	/** Whether to xray is enabled/disabled */
 	public boolean xrayEnabled = false;
-	public boolean breakSpeedEnabled = false;
-	public float breakspeed = 1.0F;
+	/** The current block break speed */
+	public float breakspeed = -1F;
+	/** Whether to enable/disable infinite items */
 	public boolean infiniteitems = false;
+	/** Whether to enable/disable instant plant growing */
 	public boolean instantgrow = false;
-	public boolean instantkill = false;
+	/** Whether to keep the inventory on death */
 	public boolean keepinventory = false;
+	/** Whether to kill entities that attack the player corresponding to this settings */
 	public boolean killattacker = false;
+	/** Whether the world is lit */
 	public boolean lightWorld = false;
+	/** Whether to enable/disable mob damage */
 	public boolean mobdamage = true;
+	/** Whether to allow player to breathe under water */
 	public boolean scuba = false;
+	/** Whether to enable/disable chat output */
 	public boolean output = true;
+	/** The last player position before a death or teleport */
 	public Coordinate lastPos = null;
+	/** The last player position before a death  */
+	public Coordinate deathpoint = null;
+	/** The last player position before a teleport */
+	public Coordinate lastTeleport = null;
+	/** The knockback factor for a player's punch */
 	public int superpunch = -1;
+	/** Whether to enable/disable instant water damage */
 	public boolean waterdamage = true;
-	public boolean fluidmovement = true;
+	/** Whether the player has a modified compass target (not the spawn point) */
+	public boolean hasModifiedCompassTarget = false;
+	/** If the compass target is a waypoint, this is the waypoint's name */
+	public String waypointCompassTarget = null;
 	
-	/**
-	 * Saves the settings
-	 * 
-	 * @return whether the settings were saved successfully
-	 */
-	public boolean saveSettings() {
-		try{
-			NBTTagCompound data = new NBTTagCompound();
-			NBTTagCompound world = new NBTTagCompound();
-		
-			NBTTagCompound serverbindings = new NBTTagCompound();
-		
-			for (int keyid : this.serverKeybindMapping.keySet()) {
-				serverbindings.setString(String.valueOf(keyid), this.serverKeybindMapping.get(keyid));
-			}
-		
-			world.setTag("server_bindings", serverbindings);
-			
-			NBTTagCompound clientbindings = new NBTTagCompound();
-			
-			for (int keyid : this.clientKeybindMapping.keySet()) {
-				clientbindings.setString(String.valueOf(keyid), this.clientKeybindMapping.get(keyid));
-			}
-		
-			world.setTag("client_bindings", clientbindings);
-			
-			NBTTagCompound serveraliases = new NBTTagCompound();
-			
-			for (String alias : this.serverAliasMapping.keySet()) {
-				serveraliases.setString(alias, this.serverAliasMapping.get(alias));
-			}
-		
-			world.setTag("server_aliases", serveraliases);
-			
-			NBTTagCompound clientaliases = new NBTTagCompound();
-			
-			for (String alias : this.clientAliasMapping.keySet()) {
-				clientaliases.setString(alias, this.clientAliasMapping.get(alias));
-			}
-		
-			world.setTag("client_aliases", clientaliases);
-			
-			NBTTagCompound vars = new NBTTagCompound();
-			
-			for (String var : this.varMapping.keySet()) {
-				vars.setString(var, this.varMapping.get(var));
-			}
-		
-			world.setTag("vars", vars);
-		
-			NBTTagCompound waypoints = new NBTTagCompound();
-			
-			for (String waypoint : this.waypoints.keySet()) {
-				double[] wdata = this.waypoints.get(waypoint);
-				NBTTagCompound waypointdata = new NBTTagCompound();
-			
-				waypointdata.setDouble("posX", wdata[0]);
-				waypointdata.setDouble("posY", wdata[1]);
-				waypointdata.setDouble("posZ", wdata[2]);
-				waypointdata.setDouble("yaw", wdata[3]);
-				waypointdata.setDouble("pitch", wdata[4]);
-			
-				waypoints.setTag(waypoint, waypointdata);
-			}
-		
-			world.setTag("waypoints", waypoints);
-			
-			NBTTagCompound inventories = new NBTTagCompound();
-			
-			for (String name : this.inventories.keySet()) {
-				inventories.setTag(name, this.inventories.get(name));
-			}
-		
-			world.setTag("inventories", inventories);
-			
-			data.setTag(MinecraftServer.getServer().getFolderName(), world);
-		
-			File playerSettingsTmp = new File(Reference.getServerPlayerDir(), player.getUniqueID().toString() + ".dat.tmp");
-			File playerSettings = new File(Reference.getServerPlayerDir(), player.getUniqueID().toString()  + ".dat");
-			CompressedStreamTools.writeCompressed(data, new FileOutputStream(playerSettingsTmp));
-		
-			if (playerSettings.exists()) playerSettings.delete();
-			playerSettingsTmp.renameTo(playerSettings);
-			
-			return true;
+	/** whether common PlayerSettings should be read and/or written */
+	private final boolean useCommonSettings;
+	
+	public ServerPlayerSettings(EntityPlayerMP player) {
+		this(MoreCommands.getProxy().createSettingsManagerForPlayer(player), true, MoreCommands.isServerSide()
+			|| !player.getCommandSenderName().equals(MinecraftServer.getServer().getServerOwner()));
+	}
+	
+	public ServerPlayerSettings(SettingsManager manager, boolean load, boolean useCommonSettings) {
+		super(manager, load);
+		this.useCommonSettings = useCommonSettings;
+		this.setProps("waypoints", true, true, false);
+	}
+	
+	@Override
+	public synchronized void readSettings(String server, String world, String dim) {
+		if (this.useCommonSettings) super.readSettings(server, world, dim);
+		this.inventories = readMappedSetting("inventories", server, world, dim, NBTTagList.class);
+		this.waypoints = readMappedSetting("waypoints", server, world, dim, double[].class);
+	}
+	
+	@Override
+	public synchronized void saveSettings(String server, String world, String dim) {
+		if (this.useCommonSettings) super.saveSettings(server, world, dim);
+		writeMappedSetting("inventories", this.inventories, server, world, dim, NBTTagList.class);
+		writeMappedSetting("waypoints", this.waypoints, server, world, dim, double[].class);
+	}
+	
+	protected static final Serializable<Map<String, NBTTagList>> INVENTORIES_SERIALIZABLE = new Serializable<Map<String, NBTTagList>>() {
+		@Override
+		public AbstractElement serialize(Map<String, NBTTagList> src) {
+			ObjectElement obj = new ObjectElement();
+			for (Map.Entry<String, NBTTagList> entry : src.entrySet()) obj.add(entry.getKey(), NBTSettingsManager.toAbstractElement(entry.getValue()));
+			return obj;
 		}
-		catch (Exception ex) {
-			ex.printStackTrace();
-			MoreCommands.getMoreCommands().getLogger().warn("Failed to write player settings for player '" + player.getCommandSenderName() + "'");
-			return false;
+		
+		@Override
+		public Map<String, NBTTagList> deserialize(AbstractElement element) {
+			if (!element.isObject()) return Maps.newHashMap();
+			ObjectElement obj = element.asObject();
+			Map<String, NBTTagList> map = Maps.newHashMap();
+			
+			for (Map.Entry<String, AbstractElement> entry : obj.entrySet()) {
+				NBTBase nbt = NBTSettingsManager.toNBTElement(entry.getValue());
+				if (!(nbt instanceof NBTTagList)) continue;
+				map.put(entry.getKey(), (NBTTagList) nbt);
+			}
+			
+			return map;
 		}
+		
+		@Override
+		public Class<Map<String, NBTTagList>> getTypeClass() {
+			return (Class<Map<String, NBTTagList>>) (Class<?>) Map.class;
+		}
+	};
+	
+	protected static final Serializable<Map<String, double[]>> WAYPOINT_SERIALIZABLE = new Serializable<Map<String, double[]>>() {
+		@Override
+		public AbstractElement serialize(Map<String, double[]> src) {
+			ObjectElement obj = new ObjectElement();
+			for (Map.Entry<String, double[]> entry : src.entrySet()) {
+				ObjectElement data = new ObjectElement();
+				data.add("posX", new NumericElement(entry.getValue()[0]));
+				data.add("posY", new NumericElement(entry.getValue()[1]));
+				data.add("posZ", new NumericElement(entry.getValue()[2]));
+				data.add("yaw", new NumericElement(entry.getValue()[3]));
+				data.add("pitch", new NumericElement(entry.getValue()[4]));
+				obj.add(entry.getKey(), data);
+			}
+			return obj;
+		}
+
+		@Override
+		public Map<String, double[]> deserialize(AbstractElement element) {
+			if (!element.isObject()) return Maps.newHashMap();
+			ObjectElement obj = element.asObject();
+			Map<String, double[]> map = Maps.newHashMap();
+			
+			for (Map.Entry<String, AbstractElement> entry : obj.entrySet()) {
+				if (!entry.getValue().isObject()) continue;
+				ObjectElement data = entry.getValue().asObject();
+				
+				AbstractElement posX = data.get("posX");
+				AbstractElement posY = data.get("posY");
+				AbstractElement posZ = data.get("posZ");
+				AbstractElement yaw = data.get("yaw");
+				AbstractElement pitch = data.get("pitch");
+				
+				if (posX == null || posY == null || posZ == null || !posX.isNumeric() || !posY.isNumeric() || !posZ.isNumeric()) continue;
+				double[] wdata = new double[5];
+				
+				try {
+					wdata[0] = posX.asNumericElement().asNumber().doubleValue();
+					wdata[1] = posY.asNumericElement().asNumber().doubleValue();
+					wdata[2] = posZ.asNumericElement().asNumber().doubleValue();
+					wdata[3] = yaw == null || !yaw.isNumeric() ? 0 : yaw.asNumericElement().asNumber().doubleValue();
+					wdata[4] = pitch == null || !pitch.isNumeric() ? 0 : pitch.asNumericElement().asNumber().doubleValue();
+				}
+				catch (NumberFormatException nfe) {continue;}
+				
+				map.put(entry.getKey(), wdata);
+			}
+			
+			return map;
+		}
+		
+		@Override
+		public Class<Map<String, double[]>> getTypeClass() {
+			return (Class<Map<String, double[]>>) (Class<?>) Map.class;
+		}
+	};
+	
+	@Override
+	public void cloneSettings(PlayerSettings settings) {
+		if (settings instanceof ServerPlayerSettings) {
+			ServerPlayerSettings ssettings = (ServerPlayerSettings) settings;
+			
+			this.breakspeed = ssettings.breakspeed;
+			this.creeperExplosion = ssettings.creeperExplosion;
+			this.damage = ssettings.damage;
+			this.deathpoint = ssettings.deathpoint == null ? null : new Coordinate(ssettings.deathpoint.getX(), ssettings.deathpoint.getY(), ssettings.deathpoint.getZ());
+			this.disableAttacks = new HashSet<Class<? extends EntityLiving>>(ssettings.disableAttacks);
+			this.disableDamage = new HashSet<Item>(ssettings.disableDamage);
+			this.disablePickups = new HashSet<Item>(ssettings.disablePickups);
+			this.falldamage = ssettings.falldamage;
+			this.firedamage = ssettings.firedamage;
+			this.fly = ssettings.fly;
+			this.freecam = ssettings.freecam;
+			this.freeezecam = ssettings.freeezecam;
+			this.hasModifiedCompassTarget = ssettings.hasModifiedCompassTarget;
+			this.hunger = ssettings.hunger;
+			this.infiniteitems = ssettings.infiniteitems;
+			this.instantgrow = ssettings.instantgrow;
+			this.inventories = new HashMap<String, NBTTagList>(ssettings.inventories);
+			this.justDisabled = ssettings.justDisabled;
+			this.keepinventory = ssettings.keepinventory;
+			this.killattacker = ssettings.killattacker;
+			this.lastPos = ssettings.lastPos == null ? null : new Coordinate(ssettings.lastPos.getX(), ssettings.lastPos.getY(), ssettings.lastPos.getZ());
+			this.lastTeleport = ssettings.lastTeleport == null ? null : new Coordinate(ssettings.lastTeleport.getX(), ssettings.lastTeleport.getY(), ssettings.lastTeleport.getZ());
+			this.lightWorld = ssettings.lightWorld;
+			this.mobdamage = ssettings.mobdamage;
+			this.noFall = ssettings.noFall;
+			this.output = ssettings.output;
+			this.pathData = Arrays.copyOf(ssettings.pathData, ssettings.pathData.length);
+			this.scuba = ssettings.scuba;
+			this.superpunch = ssettings.superpunch;
+			this.waterdamage = ssettings.waterdamage;
+			this.waypointCompassTarget = ssettings.waypointCompassTarget;
+			this.waypoints = new HashMap<String, double[]>(ssettings.waypoints);
+			this.xrayBlockRadius = ssettings.xrayBlockRadius;
+			this.xrayEnabled = ssettings.xrayEnabled;
+		}
+		
+		super.cloneSettings(settings);
+	}
+	
+	static {
+		SettingsManager.registerSerializable("inventories", INVENTORIES_SERIALIZABLE, false);
+		SettingsManager.registerSerializable("waypoints", WAYPOINT_SERIALIZABLE, false);
 	}
 }

@@ -1,17 +1,18 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.wrapper.Entity;
 import com.mrnobody.morecommands.wrapper.World;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.init.Blocks;
 
 @Command(
 		name = "extinguish",
@@ -20,7 +21,7 @@ import com.mrnobody.morecommands.wrapper.World;
 		syntax = "command.extinguish.syntax",
 		videoURL = "command.extinguish.videoURL"
 		)
-public class CommandExtinguish extends ServerCommand {
+public class CommandExtinguish extends StandardCommand implements ServerCommandProperties {
 
 	@Override
 	public String getCommandName() {
@@ -34,11 +35,12 @@ public class CommandExtinguish extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		Entity entity = !isSenderOfEntityType(sender.getMinecraftISender(), net.minecraft.entity.Entity.class) ? null : 
+		new Entity(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.Entity.class));
 		
 		if (params.length > 0) {
 			if (params[0].equalsIgnoreCase("me")) {
-				player.getMinecraftPlayer().extinguish();
+				if (entity != null) entity.getMinecraftEntity().extinguish();
 			}
 			else if (params[0].equalsIgnoreCase("all")) {
 				int radius = 16;
@@ -48,8 +50,8 @@ public class CommandExtinguish extends ServerCommand {
 					catch (NumberFormatException nfe) {throw new CommandException("command.extinguish.invalidArg", sender);}
 				}
 				
-				this.extinguish(player.getWorld(), player.getPosition(), radius);
-				player.getMinecraftPlayer().extinguish();
+				this.extinguish(sender.getWorld(), sender.getPosition(), radius);
+				if (entity != null) entity.getMinecraftEntity().extinguish();
 				sender.sendLangfileMessage("command.extinguish.extinguished");
 			}
 			else {
@@ -58,13 +60,13 @@ public class CommandExtinguish extends ServerCommand {
 				try {radius = Integer.parseInt(params[0]);}
 				catch (NumberFormatException nfe) {throw new CommandException("command.extinguish.invalidArg", sender);}
 				
-				this.extinguish(player.getWorld(), player.getPosition(), radius);
+				this.extinguish(sender.getWorld(), sender.getPosition(), radius);
 				sender.sendLangfileMessage("command.extinguish.extinguished");
 			}
 		}
 		else {
-			this.extinguish(player.getWorld(), player.getPosition(), 16);
-			player.getMinecraftPlayer().extinguish();
+			this.extinguish(sender.getWorld(), sender.getPosition(), 16);
+			if (entity != null) entity.getMinecraftEntity().extinguish();
 			sender.sendLangfileMessage("command.extinguish.extinguished");
 		}
 	}
@@ -93,8 +95,8 @@ public class CommandExtinguish extends ServerCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -103,12 +105,12 @@ public class CommandExtinguish extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return params.length > 0 ? params[0].equalsIgnoreCase("me") ? isSenderOfEntityType(sender, net.minecraft.entity.Entity.class) : true : true;
 	}
 }

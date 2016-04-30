@@ -1,18 +1,20 @@
 package com.mrnobody.morecommands.command.server;
 
+import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.wrapper.CommandException;
+import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.wrapper.Coordinate;
+import com.mrnobody.morecommands.wrapper.Player;
+
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.InventoryLargeChest;
 import net.minecraft.tileentity.TileEntityChest;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.Player;
 
 @Command(
 		name = "dropstore",
@@ -21,7 +23,7 @@ import com.mrnobody.morecommands.wrapper.Player;
 		syntax = "command.dropstore.syntax",
 		videoURL = "command.dropstore.videoURL"
 		)
-public class CommandDropstore extends ServerCommand {
+public class CommandDropstore extends StandardCommand implements ServerCommandProperties {
 
 	@Override
 	public String getCommandName() {
@@ -35,7 +37,7 @@ public class CommandDropstore extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		Player player = new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
 		Coordinate coord1 = new Coordinate(player.getPosition().getX() + 1, player.getPosition().getY(), player.getPosition().getZ());
 		Coordinate coord2 = new Coordinate(player.getPosition().getX() + 1, player.getPosition().getY(), player.getPosition().getZ() + 1);
 		
@@ -59,8 +61,8 @@ public class CommandDropstore extends ServerCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -69,12 +71,12 @@ public class CommandDropstore extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

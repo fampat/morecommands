@@ -1,14 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.wrapper.EntityLivingBase;
+
+import net.minecraft.command.ICommandSender;
 
 @Command(
 		name = "heal",
@@ -17,8 +18,8 @@ import com.mrnobody.morecommands.wrapper.Player;
 		syntax = "command.heal.syntax",
 		videoURL = "command.heal.videoURL"
 		)
-public class CommandHeal extends ServerCommand {
-	private final float MAX_HEALTH = 20.0f;
+public class CommandHeal extends StandardCommand implements ServerCommandProperties {
+	private static final float MAX_HEALTH = 20F;
 
 	@Override
 	public String getCommandName() {
@@ -32,21 +33,21 @@ public class CommandHeal extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		EntityLivingBase entity = new EntityLivingBase(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.EntityLivingBase.class));
 		
 		if (params.length > 0) {
-			try {player.heal(Float.parseFloat(params[0])); sender.sendLangfileMessage("command.heal.success");}
+			try {entity.heal(Float.parseFloat(params[0])); sender.sendLangfileMessage("command.heal.success");}
 			catch (NumberFormatException e) {throw new CommandException("command.heal.NAN", sender);}
 		}
 		else {
-			player.heal(MAX_HEALTH - player.getHealth());
+			entity.heal(MAX_HEALTH - entity.getHealth());
 			sender.sendLangfileMessage("command.heal.success");
 		}
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -55,12 +56,12 @@ public class CommandHeal extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, net.minecraft.entity.EntityLivingBase.class);
 	}
 }

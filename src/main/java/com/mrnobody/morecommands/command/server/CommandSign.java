@@ -2,21 +2,23 @@ package com.mrnobody.morecommands.command.server;
 
 import java.util.Arrays;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
-import net.minecraft.network.Packet;
-import net.minecraft.tileentity.TileEntitySign;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
 import com.mrnobody.morecommands.wrapper.Player;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.tileentity.TileEntitySign;
+import net.minecraft.util.MathHelper;
+import net.minecraft.util.MovingObjectPosition;
 
 @Command(
 		description = "command.sign.description",
@@ -25,7 +27,7 @@ import com.mrnobody.morecommands.wrapper.Player;
 		syntax = "command.sign.syntax",
 		videoURL = "command.sign.videoURL"
 		)
-public class CommandSign extends ServerCommand {
+public class CommandSign extends StandardCommand implements ServerCommandProperties {
 	@Override
 	public String getCommandName() {
 		return "sign";
@@ -35,27 +37,20 @@ public class CommandSign extends ServerCommand {
 	public String getUsage() {
 		return "command.sign.syntax";
 	}
-
+	
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
-		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		Player player = new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
 		MovingObjectPosition hit = player.rayTraceBlock(128.0D, 1.0F);
-
+		
 		if (hit != null && params.length > 1) {
 			Coordinate trace = new Coordinate(hit.blockX, hit.blockY, hit.blockZ);
-			String[] givenLines = Arrays.copyOfRange(params, 1, params.length);
-			String args = "";
-			for (String param : givenLines) args += " " + param;
-			args = args.trim();
 			
-			if (!args.startsWith("\"") && !args.endsWith("\""))
-				throw new CommandException("command.sign.invalidUsage", sender);
-			args = args.substring(1, args.length() - 1);
-			
-			String[] lines = args.split("\" \"");
+			String[] lines = reparseParamsWithNBTData(Arrays.copyOfRange(params, 1, params.length));
 			String[] newLines = new String[] {"", "", "", ""};
 			
-			for (int i = 0; i < newLines.length && i < lines.length; i++) newLines[i] = lines[i];
+			for (int i = 0; i < newLines.length && i < lines.length; i++)
+				newLines[i] = isNBTParam(lines[i]) ? lines[i].substring(1, lines[i].length() - 1) : lines[i];
 			
 			if (params[0].equalsIgnoreCase("edit") && player.getWorld().getTileEntity(trace) instanceof TileEntitySign) {
 				TileEntitySign sign = (TileEntitySign) player.getWorld().getTileEntity(trace);
@@ -64,9 +59,8 @@ public class CommandSign extends ServerCommand {
 				sign.signText[1] = newLines[1];
 				sign.signText[2] = newLines[2];
 				sign.signText[3] = newLines[3];
-				Packet update = sign.getDescriptionPacket();
-				((EntityPlayerMP) sender.getMinecraftISender()).playerNetServerHandler.sendPacket(update);
-			
+				MinecraftServer.getServer().getConfigurationManager().sendPacketToAllPlayers(sign.getDescriptionPacket());
+				
 				sender.sendLangfileMessage("command.sign.editsuccess");
 			}
 			else if (params[0].equalsIgnoreCase("add")) {
@@ -79,7 +73,7 @@ public class CommandSign extends ServerCommand {
 				else if (hit.sideHit == 2) hit.blockZ -= 1;
 				
 				if (hit.sideHit == 1) {
-					int i1 = MathHelper.floor_double((double)((((EntityPlayerMP) player.getMinecraftPlayer()).rotationYaw + 180.0F) * 16.0F / 360.0F) + 0.5D) & 15;
+					int i1 = MathHelper.floor_double((double) ((player.getYaw() + 180.0F) * 16.0F / 360.0F) + 0.5D) & 15;
 					player.getWorld().getMinecraftWorld().setBlock(hit.blockX, hit.blockY, hit.blockZ, Blocks.standing_sign, i1, 3);
 				}
                 else player.getWorld().getMinecraftWorld().setBlock(hit.blockX, hit.blockY, hit.blockZ, Blocks.wall_sign, hit.sideHit, 3);
@@ -95,14 +89,14 @@ public class CommandSign extends ServerCommand {
 					sender.sendLangfileMessage("command.sign.addsuccess");
 				}
 			}
-			else throw new CommandException("command.sign.invalidUsage", sender);
+			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
 		else throw new CommandException("command.sign.noBlockInSight", sender);
 	}
 
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -111,12 +105,12 @@ public class CommandSign extends ServerCommand {
 	}
 
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

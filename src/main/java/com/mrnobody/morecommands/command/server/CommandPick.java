@@ -1,8 +1,10 @@
 package com.mrnobody.morecommands.command.server;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Player;
@@ -26,7 +28,7 @@ import net.minecraft.world.World;
 		syntax = "command.pick.syntax",
 		videoURL = "command.pick.videoURL"
 		)
-public class CommandPick extends ServerCommand {
+public class CommandPick extends StandardCommand implements ServerCommandProperties {
 	@Override
 	public String getCommandName() {
 		return "pick";
@@ -39,7 +41,7 @@ public class CommandPick extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		Player player = new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
 		MovingObjectPosition pick = player.rayTrace(128.0D, 0.0D, 1.0F);
 		int amount = 1;
 		
@@ -56,8 +58,8 @@ public class CommandPick extends ServerCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -66,7 +68,7 @@ public class CommandPick extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
@@ -83,7 +85,7 @@ public class CommandPick extends ServerCommand {
                 return false;
             }
 
-            //result = block.getPickBlock(target, world, target.blockX, target.blockY, target.blockZ); //does not work on servers because methods used by this method are client side only
+            //result = block.getPickBlock(target, world, target.blockX, target.blockY, target.blockZ); //can't be used, because getPickBlock() usese Block#isFlowerPot() which is client only
             result = this.getPickBlock(block, target, world, target.blockX, target.blockY, target.blockZ);
         }
         else
@@ -138,22 +140,19 @@ public class CommandPick extends ServerCommand {
     }
     
     private ItemStack getPickBlock(Block block, MovingObjectPosition target, World world, int x, int y, int z) {
-    	Item item = Item.getItemFromBlock(block);
+        Item item = block.getItem(world, x, y, z);
 
-    	if (item == null) {
-    		String unlocalized = block.getUnlocalizedName();
-    		if (unlocalized.startsWith("tile.")) unlocalized = block.getUnlocalizedName().substring(5);
-    		item = (Item) Item.itemRegistry.getObject("minecraft:" + unlocalized);
-    	}
-        
-    	if (item == null) return null;
+        if (item == null)
+        {
+            return null;
+        }
 
-    	Block result = item instanceof ItemBlock && !(block instanceof BlockFlowerPot) ? Block.getBlockFromItem(item) : block;
-    	return new ItemStack(item, 1, result.getDamageValue(world, x, y, z));
+        block = item instanceof ItemBlock && !(block instanceof BlockFlowerPot) ? Block.getBlockFromItem(item) : block;
+        return new ItemStack(item, 1, block.getDamageValue(world, x, y, z));
 	}
     
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

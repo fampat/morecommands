@@ -1,5 +1,7 @@
 package com.mrnobody.morecommands.wrapper;
 
+import net.minecraft.util.ChunkCoordinates;
+
 /**
  * A wrapper for coordinates
  * 
@@ -9,7 +11,17 @@ public class Coordinate {
 	private final double x;
 	private final double y;
 	private final double z;
+	
+	public Coordinate(ChunkCoordinates coord) {
+		this.x = coord.posX;
+		this.y = coord.posY;
+		this.z = coord.posZ;
+	}
    
+	public Coordinate(net.minecraft.entity.Entity entity) {
+		this(entity.posX, entity.posY, entity.posZ);
+	}
+	
 	public Coordinate(double x, double y, double z) {
 		this.x = x;
 		this.y = y;
@@ -70,9 +82,9 @@ public class Coordinate {
 	 * @return The distance between two coordinates
 	 */
 	public double getDistanceBetweenCoordinates(Coordinate compare) {
-		double diffX = getX() - compare.getX();
-		double diffY = getY() - compare.getY();
-		double diffZ = getZ() - compare.getZ();
+		double diffX = Math.abs(getX() - compare.getX());
+		double diffY = Math.abs(getY() - compare.getY());
+		double diffZ = Math.abs(getZ() - compare.getZ());
 		return Math.sqrt((diffX * diffX) + (diffY * diffY) + (diffZ * diffZ));
 	}
 

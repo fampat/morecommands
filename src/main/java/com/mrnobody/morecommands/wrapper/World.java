@@ -7,11 +7,6 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.gen.feature.WorldGenBigTree;
-import net.minecraft.world.gen.feature.WorldGenForest;
-import net.minecraft.world.gen.feature.WorldGenTaiga1;
-import net.minecraft.world.gen.feature.WorldGenTaiga2;
-import net.minecraft.world.gen.feature.WorldGenTrees;
 import net.minecraft.world.storage.WorldInfo;
 
 /**
@@ -153,6 +148,15 @@ public class World {
 	public boolean setBlockWithMeta(Coordinate coord, Block block, int meta) {
 		return this.world.setBlock(coord.getBlockX(), coord.getBlockY(), coord.getBlockZ(), block, meta, 2);
 	}
+	
+	/**
+	 * Destroys a block
+	 * @param drop whether to drop the block
+	 * @return whether the block was destroyed
+	 */
+	public boolean destroyBlock(Coordinate coord, boolean drop) {
+		return this.world.func_147480_a(coord.getBlockX(), coord.getBlockY(), coord.getBlockZ(), drop);
+	}
    
 	/**
 	 * @return the world's time
@@ -249,41 +253,6 @@ public class World {
 		return this.isAirBlock(location.getBlockX(), location.getBlockY(), location.getBlockZ())
 			&& this.isAirBlock(location.getBlockX(), location.getBlockY() + 1, location.getBlockZ())
 			&& this.isAirBlock(location.getBlockX(), location.getBlockY() - 1, location.getBlockZ());
-	}
-   
-	/**
-	 * Generates a big tree at the given coordinates
-	 */
-	public boolean generateBigTree(Coordinate coordinate) {
-	   return (new WorldGenBigTree(true)).generate(this.world, this.random, coordinate.getBlockX(), coordinate.getBlockY(), coordinate.getBlockZ());
-	}
-   
-	/**
-	 * Generates a normal tree at the given coordinates
-	 */
-	public boolean generateTree(Coordinate coordinate) {
-		return (new WorldGenTrees(true)).generate(this.world, this.random, coordinate.getBlockX(), coordinate.getBlockY(), coordinate.getBlockZ());
-	}
-   
-	/**
-	 * Generates a birch tree at the given coordinates
-	 */
-	public boolean generateBirchTree(Coordinate coordinate) {
-		return (new WorldGenForest(true, true)).generate(this.world, this.random, coordinate.getBlockX(), coordinate.getBlockY(), coordinate.getBlockZ());
-	}
-   
-	/**
-	 * Generates a redwood tree at the given coordinates
-	 */
-	public boolean generateRedwoodTree(Coordinate coordinate) {
-		return (new WorldGenTaiga1()).generate(this.world, this.random, coordinate.getBlockX(), coordinate.getBlockY(), coordinate.getBlockZ());
-	}
-   
-	/**
-	 * Generates a tall redwood tree at the given coordinates
-	 */
-	public boolean generateTallRedwoodTree(Coordinate coordinate) {
-		return (new WorldGenTaiga2(true)).generate(this.world, this.random, coordinate.getBlockX(), coordinate.getBlockY(), coordinate.getBlockZ());
 	}
    
 	/**

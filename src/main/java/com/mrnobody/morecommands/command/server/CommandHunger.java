@@ -2,11 +2,14 @@ package com.mrnobody.morecommands.command.server;
 
 import java.lang.reflect.Field;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.EventListener;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.event.Listeners.EventListener;
+import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
 import com.mrnobody.morecommands.util.ReflectionHelper;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
@@ -16,7 +19,6 @@ import com.mrnobody.morecommands.wrapper.Player;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.FoodStats;
 
 @Command(
 		name = "hunger",
@@ -25,11 +27,11 @@ import net.minecraft.util.FoodStats;
 		syntax = "command.hunger.syntax",
 		videoURL = "command.hunger.videoURL"
 		)
-public class CommandHunger extends ServerCommand implements EventListener<TickEvent> {
-	private final Field foodLevel = ReflectionHelper.getField(FoodStats.class, "foodLevel");
+public class CommandHunger extends StandardCommand implements ServerCommandProperties, EventListener<TickEvent> {
+	private final Field foodLevel = ReflectionHelper.getField(ObfuscatedField.FoodStats_foodLevel);
 	
 	public CommandHunger() {
-		EventHandler.TICK.getHandler().register(this);
+		EventHandler.TICK.register(this);
 	}
 
 	@Override
@@ -38,11 +40,8 @@ public class CommandHunger extends ServerCommand implements EventListener<TickEv
 			TickEvent.PlayerTickEvent event = (TickEvent.PlayerTickEvent) ev;
 			
 			if (event.player instanceof EntityPlayerMP && event.phase == TickEvent.Phase.END) {
-				ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) event.player);
-				if (!settings.hunger) {
-					try {this.foodLevel.setInt(event.player.getFoodStats(), 20);}
-					catch (Exception ex) {ex.printStackTrace();}
-				}
+				ServerPlayerSettings settings = getPlayerSettings((EntityPlayerMP) event.player);
+				if (!settings.hunger) ReflectionHelper.set(ObfuscatedField.FoodStats_foodLevel, event.player.getFoodStats(), 20);
 			}
 		}
 	}
@@ -59,8 +58,8 @@ public class CommandHunger extends ServerCommand implements EventListener<TickEv
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
-		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
+		Player player = new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
+		ServerPlayerSettings settings = getPlayerSettings(player.getMinecraftPlayer());
 		int foodLevel;
 		
 		if (params.length > 0) {
@@ -83,11 +82,8 @@ public class CommandHunger extends ServerCommand implements EventListener<TickEv
 			}
 			
 			if (this.foodLevel != null) {
-				try {
-					this.foodLevel.setInt(player.getMinecraftPlayer().getFoodStats(), foodLevel < 0 ? 0 : foodLevel > 20 ? 20 : foodLevel);
-					sender.sendLangfileMessage("command.hunger.success");
-				}
-				catch (Exception ex) {throw new CommandException("command.hunger.error", sender);}
+				ReflectionHelper.set(ObfuscatedField.FoodStats_foodLevel, player.getMinecraftPlayer().getFoodStats(), foodLevel < 0 ? 0 : foodLevel > 20 ? 20 : foodLevel);
+				sender.sendLangfileMessage("command.hunger.success");
 			}
 			else throw new CommandException("command.hunger.error", sender);
 		}
@@ -98,8 +94,8 @@ public class CommandHunger extends ServerCommand implements EventListener<TickEv
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -108,12 +104,12 @@ public class CommandHunger extends ServerCommand implements EventListener<TickEv
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

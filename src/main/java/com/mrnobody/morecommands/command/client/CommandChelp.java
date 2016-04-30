@@ -6,7 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.mrnobody.morecommands.command.ClientCommand;
+import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.MultipleCommands;
+import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.DummyCommand;
 import com.mrnobody.morecommands.util.LanguageManager;
@@ -31,7 +35,7 @@ import net.minecraftforge.client.ClientCommandHandler;
 		syntax = "command.chelp.syntax",
 		videoURL = "command.chelp.videoURL"
 		)
-public class CommandChelp extends ClientCommand {
+public class CommandChelp extends StandardCommand implements ClientCommandProperties {
 	private IChatComponent MESSAGE_PAGEHEADING;
 	private IChatComponent MESSAGE_COMMANDHEADING;
 	private IChatComponent MESSAGE_FOOTER;
@@ -69,13 +73,13 @@ public class CommandChelp extends ClientCommand {
 		for (String rem : remove) names.remove(rem);
 		
 		Collections.sort(names);
-			
+		
 		byte maxEntries = 7;
 		int totalPages = (names.size() - 1) / maxEntries;
 		int page = 0;
 			
 		try {
-			page = params.length == 0 ? 0 : this.parseIntBounded(sender.getMinecraftISender(), params[0], 1, totalPages + 1) - 1;
+			page = params.length == 0 ? 0 : parseIntBounded(sender.getMinecraftISender(), params[0], 1, totalPages + 1) - 1;
 		}
 		catch (NumberInvalidException numberinvalidexception){
 			if (!names.contains(params[0])) throw new CommandException("command.generic.notFound", sender);
@@ -96,16 +100,16 @@ public class CommandChelp extends ClientCommand {
 			sender.sendChatComponent(this.MESSAGE_FOOTER);
 		}
 		else if (show.equals("commandhelp")) {
-			if (commands.get(params[0]) instanceof ClientCommand && commands.get(params[0]).getClass().getAnnotation(Command.class) != null) {
-				Command info = commands.get(params[0]).getClass().getAnnotation(Command.class);
-				
+			String[] info = commands.get(params[0]) instanceof ClientCommand<?> ? getInfo((ClientCommand<?>) commands.get(params[0])) : null;
+			
+			if (info != null) {
 				sender.sendChatComponent(this.MESSAGE_COMMANDHEADING);
 				
-				sender.sendChatComponent(this.MESSAGE_NAME.appendSibling((new ChatComponentText(info.name())).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
-				sender.sendChatComponent(this.MESSAGE_DESCRIPTION.appendSibling((new ChatComponentText(LanguageManager.translate(langCode, info.description()))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
-				sender.sendChatComponent(this.MESSAGE_SYNTAX.appendSibling((new ChatComponentText(LanguageManager.translate(langCode, info.syntax()))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
-				sender.sendChatComponent(this.MESSAGE_EXAMPLE.appendSibling((new ChatComponentText(LanguageManager.translate(langCode, info.example()))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
-				sender.sendChatComponent(this.MESSAGE_VIDEO.appendSibling((new ChatComponentText(LanguageManager.translate(langCode, info.videoURL()))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE).setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "http://" + LanguageManager.translate(langCode, info.videoURL()))))));
+				sender.sendChatComponent(this.MESSAGE_NAME.appendSibling((new ChatComponentText(info[0])).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
+				sender.sendChatComponent(this.MESSAGE_DESCRIPTION.appendSibling((new ChatComponentText(LanguageManager.translate(langCode, info[1]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
+				sender.sendChatComponent(this.MESSAGE_SYNTAX.appendSibling((new ChatComponentText(LanguageManager.translate(langCode, info[2]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
+				sender.sendChatComponent(this.MESSAGE_EXAMPLE.appendSibling((new ChatComponentText(LanguageManager.translate(langCode, info[3]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
+				sender.sendChatComponent(this.MESSAGE_VIDEO.appendSibling((new ChatComponentText(LanguageManager.translate(langCode, info[4]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE).setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "http://" + LanguageManager.translate(langCode, info[4]))))));
 				
 				sender.sendChatComponent(this.MESSAGE_FOOTER);
 			}
@@ -115,14 +119,32 @@ public class CommandChelp extends ClientCommand {
 				sender.sendChatComponent(this.MESSAGE_COMMANDHEADING);
 				
 				sender.sendChatComponent(this.MESSAGE_NAME.appendSibling((new ChatComponentText(command.getCommandName())).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
-				sender.sendChatComponent(this.MESSAGE_DESCRIPTION.appendSibling((new ChatComponentText(LanguageManager.translate(langCode, "command.generic.help.noDescription", new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
-				sender.sendChatComponent(this.MESSAGE_SYNTAX.appendSibling((new ChatComponentTranslation(command.getCommandUsage(sender.getMinecraftISender()), new Object[0])).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
-				sender.sendChatComponent(this.MESSAGE_EXAMPLE.appendSibling((new ChatComponentText(LanguageManager.translate(langCode, "command.generic.help.noExample", new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
-				sender.sendChatComponent(this.MESSAGE_VIDEO.appendSibling((new ChatComponentText(LanguageManager.translate(langCode, "command.generic.help.noVideo", new Object[0]))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
+				sender.sendChatComponent(this.MESSAGE_DESCRIPTION.appendSibling((new ChatComponentText(LanguageManager.translate(langCode, "command.generic.help.noDescription"))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
+				sender.sendChatComponent(this.MESSAGE_SYNTAX.appendSibling((new ChatComponentTranslation(command.getCommandUsage(sender.getMinecraftISender()))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
+				sender.sendChatComponent(this.MESSAGE_EXAMPLE.appendSibling((new ChatComponentText(LanguageManager.translate(langCode, "command.generic.help.noExample"))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
+				sender.sendChatComponent(this.MESSAGE_VIDEO.appendSibling((new ChatComponentText(LanguageManager.translate(langCode, "command.generic.help.noVideo"))).setChatStyle((new ChatStyle()).setColor(EnumChatFormatting.WHITE))));
 				
 				sender.sendChatComponent(this.MESSAGE_FOOTER);
 			}
 		}
+	}
+	
+	private String[] getInfo(ClientCommand<?> cmd) {
+		StandardCommand delegate = cmd.getDelegate();
+		
+		if (delegate instanceof MultipleCommands && delegate.getClass().isAnnotationPresent(Command.MultipleCommand.class)) {
+			MultipleCommands command = (MultipleCommands) delegate;
+			Command.MultipleCommand info = delegate.getClass().getAnnotation(Command.MultipleCommand.class);
+			
+			try {return new String[] {info.name()[command.getTypeIndex()], info.description()[command.getTypeIndex()],
+				info.syntax()[command.getTypeIndex()], info.example()[command.getTypeIndex()], info.videoURL()[command.getTypeIndex()]};}
+			catch (ArrayIndexOutOfBoundsException ex) {return null;}
+		}
+		else if (delegate.getClass().isAnnotationPresent(Command.class)) {
+			Command info = delegate.getClass().getAnnotation(Command.class);
+			return new String[] {info.name(), info.description(), info.syntax(), info.example(), info.videoURL()};
+		}
+		else return null;
 	}
 	
 	private void resetMessages(String langCode) {
@@ -137,8 +159,8 @@ public class CommandChelp extends ClientCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -152,7 +174,7 @@ public class CommandChelp extends ClientCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 }

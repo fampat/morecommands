@@ -1,9 +1,11 @@
 package com.mrnobody.morecommands.command.client;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.ClientCommand;
+import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.LanguageManager;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -18,7 +20,7 @@ import net.minecraft.util.ChatComponentText;
 		syntax = "command.output.syntax",
 		videoURL = "command.output.videoURL"
 		)
-public class CommandOutput extends ClientCommand {
+public class CommandOutput extends StandardCommand implements ClientCommandProperties {
 
 	@Override
 	public String getCommandName() {
@@ -36,15 +38,14 @@ public class CommandOutput extends ClientCommand {
 		catch (IllegalArgumentException ex) {throw new CommandException("command.output.failure", sender);}
 		
 		sender.getMinecraftISender().addChatMessage(new ChatComponentText(LanguageManager.translate(
-				MoreCommands.getMoreCommands().getCurrentLang(sender.getMinecraftISender()), CommandSender.output ? "command.output.on" : "command.output.off")));
+				MoreCommands.INSTANCE.getCurrentLang(sender.getMinecraftISender()), CommandSender.output ? "command.output.on" : "command.output.off")));
 		
-    	if (MoreCommands.getMoreCommands().getPlayerUUID() != null)
-    		MoreCommands.getMoreCommands().getPacketDispatcher().sendC04Output(CommandSender.output);
+    	MoreCommands.INSTANCE.getPacketDispatcher().sendC01Output(CommandSender.output);
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -58,7 +59,7 @@ public class CommandOutput extends ClientCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 }

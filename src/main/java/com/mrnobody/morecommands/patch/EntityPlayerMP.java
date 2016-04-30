@@ -3,12 +3,15 @@ package com.mrnobody.morecommands.patch;
 import java.util.Collection;
 import java.util.Iterator;
 
+import com.mojang.authlib.GameProfile;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.item.EntityItem;
-import net.minecraft.inventory.ContainerPlayer;
 import net.minecraft.potion.Potion;
 import net.minecraft.scoreboard.IScoreObjectiveCriteria;
 import net.minecraft.scoreboard.Score;
@@ -23,8 +26,6 @@ import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 
-import com.mojang.authlib.GameProfile;
-
 /**
  * The patched class of {@link net.minecraft.entity.player.EntityPlayerMP} <br>
  * This patch is needed to make several commands available and working, <br>
@@ -38,14 +39,14 @@ public class EntityPlayerMP extends net.minecraft.entity.player.EntityPlayerMP {
 	private boolean criticalhit = false;
 	private boolean instantmine = false;
 	private boolean keepinventory = false;
-	private boolean infnitesprinting = false;
+	private boolean infinitesprinting = false;
+	private boolean fluidmovement = true;
+	private boolean overrideOnLadder = false;
+	
+	private double gravity = 1.0D;
 	
 	public EntityPlayerMP(MinecraftServer p_i45285_1_, WorldServer p_i45285_2_, GameProfile p_i45285_3_, ItemInWorldManager p_i45285_4_) {
 		super(p_i45285_1_, p_i45285_2_, p_i45285_3_, p_i45285_4_);
-		
-        //this.inventory = new net.minecraft.entity.player.InventoryPlayer(this); //don't use patched class of InventoryPlayer as there is no need for it currently
-        //this.inventoryContainer = new ContainerPlayer(this.inventory, !p_i45285_2_.isRemote, this);
-        //this.openContainer = this.inventoryContainer;
 	}
 	
 	public boolean getCriticalHit() {
@@ -81,24 +82,107 @@ public class EntityPlayerMP extends net.minecraft.entity.player.EntityPlayerMP {
 	}
 	
 
-	public void setInfniteSprinting(boolean sprinting) {
-		this.infnitesprinting = sprinting;
+	public void setInfiniteSprinting(boolean sprinting) {
+		this.infinitesprinting = sprinting;
 	}
 	
-	public boolean getInfniteSprinting() {
-		return this.infnitesprinting;
+	public boolean getInfiniteSprinting() {
+		return this.infinitesprinting;
+	}
+	
+	public void setFluidMovement(boolean fluidmovement) {
+		this.fluidmovement = fluidmovement;
+	}
+	
+	public boolean getFluidMovement() {
+		return this.fluidmovement;
+	}
+	
+	public double getGravity() {
+		return this.gravity;
+	}
+	
+	public void setGravity(double gravity) {
+		this.gravity = gravity;
+	}
+	
+	public void setOverrideOnLadder(boolean override) {
+		this.overrideOnLadder = override;
+	}
+	
+	public boolean overrideOnLadder() {
+		return this.overrideOnLadder;
+	}
+	
+	@Override
+	public boolean isOnLadder() {
+		if (this.overrideOnLadder && this.isCollidedHorizontally) return true;
+		else return super.isOnLadder();
+	}
+	
+	@Override
+	public boolean isInWater() {
+		if (!this.fluidmovement) return false;
+		return super.isInWater();
+	}
+	
+	@Override
+	public boolean handleLavaMovement() {
+		if (!this.fluidmovement) return false;
+		return super.handleLavaMovement();
+	}
+	
+	@Override
+	public void jump() {
+		if (this.gravity > 1.0D) {
+			this.motionY = 0.41999998688697815D * this.gravity;
+			
+	        if (this.isPotionActive(Potion.jump))
+	        {
+	            this.motionY += (double)((float)(this.getActivePotionEffect(Potion.jump).getAmplifier() + 1) * 0.1F);
+	        }
+
+	        if (this.isSprinting())
+	        {
+	            float f = this.rotationYaw * 0.017453292F;
+	            this.motionX -= (double)(MathHelper.sin(f) * 0.2F);
+	            this.motionZ += (double)(MathHelper.cos(f) * 0.2F);
+	        }
+
+	        this.isAirBorne = true;
+	        ForgeHooks.onLivingJump(this);
+	        
+	        this.addStat(StatList.jumpStat, 1);
+
+	        if (this.isSprinting())
+	        {
+	            this.addExhaustion(0.8F);
+	        }
+	        else
+	        {
+	            this.addExhaustion(0.2F);
+	        }
+			
+			return;
+		}
+		
+		super.jump();
 	}
 	
 	@Override
 	public void onLivingUpdate() {
-		if (this.infnitesprinting) this.setSprinting(true);
+		if (this.infinitesprinting) this.setSprinting(true);
 		super.onLivingUpdate();
 	}
 	
 	@Override
 	public void attackTargetEntityWithCurrentItem(Entity entity) {
 	      if (this.instantkill) {
-	          entity.attackEntityFrom(DamageSource.causePlayerDamage(this), Integer.MAX_VALUE);
+	    	  IAttributeInstance attackDamage = this.getEntityAttribute(SharedMonsterAttributes.attackDamage);
+	    	  double oldValue = attackDamage.getBaseValue();
+	    	  attackDamage.setBaseValue(Double.MAX_VALUE / 2);
+	    	  super.attackTargetEntityWithCurrentItem(entity);
+	          attackDamage.setBaseValue(oldValue);
 	          return;
 	       } else if (this.criticalhit) {
 	          double my = this.motionY;

@@ -1,15 +1,20 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.entity.player.EntityPlayerMP;
+import java.util.ArrayList;
+import java.util.List;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.wrapper.EntityLivingBase;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.util.EnumChatFormatting;
 
 @Command(
 		name = "enchant",
@@ -18,8 +23,9 @@ import com.mrnobody.morecommands.wrapper.Player;
 		syntax = "command.enchant.syntax",
 		videoURL = "command.enchant.videoURL"
 		)
-public class CommandEnchant extends ServerCommand {
-
+public class CommandEnchant extends StandardCommand implements ServerCommandProperties {
+	private static final int PAGE_MAX = 15;
+	
 	@Override
 	public String getCommandName() {
 		return "enchant";
@@ -29,64 +35,80 @@ public class CommandEnchant extends ServerCommand {
 	public String getUsage() {
 		return "command.enchant.syntax";
 	}
+	
+	private Enchantment[] dropNulls(Enchantment[] enchantments) {
+		List<Enchantment> list = new ArrayList<Enchantment>(enchantments.length);
+		for (Enchantment e : enchantments) if (e != null) list.add(e);
+		return list.toArray(new Enchantment[list.size()]);
+	}
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		EntityLivingBase entity = new EntityLivingBase(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.EntityLivingBase.class));
 		
 		if (params.length > 0) {
     		if(params[0].equals("list")) {
-    			int page = 1;
-    			int PAGE_MAX = 15;
-    			boolean validParam = true;
+    			int page = 0;
+    			Enchantment[] enchantments = dropNulls(Enchantment.enchantmentsList);
     			
     			if (params.length > 1) {
-    				try {page = Integer.parseInt(params[1]);} 
-    				catch (NumberFormatException e) {validParam = false;}
+    				try {
+    					page = Integer.parseInt(params[1]) - 1; 
+    					if (page < 0) page = 0;
+    					else if (page * PAGE_MAX > enchantments.length) page = enchantments.length / PAGE_MAX;
+    				}
+    				catch (NumberFormatException e) {throw new CommandException("command.enchant.NAN", sender);}
     			}
     			
-    			if (validParam) {
-    				int to = PAGE_MAX * page <= Enchantment.enchantmentsList.length ? PAGE_MAX * page : Enchantment.enchantmentsList.length;
-    				int from = to - PAGE_MAX;
-    				
-    				for (int index = from; index < to; index++) {
-    					if (Enchantment.enchantmentsList[index] != null) sender.sendStringMessage(" - '" + Enchantment.enchantmentsList[index].getName().substring(12) + "' (" + String.valueOf(Enchantment.enchantmentsList[index].effectId) + ")");
-    				}
-    				sender.sendLangfileMessage("command.enchant.more");
-    			}
-    			else throw new CommandException("command.enchant.invalidUsage", sender);
+    			final int stop = (page + 1) * PAGE_MAX;;
+    			for (int i = page * PAGE_MAX; i < stop && i < enchantments.length; i++)
+    				sender.sendStringMessage(" - '" + 
+        				(enchantments[i].getName().startsWith("enchantment.") ? 
+        				enchantments[i].getName().substring("enchantment.".length()) :
+        				enchantments[i].getName()) + "' (ID " + enchantments[i].effectId + ")");
+    			
+    			sender.sendLangfileMessage("command.enchant.more", EnumChatFormatting.RED);
     		}
-    		
     		else if (params[0].equals("remove")) {
-    			player.removeEnchantment(); 
-    			sender.sendLangfileMessage("command.enchant.removeSuccess");
-    		}
-		
-    		else if (params[0].equals("add")) {
-    			if (params.length > 2) {
-    				boolean found = false;
-    				
-    				for (Enchantment e : Enchantment.enchantmentsList) {
-    					if (e != null) {
-    						if (params[1].equalsIgnoreCase(e.getName().substring(12)) || String.valueOf(e.effectId).equals(params[1])) {
-    							try {player.addEnchantment(e, Integer.parseInt(params[2])); found = true; sender.sendLangfileMessage("command.enchant.addSuccess");}
-    							catch (NumberFormatException ex) {sender.sendLangfileMessage("command.enchant.NAN"); found = true;}
-    							break;
-    						}
-    					}
-    				}
-    				if (!found) throw new CommandException("command.enchant.notFound", sender);
+    			if (params.length <= 1 || (params.length > 1 && params[1].equalsIgnoreCase("*"))) {
+    				entity.removeEnchantments();
+    				sender.sendLangfileMessage("command.enchant.removeAllSuccess");
     			}
-    			else throw new CommandException("command.enchant.invalidUsage", sender);
+    			else if (params.length > 1) {
+    				Enchantment e = getEnchantment(params[1]);
+    				
+    				if (e != null) entity.removeEnchantment(e);
+    				else throw new CommandException("command.enchant.notFound", sender);
+    				
+    				sender.sendLangfileMessage("command.enchant.removeSuccess");
+    			}
     		}
-    		else throw new CommandException("command.enchant.invalidUsage", sender);
+    		else if (params[0].equals("add") && params.length > 1) {
+ 				int level = 1;
+				
+				if (params.length > 2) {
+					try {level = Integer.parseInt(params[2]);}
+					catch (NumberFormatException e) {throw new CommandException("command.enchant.NAN", sender);}
+				}
+				
+				Enchantment e = getEnchantment(params[1]);
+				
+				if (e != null) {
+					if (!entity.addEnchantment(e, level > e.getMaxLevel() ? e.getMaxLevel() : level < e.getMinLevel() ? e.getMinLevel() : level))
+						throw new CommandException("command.enchant.cantApply", sender);
+				}
+				else throw new CommandException("command.enchant.notFound", sender);
+				
+				sender.sendLangfileMessage("command.enchant.addSuccess");
+    		}
+    		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
-		else throw new CommandException("command.enchant.invalidUsage", sender);
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 	
 	@Override
@@ -95,12 +117,12 @@ public class CommandEnchant extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, net.minecraft.entity.EntityLivingBase.class);
 	}
 }

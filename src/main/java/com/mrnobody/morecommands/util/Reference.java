@@ -6,46 +6,47 @@ import java.util.Date;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 
 /**
- * A class containing information on the mod, such as mod id, version <br>
- * paths, etc.
+ * A class containing information about the mod such as mod id, version, <br>
+ * name, etc.
  * 
  * @author MrNobody98
  *
  */
-public class Reference {
+public final class Reference {
+	/** the mod id */
 	public static final String MODID = "mrnobody_morecommands";
-	public static final String VERSION = "1.6";
-	public static final String NAME = "More Commands";
+	/** the mod version */
+	public static final String VERSION = "1.7";
+	/** the mod name */
+	public static final String NAME = "MoreCommands";
+	/** the mod network channel name */
 	public static final String CHANNEL = "mrnobody_cmd";
+	/** The website URL */
+	public static final String WEBSITE = "http://bit.ly/morecommands";
+	/** The build date */
     public static final Date BUILD = new Date(System.currentTimeMillis()); //gets replaced during build process
 	
+    /** @return the mod configuration directory */
 	public static final File getModDir() {return Reference.INSTANCE.MOD_DIR;}
-	public static final File getServerPlayerDir() {return Reference.INSTANCE.PLAYER_DIR_SERVER;}
-	public static final File getClientPlayerDir() {return Reference.INSTANCE.PLAYER_DIR_CLIENT;}
-	public static final File getMacroDir() {return Reference.INSTANCE.MACRO_DIR;}
+	/** @return the directory where the mod saves server player data */
+	public static final File getSettingsDirServer() {return Reference.INSTANCE.SETTINGS_DIR_SERVER;}
 	
 	private static Reference INSTANCE;
 	
-	private File PLAYER_DIR_SERVER;
-	private File PLAYER_DIR_CLIENT;
-	
-	private File MOD_DIR;
-	private File MACRO_DIR;
+	private final File SETTINGS_DIR_SERVER;
+	private final File MOD_DIR;
 	
 	private Reference(FMLPreInitializationEvent event) {
 		this.MOD_DIR = new File(event.getModConfigurationDirectory(), "morecommands");
 		if (!this.MOD_DIR.exists()) this.MOD_DIR.mkdirs();
 		
-		this.MACRO_DIR = new File(this.MOD_DIR, "macros");
-		if (!this.MACRO_DIR.exists()) this.MACRO_DIR.mkdirs();
-		
-		this.PLAYER_DIR_SERVER = new File(this.MOD_DIR, "playerdata_server");
-		if (!this.PLAYER_DIR_SERVER.exists()) this.PLAYER_DIR_SERVER.mkdirs();
-		
-		this.PLAYER_DIR_CLIENT = new File(this.MOD_DIR, "playerdata_client");
-		if (!this.PLAYER_DIR_CLIENT.exists()) this.PLAYER_DIR_CLIENT.mkdirs();
+		this.SETTINGS_DIR_SERVER = new File(this.MOD_DIR, "settings_server");
+		if (!this.SETTINGS_DIR_SERVER.exists()) this.SETTINGS_DIR_SERVER.mkdirs();
 	}
-	
+	/**
+	 * Initializes the the configuration directories from
+	 * {@link FMLPreInitializationEvent#getModConfigurationDirectory()}
+	 */
 	public static final void init(FMLPreInitializationEvent event) {
 		if (INSTANCE == null) Reference.INSTANCE = new Reference(event);
 	}

@@ -1,11 +1,20 @@
 package com.mrnobody.morecommands.command.server;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import com.google.common.collect.ImmutableList;
+import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.wrapper.CommandException;
+import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.wrapper.Coordinate;
+import com.mrnobody.morecommands.wrapper.EntityLivingBase;
+
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityFireworkRocket;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
@@ -19,14 +28,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.RecipeFireworks;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.Entity;
-
 @Command(
 		name = "firework",
 		description = "command.firework.description",
@@ -34,25 +35,11 @@ import com.mrnobody.morecommands.wrapper.Entity;
 		syntax = "command.firework.syntax",
 		videoURL = "command.firework.videoURL"
 		)
-public class CommandFirework extends ServerCommand {
-	private List<Item> shapeModifiers;
-	private List<Item> effectModifiers;
-	private final int MAX_GUNPOWDER = 3;
-	private final int MAX_DYE_TYPES = ItemDye.field_150922_c.length;
-	
-	public CommandFirework() {
-		this.shapeModifiers = new ArrayList<Item>();
-		
-		this.shapeModifiers.add(Items.fire_charge);
-		this.shapeModifiers.add(Items.gold_nugget);
-		this.shapeModifiers.add(Items.skull);
-		this.shapeModifiers.add(Items.feather);
-		
-		this.effectModifiers = new ArrayList<Item>();
-		
-		this.effectModifiers.add(Items.glowstone_dust);
-		this.effectModifiers.add(Items.diamond);
-	}
+public class CommandFirework extends StandardCommand implements ServerCommandProperties {
+	private static final ImmutableList<Item> shapeModifiers = ImmutableList.of(Items.fire_charge, Items.gold_nugget, Items.skull, Items.feather);
+	private static final ImmutableList<Item> effectModifiers = ImmutableList.of(Items.glowstone_dust, Items.diamond);
+	private static final int MAX_GUNPOWDER = 3;
+	private static final int MAX_DYE_TYPES = ItemDye.field_150922_c.length;
 	
 	@Override
 	public String getCommandName() {
@@ -66,9 +53,18 @@ public class CommandFirework extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Entity entity = new Entity((net.minecraft.entity.EntityLivingBase) sender.getMinecraftISender());
-		Coordinate spawn = entity.traceBlock(128.0D);
-		if (spawn == null) throw new CommandException("command.firework.notFound", sender);
+		EntityLivingBase entity = params.length > 2 ? null : 
+			isSenderOfEntityType(sender.getMinecraftISender(), net.minecraft.entity.EntityLivingBase.class) ? 
+			new EntityLivingBase(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.EntityLivingBase.class)) : null;
+		Coordinate spawn = null;
+		
+		if (params.length > 2)
+			spawn = getCoordFromParams(sender.getMinecraftISender(), params, 0);
+		else
+			spawn = entity == null ? sender.getPosition() : entity.traceBlock(128.0D);
+		
+		if (spawn == null) 
+			throw new CommandException("command.firework.notFound", sender);
 		
 		Random rand = new Random();
 		List recipes = CraftingManager.getInstance().getRecipeList();
@@ -90,16 +86,16 @@ public class CommandFirework extends ServerCommand {
 			do {
 		        for (int i = 0; i < inv.getSizeInventory(); ++i) inv.setInventorySlotContents(i, null);
 				
-				dye = new ItemStack(Items.dye, 1, rand.nextInt(this.MAX_DYE_TYPES));
+				dye = new ItemStack(Items.dye, 1, rand.nextInt(MAX_DYE_TYPES));
 				
 				inv.setInventorySlotContents(0, dye);
 				inv.setInventorySlotContents(1, new ItemStack(Items.gunpowder));
 				
 				if (rand.nextBoolean())
-					inv.setInventorySlotContents(2, new ItemStack(this.shapeModifiers.get(rand.nextInt(this.shapeModifiers.size()))));
+					inv.setInventorySlotContents(2, new ItemStack(shapeModifiers.get(rand.nextInt(shapeModifiers.size()))));
 				
 				if (rand.nextBoolean())
-					inv.setInventorySlotContents(3, new ItemStack(this.effectModifiers.get(rand.nextInt(this.effectModifiers.size()))));
+					inv.setInventorySlotContents(3, new ItemStack(effectModifiers.get(rand.nextInt(effectModifiers.size()))));
 			}
 			while (!recipe.matches(inv, sender.getMinecraftISender().getEntityWorld()));
 			
@@ -112,7 +108,7 @@ public class CommandFirework extends ServerCommand {
 					inv.setInventorySlotContents(0, output);
 					inv.setInventorySlotContents(1, new ItemStack(Items.paper));
 					
-					int gunpowder = rand.nextInt(this.MAX_GUNPOWDER);
+					int gunpowder = rand.nextInt(MAX_GUNPOWDER);
 					for (int i = 0; i < gunpowder; i++) inv.setInventorySlotContents(2 + i, new ItemStack(Items.gunpowder));
 				}
 				while (!recipe.matches(inv, sender.getMinecraftISender().getEntityWorld()));
@@ -122,16 +118,16 @@ public class CommandFirework extends ServerCommand {
 				if (output.getItem() instanceof ItemFirework) {
 					ItemFirework firework = (ItemFirework) output.getItem();
 					
-					EntityFireworkRocket rocket = new EntityFireworkRocket(entity.getWorld().getMinecraftWorld(), spawn.getX(), spawn.getY(), spawn.getZ(), output);;
-					entity.getWorld().getMinecraftWorld().spawnEntityInWorld(rocket);
+					EntityFireworkRocket rocket = new EntityFireworkRocket(sender.getWorld().getMinecraftWorld(), spawn.getX(), spawn.getY(), spawn.getZ(), output);;
+					sender.getWorld().getMinecraftWorld().spawnEntityInWorld(rocket);
 				}
 			}
 		}
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -140,12 +136,12 @@ public class CommandFirework extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityLivingBase;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return true;
 	}
 }

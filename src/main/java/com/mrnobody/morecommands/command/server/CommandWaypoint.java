@@ -2,11 +2,13 @@ package com.mrnobody.morecommands.command.server;
 
 import java.text.DecimalFormat;
 import java.util.Iterator;
-import java.util.Map;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -15,6 +17,7 @@ import com.mrnobody.morecommands.wrapper.Player;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.MathHelper;
 
 @Command(
 		name = "waypoint",
@@ -23,7 +26,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 		syntax = "command.waypoint.syntax",
 		videoURL = "command.waypoint.videoURL"
 		)
-public class CommandWaypoint extends ServerCommand {
+public class CommandWaypoint extends StandardCommand implements ServerCommandProperties {
 	private class NotFoundException extends Exception {}
 	
 	@Override
@@ -38,10 +41,10 @@ public class CommandWaypoint extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
+		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
 		
 		if (params.length > 1) {
-			Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+			Player player = new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
 			
 			if (params[0].equalsIgnoreCase("set")) {
 				double x = player.getPosition().getX();
@@ -58,8 +61,8 @@ public class CommandWaypoint extends ServerCommand {
 				}
 				String name = params[1];
 				double[] data = new double[] {x, y, z, (double) player.getYaw(), (double) player.getPitch()};
-				this.setWaypoint(settings.waypoints, name, data);
-				settings.saveSettings();
+				this.setWaypoint(settings, name, data, sender.getMinecraftISender());
+				
 				DecimalFormat f = new DecimalFormat("#.##");
 					
 				sender.sendStringMessage("Waypoint '" + name + "' successfully set at: "
@@ -68,12 +71,12 @@ public class CommandWaypoint extends ServerCommand {
 						+ "; Z = " + f.format(z));
 			}
 			else if (params[0].equalsIgnoreCase("rem") || params[0].equalsIgnoreCase("remove") || params[0].equalsIgnoreCase("del") || params[0].equalsIgnoreCase("delete")) {
-				try {this.deleteWaypoint(settings.waypoints, params[1]); settings.saveSettings(); sender.sendLangfileMessage("command.waypoint.removed", params[1]);}
+				try {this.deleteWaypoint(settings, params[1], sender.getMinecraftISender()); sender.sendLangfileMessage("command.waypoint.removed", params[1]);}
 				catch (NotFoundException nfe) {throw new CommandException("command.waypoint.notFound", sender, params[1]);}
 			}
 			else if (params[0].equalsIgnoreCase("goto")) {
 				double[] data;
-				try {data = this.getWaypoint(settings.waypoints, params[1]);}
+				try {data = this.getWaypoint(settings, params[1], sender.getMinecraftISender());}
 				catch (NotFoundException nfe) {throw new CommandException("command.waypoint.notFound", sender, params[1]);}
 				
 				player.setPosition(new Coordinate(data[0], data[1], data[2]));
@@ -100,23 +103,32 @@ public class CommandWaypoint extends ServerCommand {
 		else throw new CommandException("command.waypoint.invalidArgs", sender);
 	}
 
-	private void setWaypoint(Map<String, double[]> waypoints, String name, double[] data) {
-		waypoints.put(name, data);
+	private void setWaypoint(ServerPlayerSettings settings, String name, double[] data, ICommandSender sender) {
+		settings.waypoints = settings.putAndUpdate("waypoints", name, data, double[].class, true);
+		
+		if (settings.hasModifiedCompassTarget && name.equals(settings.waypointCompassTarget) && sender instanceof EntityPlayerMP)
+			MoreCommands.INSTANCE.getPacketDispatcher().sendS13SetCompassTarget(getSenderAsEntity(sender, EntityPlayerMP.class), MathHelper.floor_double(data[0]), MathHelper.floor_double(data[2]));
 	}
 	
-	private void deleteWaypoint(Map<String, double[]> waypoints, String name) throws NotFoundException {
-		if (!waypoints.containsKey(name)) throw new NotFoundException();
-		waypoints.remove(name);
+	private void deleteWaypoint(ServerPlayerSettings settings, String name, ICommandSender sender) throws NotFoundException {
+		if (!settings.waypoints.containsKey(name)) throw new NotFoundException();
+		settings.waypoints = settings.removeAndUpdate("waypoints", name, double[].class, true);
+		
+		if (settings.hasModifiedCompassTarget && name.equals(settings.waypointCompassTarget) && sender instanceof EntityPlayerMP) {
+			MoreCommands.INSTANCE.getPacketDispatcher().sendS13ResetCompassTarget(getSenderAsEntity(sender, EntityPlayerMP.class));
+			settings.hasModifiedCompassTarget = false;
+			settings.waypointCompassTarget = null;
+		}
 	}
 	
-	private double[] getWaypoint(Map<String, double[]> waypoints, String name) throws NotFoundException {
-		if (!waypoints.containsKey(name)) throw new NotFoundException();
-		return waypoints.get(name);
+	private double[] getWaypoint(ServerPlayerSettings settings, String name, ICommandSender sender) throws NotFoundException {
+		if (!settings.waypoints.containsKey(name)) throw new NotFoundException();
+		return settings.waypoints.get(name);
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 	
 	@Override
@@ -125,12 +137,12 @@ public class CommandWaypoint extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

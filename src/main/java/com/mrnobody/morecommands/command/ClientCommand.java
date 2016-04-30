@@ -1,94 +1,63 @@
 package com.mrnobody.morecommands.command;
 
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.patch.EntityClientPlayerMP;
 import com.mrnobody.morecommands.util.LanguageManager;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
-import net.minecraft.client.Minecraft;
+import cpw.mods.fml.relauncher.Side;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraftforge.client.ClientCommandHandler;
 
 /**
- * Base Class for all client commands
+ * A wrapper class for commands which are intended to be used
+ * on client side. Delegates all method calls to the wrapped command.
+ * The wrapped command must be of type {@link StandardCommand} and {@link ClientCommandProperties}
  * 
  * @author MrNobody98
  */
-public abstract class ClientCommand extends CommandBase {
-	public final void processCommand(ICommandSender sender, String[] params) {
-    	if (MoreCommands.isModEnabled() && this.isEnabled(sender)) {
-        	try{
-        		this.execute(new CommandSender(sender), params);
-        	}
-        	catch (CommandException e) {
-        		ChatComponentText text = new ChatComponentText(e.getMessage());
-        		text.getChatStyle().setColor(EnumChatFormatting.RED);
-        		if (!(sender instanceof EntityPlayerMP)) {if (CommandSender.output) sender.addChatMessage(text);}
-        		else if (CommandSender.output && !ServerPlayerSettings.containsSettingsForPlayer((EntityPlayerMP) sender)) sender.addChatMessage(text);
-        		else if (CommandSender.output && ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender).output) sender.addChatMessage(text);
-        	}
-    	}
-    	else {
-    		if (!MoreCommands.isModEnabled()) {
-        		ChatComponentText text = new ChatComponentText(LanguageManager.translate(MoreCommands.getMoreCommands().getCurrentLang(sender), "command.generic.notEnabled"));
-        		text.getChatStyle().setColor(EnumChatFormatting.RED);
-        		sender.addChatMessage(text);
-    		}
-    	}
-    }
+public final class ClientCommand<T extends StandardCommand & ClientCommandProperties> extends CommandBase implements ClientCommandProperties {	
+	/** Set by the "clientcommands" command. Indicates whether client commands are enabled/disabled */
+	public static boolean clientCommandsEnabled = true;
+	
+	/**
+	 * Checks if an object <i>o</i> is of type {@link StandardCommand} and {@link ClientCommandProperties}.<br>
+	 * Returns null if not, else a generic type with those two types as bounds.
+	 * 
+	 * @param o the object to check/cast
+	 * @return a generic type having those two types as bounds
+	 * @throws IllegalArgumentException if the <i>o</i> is not of type {@link StandardCommand} and {@link ClientCommandProperties}
+	 */
+	//possible to do with "(A & B) obj" multiple bounds cast in java 8, not used in order to be able to use older java versions
+	public static final <T extends StandardCommand & ClientCommandProperties> T upcast(Object o) throws IllegalArgumentException {
+		if (o instanceof StandardCommand && o instanceof ClientCommandProperties) return (T) o;
+		else throw new IllegalArgumentException("argument is not of type StandardCommand & ClientCommandProperties");
+	}
+	
+	private final ClientCommandProperties delegate;
+	
+	public ClientCommand(T delegate) {
+		super(delegate);
+		this.delegate = delegate;
+	}
 	
     @Override
-    public final boolean isEnabled(ICommandSender sender) {
-		String lang = MoreCommands.getMoreCommands().getCurrentLang(sender);
+    public final boolean checkRequirements(ICommandSender sender, String[] params, Side side) {
+		String lang = MoreCommands.INSTANCE.getCurrentLang(sender);
 		
     	if (!(sender instanceof net.minecraft.client.entity.EntityClientPlayerMP)) {
-    		sendChatMsg(sender, LanguageManager.translate(lang, "command.generic.notClient"));
+        	ChatComponentText text = new ChatComponentText(LanguageManager.translate(lang, "command.generic.notClient"));
     		return false;
     	}
     	
-    	if (!(this.getAllowedServerType() == ServerType.ALL || this.getAllowedServerType() == MoreCommands.getMoreCommands().getRunningServer())) {
-    		if (this.getAllowedServerType() == ServerType.INTEGRATED) 
-    			sendChatMsg(sender, LanguageManager.translate(lang, "command.generic.notIntegrated"));
-    		if (this.getAllowedServerType() == ServerType.DEDICATED)
-    			sendChatMsg(sender, LanguageManager.translate(lang, "command.generic.notDedicated"));
-    		return false;
-    	}
-    	
-    	Requirement[] requierements = this.getRequirements();
-    	
-    	for (Requirement requierement : requierements) {
-    		if (requierement == Requirement.PATCH_ENTITYCLIENTPLAYERMP) {
-    			if (!(Minecraft.getMinecraft().thePlayer instanceof EntityClientPlayerMP)) {
-    				sendChatMsg(sender, LanguageManager.translate(lang, "command.generic.clientPlayerNotPatched"));
-    	    		return false;
-    			}
-    		}
-    		
-    		if (requierement == Requirement.PATCH_CLIENTCOMMANDHANDLER) {
-    			if (!(ClientCommandHandler.instance instanceof com.mrnobody.morecommands.patch.ClientCommandManager)) {
-    				sendChatMsg(sender, LanguageManager.translate(lang, "command.generic.clientCommandHandlerNotPatched"));
-    	    		return false;
-    			}
-    		}
-    	}
-    	
-    	return true;
+    	return super.checkRequirements(sender, params, side);
     }
-    
-    private final void sendChatMsg(ICommandSender sender, String msg) {
-    	ChatComponentText text = new ChatComponentText(msg);
-    	text.getChatStyle().setColor(EnumChatFormatting.RED);
-    	sender.addChatMessage(text);
-    }
-    
-    /**
-     * @return Whether this command shall be registered if the server has this mod installed
-     */
-    public abstract boolean registerIfServerModded();
+
+	@Override
+	public boolean registerIfServerModded() {
+		return this.delegate.registerIfServerModded();
+	}
+	
+	@Override
+	public Side getSide() {
+		return Side.CLIENT;
+	}
 }

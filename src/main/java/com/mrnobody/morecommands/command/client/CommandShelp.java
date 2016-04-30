@@ -1,8 +1,10 @@
 package com.mrnobody.morecommands.command.client;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.ClientCommand;
+import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
@@ -15,7 +17,7 @@ import net.minecraft.client.Minecraft;
 		syntax = "command.shelp.syntax",
 		videoURL = "command.shelp.videoURL"
 		)
-public class CommandShelp extends ClientCommand {
+public class CommandShelp extends StandardCommand implements ClientCommandProperties {
 	@Override
 	public String getCommandName() {
 		return "shelp";
@@ -34,8 +36,8 @@ public class CommandShelp extends ClientCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -49,7 +51,7 @@ public class CommandShelp extends ClientCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 }

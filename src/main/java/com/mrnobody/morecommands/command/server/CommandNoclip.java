@@ -1,11 +1,13 @@
 package com.mrnobody.morecommands.command.server;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.EventListener;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
@@ -23,9 +25,9 @@ import net.minecraftforge.event.entity.living.LivingAttackEvent;
 		syntax = "command.noclip.syntax",
 		videoURL = "command.noclip.videoURL"
 		)
-public class CommandNoclip extends ServerCommand implements EventListener<LivingAttackEvent> {
+public class CommandNoclip extends StandardCommand implements ServerCommandProperties, EventListener<LivingAttackEvent> {
 	
-	public CommandNoclip() {EventHandler.ATTACK.getHandler().register(this);}
+	public CommandNoclip() {EventHandler.ATTACK.register(this);}
 	
 	@Override
 	public void onEvent(LivingAttackEvent event) {
@@ -44,26 +46,20 @@ public class CommandNoclip extends ServerCommand implements EventListener<Living
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 		
-		if (!player.getMinecraftPlayer().capabilities.isFlying && !player.getMinecraftPlayer().noClip)
+		if (!player.capabilities.isFlying && !player.noClip)
 			throw new CommandException("command.noclip.mustBeFlying", sender);
 		
-		try {player.getMinecraftPlayer().noClip = parseTrueFalse(params, 0, player.getMinecraftPlayer().noClip);}
+		try {player.noClip = parseTrueFalse(params, 0, player.noClip);}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.noclip.failure", sender);}
 		
-		sender.sendLangfileMessage(player.getMinecraftPlayer().noClip ? "command.noclip.enabled" : "command.noclip.disabled");
+		sender.sendLangfileMessage(player.noClip ? "command.noclip.enabled" : "command.noclip.disabled");
     	
-		if(!(player.getMinecraftPlayer() instanceof EntityPlayerMP)) {
-			player.getMinecraftPlayer().noClip = false;
-			throw new CommandException("command.noclip.failure", sender);
-		}
-    	
-		if(player.getMinecraftPlayer().noClip == false) {
-			ascendPlayer(player);
-		}
+		if(player.noClip == false)
+			ascendPlayer(new Player(player));
 		
-		MoreCommands.getMoreCommands().getPacketDispatcher().sendS07Noclip(player.getMinecraftPlayer(), player.getMinecraftPlayer().noClip);
+		MoreCommands.INSTANCE.getPacketDispatcher().sendS06Noclip(player, player.noClip);
 	}
 
 	private static boolean ascendPlayer(Player player) {
@@ -86,8 +82,8 @@ public class CommandNoclip extends ServerCommand implements EventListener<Living
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[] {Requirement.MODDED_CLIENT, Requirement.PATCH_ENTITYCLIENTPLAYERMP, Requirement.PATCH_NETHANDLERPLAYSERVER};
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[] {CommandRequirement.MODDED_CLIENT, CommandRequirement.PATCH_ENTITYCLIENTPLAYERMP, CommandRequirement.PATCH_NETHANDLERPLAYSERVER};
 	}
 
 	@Override
@@ -96,12 +92,12 @@ public class CommandNoclip extends ServerCommand implements EventListener<Living
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

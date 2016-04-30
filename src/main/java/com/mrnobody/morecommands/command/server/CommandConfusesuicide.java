@@ -6,18 +6,20 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.wrapper.CommandException;
+import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.wrapper.Coordinate;
+
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 @Command(
 		name = "confusesuicide",
@@ -26,8 +28,8 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.confusesuicide.syntax",
 		videoURL = "command.confusesuicide.videoURL"
 		)
-public class CommandConfusesuicide extends ServerCommand {
-	private final double RADIUS_MAX = 50;
+public class CommandConfusesuicide extends StandardCommand implements ServerCommandProperties {
+	private static final double RADIUS_MAX = 50;
 	
 	@Override
 	public String getCommandName() {
@@ -41,43 +43,42 @@ public class CommandConfusesuicide extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
+		params = reparseParamsWithNBTData(params);
 		double radius = 10D;
 		
 		if (params.length > 0) {
 			try {radius = Double.parseDouble(params[0]);}
-			catch (NumberFormatException nfe) {throw new CommandException("command.confusesuicide.invalidArg", sender);}
-			if (radius > this.RADIUS_MAX) throw new CommandException("command.confusesuicide.invalidRadius", sender);
+			catch (NumberFormatException e) {throw new CommandException("command.confusesuicide.NAN", sender);}
+			if (radius > RADIUS_MAX) throw new CommandException("command.confusesuicide.invalidRadius", sender);
 		}
 		
-		List<Entity> entities = new ArrayList<Entity>();
-		EntityCreature creature;
+		List<? extends EntityCreature> entities = getEntitiesInRadius(sender.getPosition(), sender.getWorld().getMinecraftWorld(), EntityCreature.class, radius * radius);
 		
-		entities = this.getEntitiesInRadius((EntityPlayerMP) sender.getMinecraftISender(), ((EntityPlayerMP) sender.getMinecraftISender()).worldObj, EntityCreature.class, radius * radius);
-		
-		Iterator<Entity> entityIterator = entities.iterator();
+		Iterator<? extends EntityCreature> entityIterator = entities.iterator();
 		
 		while (entityIterator.hasNext()) {
-			creature = (EntityCreature) entityIterator.next();
+			EntityCreature creature = entityIterator.next();
 			creature.setTarget(creature);
 		}
         
 		sender.sendLangfileMessage("command.confusesuicide.confused", entities.size(), radius);
 	}
 	
-	private List<Entity> getEntitiesInRadius(final EntityPlayer player, World world, Class<?> class1, double d) {
-		ArrayList<Entity> entities = new ArrayList<Entity>();
+	private <T extends Entity> List<? extends T> getEntitiesInRadius(final Coordinate coord, World world, Class<T> class1, double radius) {
+		List<T> entities = new ArrayList<T>();
 		
 		for (int i = 0; i < world.loadedEntityList.size(); i++) {
-			Entity entity = (Entity) world.loadedEntityList.get(i);
-			if (entity != player && !entity.isDead && class1.isInstance(entity) && (d <= 0.0D || player.getDistanceSqToEntity(entity) <= d)) {
-				entities.add(entity);
+			Entity found = (Entity) world.loadedEntityList.get(i);
+			if (!(found instanceof EntityPlayer) && !found.isDead && class1.isInstance(found) && 
+				(radius <= 0.0D || coord.getDistanceBetweenCoordinates(new Coordinate(found)) <= radius)) {
+				entities.add((T) found);
 			}
 		}
 
-		Collections.sort(entities, new Comparator<Entity>() {
+		Collections.sort(entities, new Comparator<T>() {
 
-			public int compare(Entity entity1, Entity entity2) {
-				double d1 = player.getDistanceSqToEntity(entity1) - player.getDistanceSqToEntity(entity2);
+			public int compare(T entity1, T entity2) {
+				double d1 = coord.getDistanceBetweenCoordinates(new Coordinate(entity1)) - coord.getDistanceBetweenCoordinates(new Coordinate(entity2));
 				return d1 >= 0.0D ? (d1 <= 0.0D ? 0 : 1) : -1;
 			}
 		});
@@ -86,8 +87,8 @@ public class CommandConfusesuicide extends ServerCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -96,12 +97,12 @@ public class CommandConfusesuicide extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return true;
 	}
 }

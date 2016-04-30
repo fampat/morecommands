@@ -1,24 +1,27 @@
 package com.mrnobody.morecommands.patch;
 
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
-import com.google.common.base.Throwables;
-import com.mrnobody.morecommands.command.CommandBase;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.mrnobody.morecommands.command.AbstractCommand;
+import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.util.DummyCommand;
 import com.mrnobody.morecommands.util.GlobalSettings;
 import com.mrnobody.morecommands.util.LanguageManager;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.util.Variables;
 
 import net.minecraft.command.CommandException;
+import net.minecraft.command.CommandHandler;
 import net.minecraft.command.CommandNotFoundException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerSelector;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
@@ -35,7 +38,9 @@ import net.minecraftforge.event.CommandEvent;
  * @author MrNobody98
  *
  */
-public class ServerCommandManager extends net.minecraft.command.ServerCommandManager {	
+public class ServerCommandManager extends net.minecraft.command.ServerCommandManager {
+	private static final Logger logger = LogManager.getLogger(CommandHandler.class);
+	
 	public ServerCommandManager(net.minecraft.command.ICommandManager parent) {
 		super();
 		for (Object command : parent.getCommands().values()) this.registerCommand((ICommand) command);
@@ -51,12 +56,28 @@ public class ServerCommandManager extends net.minecraft.command.ServerCommandMan
             p_71556_2_ = p_71556_2_.substring(1);
         }
         
-        if (GlobalSettings.enableVars && p_71556_1_ instanceof EntityPlayerMP && ServerPlayerSettings.containsSettingsForPlayer((EntityPlayerMP) p_71556_1_)) {
-        	try {p_71556_2_ = Variables.replaceVars(p_71556_2_, ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) p_71556_1_));}
-            catch (Variables.VarCouldNotBeResolvedException vcnbre) {
-            	ChatComponentText text = new ChatComponentText(LanguageManager.translate(MoreCommands.getMoreCommands().getCurrentLang(p_71556_1_), "command.var.cantBeResolved", vcnbre.getVar()));
-            	text.getChatStyle().setColor(EnumChatFormatting.RED); p_71556_1_.addChatMessage(text);
-            }
+    	try {
+    		String world = MoreCommands.getProxy().getCurrentWorld(), dim = p_71556_1_.getEntityWorld().provider.getDimensionName();
+    		
+    		if (AbstractCommand.isSenderOfEntityType(p_71556_1_, EntityPlayerMP.class)) {
+    			ServerPlayerSettings settings = AbstractCommand.getPlayerSettings(AbstractCommand.getSenderAsEntity(p_71556_1_, EntityPlayerMP.class));
+    			PlayerPatches playerInfo = MoreCommands.INSTANCE.getEntityProperties(PlayerPatches.class, PlayerPatches.PLAYERPATCHES_IDENTIFIER, AbstractCommand.getSenderAsEntity(p_71556_1_, EntityPlayerMP.class));
+    			Map<String, String> playerVars = playerInfo != null && playerInfo.clientModded() ? new HashMap<String, String>() : settings.variables; //client takes care of replacing player variables
+    			
+    			if (GlobalSettings.enableGlobalVars && GlobalSettings.enablePlayerVars)
+    				p_71556_2_ = Variables.replaceVars(p_71556_2_, playerVars, GlobalSettings.getVariables(world, dim));
+    			else if (GlobalSettings.enablePlayerVars)
+    				p_71556_2_ = Variables.replaceVars(p_71556_2_, playerVars);
+    			else if (GlobalSettings.enableGlobalVars)
+    				p_71556_2_ = Variables.replaceVars(p_71556_2_, GlobalSettings.getVariables(world, dim));
+    		}
+    		else if (GlobalSettings.enableGlobalVars) 
+    			p_71556_2_ = Variables.replaceVars(p_71556_2_, GlobalSettings.getVariables(world, dim));
+    	}
+        catch (Variables.VariablesCouldNotBeResolvedException vcnbre) {
+            ChatComponentText text = new ChatComponentText(LanguageManager.translate(MoreCommands.INSTANCE.getCurrentLang(p_71556_1_), "command.var.cantBeResolved", vcnbre.getVariables().toString()));
+            text.getChatStyle().setColor(EnumChatFormatting.RED); p_71556_1_.addChatMessage(text);
+            p_71556_2_ = vcnbre.getNewString();
         }
 
         String[] astring = p_71556_2_.split(" ");
@@ -69,155 +90,71 @@ public class ServerCommandManager extends net.minecraft.command.ServerCommandMan
 
         try
         {
-        	if (icommand == null || icommand instanceof CommandBase || icommand instanceof DummyCommand) {
-                if (astring.length > 0 && astring[astring.length - 1].startsWith("@"))
-                {
-                    EntityPlayerMP[] aentityplayermp = PlayerSelector.matchPlayers(p_71556_1_, astring[astring.length - 1]);
-                    astring = (String[]) Arrays.copyOfRange(astring, 0, astring.length - 1);
-                    int showError = -1;
-                    
-                    for (int l = 0; l < aentityplayermp.length; ++l)
-                    {
-                    	EntityPlayerMP entityplayermp = aentityplayermp[l];
-                    	
-                    	if (ServerPlayerSettings.containsSettingsForPlayer(entityplayermp)) {
-                    		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings(entityplayermp);
-                    		
-                    		if (settings.clientCommands.contains(s1)) {
-                    			MoreCommands.getMoreCommands().getPacketDispatcher().sendS10ExecuteClientCommand(entityplayermp, s1 + " " + String.join(" ", astring));
-                    			++j;
-                    			continue;
-                    		}
-                    	}
-                    	
-                    	if (icommand == null) showError = 0;
-                    	else if (icommand != null && icommand.canCommandSenderUseCommand(p_71556_1_)) {
-                            CommandEvent event = new CommandEvent(icommand, entityplayermp, astring);
-                            if (MinecraftForge.EVENT_BUS.post(event))
-                            {
-                                if (event.exception != null)
-                                {
-                                    Throwables.propagateIfPossible(event.exception);
-                                }
-                                continue;
-                            }
-                    		
-                            try
-                            {
-                                icommand.processCommand(entityplayermp, astring);
-                                ++j;
-                            }
-                            catch (CommandException commandexception1)
-                            {
-                                ChatComponentTranslation chatcomponenttranslation1 = new ChatComponentTranslation(commandexception1.getMessage(), commandexception1.getErrorOjbects());
-                                chatcomponenttranslation1.getChatStyle().setColor(EnumChatFormatting.RED);
-                                entityplayermp.addChatMessage(chatcomponenttranslation1);
-                            }
-                    	}
-                    	else showError = 1;
-                    }
-                    
-                    if (showError == 0) throw new CommandNotFoundException();
-                    else if (showError == 1) {
-                        ChatComponentTranslation chatcomponenttranslation2 = new ChatComponentTranslation("commands.generic.permission", new Object[0]);
-                        chatcomponenttranslation2.getChatStyle().setColor(EnumChatFormatting.RED);
-                        p_71556_1_.addChatMessage(chatcomponenttranslation2);
-                    }
-                }
-                else
-                {
-                    if (icommand == null) throw new CommandNotFoundException();
-                	else if (icommand.canCommandSenderUseCommand(p_71556_1_)) {
-                        net.minecraftforge.event.CommandEvent event = new net.minecraftforge.event.CommandEvent(icommand, p_71556_1_, astring);
-                        if (MinecraftForge.EVENT_BUS.post(event))
-                        {
-                            if (event.exception != null)
-                            {
-                                throw event.exception;
-                            }
-                            return 1;
-                        }
-                        
-                        try {
-                            icommand.processCommand(p_71556_1_, astring);
-                            ++j;
-                        }
-                        catch (CommandException commandexception) {
-                            chatcomponenttranslation = new ChatComponentTranslation(commandexception.getMessage(), commandexception.getErrorOjbects());
-                            chatcomponenttranslation.getChatStyle().setColor(EnumChatFormatting.RED);
-                            p_71556_1_.addChatMessage(chatcomponenttranslation);
-                        }
-                	}
-                    else
-                    {
-                        ChatComponentTranslation chatcomponenttranslation2 = new ChatComponentTranslation("commands.generic.permission", new Object[0]);
-                        chatcomponenttranslation2.getChatStyle().setColor(EnumChatFormatting.RED);
-                        p_71556_1_.addChatMessage(chatcomponenttranslation2);
-                    }
-                }
+        	if (icommand == null)
+        	{
+        		throw new CommandNotFoundException();
         	}
-        	else {
-                if (icommand.canCommandSenderUseCommand(p_71556_1_))
+        	
+            if (icommand.canCommandSenderUseCommand(p_71556_1_))
+            {
+                CommandEvent event = new CommandEvent(icommand, p_71556_1_, astring);
+                if (MinecraftForge.EVENT_BUS.post(event))
                 {
-                    CommandEvent event = new CommandEvent(icommand, p_71556_1_, astring);
-                    if (MinecraftForge.EVENT_BUS.post(event))
+                    if (event.exception != null)
                     {
-                        if (event.exception != null)
-                        {
-                            throw event.exception;
-                        }
-                        return 1;
+                        throw event.exception;
                     }
+                    return 1;
+                }
 
-                    if (i > -1)
+                if (i > -1)
+                {
+                    EntityPlayerMP[] aentityplayermp = PlayerSelector.matchPlayers(p_71556_1_, astring[i]);
+                    String s2 = astring[i];
+                    EntityPlayerMP[] aentityplayermp1 = aentityplayermp;
+                    int k = aentityplayermp.length;
+
+                    for (int l = 0; l < k; ++l)
                     {
-                        EntityPlayerMP[] aentityplayermp = PlayerSelector.matchPlayers(p_71556_1_, astring[i]);
-                        String s2 = astring[i];
-                        EntityPlayerMP[] aentityplayermp1 = aentityplayermp;
-                        int k = aentityplayermp.length;
+                        EntityPlayerMP entityplayermp = aentityplayermp1[l];
+                        astring[i] = entityplayermp.getCommandSenderName();
 
-                        for (int l = 0; l < k; ++l)
-                        {
-                            EntityPlayerMP entityplayermp = aentityplayermp1[l];
-                            astring[i] = entityplayermp.getCommandSenderName();
-
-                            try
-                            {
-                                icommand.processCommand(p_71556_1_, astring);
-                                ++j;
-                            }
-                            catch (CommandException commandexception1)
-                            {
-                                ChatComponentTranslation chatcomponenttranslation1 = new ChatComponentTranslation(commandexception1.getMessage(), commandexception1.getErrorOjbects());
-                                chatcomponenttranslation1.getChatStyle().setColor(EnumChatFormatting.RED);
-                                p_71556_1_.addChatMessage(chatcomponenttranslation1);
-                            }
-                        }
-
-                        astring[i] = s2;
-                    }
-                    else
-                    {
                         try
                         {
                             icommand.processCommand(p_71556_1_, astring);
                             ++j;
                         }
-                        catch (CommandException commandexception)
+                        catch (CommandException commandexception1)
                         {
-                            chatcomponenttranslation = new ChatComponentTranslation(commandexception.getMessage(), commandexception.getErrorOjbects());
-                            chatcomponenttranslation.getChatStyle().setColor(EnumChatFormatting.RED);
-                            p_71556_1_.addChatMessage(chatcomponenttranslation);
+                            ChatComponentTranslation chatcomponenttranslation1 = new ChatComponentTranslation(commandexception1.getMessage(), commandexception1.getErrorOjbects());
+                            chatcomponenttranslation1.getChatStyle().setColor(EnumChatFormatting.RED);
+                            p_71556_1_.addChatMessage(chatcomponenttranslation1);
                         }
                     }
+
+                    astring[i] = s2;
                 }
                 else
                 {
-                    ChatComponentTranslation chatcomponenttranslation2 = new ChatComponentTranslation("commands.generic.permission", new Object[0]);
-                    chatcomponenttranslation2.getChatStyle().setColor(EnumChatFormatting.RED);
-                    p_71556_1_.addChatMessage(chatcomponenttranslation2);
+                    try
+                    {
+                        icommand.processCommand(p_71556_1_, astring);
+                        ++j;
+                    }
+                    catch (CommandException commandexception)
+                    {
+                        chatcomponenttranslation = new ChatComponentTranslation(commandexception.getMessage(), commandexception.getErrorOjbects());
+                        chatcomponenttranslation.getChatStyle().setColor(EnumChatFormatting.RED);
+                        p_71556_1_.addChatMessage(chatcomponenttranslation);
+                    }
                 }
-        	}
+            }
+            else
+            {
+                ChatComponentTranslation chatcomponenttranslation2 = new ChatComponentTranslation("commands.generic.permission", new Object[0]);
+                chatcomponenttranslation2.getChatStyle().setColor(EnumChatFormatting.RED);
+                p_71556_1_.addChatMessage(chatcomponenttranslation2);
+            }
         }
         catch (WrongUsageException wrongusageexception)
         {
@@ -233,10 +170,11 @@ public class ServerCommandManager extends net.minecraft.command.ServerCommandMan
         }
         catch (Throwable throwable)
         {
+        	throwable.printStackTrace();
             chatcomponenttranslation = new ChatComponentTranslation("commands.generic.exception", new Object[0]);
             chatcomponenttranslation.getChatStyle().setColor(EnumChatFormatting.RED);
             p_71556_1_.addChatMessage(chatcomponenttranslation);
-            MinecraftServer.getServer().logWarning("Couldn\'t process command: \'" + p_71556_2_ + "\'");
+            logger.error("Couldn\'t process command: \'" + p_71556_2_ + "\'");
         }
 
         return j;

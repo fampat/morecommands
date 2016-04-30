@@ -2,20 +2,23 @@ package com.mrnobody.morecommands.command.server;
 
 import java.lang.reflect.Method;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.boss.EntityDragon;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.MathHelper;
-import net.minecraft.world.Teleporter;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.util.ObfuscationHelper;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedMethod;
+import com.mrnobody.morecommands.util.ReflectionHelper;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.Player;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.boss.EntityDragon;
+import net.minecraft.util.MathHelper;
+import net.minecraft.world.Teleporter;
+import net.minecraft.world.WorldServer;
 
 @Command(
 		name = "spawnportal",
@@ -24,8 +27,9 @@ import com.mrnobody.morecommands.wrapper.Player;
 		syntax = "command.spawnportal.syntax",
 		videoURL = "command.spawnportal.videoURL"
 		)
-public class CommandSpawnportal extends ServerCommand {
-
+public class CommandSpawnportal extends StandardCommand implements ServerCommandProperties {
+	private final Method createEnderPortal = ReflectionHelper.getMethod(ObfuscatedMethod.EntityDragon_createEnderPortal);
+	
 	@Override
 	public String getCommandName() {
 		return "spawnportal";
@@ -38,36 +42,23 @@ public class CommandSpawnportal extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		Entity entity = getSenderAsEntity(sender.getMinecraftISender(), Entity.class);
 		
 		if (params.length > 0) {
 			if (params[0].equalsIgnoreCase("end")) {
-				Coordinate coord = player.getPosition();
-		         int x = MathHelper.floor_double(coord.getX());
-		         int z = MathHelper.floor_double(coord.getZ());
-		         EntityDragon dragon = new EntityDragon(player.getWorld().getMinecraftWorld()); 
-		         
-		         try {
-		        	 Class<?>[] args = new Class<?>[]{Integer.TYPE, Integer.TYPE};
-		        	 Method method;
-		        	 
-		        	 try {
-		        		 method = dragon.getClass().getDeclaredMethod("createEnderPortal", args);
-		        	 }
-		        	 catch (NoSuchMethodException nsme) {
-		        		 method = dragon.getClass().getDeclaredMethod(ObfuscationHelper.getObfuscatedName("createEnderPortal"), args);
-		        	 }
-		        	 
-		        	 method.setAccessible(true);
-		        	 method.invoke(dragon, new Object[]{x, z});
-		         }
-		         catch (Throwable t) {
-		        	 t.printStackTrace();
-		        	 throw new CommandException("command.spawnportal.endError", sender);
-		         }
+				Coordinate coord = new Coordinate(entity);
+				int x = MathHelper.floor_double(coord.getX());
+				int z = MathHelper.floor_double(coord.getZ());
+				EntityDragon dragon = new EntityDragon(entity.worldObj);
+				
+				try {this.createEnderPortal.invoke(new EntityDragon(entity.worldObj), x, z);}
+				catch (Throwable t) {
+					t.printStackTrace();
+					throw new CommandException("command.spawnportal.endError", sender);
+				}
 			}
 			else if (params[0].equalsIgnoreCase("nether")) {
-				(new Teleporter(((EntityPlayerMP) player.getMinecraftPlayer()).getServerForPlayer())).makePortal((EntityPlayerMP) player.getMinecraftPlayer());
+				new Teleporter((WorldServer) entity.worldObj).makePortal(entity);
 			}
 			else throw new CommandException("command.spawnportal.unknownPortal", sender);
 		}
@@ -75,8 +66,8 @@ public class CommandSpawnportal extends ServerCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 	
 	@Override
@@ -85,12 +76,12 @@ public class CommandSpawnportal extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, Entity.class);
 	}
 }

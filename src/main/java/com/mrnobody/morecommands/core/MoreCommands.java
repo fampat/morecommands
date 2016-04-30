@@ -6,25 +6,30 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.Logger;
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
-import com.mrnobody.morecommands.command.ClientCommand;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.google.common.collect.ImmutableList;
+import com.mrnobody.morecommands.asm.MoreCommandsLoadingPlugin;
+import com.mrnobody.morecommands.command.ClientCommandProperties;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.network.PacketDispatcher;
 import com.mrnobody.morecommands.util.DynamicClassLoader;
 import com.mrnobody.morecommands.util.GlobalSettings;
 import com.mrnobody.morecommands.util.LanguageManager;
+import com.mrnobody.morecommands.util.ObfuscatedNames;
 import com.mrnobody.morecommands.util.Reference;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
-import cpw.mods.fml.common.Mod.Instance;
+import cpw.mods.fml.common.Mod.InstanceFactory;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -33,8 +38,12 @@ import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
+import cpw.mods.fml.common.event.FMLServerStoppingEvent;
+import cpw.mods.fml.common.network.NetworkCheckHandler;
 import cpw.mods.fml.relauncher.Side;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
+import net.minecraftforge.common.IExtendedEntityProperties;
 
 /**
  * The main mod class loaded by forge
@@ -42,33 +51,22 @@ import net.minecraft.command.ICommandSender;
  * @author MrNobody98
  *
  */
-@Mod(modid = Reference.MODID, version = Reference.VERSION, name = Reference.NAME, acceptableRemoteVersions = "*")
-public class MoreCommands {
-	@Instance(Reference.MODID)
-	private static MoreCommands instance;
-	public static final String WEBSITE = "http://bit.ly/morecommands";
+@Mod(modid = Reference.MODID, version = Reference.VERSION, name = Reference.NAME)
+public enum MoreCommands {
+	INSTANCE;
 	
-	@SidedProxy(clientSide="com.mrnobody.morecommands.core.ClientProxy", serverSide="com.mrnobody.morecommands.core.CommonProxy", modId=Reference.MODID)
+	@SidedProxy(clientSide = "com.mrnobody.morecommands.core.ClientProxy", serverSide = "com.mrnobody.morecommands.core.CommonProxy", modId = Reference.MODID)
 	private static CommonProxy proxy;
 	
-	public static final DynamicClassLoader CLASSLOADER = new DynamicClassLoader(MoreCommands.class.getClassLoader());
-	private static final Pattern IP_PATTERN = Pattern.compile("^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,5}[ \t]*\\{$");
-	
-	private PacketDispatcher dispatcher;
-	private UUID playerUUID;
-	private Logger logger;
-	private boolean handlersLoaded = false;
-	
-	private final String clientCommandsPackage = "com.mrnobody.morecommands.command.client";
-	private List<Class<? extends ClientCommand>> clientCommandClasses = new ArrayList<Class<? extends ClientCommand>>();
-	
-	private final String serverCommandsPackage = "com.mrnobody.morecommands.command.server";
-	private List<Class<? extends ServerCommand>> serverCommandClasses = new ArrayList<Class<? extends ServerCommand>>();
-	
-	private List<String> disabledCommands;
-	private List<String> startupCommands;
-	private List<String> startupMultiplayerCommands;
-	private Map<String, List<String>> startupServerCommands;
+	/**
+	 * A factory method for forge to get the mod instance
+	 * 
+	 * @return the MoreCommands instance
+	 */
+	@InstanceFactory
+	private static MoreCommands getInstance() {
+		return INSTANCE;
+	}
 	
 	/**
 	 * An enum of allowed server types for a command
@@ -77,15 +75,43 @@ public class MoreCommands {
 	 */
 	public static enum ServerType {INTEGRATED, DEDICATED, ALL}
 	
-	//Need this because forge injects the instance after injecting the proxy, but the proxy uses
-	//MoreCommands#getMoreCommands in its constructor -> Causes a NullpointerException
-	public MoreCommands() {MoreCommands.instance = this;}
+	private final DynamicClassLoader commandClassLoader = new DynamicClassLoader(MoreCommands.class.getClassLoader());
+	private final Pattern ipPattern = Pattern.compile("^(\\d{1,3}\\.){3}\\d{1,3}:\\d{1,5}[ \t]*\\{$");
+	
+	private PacketDispatcher dispatcher;
+	private Logger logger;
+	
+	private final String clientCommandsPackage = "com.mrnobody.morecommands.command.client";
+	private List<Class<? extends StandardCommand>> clientCommandClasses = new ArrayList<Class<? extends StandardCommand>>();
+	
+	private final String serverCommandsPackage = "com.mrnobody.morecommands.command.server";
+	private List<Class<? extends StandardCommand>> serverCommandClasses = new ArrayList<Class<? extends StandardCommand>>();
+	
+	private List<String> disabledCommands;
+	private List<String> startupCommands;
+	private List<String> startupMultiplayerCommands;
+	private Map<String, List<String>> startupServerCommands;
 	
 	/**
-	 * @return The Singleton mod instance
+	 * Gets the {@link IExtendedEntityProperties} that was registered to an entity with the given identifier.
+	 * The reason for using this method lies in the problem that occurs when the identifier that was
+	 * used for registering a property is already used. Forge will assign a modified identifier to the property
+	 * object and return the modified identifier string which would have to be stored somewhere. This method
+	 * gets the first property associated with the identifier and its modifications being an instance of the
+	 * given property class. This allows that the modified identifier string doesn't have to be stored somewhere.
+	 * 
+	 * @param propertyClass the required property class
+	 * @param identifier the identifier string used to register a property
+	 * @param entity the entity to which the property was registered
+	 * @return the {@link IExtendedEntityProperties} object
 	 */
-	public static MoreCommands getMoreCommands() {
-		return MoreCommands.instance;
+	public static <T extends IExtendedEntityProperties> T getEntityProperties(Class<T> propertyClass, String identifier, Entity entity) {
+		IExtendedEntityProperties properties = null; int modCount = 1;
+		
+		while (!propertyClass.isInstance(properties = entity.getExtendedProperties(identifier)) && properties != null)
+			identifier = String.format("%s%d", identifier, modCount++);
+		
+		return properties == null ? null : propertyClass.cast(properties);
 	}
 	
 	/**
@@ -93,34 +119,6 @@ public class MoreCommands {
 	 */
 	public static CommonProxy getProxy() {
 		return MoreCommands.proxy;
-	}
-	
-	/**
-	 * @return Whether the mod is enabled
-	 */
-	public static boolean isModEnabled() {
-		return MoreCommands.proxy.commandsLoaded() && MoreCommands.instance.handlersLoaded;
-	}
-	
-	/**
-	 * @return The UUID for the server side player or null if the mod isn't installed server side
-	 */
-	public UUID getPlayerUUID() {
-		return this.playerUUID;
-	}
-	
-	/**
-	 * Sets the player UUID
-	 */
-	public void setPlayerUUID(UUID uuid) {
-		this.playerUUID = uuid;
-	}
-	
-	/**
-	 * @return A list of commands, which shall be disabled
-	 */
-	public List<String> getDisabledCommands() {
-		return this.disabledCommands;
 	}
 	
 	/**
@@ -138,19 +136,26 @@ public class MoreCommands {
 	}
 	
 	/**
-	 * @return The running side (client or server)
+	 * @return The running environment (client or server)
 	 */
-	public static Side getRunningSide() {
+	public static Side getEnvironment() {
 		if (MoreCommands.isClientSide()) return Side.CLIENT;
 		else if (MoreCommands.isServerSide()) return Side.SERVER;
 		else return null;
 	}
 	
 	/**
-	 * @return The running Server Type (integrated or dedicated)
+	 * @return The Server the player plays on (integrated or dedicated)
 	 */
-	public ServerType getRunningServer() {
+	public static ServerType getServerType() {
 		return MoreCommands.proxy.getRunningServerType();
+	}
+	
+	/**
+	 * @return A list of commands, which shall be disabled
+	 */
+	public List<String> getDisabledCommands() {
+		return new ArrayList<String>(this.disabledCommands);
 	}
 	
 	/**
@@ -161,7 +166,7 @@ public class MoreCommands {
 	}
 	
 	/**
-	 * @return The Network Wrapper
+	 * @return The {@link PacketDispatcher}
 	 */
 	public PacketDispatcher getPacketDispatcher() {
 		return this.dispatcher;
@@ -170,15 +175,22 @@ public class MoreCommands {
 	/**
 	 * @return The Client Command Classes
 	 */
-	public List<Class<? extends ClientCommand>> getClientCommandClasses() {
+	public List<Class<? extends StandardCommand>> getClientCommandClasses() {
 		return this.clientCommandClasses;
 	}
 	
 	/**
 	 * @return The Server Command Classes
 	 */
-	public List<Class<? extends ServerCommand>> getServerCommandClasses() {
+	public List<Class<? extends StandardCommand>> getServerCommandClasses() {
 		return this.serverCommandClasses;
+	}
+	
+	/**
+	 * @return the dynamic class loader responsible for command class loading
+	 */
+	public DynamicClassLoader getCommandClassLoader() {
+		return this.commandClassLoader;
 	}
 	
 	/**
@@ -195,50 +207,110 @@ public class MoreCommands {
 		return MoreCommands.proxy.getLang(sender);
 	}
 	
+	/**
+	 * Checks whether a connection should be accepted.
+	 * 
+	 * @param mods the mods the other side has installed
+	 * @param side the side that tries to connect
+	 * @return If {@link GlobalSettings#clientMustHaveMod} and the connection is a client connection, returns true if
+	 * 		   the client has installed MoreCommands, else return always true. If {@link GlobalSettings#serverMustHaveMod} 
+	 * 		   and the connection is a server connection, returns true if the server has installed MoreCommands, else return always true.
+	 */
+	@NetworkCheckHandler
+	public boolean acceptConnection(Map<String, String> mods, Side side) {
+		if ((side == Side.CLIENT && GlobalSettings.clientMustHaveMod) || (side == Side.SERVER && GlobalSettings.serverMustHaveMod))
+			return mods.containsKey(Reference.MODID) ? mods.get(Reference.MODID).equals(Reference.VERSION) : false;
+		else
+			return true;
+	}
+	
+	/**
+	 * @see FMLPreInitializationEvent
+	 */
 	@EventHandler
 	private void preInit(FMLPreInitializationEvent event) {
 		this.logger = event.getModLog();
+		
+		if (MoreCommandsLoadingPlugin.wasLoaded())
+			ObfuscatedNames.setEnvNames(MoreCommandsLoadingPlugin.isDeobf());
+		else {
+			this.logger.warn("MoreCommands ASM Transformers were not loaded. This is probably because"
+					+ " the manifest file of the jar archive of this mod was manipulated."
+					+ "This can cause some commands to not work properly.");
+		}
+		
 		Reference.init(event);
 		LanguageManager.readTranslations();
+		
+		GlobalSettings.init();
 		GlobalSettings.readSettings();
+		
 		this.dispatcher = new PacketDispatcher();
 		if (this.loadCommands()) this.logger.info("Command Classes successfully loaded");
-		this.disabledCommands = this.readDisabledCommands();
 		
-		Object[] startupCommands = this.parseStartupFiles();
-		this.startupCommands = (List<String>) startupCommands[0];
-		this.startupMultiplayerCommands = (List<String>) startupCommands[1];
-		this.startupServerCommands = (Map<String, List<String>>) startupCommands[2];
+		this.disabledCommands = this.readDisabledCommands();
+		this.getLogger().info("Following commands were disabled: " + this.disabledCommands);
+		
+		Triple<List<String>, List<String>, Map<String, List<String>>> startupCommands = this.parseStartupFiles();
+		this.startupCommands = startupCommands.getLeft();
+		this.startupMultiplayerCommands = startupCommands.getMiddle();
+		this.startupServerCommands = startupCommands.getRight();
 		
 		MoreCommands.proxy.preInit(event);
 	}
 	
+	/**
+	 * @see FMLInitializationEvent
+	 */
 	@EventHandler
 	private void init(FMLInitializationEvent event) {
-		this.handlersLoaded = MoreCommands.proxy.registerHandlers();
+		MoreCommands.proxy.registerHandlers();
 		MoreCommands.proxy.init(event);
 	}
 	
+	/**
+	 * @see FMLPostInitializationEvent
+	 */
 	@EventHandler
 	private void postInit(FMLPostInitializationEvent event) {
 		MoreCommands.proxy.postInit(event);
 	}
 	
+	/**
+	 * @see FMLServerAboutToStartEvent
+	 */
 	@EventHandler
 	private void serverStart(FMLServerAboutToStartEvent event) {
 		MoreCommands.proxy.serverStart(event);
 	}
 	
+	/**
+	 * @see FMLServerStartingEvent
+	 */
 	@EventHandler
 	private void serverInit(FMLServerStartingEvent event) {
 		MoreCommands.proxy.serverInit(event);
 	}
 	
+	/**
+	 * @see FMLServerStartedEvent
+	 */
 	@EventHandler
 	private void serverStarted(FMLServerStartedEvent event) {
 		MoreCommands.proxy.serverStarted(event);
 	}
 	
+	/**
+	 * @see FMLServerStoppingEvent
+	 */
+	@EventHandler
+	private void serverStopping(FMLServerStoppingEvent event) {
+		MoreCommands.proxy.serverStopping(event);
+	}
+	
+	/**
+	 * @see FMLServerStoppedEvent
+	 */
 	@EventHandler
 	private void serverStop(FMLServerStoppedEvent event) {
 		MoreCommands.proxy.serverStop(event);
@@ -250,24 +322,15 @@ public class MoreCommands {
 	 * @return Whether the commands were loaded successfully
 	 */
 	private boolean loadCommands() {
-		List<Class<?>> clientCommands = MoreCommands.CLASSLOADER.getCommandClasses(this.clientCommandsPackage, ClientCommand.class);
-		Iterator<Class<?>> clientCommandIterator = clientCommands.iterator();
+		List<Class<?>> commandClasses = this.commandClassLoader.getCommandClasses(this.clientCommandsPackage, true);
+		commandClasses.addAll(this.commandClassLoader.getCommandClasses(this.serverCommandsPackage, false));
 		
-		while (clientCommandIterator.hasNext()) {
+		for (Class<?> commandClass : commandClasses) {
 			try {
-				Class<? extends ClientCommand> command = clientCommandIterator.next().asSubclass(ClientCommand.class);
-				this.clientCommandClasses.add(command);
-			}
-			catch (Exception ex) {ex.printStackTrace(); return false;}
-		}
-		
-		List<Class<?>> serverCommands = MoreCommands.CLASSLOADER.getCommandClasses(this.serverCommandsPackage, ServerCommand.class);
-		Iterator<Class<?>> serverCommandIterator = serverCommands.iterator();
-		
-		while (serverCommandIterator.hasNext()) {
-			try {
-				Class<? extends ServerCommand> handler = serverCommandIterator.next().asSubclass(ServerCommand.class);
-				this.serverCommandClasses.add(handler);
+				if (StandardCommand.class.isAssignableFrom(commandClass) && ClientCommandProperties.class.isAssignableFrom(commandClass))
+					this.clientCommandClasses.add(commandClass.asSubclass(StandardCommand.class));
+				else if (StandardCommand.class.isAssignableFrom(commandClass) && ServerCommandProperties.class.isAssignableFrom(commandClass))
+					this.serverCommandClasses.add(commandClass.asSubclass(StandardCommand.class));
 			}
 			catch (Exception ex) {ex.printStackTrace(); return false;}
 		}
@@ -279,22 +342,29 @@ public class MoreCommands {
 	 * @return A List of disabled commands
 	 */
 	private List<String> readDisabledCommands() {
-		List<String> disabled = new ArrayList<String>();
+		ImmutableList.Builder<String> builder = ImmutableList.builder();
 		File file = new File(Reference.getModDir(), "disable.cfg");
 
 	    try {
 			if (!file.exists() || !file.isFile()) file.createNewFile();
 			BufferedReader br = new BufferedReader(new FileReader(file));
 			String line;
-			while ((line = br.readLine()) != null) {disabled.add(line); this.getLogger().info("Disabling command '" + line + "'");}
+			while ((line = br.readLine()) != null) builder.add(line);
 			br.close();
 		}
 		catch (IOException ex) {ex.printStackTrace(); this.getLogger().info("Could not read disable.cfg");}
 		
-		return disabled;
+		return builder.build();
 	}
 	
-	private Object[] parseStartupFiles() {
+	/**
+	 * Reads the files containing the command that shall be executed on startup
+	 * 
+	 * @return A {@link Triple} of which the left value is the commands that should be run after server startup,
+	 * 		   the middle value is the command that should be run on every server the player joins and the right
+	 * 		   value is the map of commands which should only be run on certain servers
+	 */
+	private Triple<List<String>, List<String>, Map<String, List<String>>> parseStartupFiles() {
 		final List<String> startupCommands = new ArrayList<String>();
 		final List<String> startupCommandsM = new ArrayList<String>();
 		final Map<String, List<String>> startupCommandsMap = new HashMap<String, List<String>>();
@@ -314,7 +384,7 @@ public class MoreCommands {
 			String addr = null;
 			
 			while ((line = br.readLine()) != null) {
-				if (!bracketOpen && IP_PATTERN.matcher(line.trim()).matches()) {bracketOpen = true; addr = line.split("\\{")[0].trim();}
+				if (!bracketOpen && ipPattern.matcher(line.trim()).matches()) {bracketOpen = true; addr = line.split("\\{")[0].trim();}
 				else if (bracketOpen && line.trim().equals("}")) {bracketOpen = false;}
 				else if (!bracketOpen && !line.startsWith("#")) startupCommandsM.add(line.trim());
 				else if (bracketOpen && !line.startsWith("#")) {
@@ -325,15 +395,22 @@ public class MoreCommands {
 			
 			br.close();
 		}
-		catch (IOException ex) {ex.printStackTrace(); MoreCommands.getMoreCommands().getLogger().info("Startup commands file could not be read");}
+		catch (IOException ex) {ex.printStackTrace(); this.logger.info("Startup commands file could not be read");}
 		
-		return new Object[] {startupCommands, startupCommandsM, startupCommandsMap};
+		return ImmutableTriple.of(startupCommands, startupCommandsM, startupCommandsMap);
 	}
 	
+	/**
+	 * @return The commands that should be executed after server startup
+	 */
 	public List<String> getStartupCommands() {
 		return new ArrayList<String>(this.startupCommands);
 	}
 	
+	/**
+	 * @param socketAddress the Socket Address of the server
+	 * @return The commands that should be executed when the server joins a server with the given address
+	 */
 	public List<String> getStartupCommandsMultiplayer(String socketAddress) {
 		socketAddress = socketAddress.trim(); if (socketAddress.startsWith("/")) socketAddress = socketAddress.substring(1);
 		List<String> commands = new ArrayList<String>(this.startupMultiplayerCommands);

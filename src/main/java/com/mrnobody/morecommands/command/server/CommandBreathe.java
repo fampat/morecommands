@@ -1,14 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
 
 @Command(
 		name = "breathe",
@@ -17,8 +18,8 @@ import com.mrnobody.morecommands.wrapper.Player;
 		syntax = "command.breathe.syntax",
 		videoURL = "command.breathe.videoURL"
 		)
-public class CommandBreathe extends ServerCommand {
-	private final int AIR_MAX = 300;
+public class CommandBreathe extends StandardCommand implements ServerCommandProperties {
+	private static final int AIR_MAX = 300;
 
 	@Override
 	public String getCommandName() {
@@ -32,7 +33,7 @@ public class CommandBreathe extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		Entity entity = getSenderAsEntity(sender.getMinecraftISender(), Entity.class);
 		int air = 0;
 		
 		if (params.length > 0) {
@@ -41,13 +42,13 @@ public class CommandBreathe extends ServerCommand {
 		}
 		else air = this.AIR_MAX;
 		
-		if (player.getMinecraftPlayer().isInWater()) {player.setAir(player.getMinecraftPlayer().getAir() + air > this.AIR_MAX ? this.AIR_MAX : player.getMinecraftPlayer().getAir() + air);}
+		if (entity.isInWater()) {entity.setAir(entity.getAir() + air > this.AIR_MAX ? this.AIR_MAX : entity.getAir() + air);}
 		else throw new CommandException("command.breathe.notInWater", sender);
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -56,12 +57,12 @@ public class CommandBreathe extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, Entity.class);
 	}
 }

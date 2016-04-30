@@ -3,18 +3,21 @@ package com.mrnobody.morecommands.command.server;
 import java.text.DecimalFormat;
 import java.util.Iterator;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.wrapper.Entity;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.MathHelper;
 
 @Command(
 		name = "teleport",
@@ -23,7 +26,7 @@ import net.minecraft.server.MinecraftServer;
 		syntax = "command.teleport.syntax",
 		videoURL = "command.teleport.videoURL"
 		)
-public class CommandTeleport extends ServerCommand {
+public class CommandTeleport extends StandardCommand implements ServerCommandProperties {
 	@Override
 	public String getCommandName() {
 		return "teleport";
@@ -36,14 +39,31 @@ public class CommandTeleport extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
-		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		ServerPlayerSettings settings = isSenderOfEntityType(sender.getMinecraftISender(), EntityPlayerMP.class) ? getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class)) : null;
+		Entity entity = new Entity(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.Entity.class));
 		
 		if (params.length > 2) {
 			try {
-				Coordinate coord = new Coordinate(Double.parseDouble(params[0]), Double.parseDouble(params[1]), Double.parseDouble(params[2]));
-				settings.lastPos = player.getPosition();
-				player.setPosition(coord);
+				Coordinate coord = getCoordFromParams(sender.getMinecraftISender(), params, 0);
+				float pitch = entity.getPitch(), yaw = entity.getYaw();
+				
+				if (params.length > 3)
+					yaw = params[3].equals("~") ? yaw : MathHelper.wrapAngleTo180_float(Float.parseFloat(params[3]));
+				
+				if (params.length > 4)
+					pitch = params[4].equals("~") ? pitch : MathHelper.wrapAngleTo180_float(Float.parseFloat(params[4]));
+				
+				if (yaw > 90F || yaw < -90F) yaw = MathHelper.wrapAngleTo180_float(yaw + 180F);
+				if (pitch > 90F || pitch < -90F) pitch = MathHelper.wrapAngleTo180_float(pitch + 180F);
+				
+				if (settings != null) 
+					settings.lastTeleport = settings.lastPos = entity.getPosition();
+				
+				if (entity.getMinecraftEntity() instanceof EntityPlayerMP)
+					((EntityPlayerMP) entity.getMinecraftEntity()).playerNetServerHandler.setPlayerLocation(coord.getX(), coord.getY(), coord.getZ(), yaw, pitch);
+				else
+					entity.getMinecraftEntity().setLocationAndAngles(coord.getX(), coord.getY(), coord.getZ(), yaw, pitch);
+				
 				DecimalFormat f = new DecimalFormat("#.##");
 				
 				sender.sendStringMessage("Successfully teleported to:"
@@ -56,7 +76,7 @@ public class CommandTeleport extends ServerCommand {
 		else if (params.length > 0) {
 			EntityPlayerMP teleportTo = getPlayerByUsername(params[0]);
 			if (teleportTo == null) throw new CommandException("command.teleport.playerNotFound", sender);
-			player.setPosition(new Coordinate(teleportTo.posX, teleportTo.posY + 0.5D, teleportTo.posZ));
+			entity.setPosition(new Coordinate(teleportTo.posX, teleportTo.posY + 0.5D, teleportTo.posZ));
 			
 			sender.sendStringMessage("Successfully teleported to Player '" + params[0] + "'");
 		}
@@ -80,8 +100,8 @@ public class CommandTeleport extends ServerCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 	
 	@Override
@@ -90,12 +110,12 @@ public class CommandTeleport extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, net.minecraft.entity.Entity.class);
 	}
 }

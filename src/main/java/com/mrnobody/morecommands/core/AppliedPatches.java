@@ -1,9 +1,9 @@
 package com.mrnobody.morecommands.core;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.Entity;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.World;
+import net.minecraftforge.common.IExtendedEntityProperties;
 
 /**
  * Class containing Information to the patches applied to players, server and client
@@ -21,18 +21,14 @@ public final class AppliedPatches {
 	private static boolean clientCommandManagerPatched = false;
 	
 	/**
-	 * A map containing which patches were applied for each player
-	 */
-	public static final Map<EntityPlayerMP, PlayerPatches> playerPatchMapping = new HashMap<EntityPlayerMP, PlayerPatches>();
-	
-	/**
 	 * A class containing information which patches were applied for a player
 	 * 
 	 * @author MrNobody98
 	 *
 	 */
-	public static class PlayerPatches {
-		private boolean handshakeFinished = false;
+	public static class PlayerPatches implements IExtendedEntityProperties {
+		public static final String PLAYERPATCHES_IDENTIFIER = "morecommands_patches";
+		
 		private boolean clientModded = false;
 		private boolean clientPlayerPatched = false;
 		private boolean serverPlayHandlerPatched = false;
@@ -45,7 +41,7 @@ public final class AppliedPatches {
 		}
 		
 		/**
-		 * @return Whether the players {@link net.minecraft.client.entity.EntityPlayerSP} was patched
+		 * @return Whether the players {@link net.minecraft.client.entity.EntityClientPlayerMP} was patched
 		 */
 		public boolean clientPlayerPatched() {
 			return this.clientPlayerPatched;
@@ -56,13 +52,6 @@ public final class AppliedPatches {
 		 */
 		public boolean serverPlayHandlerPatched() {
 			return this.serverPlayHandlerPatched;
-		}
-		
-		/**
-		 * @return Whether the server completed a full handshake with the client
-		 */
-		public boolean handshakeFinished() {
-			return this.handshakeFinished;
 		}
 		
 		/**
@@ -86,12 +75,9 @@ public final class AppliedPatches {
 			this.serverPlayHandlerPatched = patched;
 		}
 		
-		/**
-		 * Sets whether the server completed a full handshake with the client
-		 */
-		public void setHandshakeFinished(boolean finished) {
-			this.handshakeFinished = finished;
-		}
+		@Override public void saveNBTData(NBTTagCompound compound) {}
+		@Override public void loadNBTData(NBTTagCompound compound) {}
+		@Override public void init(Entity entity, World world) {}
 	}
 	
 	/**

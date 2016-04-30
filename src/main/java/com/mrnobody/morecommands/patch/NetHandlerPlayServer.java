@@ -3,6 +3,7 @@ package com.mrnobody.morecommands.patch;
 import java.lang.reflect.Field;
 
 import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
 import com.mrnobody.morecommands.util.ReflectionHelper;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
@@ -24,10 +25,10 @@ import net.minecraft.world.WorldServer;
  */
 public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlayServer
 {
-	private static final Field FIELD_LASTPOSZ = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, "lastPosZ");
-	private static final Field FIELD_LASTPOSY = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, "lastPosY");
-	private static final Field FIELD_LASTPOSX = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, "lastPosX");
-	private static final Field FIELD_HASMOVED = ReflectionHelper.getField(net.minecraft.network.NetHandlerPlayServer.class, "hasMoved");
+	private static final Field FIELD_LASTPOSZ = ReflectionHelper.getField(ObfuscatedField.NetHandlerPlayServer_lastPosX);
+	private static final Field FIELD_LASTPOSY = ReflectionHelper.getField(ObfuscatedField.NetHandlerPlayServer_lastPosY);
+	private static final Field FIELD_LASTPOSX = ReflectionHelper.getField(ObfuscatedField.NetHandlerPlayServer_lastPosZ);
+	private static final Field FIELD_HASMOVED = ReflectionHelper.getField(ObfuscatedField.NetHandlerPlayServer_hasMoved);
     
 	private MinecraftServer mcServer;
 	private boolean enabled;
@@ -35,7 +36,7 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
     public NetHandlerPlayServer(MinecraftServer par1, NetworkManager par2, EntityPlayerMP par3) {
         super(par1, par2, par3);
         this.mcServer = par1;
-        this.enabled =  FIELD_HASMOVED != null && FIELD_LASTPOSX != null && FIELD_LASTPOSY != null && FIELD_LASTPOSZ != null;
+        this.enabled = FIELD_HASMOVED != null && FIELD_LASTPOSX != null && FIELD_LASTPOSY != null && FIELD_LASTPOSZ != null;
     }
 
     @Override
@@ -51,7 +52,7 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
 		if (player.noClip && !player.capabilities.isFlying) {
 			player.noClip = false;
 			
-			MoreCommands.getMoreCommands().getPacketDispatcher().sendS07Noclip(player, false);
+			MoreCommands.INSTANCE.getPacketDispatcher().sendS06Noclip(player, false);
 			
 			(new CommandSender(player)).sendLangfileMessage("command.noclip.autodisable");
 			ascendPlayer(new Player(player));

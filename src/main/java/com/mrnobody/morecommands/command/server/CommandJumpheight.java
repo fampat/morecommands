@@ -1,14 +1,16 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.ICommandSender;
 
 @Command(
 		name = "jumpheight",
@@ -17,7 +19,7 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.jumpheight.syntax",
 		videoURL = "command.jumpheight.videoURL"
 		)
-public class CommandJumpheight extends ServerCommand {
+public class CommandJumpheight extends StandardCommand implements ServerCommandProperties {
 	@Override
 	public String getCommandName() {
 		return "jumpheight";
@@ -30,6 +32,7 @@ public class CommandJumpheight extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
+		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 		double gravity;
 		
 		if (params.length > 0) {
@@ -42,15 +45,16 @@ public class CommandJumpheight extends ServerCommand {
 				catch (NumberFormatException nfe) {throw new CommandException("command.jumpheight.NAN", sender);}
 			}
 			
-			MoreCommands.getMoreCommands().getPacketDispatcher().sendS11Gravity((EntityPlayerMP) sender.getMinecraftISender(), gravity);
+			player.setGravity(gravity);
+			MoreCommands.INSTANCE.getPacketDispatcher().sendS09Gravity(player, gravity);
 		}
 		else 
-			throw new CommandException("command.jumpheight.invalidUsage", sender);
+			throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 	}
 
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[] {Requirement.MODDED_CLIENT, Requirement.PATCH_ENTITYCLIENTPLAYERMP};
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[] {CommandRequirement.MODDED_CLIENT, CommandRequirement.PATCH_ENTITYCLIENTPLAYERMP, CommandRequirement.PATCH_ENTITYPLAYERMP};
 	}
 
 	@Override
@@ -59,12 +63,12 @@ public class CommandJumpheight extends ServerCommand {
 	}
 
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

@@ -1,17 +1,17 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.block.Block;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.wrapper.EntityLivingBase;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.init.Blocks;
 
 @Command(
 		name = "ignite",
@@ -20,9 +20,7 @@ import com.mrnobody.morecommands.wrapper.Player;
 		syntax = "command.ignite.syntax",
 		videoURL = "command.ignite.videoURL"
 		)
-public class CommandIgnite extends ServerCommand {
-	private final Block BLOCK_FIRE = Blocks.fire;
-
+public class CommandIgnite extends StandardCommand implements ServerCommandProperties {
 	@Override
 	public String getCommandName() {
 		return "ignite";
@@ -35,19 +33,23 @@ public class CommandIgnite extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
-		Coordinate ignite = player.traceBlock(128.0D);
+		Coordinate ignite;
+		
+		if (params.length > 2)
+			ignite = getCoordFromParams(sender.getMinecraftISender(), params, 0);
+		else
+			ignite = new EntityLivingBase(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.EntityLivingBase.class)).traceBlock(128D);
 		
 		if (ignite != null) {
 			Coordinate fire = new Coordinate(ignite.getBlockX(), ignite.getBlockY() + 1, ignite.getBlockZ());
-			if (player.getWorld().isAirBlock(fire)) player.getWorld().setBlock(fire, BLOCK_FIRE);
+			if (sender.getWorld().isAirBlock(fire)) sender.getWorld().setBlock(fire, Blocks.fire);
 		}
 		else throw new CommandException("command.ignite.notInSight", sender);
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -56,12 +58,12 @@ public class CommandIgnite extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return params.length > 2 ? true : isSenderOfEntityType(sender, net.minecraft.entity.EntityLivingBase.class);
 	}
 }

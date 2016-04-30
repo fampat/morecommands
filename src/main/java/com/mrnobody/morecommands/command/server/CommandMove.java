@@ -1,15 +1,16 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.wrapper.Entity;
+
+import net.minecraft.command.ICommandSender;
 
 @Command(
 		name = "move",
@@ -18,7 +19,7 @@ import com.mrnobody.morecommands.wrapper.Player;
 		syntax = "command.move.syntax",
 		videoURL = "command.move.videoURL"
 		)
-public class CommandMove extends ServerCommand {
+public class CommandMove extends StandardCommand implements ServerCommandProperties {
 
 	@Override
 	public String getCommandName() {
@@ -32,33 +33,33 @@ public class CommandMove extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		Entity entity = new Entity(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.Entity.class));
 		
 		if (params.length > 1) {
 			try {
 				int distance = Integer.parseInt(params[0]);
 				
 				if (params[1].toUpperCase().startsWith("N")) {
-					player.setPosition(new Coordinate(player.getPosition().getX(), player.getPosition().getY(), player.getPosition().getZ() - distance));
+					entity.setPosition(new Coordinate(entity.getPosition().getX(), entity.getPosition().getY(), entity.getPosition().getZ() - distance));
 				} else if (params[1].toUpperCase().startsWith("E")) {
-					player.setPosition(new Coordinate(player.getPosition().getX() + distance, player.getPosition().getY(), player.getPosition().getZ()));
+					entity.setPosition(new Coordinate(entity.getPosition().getX() + distance, entity.getPosition().getY(), entity.getPosition().getZ()));
 				} else if (params[1].toUpperCase().startsWith("S")) {
-					player.setPosition(new Coordinate(player.getPosition().getX(), player.getPosition().getY(), player.getPosition().getZ() + distance));
+					entity.setPosition(new Coordinate(entity.getPosition().getX(), entity.getPosition().getY(), entity.getPosition().getZ() + distance));
 				} else if (params[1].toUpperCase().startsWith("W")) {
-					player.setPosition(new Coordinate(player.getPosition().getX() - distance, player.getPosition().getY(), player.getPosition().getZ()));
+					entity.setPosition(new Coordinate(entity.getPosition().getX() - distance, entity.getPosition().getY(), entity.getPosition().getZ()));
 				} else if (params[1].toUpperCase().startsWith("U")) {
-					player.setPosition(new Coordinate(player.getPosition().getX(), player.getPosition().getY() + distance, player.getPosition().getZ()));
+					entity.setPosition(new Coordinate(entity.getPosition().getX(), entity.getPosition().getY() + distance, entity.getPosition().getZ()));
 				} else if (params[1].toUpperCase().startsWith("D")) {
-					player.setPosition(new Coordinate(player.getPosition().getX(), player.getPosition().getY() - distance, player.getPosition().getZ()));
+					entity.setPosition(new Coordinate(entity.getPosition().getX(), entity.getPosition().getY() - distance, entity.getPosition().getZ()));
 				} else throw new CommandException("command.move.invalidDirection", sender);
 			} catch (NumberFormatException e) {throw new CommandException("command.move.NAN", sender);}
 		}
-		else throw new CommandException("command.move.invalidUsage", sender);
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -67,12 +68,12 @@ public class CommandMove extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, net.minecraft.entity.Entity.class);
 	}
 }

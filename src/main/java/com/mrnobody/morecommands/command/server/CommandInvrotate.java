@@ -1,8 +1,10 @@
 package com.mrnobody.morecommands.command.server;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
@@ -17,7 +19,7 @@ import net.minecraft.item.ItemStack;
 		syntax = "command.invrotate.syntax",
 		videoURL = "command.invrotate.videoURL"
 		)
-public class CommandInvrotate extends ServerCommand {
+public class CommandInvrotate extends StandardCommand implements ServerCommandProperties {
     public String getCommandName()
     {
         return "invrotate";
@@ -37,17 +39,17 @@ public class CommandInvrotate extends ServerCommand {
 			else if (params[0].equalsIgnoreCase("line")) items  = 9;
 			else {
 				try {items = Integer.parseInt(params[0]);}
-				catch (Exception e) {throw new CommandException("command.invrotate.invalidUsage", sender);}
+				catch (Exception e) {throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());}
 			}
 		}
 		
 		if (params.length > 1) {
 			if (params[1].equalsIgnoreCase("left") || params[1].equalsIgnoreCase("up")) leftToRight = false;
 			else if (params[1].equalsIgnoreCase("right") || params[1].equalsIgnoreCase("down")) leftToRight = true;
-			else throw new CommandException("command.invrotate.invalidUsage", sender);
+			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
 		
-		ItemStack main[] = ((EntityPlayerMP) sender.getMinecraftISender()).inventory.mainInventory;
+		ItemStack main[] = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class).inventory.mainInventory;
 		ItemStack sorted[] = new ItemStack[main.length];
 		items %= main.length;
         
@@ -61,13 +63,13 @@ public class CommandInvrotate extends ServerCommand {
 			sorted[pos % main.length] = main[i];
 		}
 
-		((EntityPlayerMP) sender.getMinecraftISender()).inventory.mainInventory = sorted;
+		getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class).inventory.mainInventory = sorted;
 		main = null;
 	}
     
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 	
 	@Override
@@ -76,12 +78,12 @@ public class CommandInvrotate extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

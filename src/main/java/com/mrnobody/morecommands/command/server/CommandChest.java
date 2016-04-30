@@ -1,5 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
+import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.wrapper.CommandException;
+import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.wrapper.Coordinate;
+import com.mrnobody.morecommands.wrapper.Player;
+
 import net.minecraft.block.Block;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -9,14 +19,6 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryLargeChest;
 import net.minecraft.tileentity.TileEntityChest;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.Player;
-
 @Command(
 		name = "chest",
 		description = "command.chest.description",
@@ -24,7 +26,7 @@ import com.mrnobody.morecommands.wrapper.Player;
 		syntax = "command.chest.syntax",
 		videoURL = "command.chest.videoURL"
 		)
-public class CommandChest extends ServerCommand {
+public class CommandChest extends StandardCommand implements ServerCommandProperties {
 	@Override
 	public String getCommandName() {
 		return "chest";
@@ -38,9 +40,9 @@ public class CommandChest extends ServerCommand {
 	@Override
 	public void execute(CommandSender sender, String[] params)throws CommandException {
 		if (params.length < 1)
-			throw new CommandException("command.chest.invalidUsage", sender);
+			throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		
-		Player player = new Player((EntityPlayerMP) sender.getMinecraftISender());
+		Player player = new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
 		Coordinate coord = player.traceBlock(128.0D);
 		
 		if (coord == null)
@@ -57,8 +59,8 @@ public class CommandChest extends ServerCommand {
 		
 		if (params[0].equalsIgnoreCase("drop")) {
             y1 += 1; y2 += 1;
-			player.getWorld().setBlock(x1, y1, z1, Blocks.chest);
-			player.getWorld().setBlock(x2, y2, z2, Blocks.chest);
+            player.getWorld().setBlock(x1, y1, z1, Blocks.chest);
+            player.getWorld().setBlock(x2, y2, z2, Blocks.chest);
 		}
 		else if (params[0].equalsIgnoreCase("fill") || params[0].equalsIgnoreCase("get") || params[0].equalsIgnoreCase("swap") || params[0].equalsIgnoreCase("clear")) {
 			if (player.getWorld().getBlock(coord) == Blocks.chest) {
@@ -123,8 +125,8 @@ public class CommandChest extends ServerCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -133,12 +135,12 @@ public class CommandChest extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

@@ -1,20 +1,20 @@
 package com.mrnobody.morecommands.command.client;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.command.ClientCommand;
+import com.google.common.collect.Lists;
+import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.util.Reference;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.util.ClientPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraftforge.client.ClientCommandHandler;
 
 @Command(
@@ -24,8 +24,7 @@ import net.minecraftforge.client.ClientCommandHandler;
 	example = "command.macro.example",
 	videoURL = "command.macro.videoURL"
 		)
-public class CommandMacro extends ClientCommand {
-
+public class CommandMacro extends StandardCommand implements ClientCommandProperties {
 	@Override
 	public boolean registerIfServerModded() {
 		return true;
@@ -43,85 +42,45 @@ public class CommandMacro extends ClientCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
+		if (!isSenderOfEntityType(sender.getMinecraftISender(), EntityClientPlayerMP.class))
+			throw new CommandException("command.generic.notAPlayer", sender);
+		
+		ClientPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityClientPlayerMP.class));
+		
 		if (params.length > 0) {
 			if ((params[0].equalsIgnoreCase("delete") || params[0].equalsIgnoreCase("del") || params[0].equalsIgnoreCase("remove") || params[0].equalsIgnoreCase("rem")) && params.length > 1) {
-				String name = params[1] + ".cfg";
-				File macroDir = Reference.getMacroDir();
-				for (File f : macroDir.listFiles()) {
-					if (f.getName().equalsIgnoreCase(name) && f.isFile()) {
-						f.delete();
-						sender.sendLangfileMessage("command.macro.deleteSuccess", f.getName());
-						break;
-					}
+				if (!settings.macros.containsKey(params[1])) throw new CommandException("command.macro.notFound", sender, params[1]);
+				else {
+					settings.macros = settings.removeAndUpdate("macros", params[1], (Class<List<String>>) (Class<?>) List.class, true);
+					sender.sendLangfileMessage("command.macro.deleteSuccess", params[1]);
 				}
 			}
 			else if ((params[0].equalsIgnoreCase("exec") || params[0].equalsIgnoreCase("execute")) && params.length > 1) {
-				String name = params[1] + ".cfg";
-				File macro = null;
+				List<String> commands = settings.macros.get(params[1]);
 				
-				for (File f : Reference.getMacroDir().listFiles()) {
-					if (f.getName().equalsIgnoreCase(name) && f.isFile()) {
-						macro = f;
-						break;
-					}
-				}
-				
-				if (macro != null) {
-					try {
-						BufferedReader br = new BufferedReader(new FileReader(macro));
-						String line;
-						
-						while ((line = br.readLine()) != null) {
-							if (ClientCommandHandler.instance.executeCommand(Minecraft.getMinecraft().thePlayer, line) == 0)
-								Minecraft.getMinecraft().thePlayer.sendChatMessage(line.startsWith("/") ? line : "/" + line);
-						}
-						
-						br.close();
-					}
-					catch (IOException ex) {ex.printStackTrace(); throw new CommandException("command.macro.executeError", sender);}
+				if (commands != null) {
+					for (String command : commands)
+						if (ClientCommandHandler.instance.executeCommand(Minecraft.getMinecraft().thePlayer, command) == 0)
+							Minecraft.getMinecraft().thePlayer.sendChatMessage(command.startsWith("/") ? command : "/" + command);
 				}
 				else throw new CommandException("command.macro.notFound", sender, params[1]);
 			}
-			else if ((params[0].equalsIgnoreCase("add") || params[0].equalsIgnoreCase("new") || params[0].equalsIgnoreCase("create") || params[0].equalsIgnoreCase("edit")) && params.length > 1) {
-				File macro = new File(Reference.getMacroDir(), params[1] + ".cfg");
-				
-				if (macro.exists() && macro.isFile()) {
-					if (params[0].equalsIgnoreCase("add") || params[0].equalsIgnoreCase("new") || params[0].equalsIgnoreCase("create"))
+			else if ((params[0].equalsIgnoreCase("add") || params[0].equalsIgnoreCase("new") || params[0].equalsIgnoreCase("create") || params[0].equalsIgnoreCase("edit")) && params.length > 2) {
+				if (settings.macros.containsKey(params[1]) && (params[0].equalsIgnoreCase("add") || params[0].equalsIgnoreCase("new") || params[0].equalsIgnoreCase("create")))
 						throw new CommandException("command.macro.exists", sender, params[1]);
-					macro.delete();
-				}
 				
-				try {macro.createNewFile();}
-				catch (IOException ex) {ex.printStackTrace(); throw new CommandException("command.macro.writeError", sender);}
-				
-				if (params.length > 2) {
-					String commandlist = "";
-					for (int i = 2; i < params.length; i++) commandlist += " " + params[i];
-					String[] commands = commandlist.split(";");
-					
-					try {
-						BufferedWriter bw = new BufferedWriter(new FileWriter(macro));
-						
-						for (String command : commands) {
-							bw.write(command.trim());
-							bw.newLine();
-						}
-						
-						bw.close();
-					}
-					catch (IOException ex) {ex.printStackTrace(); throw new CommandException("command.macro.writeError", sender);}
-				}
-				
-				sender.sendLangfileMessage("command.macro.createSuccess", macro.getName());
+				settings.macros = settings.putAndUpdate("macros", params[1], Lists.newArrayList(rejoinParams(Arrays.copyOfRange(params, 2, params.length)).split(";")),
+						(Class<List<String>>) (Class<?>) List.class, true);
+				sender.sendLangfileMessage("command.macro.createSuccess", params[1]);
 			}
-			else throw new CommandException("command.macro.invalidUsage", sender);
+			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
-		else throw new CommandException("command.macro.invalidUsage", sender);
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 	}
 
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -130,7 +89,7 @@ public class CommandMacro extends ClientCommand {
 	}
 
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 0;
 	}
 }

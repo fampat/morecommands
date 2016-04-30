@@ -1,9 +1,11 @@
 package com.mrnobody.morecommands.command.server;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 
@@ -17,7 +19,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 		syntax = "command.reach.syntax",
 		videoURL = "command.reach.videoURL"
 		)
-public class CommandReach extends ServerCommand {
+public class CommandReach extends StandardCommand implements ServerCommandProperties {
 	@Override
 	public String getCommandName() {
 		return "reach";
@@ -30,18 +32,18 @@ public class CommandReach extends ServerCommand {
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		EntityPlayerMP playerEntity = (EntityPlayerMP) sender.getMinecraftISender();
+		EntityPlayerMP playerEntity = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 			
 		if (params.length > 0) {
 			try {
 				float distance = Float.parseFloat(params[0]);
-				MoreCommands.getMoreCommands().getPacketDispatcher().sendS09Reach(playerEntity, distance);
+				MoreCommands.INSTANCE.getPacketDispatcher().sendS08Reach(playerEntity, distance);
 				playerEntity.theItemInWorldManager.setBlockReachDistance(distance);
 				sender.sendLangfileMessage("command.reach.set", params[0]);
 			}
 			catch (NumberFormatException e) {
 				if (params[0].equalsIgnoreCase("reset")) {
-					MoreCommands.getMoreCommands().getPacketDispatcher().sendS09Reach(playerEntity, 5.0F);
+					MoreCommands.INSTANCE.getPacketDispatcher().sendS08Reach(playerEntity, 5.0F);
 					playerEntity.theItemInWorldManager.setBlockReachDistance(5.0F);
 					sender.sendLangfileMessage("command.reach.reset");
 				}
@@ -51,8 +53,8 @@ public class CommandReach extends ServerCommand {
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[] {Requirement.MODDED_CLIENT, Requirement.PATCH_ENTITYCLIENTPLAYERMP};
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[] {CommandRequirement.MODDED_CLIENT, CommandRequirement.PATCH_ENTITYCLIENTPLAYERMP};
 	}
 
 	@Override
@@ -61,12 +63,12 @@ public class CommandReach extends ServerCommand {
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }

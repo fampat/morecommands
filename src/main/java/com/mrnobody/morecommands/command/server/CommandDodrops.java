@@ -1,17 +1,19 @@
 package com.mrnobody.morecommands.command.server;
 
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.EventListener;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.util.GlobalSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 
 @Command(
 		name = "dodrops",
@@ -20,9 +22,9 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 		syntax = "command.dodrops.syntax",
 		videoURL = "command.dodrops.videoURL"
 		)
-public class CommandDodrops extends ServerCommand implements EventListener<EntityJoinWorldEvent> {
+public class CommandDodrops extends StandardCommand implements ServerCommandProperties, EventListener<EntityJoinWorldEvent> {
 	public CommandDodrops() {
-		EventHandler.ENTITYJOIN.getHandler().register(this);
+		EventHandler.ENTITYJOIN.register(this);
 	}
 	
 	@Override
@@ -47,8 +49,8 @@ public class CommandDodrops extends ServerCommand implements EventListener<Entit
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -57,12 +59,12 @@ public class CommandDodrops extends ServerCommand implements EventListener<Entit
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
 		return true;
 	}
 }

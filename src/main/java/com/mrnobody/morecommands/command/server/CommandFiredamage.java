@@ -1,10 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.command.Command;
-import com.mrnobody.morecommands.command.ServerCommand;
-import com.mrnobody.morecommands.handler.EventHandler;
-import com.mrnobody.morecommands.handler.Listeners.EventListener;
+import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.ServerCommandProperties;
+import com.mrnobody.morecommands.command.StandardCommand;
+import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.event.EventHandler;
+import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
@@ -21,16 +23,16 @@ import net.minecraftforge.event.entity.living.LivingAttackEvent;
 		syntax = "command.firedamage.syntax",
 		videoURL = "command.firedamage.videoURL"
 		)
-public class CommandFiredamage extends ServerCommand implements EventListener<LivingAttackEvent> {
+public class CommandFiredamage extends StandardCommand implements ServerCommandProperties, EventListener<LivingAttackEvent> {
 	public CommandFiredamage() {
-		EventHandler.ATTACK.getHandler().register(this);
+		EventHandler.ATTACK.register(this);
 	}
 	
 	@Override
 	public void onEvent(LivingAttackEvent event) {
 		if (event.entity instanceof EntityPlayerMP && (event.source == DamageSource.inFire || event.source == DamageSource.onFire || event.source == DamageSource.lava)) {
 			EntityPlayerMP player = (EntityPlayerMP) event.entity;
-			if (!ServerPlayerSettings.getPlayerSettings(player).firedamage) event.setCanceled(true);
+			if (!getPlayerSettings(player).firedamage) event.setCanceled(true);
 		}
 	}
 	
@@ -46,7 +48,7 @@ public class CommandFiredamage extends ServerCommand implements EventListener<Li
 
 	@Override
 	public void execute(CommandSender sender, String[] params) throws CommandException {
-		ServerPlayerSettings settings = ServerPlayerSettings.getPlayerSettings((EntityPlayerMP) sender.getMinecraftISender());
+		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
     	
 		try {settings.firedamage = parseTrueFalse(params, 0, settings.firedamage);}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.firedamage.failure", sender);}
@@ -55,8 +57,8 @@ public class CommandFiredamage extends ServerCommand implements EventListener<Li
 	}
 	
 	@Override
-	public Requirement[] getRequirements() {
-		return new Requirement[0];
+	public CommandRequirement[] getRequirements() {
+		return new CommandRequirement[0];
 	}
 
 	@Override
@@ -65,12 +67,12 @@ public class CommandFiredamage extends ServerCommand implements EventListener<Li
 	}
 	
 	@Override
-	public int getPermissionLevel() {
+	public int getDefaultPermissionLevel() {
 		return 2;
 	}
 	
 	@Override
-	public boolean canSenderUse(ICommandSender sender) {
-		return sender instanceof EntityPlayerMP;
+	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
+		return isSenderOfEntityType(sender, EntityPlayerMP.class);
 	}
 }
