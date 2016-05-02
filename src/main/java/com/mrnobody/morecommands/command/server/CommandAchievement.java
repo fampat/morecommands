@@ -45,7 +45,8 @@ public class CommandAchievement extends StandardCommand implements ServerCommand
 		Map<String, StatBase> stats = (Map<String, StatBase>) ReflectionHelper.get(ObfuscatedField.StatList_oneShotStats, null);
 		if (stats != null) {
 			for (Map.Entry<String, StatBase> entry : stats.entrySet()) {
-				if (entry.getValue().isAchievement()) builder.put(entry.getKey().substring("achievement.".length()), (Achievement) entry.getValue());
+				if (entry.getValue().isAchievement()) builder.put(entry.getKey().startsWith("achievement.") ? 
+					entry.getKey().substring("achievement.".length()) : entry.getKey(), (Achievement) entry.getValue());
 			}
 		}
     	
