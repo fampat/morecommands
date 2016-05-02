@@ -35,12 +35,14 @@ public class CommandDescend extends StandardCommand implements ServerCommandProp
 	public void execute(CommandSender sender, String[] params) throws CommandException {
     	Entity entity = new Entity(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.Entity.class));
     	Coordinate coord = entity.getPosition();
-    	int y = coord.getBlockY() + 1;
+    	int y = coord.getBlockY() - 1;
     	
     	while (y > 0) {
+    		System.out.println("CLEAR(" + y + "): " + entity.getWorld().isClear(new Coordinate(coord.getX(), y, coord.getX())));
     		if (entity.getWorld().isClear(new Coordinate(coord.getBlockX(), y--, coord.getBlockZ()))) {
     			entity.setPosition(new Coordinate(coord.getBlockX() + 0.5F, ++y, coord.getBlockZ() + 0.5F));
-    			sender.sendLangfileMessage("command.descend.descended", Math.abs(y - coord.getBlockY()));
+    			System.out.println("POS:" + entity.getPosition());
+     			sender.sendLangfileMessage("command.descend.descended", Math.abs(y - coord.getBlockY()));
     			break;
     		}
     	}

@@ -94,7 +94,10 @@ public class Entity {
 	 * Sets the entity's position
 	 */
 	public void setPosition(Coordinate c) {
-		this.entity.setPosition(c.getX(), c.getY(), c.getZ());
+		if (this.entity instanceof net.minecraft.entity.EntityLivingBase)
+			((net.minecraft.entity.EntityLivingBase) this.entity).setPositionAndUpdate(c.getX(), c.getY(), c.getZ());
+		else 
+			this.entity.setLocationAndAngles(c.getX(), c.getY(), c.getZ(), getYaw(), getPitch());
 	}
 	
 	/**
