@@ -36,7 +36,7 @@ public class CommandAscend extends StandardCommand implements ServerCommandPrope
     	int y = coord.getY() + 1;
     	
     	while (y < 260) {
-    		if (entity.getWorld().isClear(new BlockPos(coord.getY(), y++, coord.getZ()))) {
+    		if (entity.getWorld().isClear(new BlockPos(coord.getX(), y++, coord.getZ()))) {
     			entity.setPosition(new BlockPos(coord.getX() + 0.5F, --y, coord.getZ() + 0.5F));
     			sender.sendLangfileMessage("command.ascend.ascended", Math.abs(y - coord.getY()));
     			break;
