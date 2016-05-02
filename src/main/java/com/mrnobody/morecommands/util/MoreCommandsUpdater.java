@@ -83,7 +83,7 @@ public final class MoreCommandsUpdater implements Runnable {
 			if (version_minor > maxMinor) maxMinor = version_minor;
 		}
 		
-		if (maxMajor > MORECOMMANDSVERSION_MAJOR || (maxMajor == MORECOMMANDSVERSION_MAJOR && maxMinor >= MORECOMMANDSVERSION_MAJOR)) 
+		if (maxMajor > MORECOMMANDSVERSION_MAJOR || (maxMajor == MORECOMMANDSVERSION_MAJOR && maxMinor >= MORECOMMANDSVERSION_MINOR)) 
 			upd = maxMajor + "." + maxMinor;
 		
 		if (upd != null) {
