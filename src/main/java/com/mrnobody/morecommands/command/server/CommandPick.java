@@ -20,6 +20,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeHooks;
 
 @Command(
 		name = "pick",
@@ -74,19 +75,21 @@ public class CommandPick extends StandardCommand implements ServerCommandPropert
 	
     private boolean onPickBlock(MovingObjectPosition target, EntityPlayer player, World world, int amount)
     {
-        ItemStack result = null;
+    	ItemStack result = null;
 
         if (target.typeOfHit == MovingObjectType.BLOCK)
         {
-            Block block = world.getBlock(target.blockX, target.blockY, target.blockZ);
+            int x = target.blockX;
+            int y = target.blockY;
+            int z = target.blockZ;
+            Block block = world.getBlock(x, y, z);
 
-            if (block.isAir(world, target.blockX, target.blockY, target.blockZ))
+            if (block.isAir(world, x, y, z))
             {
                 return false;
             }
 
-            //result = block.getPickBlock(target, world, target.blockX, target.blockY, target.blockZ); //can't be used, because getPickBlock() usese Block#isFlowerPot() which is client only
-            result = this.getPickBlock(block, target, world, target.blockX, target.blockY, target.blockZ);
+            result = getPickBlock(block, target, world, x, y, z);
         }
         else
         {
@@ -103,31 +106,19 @@ public class CommandPick extends StandardCommand implements ServerCommandPropert
             return false;
         }
         
-        result.stackSize = amount;
-
+        //We want to allow duplicate stacks
+        /*
         for (int x = 0; x < 9; x++)
         {
             ItemStack stack = player.inventory.getStackInSlot(x);
             if (stack != null && stack.isItemEqual(result) && ItemStack.areItemStackTagsEqual(stack, result))
             {
-            	if (amount > stack.getMaxStackSize()) amount = stack.getMaxStackSize();
                 player.inventory.currentItem = x;
-                
-                if (stack.stackSize + amount > stack.getMaxStackSize()) {
-                	int oldStackSize = stack.stackSize;
-                	stack.stackSize = stack.getMaxStackSize();
-                	
-                	if (player.inventory.getFirstEmptyStack() > 0) {
-                		ItemStack copy = ItemStack.copyItemStack(stack); copy.stackSize = (oldStackSize + amount) - stack.getMaxStackSize();
-                		player.inventory.mainInventory[player.inventory.getFirstEmptyStack()] = copy;
-                	}
-                }
-                else stack.stackSize += amount;
-                
                 return true;
             }
         }
-
+        */
+        
         int slot = player.inventory.getFirstEmptyStack();
         if (slot < 0 || slot >= 9)
         {
@@ -140,7 +131,7 @@ public class CommandPick extends StandardCommand implements ServerCommandPropert
     }
     
     private ItemStack getPickBlock(Block block, MovingObjectPosition target, World world, int x, int y, int z) {
-        Item item = block.getItem(world, x, y, z);
+        Item item = Item.getItemFromBlock(block);
 
         if (item == null)
         {

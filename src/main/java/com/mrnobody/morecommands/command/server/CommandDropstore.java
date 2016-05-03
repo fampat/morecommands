@@ -47,14 +47,9 @@ public class CommandDropstore extends StandardCommand implements ServerCommandPr
 		InventoryLargeChest chestInv = new InventoryLargeChest("Large chest", (TileEntityChest) player.getWorld().getTileEntity(coord1), (TileEntityChest) player.getWorld().getTileEntity(coord2));
 	
         int count = 0;
-        for (int i = 0; i < player.getMinecraftPlayer().inventory.mainInventory.length; i++) {
-        	chestInv.setInventorySlotContents(count++, player.getMinecraftPlayer().inventory.mainInventory[i]);
-        	player.getMinecraftPlayer().inventory.mainInventory[i] = null;
-        }
-        
-        for (int i = 0; i < player.getMinecraftPlayer().inventory.armorInventory.length; i++) {
-        	chestInv.setInventorySlotContents(count++, player.getMinecraftPlayer().inventory.armorInventory[i]);
-        	player.getMinecraftPlayer().inventory.armorInventory[i] = null;
+        for (int i = 0; i < player.getMinecraftPlayer().inventory.getSizeInventory() && count < chestInv.getSizeInventory(); i++) {
+        	chestInv.setInventorySlotContents(count++, player.getMinecraftPlayer().inventory.getStackInSlot(i));
+        	player.getMinecraftPlayer().inventory.setInventorySlotContents(i, null);
         }
         
         sender.sendLangfileMessage("command.dropstore.stored");
