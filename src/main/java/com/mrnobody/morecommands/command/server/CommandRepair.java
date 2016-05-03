@@ -39,26 +39,18 @@ public class CommandRepair extends StandardCommand implements ServerCommandPrope
 		
 		Player player = new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
 		
-		if (repair.equals("this")) {this.resetDamageOnItem(player, player.getCurrentSlot());}
+		if (repair.equals("this")) {this.resetDamageOnItem(player.getMinecraftPlayer().getCurrentEquippedItem());}
 		else if (repair.equals("all")) {
 			for (int i = 0; i < player.getMinecraftPlayer().inventory.getSizeInventory(); i++) {
-	        	 this.resetDamageOnItem(player, i);
+	        	 this.resetDamageOnItem(player.getMinecraftPlayer().inventory.getStackInSlot(i));
 	         }
 		}
 	}
 	
-	public static void resetDamageOnItem(Player player, int slot) {
-		if (slot < 0 || slot >= player.getMinecraftPlayer().inventory.mainInventory.length) {
-			return;
-		}
-		ItemStack item = player.getMinecraftPlayer().inventory.mainInventory[slot];
-		if (item == null) {
-			return;
-		}
-		if (item.getHasSubtypes() || !item.isItemDamaged()) {
-			return;
-		}
-		item.setItemDamage(0);
+	private void resetDamageOnItem(ItemStack stack) {
+		if (stack == null || stack.getItem() == null) return;
+		if (stack.getHasSubtypes() || !stack.isItemDamaged()) return;
+		stack.setItemDamage(0);
 	}
 	
 	@Override

@@ -100,17 +100,9 @@ public class Player extends com.mrnobody.morecommands.wrapper.EntityLivingBase {
 	/**
 	 * Sets an inventory slot
 	 */
-	public boolean setInventorySlot(int slot, int id, int quantity, int damage) {
-		if (slot < 0 || slot >= this.player.inventory.mainInventory.length) {
-			return false;
-		} else if ((Item) Item.itemRegistry.getObjectById(id) == null) {
-			if (id == 0) {
-				this.player.inventory.mainInventory[slot] = null;
-				return true;
-			}
-		return false;
-		}
-		this.player.inventory.mainInventory[slot] = new ItemStack(Item.getItemById(id), quantity, damage);
+	public boolean setInventorySlot(int slot, Item item, int quantity, int damage) {
+		if (slot < 0 || slot >= this.player.inventory.getSizeInventory()) return false;
+		this.player.inventory.setInventorySlotContents(slot, new ItemStack(item, quantity, damage));
 		return true;
 	}
 
@@ -143,22 +135,15 @@ public class Player extends com.mrnobody.morecommands.wrapper.EntityLivingBase {
 	/**
 	 * @return the players current item
 	 */
-	public Item getCurrentItem() {
-		return this.player.getCurrentEquippedItem().getItem();
-	}
-   
-	/**
-	 * @return the players current slot
-	 */
-	public int getCurrentSlot() {
-		return this.player.inventory.currentItem;
+	public ItemStack getCurrentItem() {
+		return this.player.getCurrentEquippedItem();
 	}
 	
 	/**
 	 * Sets the players current slot
 	 */
-	public void setCurrentSlot(int index, ItemStack item) {
-		this.player.inventory.setInventorySlotContents(index, item);
+	public void setCurrentSlot(ItemStack item) {
+		this.player.inventory.setInventorySlotContents(player.inventory.currentItem, item);
 	}
    
 	/**

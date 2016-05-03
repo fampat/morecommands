@@ -37,19 +37,24 @@ public class CommandMelt extends StandardCommand implements ServerCommandPropert
 	public void execute(CommandSender sender, String[] params)throws CommandException {
 		boolean all = false;
 		if (params.length > 0 && params[0].equalsIgnoreCase("all")) all = true;
-		
-		ItemStack[] mainInventory = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class).inventory.mainInventory;
-		
-		int length = all ? mainInventory.length : 1;
-		int start = all ? 0 : getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class).inventory.currentItem;
-		ItemStack result;
+		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
+		ItemStack result = null;
 		int smelt = 0;
 		
-		for (int i = start; i < start + length; i++) {
-			if (mainInventory[i] == null) continue;
-			result = FurnaceRecipes.instance().getSmeltingResult(mainInventory[i]);
-			if (result != null) mainInventory[i] = new ItemStack(result.getItem(), mainInventory[i].stackSize, result.getItemDamage());
-			if (result != null) smelt++;
+		if (!all) {
+			if (player.getCurrentEquippedItem() == null) return;
+			result = FurnaceRecipes.instance().getSmeltingResult(player.getCurrentEquippedItem());
+			if (result != null) player.setCurrentItemOrArmor(0, new ItemStack(result.getItem(),
+								player.getCurrentEquippedItem().stackSize, result.getItemDamage()));
+		}
+		else {
+			for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
+				if (player.inventory.getStackInSlot(i) == null) continue;
+				result = FurnaceRecipes.instance().getSmeltingResult(player.inventory.getStackInSlot(i));
+				if (result != null) player.inventory.setInventorySlotContents(i, new ItemStack(result.getItem(),
+									player.inventory.getStackInSlot(i).stackSize, result.getItemDamage()));
+				if (result != null) smelt++;
+			}
 		}
 		
 		sender.sendLangfileMessage("command.melt.molten", smelt);
