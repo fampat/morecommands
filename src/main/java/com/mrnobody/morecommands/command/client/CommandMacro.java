@@ -69,7 +69,7 @@ public class CommandMacro extends StandardCommand implements ClientCommandProper
 				if (settings.macros.containsKey(params[1]) && (params[0].equalsIgnoreCase("add") || params[0].equalsIgnoreCase("new") || params[0].equalsIgnoreCase("create")))
 						throw new CommandException("command.macro.exists", sender, params[1]);
 				
-				settings.macros = settings.putAndUpdate("macros", params[1],Lists.newArrayList(rejoinParams(Arrays.copyOfRange(params, 2, params.length)).split(";")),
+				settings.macros = settings.putAndUpdate("macros", params[1], Lists.newArrayList(rejoinParams(Arrays.copyOfRange(params, 2, params.length)).split(";")),
 						(Class<List<String>>) (Class<?>) List.class, true);
 				sender.sendLangfileMessage("command.macro.createSuccess", params[1]);
 			}

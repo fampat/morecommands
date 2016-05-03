@@ -339,7 +339,7 @@ public final class ServerPlayerSettings extends PlayerSettings {
 		private void checkLoaded() {
 			if (this.manager == null && this.player != null) {
 				this.manager = MoreCommands.getProxy().createSettingsManagerForPlayer(this.player);
-				this.useCommonSettings = MoreCommands.isServerSide() || !player.getName().equals(this.player.getServer().getServerOwner());
+				this.useCommonSettings = MoreCommands.isServerSide() || !this.player.getName().equals(this.player.getServer().getServerOwner());
 				if (!this.manager.isLoaded()) this.manager.loadSettings();
 				MoreCommands.getProxy().updateWorld(this.player);
 				this.player = null;

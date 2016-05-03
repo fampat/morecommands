@@ -31,12 +31,12 @@ public class CommandStackcombine extends StandardCommand implements ServerComman
 	public void execute(CommandSender sender, String[] params) throws CommandException {
 		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 		
-		for (int i = 0; i < player.inventory.mainInventory.length; i++) {
-			ItemStack sloti = player.inventory.mainInventory[i];
+		for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
+			ItemStack sloti = player.inventory.getStackInSlot(i);
 			if (sloti == null) continue;
 			
-            for (int j = i + 1; j < player.inventory.mainInventory.length; j++) {
-            	ItemStack slotj = player.inventory.mainInventory[j];
+            for (int j = i + 1; j < player.inventory.getSizeInventory(); j++) {
+            	ItemStack slotj = player.inventory.getStackInSlot(i);
             	if (slotj == null) continue;
             	
             	if (sloti.isItemEqual(slotj)) {
@@ -48,7 +48,7 @@ public class CommandStackcombine extends StandardCommand implements ServerComman
             		}
             		else {
             			sloti.stackSize += slotj.stackSize;
-            			player.inventory.mainInventory[j] = null;
+            			player.inventory.setInventorySlotContents(j, null);
             		}
             	}
             }

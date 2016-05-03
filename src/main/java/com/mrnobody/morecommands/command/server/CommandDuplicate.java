@@ -38,21 +38,10 @@ public class CommandDuplicate extends StandardCommand implements ServerCommandPr
 		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 		
 		if (params.length > 0 && params[0].equalsIgnoreCase("all")) {
-			for (int i = 0; i < player.inventory.mainInventory.length; i++) {
-				if (player.inventory.mainInventory[i] == null) continue;
+			for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
+				if (player.inventory.getStackInSlot(i) == null) continue;
 				
-				ItemStack item = player.inventory.mainInventory[i];
-				ItemStack duplicate = new ItemStack(item.getItem(), item.stackSize, item.getItemDamage());
-				if (item.getTagCompound() != null) duplicate.setTagCompound((NBTTagCompound) item.getTagCompound().copy());
-				
-				EntityItem itemEntity = new EntityItem(player.worldObj, player.posX, player.posY, player.posZ, duplicate);
-				player.worldObj.spawnEntityInWorld(itemEntity);
-			}
-			
-			for (int i = 0; i < player.inventory.armorInventory.length; i++) {
-				if (player.inventory.armorInventory[i] == null) continue;
-				
-				ItemStack item = player.inventory.armorInventory[i];
+				ItemStack item = player.inventory.getStackInSlot(i);
 				ItemStack duplicate = new ItemStack(item.getItem(), item.stackSize, item.getItemDamage());
 				if (item.getTagCompound() != null) duplicate.setTagCompound((NBTTagCompound) item.getTagCompound().copy());
 				
@@ -61,9 +50,9 @@ public class CommandDuplicate extends StandardCommand implements ServerCommandPr
 			}
 		}
 		else {
-			if (player.inventory.mainInventory[player.inventory.currentItem] == null)
+			if (player.getHeldItemMainhand() == null)
 				throw new CommandException("command.duplicate.notSelected", sender);
-			ItemStack item = player.inventory.mainInventory[player.inventory.currentItem];
+			ItemStack item = player.getHeldItemMainhand();
 			ItemStack duplicate = new ItemStack(item.getItem(), item.stackSize, item.getItemDamage());
 			if (item.getTagCompound() != null) duplicate.setTagCompound((NBTTagCompound) item.getTagCompound().copy());
 			EntityItem itemEntity = new EntityItem(player.worldObj, player.posX, player.posY, player.posZ, duplicate);

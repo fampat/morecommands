@@ -525,6 +525,7 @@ public abstract class PlayerSettings implements ICapabilityProvider {
 				List<String> list = Lists.newArrayList();
 				for (AbstractElement elem : entry.getValue().asList())
 					if (elem.isString()) list.add(elem.asStringElement().asString());
+				map.put(entry.getKey(), list);
 			}
 			
 			return map;

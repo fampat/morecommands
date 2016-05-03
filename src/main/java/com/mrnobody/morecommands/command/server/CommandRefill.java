@@ -11,6 +11,7 @@ import com.mrnobody.morecommands.wrapper.CommandSender;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.inventory.EntityEquipmentSlot;
 
 @Command(
 		name = "refill",
@@ -36,14 +37,14 @@ public class CommandRefill extends StandardCommand implements ServerCommandPrope
 		EntityPlayer player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 		
 		if (params.length > 0 && params[0].equalsIgnoreCase("all")) {
-			for (int i = 0; i < player.inventory.mainInventory.length; i++) {
-				if (player.inventory.mainInventory[i] != null) 
-					player.inventory.mainInventory[i].stackSize = player.inventory.mainInventory[i].getMaxStackSize();
+			for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
+				if (player.inventory.getStackInSlot(i) != null) 
+					player.inventory.getStackInSlot(i).stackSize = player.inventory.getStackInSlot(i).getMaxStackSize();
 			}
 		}
 		else {
-			if (player.inventory.mainInventory[player.inventory.currentItem] != null) 
-				player.inventory.mainInventory[player.inventory.currentItem].stackSize = player.inventory.mainInventory[player.inventory.currentItem].getMaxStackSize();
+			if (player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND) != null) 
+				player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND).stackSize = player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND).getMaxStackSize();
 			else
 				throw new CommandException("command.refill.noSelection", sender);
 		}
