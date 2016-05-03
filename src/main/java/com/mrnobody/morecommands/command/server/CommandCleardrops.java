@@ -87,10 +87,8 @@ public class CommandCleardrops extends StandardCommand implements ServerCommandP
 				if (!(meta == -1 || meta == stack.getItemDamage())) continue;
 				if (!(nbt == null || TargetSelector.nbtContains(stack.getTagCompound(), nbt, !equalLists))) continue;
 				
-				if (entityItem.getAge() >= 0) {
-					world.removeEntity(entityItem);
-					removedDrops++;
-				}
+				world.removeEntity(entityItem);
+				removedDrops++;
 			}
 		}
 		
