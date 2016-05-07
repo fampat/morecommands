@@ -82,10 +82,11 @@ public class CommandGrow extends StandardCommand implements ServerCommandPropert
 		Block block = world.getBlock(x, y, z);
 		
 		if (block instanceof BlockSapling) {
-			((BlockSapling) block).func_149878_d(world.getMinecraftWorld(), x, y, z, rand);
+			((BlockSapling) block).func_149853_b(world.getMinecraftWorld(), rand, x, y, z);
 		}
 		else if (block instanceof BlockCrops) {
 			world.setBlockMeta(new Coordinate(x, y, z), 7);
+			((BlockCrops) block).func_149853_b(world.getMinecraftWorld(), rand, x, y, z);
 		}
 		else if (block instanceof BlockCactus || block instanceof BlockReed) {
 			int length = 1;
