@@ -74,10 +74,10 @@ public class CommandInstantgrow extends StandardCommand implements ServerCommand
 		Block block = world.getBlock(x, y, z);
 		
 		if (block instanceof BlockSapling) {
-			((BlockSapling) block).grow(world.getMinecraftWorld(), new BlockPos(x, y, z), ((BlockSapling) block).getStateFromMeta(8), rand);
+			((BlockSapling) block).grow(world.getMinecraftWorld(), rand, new BlockPos(x, y, z), ((BlockSapling) block).getStateFromMeta(8));
 		}
 		else if (block instanceof BlockCrops) {
-			world.setBlockMeta(new BlockPos(x, y, z), 7);
+			((BlockCrops) block).grow(world.getMinecraftWorld(), rand, new BlockPos(x, y, z), ((BlockCrops) block).getStateFromMeta(7));
 		}
 		else if (block instanceof BlockCactus || block instanceof BlockReed) {
 			int length = 1;
