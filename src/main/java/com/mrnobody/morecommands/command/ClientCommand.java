@@ -15,7 +15,7 @@ import net.minecraftforge.fml.relauncher.Side;
  * 
  * @author MrNobody98
  */
-public final class ClientCommand<T extends StandardCommand & ClientCommandProperties> extends CommandBase implements ClientCommandProperties {	
+public final class ClientCommand<T extends StandardCommand & ClientCommandProperties> extends CommandBase<T> implements ClientCommandProperties {	
 	/** Set by the "clientcommands" command. Indicates whether client commands are enabled/disabled */
 	public static boolean clientCommandsEnabled = true;
 	
