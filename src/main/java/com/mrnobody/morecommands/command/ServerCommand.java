@@ -16,7 +16,7 @@ import net.minecraft.util.EnumChatFormatting;
  * 
  * @author MrNobody98
  */
-public final class ServerCommand<T extends StandardCommand & ServerCommandProperties> extends CommandBase implements ServerCommandProperties {	
+public final class ServerCommand<T extends StandardCommand & ServerCommandProperties> extends CommandBase<T> implements ServerCommandProperties {	
 	/**
 	 * Checks if an object <i>o</i> is of type {@link StandardCommand} and {@link ServerCommandProperties}.<br>
 	 * Returns null if not, else a generic type with those two types as bounds.
