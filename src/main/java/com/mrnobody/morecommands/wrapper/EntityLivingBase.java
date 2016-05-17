@@ -89,14 +89,31 @@ public class EntityLivingBase extends Entity {
 	
 	/**
 	 * adds an enchantment from the current item
+	 * 
+	 * @param enchantment the enchantment
+	 * @param level the enchantment level
 	 * @return whether this enchantment can be applied to the current item
 	 */
 	public boolean addEnchantment(Enchantment enchantment, int level) {
+		return addEnchantment(enchantment, level, true);
+	}
+	
+	/**
+	 * adds an enchantment from the current item
+	 * 
+	 * @param enchantment the enchantment
+	 * @param level the enchantment level
+	 * @param strict whether level and compatibility checks for the enchantment should be made
+	 * @return whether this enchantment can be applied to the current item
+	 */
+	public boolean addEnchantment(Enchantment enchantment, int level, boolean strict) {
 		if (this.entity.getHeldItem() == null) return false;
-		if (!enchantment.canApply(this.entity.getHeldItem())) return false;
-		if (this.entity.getHeldItem() == null) return false; NBTTagList ench;
+		if (strict && !enchantment.canApply(this.entity.getHeldItem())) return false;
 		
-		if ((ench = this.entity.getHeldItem().getEnchantmentTagList()) != null) {
+		NBTTagList ench = this.entity.getHeldItem().getEnchantmentTagList();
+		level = Math.min(Math.max(strict ? enchantment.getMinLevel() : 0, level), strict ? enchantment.getMaxLevel() : Byte.MAX_VALUE);
+		
+		if (strict && ench != null) {
 			for (int i = 0; i < ench.tagCount(); i++) {
 				Enchantment other = Enchantment.getEnchantmentById(ench.getCompoundTagAt(i).getShort("id"));
 				if (!other.canApplyTogether(enchantment) || !enchantment.canApplyTogether(other)) return false;

@@ -391,6 +391,17 @@ public class PlayerSettings implements IExtendedEntityProperties {
 	}
 	
 	/**
+	 * Sets the default save properties
+	 * 
+	 * @param serverDependent whether settings should be server dependent
+	 * @param worldDependent whether settings should be world dependent
+	 * @param dimDependent whether settings should be dimension dependent
+	 */
+	public final void setDefaultProps(boolean serverDependent, boolean worldDependent, boolean dimDependent) {
+		DEFAULT_SAVE_PROPERTIES = MutableTriple.of(serverDependent, worldDependent, dimDependent);
+	}
+	
+	/**
 	 * Sets the save properties for a setting
 	 * 
 	 * @param type the setting's name

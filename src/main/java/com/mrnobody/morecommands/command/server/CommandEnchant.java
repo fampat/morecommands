@@ -8,6 +8,7 @@ import com.mrnobody.morecommands.command.CommandRequirement;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.util.GlobalSettings;
 import com.mrnobody.morecommands.wrapper.CommandException;
 import com.mrnobody.morecommands.wrapper.CommandSender;
 import com.mrnobody.morecommands.wrapper.EntityLivingBase;
@@ -94,7 +95,7 @@ public class CommandEnchant extends StandardCommand implements ServerCommandProp
 				Enchantment e = getEnchantment(params[1]);
 				
 				if (e != null) {
-					if (!entity.addEnchantment(e, level > e.getMaxLevel() ? e.getMaxLevel() : level < e.getMinLevel() ? e.getMinLevel() : level))
+					if (!entity.addEnchantment(e, level, GlobalSettings.strictEnchanting))
 						throw new CommandException("command.enchant.cantApply", sender);
 				}
 				else throw new CommandException("command.enchant.notFound", sender);

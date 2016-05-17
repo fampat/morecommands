@@ -8,6 +8,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.Map;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -86,6 +88,8 @@ public class JsonSettingsManager extends SettingsManager {
 	}
 	
 	private boolean failed = false, loaded = false;
+	private SetMultimap<String, Setting<?>> settings = HashMultimap.create();
+	private final File file;
 	
 	/**
 	 * Constructs a new JsonSettingsManager
@@ -115,7 +119,8 @@ public class JsonSettingsManager extends SettingsManager {
 	 * @param useServer whether to read and write server dependencies of settings (See {@link Setting} for more details)
 	 */
 	public JsonSettingsManager(File file, boolean load, boolean useServer) {
-		super(file, load, useServer);
+		super(load, useServer);
+		this.file = file;
 	}
 	
 	/**
@@ -128,7 +133,18 @@ public class JsonSettingsManager extends SettingsManager {
 	 * @param useServer whether to read and write server dependencies of settings (See {@link Setting} for more details)
 	 */
 	public JsonSettingsManager(File file, boolean load, Serializable<Object> defaultSerializable, boolean useServer) {
-		super(file, load, defaultSerializable, useServer);
+		super(load, defaultSerializable, useServer);
+		this.file = file;
+	}
+	
+	@Override
+	public SetMultimap<String, Setting<?>> getSettings() {
+		return this.settings;
+	}
+
+	@Override
+	public void setSettings(SetMultimap<String, Setting<?>> settings) {
+		this.settings = settings;
 	}
 	
 	@Override
@@ -142,8 +158,7 @@ public class JsonSettingsManager extends SettingsManager {
 			
 			JsonParser p = new JsonParser();
 			JsonElement root = p.parse(reader = new JsonReader(new InputStreamReader(new FileInputStream(this.file))));
-			
-			this.settings = this.serializable.deserialize(toAbstractElement(root));
+			this.deserializeSettings(toAbstractElement(root));
 		}
 		catch (IOException ex) {MoreCommands.INSTANCE.getLogger().info("Error reading command config"); this.failed = true;}
 		catch (JsonIOException ex) {MoreCommands.INSTANCE.getLogger().info("Error reading command config"); this.failed = true;}
@@ -161,7 +176,7 @@ public class JsonSettingsManager extends SettingsManager {
 			return;
 		}
 		
-		String out = new GsonBuilder().setPrettyPrinting().create().toJson(toJsonElement(this.serializable.serialize(this.settings)));
+		String out = new GsonBuilder().setPrettyPrinting().create().toJson(toJsonElement(this.serializeSettings()));
 		OutputStreamWriter w = null;
 		
 		try {
