@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
 
@@ -137,6 +139,8 @@ public class NBTSettingsManager extends SettingsManager {
 	}
     
 	private boolean failed = false, loaded = false;
+	private SetMultimap<String, Setting<?>> settings = HashMultimap.create();
+	private final File file;
 	
 	/**
 	 * Constructs a new NBTSettingsManager
@@ -165,7 +169,8 @@ public class NBTSettingsManager extends SettingsManager {
 	 * @param useServer whether to read and write server dependencies of settings (See {@link Setting} for more details)
 	 */
 	public NBTSettingsManager(File file, boolean load, boolean useServer) {
-		super(file, load, useServer);
+		super(load, useServer);
+		this.file = file;
 	}
 	
 	/**
@@ -178,7 +183,8 @@ public class NBTSettingsManager extends SettingsManager {
 	 * @param useServer whether to read and write server dependencies of settings (See {@link Setting} for more details)
 	 */
 	public NBTSettingsManager(File file, boolean load, Serializable<Object> defaultSerializer, boolean useServer) {
-		super(file, load, defaultSerializer, useServer);
+		super(load, defaultSerializer, useServer);
+		this.file = file;
 	}
 	
 	/**
@@ -194,6 +200,16 @@ public class NBTSettingsManager extends SettingsManager {
 	}
 	
 	@Override
+	public SetMultimap<String, Setting<?>> getSettings() {
+		return this.settings;
+	}
+
+	@Override
+	public void setSettings(SetMultimap<String, Setting<?>> settings) {
+		this.settings = settings;
+	}
+	
+	@Override
 	public synchronized void loadSettings() {
 		FileInputStream fis = null;
 		this.loaded = true;
@@ -203,7 +219,7 @@ public class NBTSettingsManager extends SettingsManager {
 			if (!this.file.exists() || !this.file.isFile()) return;
 			fis = new FileInputStream(this.file);
 			NBTTagCompound data = CompressedStreamTools.readCompressed(fis);
-			this.settings = this.serializable.deserialize(toAbstractElement(data));
+			this.deserializeSettings(toAbstractElement(data));
 		}
 		catch (IOException ex) {
 			UUID uuid = null; try {uuid = UUID.fromString(this.file.getName().split("\\.")[0]);} catch (IllegalArgumentException e) {}
@@ -235,7 +251,7 @@ public class NBTSettingsManager extends SettingsManager {
 		try {
 			if (!this.file.exists() || !this.file.isFile()) this.file.createNewFile();
 			fos = new FileOutputStream(this.file);
-			NBTBase data = toNBTElement(this.serializable.serialize(this.settings));
+			NBTBase data = toNBTElement(this.serializeSettings());
 			if (data instanceof NBTTagCompound) CompressedStreamTools.writeCompressed((NBTTagCompound) data, fos);
 			else MoreCommands.INSTANCE.getLogger().info("Failed to write settings to file " + this.file.getName() + ": settings is not a NBTTagCompound");
 		}

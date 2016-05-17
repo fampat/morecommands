@@ -1,6 +1,5 @@
 package com.mrnobody.morecommands.util;
 
-import java.io.File;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,7 +31,7 @@ import com.google.common.collect.Sets;
  * @author MrNobody98
  * @see SettingsSerializable
  */
-public abstract class SettingsManager {
+public abstract class SettingsManager {	
 	/**
 	 * Every kind of setting is wrapped into this class.
 	 * Every setting can be dependent on a server (except for server settings, they
@@ -55,7 +54,7 @@ public abstract class SettingsManager {
 	 * @param <T> the type of the value this setting contains
 	 */
 	public static final class Setting<T> {
-		private final T value;
+		private T value;
 		private final ImmutableSet<String> server;
 		private final ImmutableSet<String> world;
 		private final ImmutableSet<String> dims;
@@ -104,6 +103,15 @@ public abstract class SettingsManager {
 		 */
 		public T getValue() {
 			return this.value;
+		}
+		
+		/**
+		 * Sets the value
+		 * 
+		 * @param value the value
+		 */
+		public void setValue(T value) {
+			this.value = value;
 		}
 		
 		/**
@@ -219,22 +227,16 @@ public abstract class SettingsManager {
 		serializables.put(name, ImmutablePair.<Serializable<?>, Boolean>of(serializable, useServer));
 	}
 	
-	/** The settings file */
-	protected final File file;
-	/** The actual settings that are read and written from/to the settings file */
-	protected SetMultimap<String, Setting<?>> settings = HashMultimap.create();
 	/** The settings (de)serializer */
-	protected SettingsSerializable serializable;
+	private SettingsSerializable serializable;
 	
 	/**
 	 * Constructs a new SettingsManager
 	 * 
-	 * @param file the file from which settings are read and to which settings are written
 	 * @param load whether to read the settings immediately
 	 * @param useServer whether to read server dependencies of settings (See {@link Setting} for more details)
 	 */
-	public SettingsManager(File file, boolean load, boolean useServer) {
-		this.file = file;
+	public SettingsManager(boolean load, boolean useServer) {
 		this.serializable = new SettingsSerializable(useServer);
 		if (load) loadSettings();
 	}
@@ -242,27 +244,37 @@ public abstract class SettingsManager {
 	/**
 	 * Constructs a new SettingsManager
 	 * 
-	 * @param file the file from which settings are read and to which settings are written
 	 * @param load whether to read the settings immediately
 	 * @param defaultSerializable the default (de)serializer used if a {@link Setting} occurs for which 
 	 *        a {@link Serializable} has not been registered
 	 * @param useServer whether to read and write server dependencies of settings (See {@link Setting} for more details)
 	 */
-	public SettingsManager(File file, boolean load, Serializable<Object> defaultSerializable, boolean useServer) {
-		this.file = file;
+	public SettingsManager(boolean load, Serializable<Object> defaultSerializable, boolean useServer) {
 		this.serializable = new SettingsSerializable(defaultSerializable, useServer);
 		if (load) loadSettings();
 	}
 	
 	/**
-	 * Loads the settings from the settings file.<br>
+	 * Gets all settings.
+	 * @return A {@link SetMultimap} mapping a setting name to a list of settings (See {@link Setting} for more details)
+	 */
+	public abstract SetMultimap<String, Setting<?>> getSettings();
+	
+	/**
+	 * Sets all settings.
+	 * @param settings A {@link SetMultimap} mapping a setting name to a list of settings (See {@link Setting} for more details)
+	 */
+	public abstract void setSettings(SetMultimap<String, Setting<?>> settings);
+	
+	/**
+	 * Loads the settings<br>
 	 * The settings that are read will be stored in this object so you can
 	 * access them with the getXXX() methods
 	 */
 	public abstract void loadSettings();
 	
 	/**
-	 * Writes the settings to the settings file.<br>
+	 * Writes the settings<br>
 	 * <b>IMPORTANT:</b> Unless you removed overwrote a setting
 	 * with a storeXXX() or removeXXX() method, the settings that have
 	 * been read from the settings file via {@link #loadSettings()} will be
@@ -274,6 +286,24 @@ public abstract class SettingsManager {
 	 * @return whether the settings have been loaded from the settings file at least once
 	 */
 	public abstract boolean isLoaded();
+	
+	/**
+	 * Serializes all settings into an {@link AbstractElement}
+	 * 
+	 * @return the serialized settings
+	 */
+	public final AbstractElement serializeSettings() {
+		return this.serializable.serialize(this.getSettings());
+	}
+	
+	/**
+	 * Deserializes all settings from an {@link AbstractElement}
+	 * 
+	 * @param input the serialized settings
+	 */
+	public final void deserializeSettings(AbstractElement input) {
+		this.setSettings(this.serializable.deserialize(input));
+	}
 	
 	/**
 	 * Gets a setting from the settings that have be read from the settings file via {@link #loadSettings()}
@@ -301,20 +331,17 @@ public abstract class SettingsManager {
 	 * @return the setting with the highest priority that accepts server, world and dimension
 	 */
 	public final synchronized <T> Setting<T> getSetting(String type, String server, String world, String dim, Class<T> classOfT) {
-		Set<Setting<?>> settings = this.settings.get(type);
+		Set<Setting<?>> settings = this.getSettings().get(type);
 		Object[] candidates = new Object[8];
 		
 		for (Setting<?> setting : settings) {
 			if (!classOfT.isInstance(setting.getValue())) continue;
 			
-			boolean acceptsServer = setting.getServer().isEmpty() || (server != null && setting.getServer().contains(server));
-			boolean acceptsWorld = setting.getWorld().isEmpty() || (world != null && setting.getWorld().contains(world));
-			boolean acceptsDim = setting.getDim().isEmpty() || (dim != null && setting.getDim().contains(dim));
-			int i = 0; if (setting.getServer().isEmpty()) i |= 4; if (setting.getWorld().isEmpty()) i |= 2; if (setting.getDim().isEmpty()) i |= 1;
-			
-			if (acceptsServer && acceptsWorld && acceptsDim) 
+			if (accepts(setting, server, world, dim)) {
+				int i = 0; if (setting.getServer().isEmpty()) i |= 4; if (setting.getWorld().isEmpty()) i |= 2; if (setting.getDim().isEmpty()) i |= 1;
 				candidates[i] = new Setting(classOfT.cast(setting.getValue()), setting.getServer(), setting.getWorld(), setting.getDim(), setting.allowMerge());
-		}	
+			}
+		}
 		
 		for (Object candidate : candidates) if (candidate != null) return (Setting<T>) candidate;
 		return null;
@@ -341,10 +368,10 @@ public abstract class SettingsManager {
 		Setting<?> found = findValue(type, server, world, dim, classOfT);
 		
 		if (found != null) {
-			 this.settings.remove(type, found);
-			 this.settings.put(type, new Setting<T>(value, found.getServer(), found.getWorld(), found.getDim(), found.allowMerge()));
+			 this.getSettings().remove(type, found);
+			 this.getSettings().put(type, new Setting<T>(value, found.getServer(), found.getWorld(), found.getDim(), found.allowMerge()));
 		}
-		else this.settings.put(type, new Setting<T>(value, server, world, dim, true));
+		else this.getSettings().put(type, new Setting<T>(value, server, world, dim, true));
 	}
 	
 	/**
@@ -359,7 +386,7 @@ public abstract class SettingsManager {
 	 */
 	public final synchronized <T> void removeSetting(String type, String server, String world, String dim, Class<T> classOfT) {
 		Setting<?> found = findValue(type, server, world, dim, classOfT);
-		if (found != null) this.settings.remove(type, found);
+		if (found != null) this.getSettings().remove(type, found);
 	}
 	
 	/**
@@ -395,7 +422,7 @@ public abstract class SettingsManager {
 	 * @return a list of settings ordered descending by their priority which accept server, world and dimension
 	 */
 	public final synchronized <T> List<Setting<Map<String, T>>> getMappedSettings(String type, String server, String world, String dim, Class<T> classOfT) {
-		Set<Setting<?>> settings = this.settings.get(type);
+		Set<Setting<?>> settings = this.getSettings().get(type);
 		Object[] candidates = new Object[8];
 		
 		for (Setting<?> setting : settings) {
@@ -449,7 +476,7 @@ public abstract class SettingsManager {
 		Setting<?> found = findValue(type, server, world, dim, Map.class);
 		
 		if (found != null) {
-			 this.settings.remove(type, found);
+			 this.getSettings().remove(type, found);
 			 Map<String, T> map = Maps.newHashMapWithExpectedSize(((Map<?, ?>) found.getValue()).size() + value.size());
 			 
 			 for (Map.Entry<?, ?> entry : ((Map<?, ?>) found.getValue()).entrySet()) {
@@ -458,9 +485,9 @@ public abstract class SettingsManager {
 			 }
 			 
 			 map.putAll(value);
-			 this.settings.put(type, new Setting<Map<String, T>>(map, found.getServer(), found.getWorld(), found.getDim(), found.allowMerge()));
+			 this.getSettings().put(type, new Setting<Map<String, T>>(map, found.getServer(), found.getWorld(), found.getDim(), found.allowMerge()));
 		}
-		else this.settings.put(type, new Setting<Map<String, T>>(value, server, world, dim, true));
+		else this.getSettings().put(type, new Setting<Map<String, T>>(value, server, world, dim, true));
 	}
 	
 	/**
@@ -480,7 +507,7 @@ public abstract class SettingsManager {
 			 if (removeAll) ((Map<?, ?>) found.getValue()).clear();
 			 else ((Map<?, ?>) found.getValue()).keySet().removeAll(toRemove);
 			 
-			 if (((Map<?, ?>) found.getValue()).isEmpty()) this.settings.remove(type, found);
+			 if (((Map<?, ?>) found.getValue()).isEmpty()) this.getSettings().remove(type, found);
 		}
 	}
 	
@@ -513,7 +540,7 @@ public abstract class SettingsManager {
 	 * @return the first setting that was found and that matches the given requirements
 	 */
 	private Setting<?> findValue(String type, String server, String world, String dim, Class<?> requiredClass) {
-		Set<Setting<?>> settings = this.settings.get(type);
+		Set<Setting<?>> settings = this.getSettings().get(type);
 		
 		for (Setting<?> setting : settings) {
 			if (!requiredClass.isInstance(setting.getValue())) continue;
@@ -1208,5 +1235,19 @@ public abstract class SettingsManager {
 		public Class<SetMultimap<String, Setting<?>>> getTypeClass() {
 			return (Class<SetMultimap<String, Setting<?>>>) (Class<?>) SetMultimap.class;
 		}
+	}
+	
+	/**
+	 * A dummy SettingsManager that has no load/save capabilities
+	 * 
+	 * @author MrNobody98
+	 */
+	public static final class DummySettingsManager extends SettingsManager {
+		public DummySettingsManager() {super(false, false);}
+		@Override public void loadSettings() {}
+		@Override public void saveSettings() {}
+		@Override public boolean isLoaded() {return false;}
+		@Override public SetMultimap<String, Setting<?>> getSettings() {return HashMultimap.create();}
+		@Override public void setSettings(SetMultimap<String, Setting<?>> settings) {}
 	}
 }

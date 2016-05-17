@@ -112,7 +112,8 @@ public final class ServerPlayerSettings extends PlayerSettings {
 	public ServerPlayerSettings(SettingsManager manager, boolean load, boolean useCommonSettings) {
 		super(manager, load);
 		this.useCommonSettings = useCommonSettings;
-		this.setProps("waypoints", true, true, false);
+		this.setProps("waypoints", false, true, false);
+		this.setDefaultProps(false, false, false);
 	}
 	
 	@Override

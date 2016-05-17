@@ -38,7 +38,6 @@ public class CommandDescend extends StandardCommand implements ServerCommandProp
     	int y = coord.getBlockY() - 1;
     	
     	while (y > 0) {
-    		System.out.println("CLEAR(" + y + "): " + entity.getWorld().isClear(new Coordinate(coord.getX(), y, coord.getX())));
     		if (entity.getWorld().isClear(new Coordinate(coord.getBlockX(), y--, coord.getBlockZ()))) {
     			entity.setPosition(new Coordinate(coord.getBlockX() + 0.5F, ++y, coord.getBlockZ() + 0.5F));
     			System.out.println("POS:" + entity.getPosition());

@@ -335,6 +335,8 @@ public final class GlobalSettings implements EventListener<WorldEvent.Load> {
 	public static boolean endermanteleport = true;
 	/** Whether to allow any kind of explosion */
 	public static boolean explosions = true;
+	/** Whether enchantments should do various applicability checks */
+	public static boolean strictEnchanting = true;
 	
 	/** Whether ALL clients are required to have MoreCommands installed */
 	public static boolean clientMustHaveMod = false;
@@ -362,6 +364,7 @@ public final class GlobalSettings implements EventListener<WorldEvent.Load> {
 		GlobalSettings.handshakeRetries = settings.getInteger("handshakeRetries", 3);
 		GlobalSettings.searchUpdates = settings.getBoolean("searchUpdates", true);
 		GlobalSettings.xrayUPS = settings.getInteger("xrayUPS", 1);
+		GlobalSettings.strictEnchanting = settings.getBoolean("strictEnchanting", true);
 		GlobalSettings.useRegexCalcParser = settings.getBoolean("useRegexCalcParser", true);
 		GlobalSettings.clientMustHaveMod = settings.getBoolean("clientMustHaveMod", false);
 		GlobalSettings.serverMustHaveMod = settings.getBoolean("serverMustHaveMod", false);
@@ -394,6 +397,7 @@ public final class GlobalSettings implements EventListener<WorldEvent.Load> {
 		settings.set("handshakeRetries", GlobalSettings.handshakeRetries);
 		settings.set("searchUpdates", GlobalSettings.searchUpdates);
 		settings.set("xrayUPS", GlobalSettings.xrayUPS);
+		settings.set("strictEnchanting", GlobalSettings.strictEnchanting);
 		settings.set("useRegexCalcParser", GlobalSettings.useRegexCalcParser);
 		settings.set("clientMustHaveMod", GlobalSettings.clientMustHaveMod);
 		settings.set("serverMustHaveMod", GlobalSettings.serverMustHaveMod);
