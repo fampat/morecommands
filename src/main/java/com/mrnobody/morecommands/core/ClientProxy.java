@@ -76,7 +76,7 @@ public class ClientProxy extends CommonProxy {
 		
 		if (server != null && !server.isDedicatedServer()) {
 			for (EntityPlayerMP player : server.getPlayerList().getPlayerList())
-				if (FMLCommonHandler.instance().getMinecraftServerInstance().getServerOwner().equals(player.getName()))
+				if (server.getServerOwner().equals(player.getName()))
 						this.patcher.playerLogout(new PlayerLoggedOutEvent(player));
 		}
 	}

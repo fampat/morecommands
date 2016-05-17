@@ -27,6 +27,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.Clone;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.common.event.FMLStateEvent;
@@ -233,6 +234,6 @@ public class CommonPatcher {
 	public void playerLogout(PlayerLoggedOutEvent event) {
 		if (!(event.player instanceof EntityPlayerMP)) return;
 		ServerPlayerSettings settings = event.player.getCapability(PlayerSettings.SETTINGS_CAP_SERVER, null);
-		if (settings!= null) {settings.updateSettings(null, null, null); settings.getManager().saveSettings();}
+		if (settings != null) {settings.updateSettings(null, null, null); settings.getManager().saveSettings();}
 	}
 }

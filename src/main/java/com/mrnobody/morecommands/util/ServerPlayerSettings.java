@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.SetMultimap;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.util.SettingsManager.AbstractElement;
 import com.mrnobody.morecommands.util.SettingsManager.NumericElement;
@@ -111,12 +112,16 @@ public final class ServerPlayerSettings extends PlayerSettings {
 		super(new LazySettingsManagerLoader(player), false);
 		this.loader = (LazySettingsManagerLoader) this.getManager();
 		this.useCommonSettings = false;
+		this.setProps("waypoints", false, true, false);
+		this.setDefaultProps(false, false, false);
 	}
 	
 	public ServerPlayerSettings(SettingsManager manager, boolean load, boolean useCommonSettings) {
 		super(manager, load);
 		this.loader = null;
 		this.useCommonSettings = useCommonSettings;
+		this.setProps("waypoints", false, true, false);
+		this.setDefaultProps(false, false, false);
 	}
 	
 	@Override
@@ -307,7 +312,7 @@ public final class ServerPlayerSettings extends PlayerSettings {
 		 * @param player the player
 		 */
 		public LazySettingsManagerLoader(EntityPlayerMP player) {
-			super(null, false, false);
+			super(false, false);
 			this.player = player;
 		}
 
@@ -326,6 +331,18 @@ public final class ServerPlayerSettings extends PlayerSettings {
 		@Override
 		public boolean isLoaded() {
 			return this.manager == null ? false : this.manager.isLoaded();
+		}
+
+		@Override
+		public SetMultimap<String, Setting<?>> getSettings() {
+			checkLoaded();
+			return this.manager.getSettings();
+		}
+
+		@Override
+		public void setSettings(SetMultimap<String, Setting<?>> settings) {
+			checkLoaded();
+			this.manager.setSettings(settings);
 		}
 		
 		/**
