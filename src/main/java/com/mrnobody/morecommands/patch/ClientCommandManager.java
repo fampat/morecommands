@@ -49,6 +49,7 @@ public class ClientCommandManager extends ClientCommandHandler {
     public int executeCommand(ICommandSender sender, String message)
     {
         message = message.trim();
+        boolean slash = message.startsWith("/");
 
         if (message.startsWith("/"))
         {
@@ -76,7 +77,7 @@ public class ClientCommandManager extends ClientCommandHandler {
         {
             if (icommand == null)
             {
-                Minecraft.getMinecraft().thePlayer.sendChatMessage("/" + message); return 1;
+                Minecraft.getMinecraft().thePlayer.sendChatMessage(slash ? "/" + message : message); return 1;
             }
             
             if (!unresolvedVars.isEmpty()) {
