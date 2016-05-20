@@ -145,8 +145,9 @@ public class NBTSettingsManager extends SettingsManager {
 	 * @param useServer whether to read and write server dependencies of settings (See {@link Setting} for more details)
 	 */
 	public NBTSettingsManager(File file, boolean load, boolean useServer) {
-		super(load, useServer);
+		super(useServer);
 		this.file = file;
+		if (load) loadSettings();
 	}
 	
 	/**
@@ -159,8 +160,9 @@ public class NBTSettingsManager extends SettingsManager {
 	 * @param useServer whether to read and write server dependencies of settings (See {@link Setting} for more details)
 	 */
 	public NBTSettingsManager(File file, boolean load, Serializable<Object> defaultSerializer, boolean useServer) {
-		super(load, defaultSerializer, useServer);
+		super(defaultSerializer, useServer);
 		this.file = file;
+		if (load) loadSettings();
 	}
 	
 	/**

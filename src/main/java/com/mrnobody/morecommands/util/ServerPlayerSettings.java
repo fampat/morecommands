@@ -312,7 +312,7 @@ public final class ServerPlayerSettings extends PlayerSettings {
 		 * @param player the player
 		 */
 		public LazySettingsManagerLoader(EntityPlayerMP player) {
-			super(false, false);
+			super(false);
 			this.player = player;
 		}
 
