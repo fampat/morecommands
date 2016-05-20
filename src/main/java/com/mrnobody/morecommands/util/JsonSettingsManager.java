@@ -119,8 +119,9 @@ public class JsonSettingsManager extends SettingsManager {
 	 * @param useServer whether to read and write server dependencies of settings (See {@link Setting} for more details)
 	 */
 	public JsonSettingsManager(File file, boolean load, boolean useServer) {
-		super(load, useServer);
+		super(useServer);
 		this.file = file;
+		if (load) loadSettings();
 	}
 	
 	/**
@@ -133,8 +134,9 @@ public class JsonSettingsManager extends SettingsManager {
 	 * @param useServer whether to read and write server dependencies of settings (See {@link Setting} for more details)
 	 */
 	public JsonSettingsManager(File file, boolean load, Serializable<Object> defaultSerializable, boolean useServer) {
-		super(load, defaultSerializable, useServer);
+		super(defaultSerializable, useServer);
 		this.file = file;
+		if (load) loadSettings();
 	}
 	
 	@Override

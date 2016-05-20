@@ -232,26 +232,29 @@ public abstract class SettingsManager {
 	
 	/**
 	 * Constructs a new SettingsManager
-	 * 
-	 * @param load whether to read the settings immediately
-	 * @param useServer whether to read server dependencies of settings (See {@link Setting} for more details)
 	 */
-	public SettingsManager(boolean load, boolean useServer) {
-		this.serializable = new SettingsSerializable(useServer);
-		if (load) loadSettings();
+	public SettingsManager() {
+		this(true);
 	}
 	
 	/**
 	 * Constructs a new SettingsManager
 	 * 
-	 * @param load whether to read the settings immediately
+	 * @param useServer whether to read server dependencies of settings (See {@link Setting} for more details)
+	 */
+	public SettingsManager(boolean useServer) {
+		this.serializable = new SettingsSerializable(useServer);
+	}
+	
+	/**
+	 * Constructs a new SettingsManager
+	 * 
 	 * @param defaultSerializable the default (de)serializer used if a {@link Setting} occurs for which 
 	 *        a {@link Serializable} has not been registered
 	 * @param useServer whether to read and write server dependencies of settings (See {@link Setting} for more details)
 	 */
-	public SettingsManager(boolean load, Serializable<Object> defaultSerializable, boolean useServer) {
+	public SettingsManager(Serializable<Object> defaultSerializable, boolean useServer) {
 		this.serializable = new SettingsSerializable(defaultSerializable, useServer);
-		if (load) loadSettings();
 	}
 	
 	/**
@@ -1243,7 +1246,7 @@ public abstract class SettingsManager {
 	 * @author MrNobody98
 	 */
 	public static final class DummySettingsManager extends SettingsManager {
-		public DummySettingsManager() {super(false, false);}
+		public DummySettingsManager() {super(true);}
 		@Override public void loadSettings() {}
 		@Override public void saveSettings() {}
 		@Override public boolean isLoaded() {return false;}
