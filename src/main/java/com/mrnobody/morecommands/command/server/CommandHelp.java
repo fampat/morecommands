@@ -75,7 +75,7 @@ public class CommandHelp extends StandardCommand implements ServerCommandPropert
 		byte maxEntries = 7;
 		int totalPages = (names.size() - 1) / maxEntries;
 		int page = 0;
-			
+		
 		try {
 			page = params.length == 0 ? 0 : this.parseInt(params[0], 1, totalPages + 1) - 1;
 		}
