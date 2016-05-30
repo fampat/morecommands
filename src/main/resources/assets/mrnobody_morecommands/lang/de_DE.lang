@@ -1,0 +1,1145 @@
+command.generic.notClient=Du hast ein einen client-seitigen Befehl als nicht-client seitiger Spieler ausgeführt o_o
+command.generic.notIntegrated=Dieser Befehl ist nur auf dem integrierten Server (Einzelspieler) erlaubt.
+command.generic.notDedicated=Dieser Befehl ist nur auf einem dedizierten Server (Mehrspieler) erlaubt.
+command.generic.renderGlobalNotPatched=Der Patch für den globalen Renderer (RenderGlobal) wurde nicht angewendet, weshalb dieser Befehl nicht ausgeführt werden kann.
+command.generic.clientPlayerNotPatched=Der Patch für den client-seitigen Spieler (EntityPlayerSP) wurde nicht angewendet, weshalb dieser Befehl nicht ausgeführt werden kann.
+command.generic.clientCommandHandlerNotPatched=Der Patch für den client-seitigen Commands Handler (ClientCommandHandler) wurde nicht angewendet, weshalb dieser Befehl nicht ausgeführt werden kann.
+command.generic.serverCommandManagerNotPatched=Der Patch für den server-seitigen Commands Handler (ServerCommandManager) wurde nicht angewendet, weshalb dieser Befehl nicht ausgeführt werden kann.
+command.generic.serverConfigManagerNotPatched=Der Patch für den Serverkonfigurationsmanager (ServerConfigurationManager) wurde nicht angewendet, weshalb dieser Befehl nicht ausgeführt werden kann.
+command.generic.clientNotModded=Du hast den MoreCommands Mod nicht auf deinem PC installiert (client-seitige Installation), dies ist für diesen Befehl aber Voraussetzung. Deshalb kann dieser Befehl nicht ausgeführt werden.
+command.generic.serverPlayerNotPatched=Der Patch für den server-seitigen Spieler (EntityPlayerMP) wurde nicht angewendet, weshalb dieser Befehl nicht ausgeführt werden kann.
+command.generic.netServerPlayHandlerNotPatched=Der Patch für den Network Play Handler (NetHandlerPlayServer) wurde nicht angewendet, weshalb dieser Befehl nicht ausgeführt werden kann.
+command.generic.invalidUsage=Falsche Benutzung. Benutze 'help %s' um Hilfe zu erhalten.
+command.generic.NaN=Ein nicht-numerisches Argument wurde übergeben, wo ein numerisches erwartet wurde
+command.generic.multiple.null=Interner Fehler (Das sollte nicht passieren)
+command.generic.notAPlayer=Der Befehlssender ist kein Spieler, was aber Voraussetzung für diesen Befehl ist
+command.generic.notFound=Befehl nicht gefunden.
+command.generic.cantUse=Die Befehlsquelle kann diesen Befehl nicht nutzen (z.B. falsche Argumente oder die Befehlsquelle ist kein Spieler)
+command.generic.serverMustNotBeModded=Die aktuellen Einstellungen von MoreCommands verlangen nicht vom Server, dass dieser MoreCommands installiert hat, was zur Ausführung dieses Befehls aber notwendig ist
+command.generic.clientsMustNotBeModded=Die aktuellen Einstellungen von MoreCommands verlangen nicht von den Clients (den Spielern), dass diese MoreCommands installiert haben, was zur Ausführung dieses Befehls aber notwendig ist
+
+command.generic.help.pageheader=====Hilfe (Seite %d von %d)====
+command.generic.help.commandheader======== Befehls-Hilfe =========
+command.generic.help.footer================================
+command.generic.help.name=Name: 
+command.generic.help.description=Beschreibung: 
+command.generic.help.syntax=Syntax: 
+command.generic.help.example=Beispiel: 
+command.generic.help.video=Video: 
+command.generic.help.moreinfo=Benutze /help <Seite> oder /help <Befehl> um mehr Hilfe zu erhalten
+command.generic.help.noDescription=Dieser Befehl hat keine Beschreibung
+command.generic.help.noExample=Dieser Befehl hat kein Beispiel
+command.generic.help.noVideo=Dieser Befehl hat kein Video
+
+command.alias.description=Erstellt ein Alias für einen Befehl
+command.alias.global.description=Erstellt ein globales Alias für einen Befehl
+command.alias.example=/alias t toggledownfall
+command.alias.global.example=/alias_global t toggledownfall
+command.alias.syntax=/alias <NAME> <BEFEHL> [PARAMETER]
+command.alias.global.syntax=/alias_global <NAME> <BEFEHL> [PARAMETER]
+command.alias.videoURL=youtu.be/a8ke0GlgR2E
+command.alias.global.videoURL=youtu.be/a8ke0GlgR2E
+command.alias.aliasesDisabled=Spieler-Aliase deaktiviert
+command.alias.global.aliasesDisabled=Globale Aliase deaktiviert
+command.alias.overwrite=Dieser Name ist bereits für einen Befehl reserviert
+command.alias.success=Alias erfolgreich erstellt
+command.alias.infiniteRecursion=Der Name für ein Alias kann nicht der Befehlsname sein...
+
+command.bind.description=Belegt eine Taste mit einem Befehl
+command.bind.id.description=Belegt eine Tast mit einem Befehl und nutzt dafür die Tasten-ID
+command.bind.example=/bind p gamemode 0
+command.bind.id.example=/bindid 65 gamemode 0
+command.bind.syntax=/bind <TASTENCODE> <BEFEHL> [PARAMETER]
+command.bind.id.sytax=/bindid <TASTEN-ID> <BEFEHL> [PARAMETER]
+command.bind.videoURL=youtu.be/grYct97oZWs
+command.bind.id.videoURL=youtu.be/x-esdJunbqM
+command.bind.success=Taste erfolgreich belegt
+command.bind.invalidKey=Ungültige Taste
+
+command.chelp.description=Zeigt Hilfe zu client-seitigen Befehlen
+command.chelp.example=/chelp clear
+command.chelp.syntax=/chelp [SEITE|BEFEHL]
+command.chelp.videoURL=youtu.be/zTZZHSgz198
+
+command.clear.description=Leert die Chat-Konsole
+command.clear.example=/clear
+command.clear.syntax=/clear
+command.clear.videoURL=youtu.be/flyUbLX6WwM
+
+command.clientcommands.description=Schaltet client-seitige Befehle an/aus
+command.clientcommands.example=/clientcommands disable
+command.clientcommands.syntax=/clientcommands <ENABLE|DISABLE>
+command.clientcommands.videoURL=youtu.be/SZfJNlBQy8c
+command.clientcommands.on=client-seitige Befehle erfolgreich eingeschaltet
+command.clientcommands.off=client-seitige Befehle erfolgreich ausgeschaltet
+command.clientcommands.failure=Üngultiges Argument.
+
+command.clouds.description=Schaltet Wolken an/aus
+command.clouds.example=/clouds off
+command.clouds.syntax=/clouds [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.clouds.videoURL=youtu.be/oSwIETW_trU
+command.clouds.on=Wolken erfolgreich eingeschaltet
+command.clouds.off=Wolken erfolgreich ausgeschaltet
+command.clouds.failure=Üngultiges Argument.
+
+command.command.description=Schaltet Befehle an/aus
+command.command.example=/command disable ignorespawn
+command.command.syntax=/command <DISABLE|ENABLE> <BEFEHL>
+command.command.videoURL=youtu.be/xpHkPZOg3Jg
+command.command.enabled=Befehl aktiviert
+command.command.disabled=Befehl deaktiviert
+command.command.alreadyEnabled=Befehl bereits aktiviert
+command.command.alreadyDisabled=Befehl bereits deaktiviert oder nicht gefunden
+command.command.serverNotModded=Der Server hat MoreCommands nicht installiert, d.h. Befehle, die auf dem Server registriert sind, können nicht deaktiviert werden und lokal wurde der Befehl nicht gefunden
+command.command.wantedToDisable=Du kannst nicht den Befehl deaktivieren, der andere Befehle deaktiviert ;)
+
+command.morecommands.description=Zeigt Informationen über den MoreCommands Mod
+command.morecommands.example=/morecommands
+command.morecommands.syntax=/morecommands
+command.morecommands.videoURL=youtu.be/Fg8MVc3VI3Q
+
+command.fog.description=Ändert die Render-Distanz
+command.fog.example=/fog tiny
+command.fog.syntax=/fog <TINY|SMALL|NORMAL|FAR>
+command.fog.videoURL=youtu.be/6okUNR7-5kg
+command.fog.invalidArg=Üngultiges Argument.
+command.fog.success=Render-Distanz erfolgreich geändert
+
+command.helpSideClient.description=Zeigt Information, wie man mit diesem Mod Hilfe bekomment
+command.helpSideClient.example=/help
+command.helpSideClient.syntax=/help
+command.helpSideClient.videoURL=youtu.be/qDs_D1kI3Ag
+command.helpSideClient.info=Der MoreCommands Mod fügt Client und Server Befehle hinzu. Client Befehle funktionieren ohne, dass man den Mod auf dem Server installieren muss, dafür werden diese aber nicht im Hilfe-Menü angezeigt. Um Hilfe für Client Befehle zu bekommen, benutzte 'chelp' oder 'help client', für reguläre Server Befehle 'shelp' oder 'help server'. Wenn du all Client Befehle deaktivieren willst, benutze 'clientcommands disable'.
+
+command.macro.description=Erstellt/Führt aus/Entfernt/Bearbeitet Makros
+command.macro.syntax=/macro <ADD NAME [BEFEHL1;BEFEHL2;...]|EDIT NAME [BEFEHL1;BEFEHL2;...]|DELETE NAME|EXECUTE NAME>
+command.macro.example=/macro add test fly;noclip;achievement *;dmage
+command.macro.videoURL=youtu.be/dWTPpWa1H64
+command.macro.deleteSuccess=Makro %s erfolgreich entfernt
+command.macro.notFound=Konnte Makro %s nicht finden
+command.macro.exists=Konnte Makro %s nicht hinzufügen, da es bereits existiert. Benutze '/macro edit' um Makros zu bearbeiten
+command.macro.createSuccess=Makro %s erfolgreich erstellt
+
+command.music.description=Stoppt/Spielt/Überspringt Musik oder legt die Musik-Lautstärke fest
+command.music.example=/music play
+command.music.syntax=/music <PLAY|STOP|SKIP|VOLUME <VOLUME>>
+command.music.videoURL=youtu.be/qq-jEf5AkaM
+command.music.played=Musik wird abgespielt
+command.music.stopped=Musik gestoppt
+command.music.skipped=Aktueller Track übersprungen
+command.music.volumeset=Lautstärke erfolreich festgelegt
+command.music.invalidArg=Üngultiges Argument.
+command.music.isplaying=Musik wird bereits abgespielt
+
+command.output.description=Schaltet die Chat-Ausgabe dieses Mods an/aus
+command.output.example=/output off
+command.output.syntax=/output [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.output.videoURL=youtu.be/-8HxUQg-yDU
+command.output.on=Chat Ausgabe erfolgreich eingeschaltet
+command.output.off=Chat Ausgabe erfolgreich ausgeschaltet
+command.output.failure=Üngultiges Argument.
+
+command.position.description=Zeigt die aktuelle Position
+command.position.example=/position
+command.position.syntax=/position
+command.position.videoURL=youtu.be/x6ffLV-TNjM
+
+command.shelp.description=Zeigt Hilfe zu server-seitigen Befehlen
+command.shelp.example=/shelp toggledownfall
+command.shelp.syntax=/shelp [SEITE|BEFEHL]
+command.shelp.videoURL=youtu.be/6Q8cHSVmoeU
+
+command.unalias.description=Entfernt ein Alias
+command.unalias.global.description=Entfernt ein globales Alias
+command.unalias.example=/unalias test
+command.unalias.global.example=/unalias_global test
+command.unalias.syntax=/unalias <ALIAS>
+command.unalias.global.syntax=/unalias_global <ALIAS>
+command.unalias.videoURL=youtu.be/a8ke0GlgR2E
+command.unalias.global.videoURL=youtu.be/a8ke0GlgR2E
+command.unalias.success=Alias erfolgreich entfernt
+command.unalias.notFound=Alias nicht gefunden
+
+command.unbind.description=Entfernt eine Tastenbelegung
+command.unbind.id.description=Entfernt eine Tastenbelegung nach der Tasten-ID
+command.unbind.example=/unbind p
+command.unbind.id.example=/unbindid 65
+command.unbind.syntax=/unbind <TASTENCODE>
+command.unbind.id.syntax=/unbindid <TASTEN-ID>
+command.unbind.videoURL=youtu.be/grYct97oZWs
+command.unbind.id.videoURL=youtu.be/x-esdJunbqM
+command.unbind.success=Tastenbelegung erfolgreich entfernt
+command.unbind.bindingNotFound=Tastenbelegung nicht gefunden
+
+command.world.description=Führt diverse Aktionen an Welten aus
+command.world.example=/world new test 0123456789
+command.world.syntax=/world <LOAD NAME|BACKUP|SAVE|EXIT|NEW NAME [SEED]|LIST|SEED|NAME>
+command.world.videoURL=youtu.be/iHC0ZuhZc_M
+command.world.NAN=Der Seed muss eine Zahl sein. Benutze zufälligen Seed
+command.world.cantcreate=Kann Welt nicht erstellen, da der Ordner bereits existiert
+command.world.invalidArg=Üngultiges Argument.
+command.world.setseed=Seed erfolgreich auf %s gesetzt
+command.world.currentseed=Der aktuelle Seed ist %s
+command.world.setname=Welt-Name erfolgreich auf %s gesetzt
+command.world.currentname=Der aktuelle Welt-Name wurde erfolgreich auf %s gesetzt
+command.world.notLoadable=Konnte Welt %s nicht laden
+command.world.backupsuccess=Backup erfolgreich erstellt
+command.world.backupfailed=Backup fehlgeschlagen
+command.world.saved=Welt gespeichert
+command.world.saves=Spielstände: 
+command.world.loaderNotFound=Konnte den Save-Loader nicht finden
+command.world.notFound=Der "world"-Befehl konnte auf dem Server nicht gefunden werden
+command.world.serverNotModded=Dieser Befehlt braucht mit diesen Argumenten eine serverseitige Installation von MoreCommands welche nicht vorhanden ist
+
+command.achievement.description=Schaltet Erfolge frei, sperrt diese oder listet sie auf
+command.achievement.example=/achievement unlock *
+command.achievement.syntax=/achievement <unlock <*|NAME>|lock <*|NAME>|list>
+command.achievement.videoURL=youtu.be/lnaNONPt924
+command.achievement.doesNotExist=Erfolg %s existiert nicht
+command.achievement.alreadyUnlocked=Erfolg %s bereits freigeschaltet
+command.achievement.dontHave=Du hast Erfolg %s nicht freigeschaltet
+command.achievement.unlockAllSuccess=Alle Erfolge erfolgreich freigeschaltet
+command.achievement.unlockSuccess=Erfolg %s erfolgreich freigeschaltet
+command.achievement.lockAllSuccess=Alle Erfolge erfolgreich gesperrt
+command.achievement.lockSuccess=Erfolg %s erfolgreich gesperrt
+command.achievement.more=Benutze '/achievement list SEITE' und ersetze SEITE mit der Seitennummer, um mehr Erfolge zu sehen
+
+command.air.description=Legt die Luft unter Wasser fest
+command.air.example=/air 150
+command.air.syntax=/air <GET|MAX|MIN|WERT>
+command.air.videoURL=youtu.be/uLj-t8Vtcek
+command.air.success=Luft erfolgreich festgelegt
+command.air.get=Dein Luftstand beträgt %s
+command.air.invalidParam=Üngultiges Argument.
+command.air.notInWater=Du bist nicht im Wasser
+
+command.ascend.description=Bringt dich bis zur nächsten Plattform über deiner Position
+command.ascend.example=/ascend
+command.ascend.syntax=/ascend
+command.ascend.videoURL=youtu.be/guxEEU_cweU
+command.ascend.ascended=Du wurdest %d Blöcke nach oben befördert
+
+command.biome.description=Zeigt Informationen zum aktuellen Biom oder listet alle Biome auf
+command.biome.example=/biome info
+command.biome.syntax=/biome <INFO|LIST>
+command.biome.videoURL=youtu.be/y-sqmkXJeAs
+command.biome.info=Dein akutells Biom ist: %s (ID %d)
+command.biome.more=Benutze '/biome list SEITE' und ersetze SEITE mit der Seitennummer, um mehr Biome zu sehen
+
+command.blocklight.description=VORSICHT, DIESER BEFEHL KANN DIE BELEUCHTUNG DURCHEINANDER BRINGEN. Setzt das Lichtlevel oder die Durchsichtigkeit eines Blocks (wie viel Licht ein Block ausstrahlt oder absorbiert; Block muss neu platziert werden, um Änderungen zu sehen)
+command.blocklight.example=/blocklight level torch 0
+command.blocklight.syntax=/blocklight <level|opacity> <BLOCK> <reset|WERT>
+command.blocklight.videoURL=youtu.be/AFNk3UcZToc
+command.blocklight.invalidArg=Ungültiges Argument
+command.blocklight.levelSuccess=Lichtlevel erfolgreich geändert
+command.blocklight.opacitySuccess=Durchsichtigkeit erfolgreich geändert
+command.blocklight.levelReset=Lichtlevel erfolgreich zurückgesetzt
+command.blocklight.opacityReset=Durchsichtigkeit erfolgreich zurückgesetzt
+command.blocklight.notFound=Block nicht gefunden
+
+command.breakspeed.description=Legt die Abbaugeschwindigkeit fest
+command.breakspeed.example=/breakspeed 20
+command.breakspeed.syntax=/breakspeed <WERT|MIN|MAX|RESET>
+command.breakspeed.videoURL=youtu.be/BnJ6yq5cBmI
+command.breakspeed.invalidArg=Die Abbaugeschwindigkeit muss eine Zahl sein
+command.breakspeed.setto=Abbaugeschwindigkeit erfolgreich auf %s festgelegt
+command.breakspeed.reset=Abbaugeschwindigkeit erfolgreich zurückgesetzt
+
+command.breathe.description=Atmet unter Wasser (Füllt den Luftvorrat auf)
+command.breathe.example=/breathe 50
+command.breathe.syntax=/breathe [WERT]
+command.breathe.videoURL=youtu.be/Zf5Rf-dLc7Q
+command.breathe.noNumber=Die Anzahl an Luft, die du dazu bekommen willst, muss ein Zahl sein
+command.breathe.notInWater=Du bist nicht im Wasser
+
+command.bring.description=Bringt nahe Entities zur Fadenkreuz-Position (standardmäßig Items)
+command.bring.example=/bring creeper 50
+command.bring.syntax=/bring <ZIEL|ENTITY [RADIUS]> [X Y Z]
+command.bring.videoURL=youtu.be/8YqDPEMD2dc
+command.bring.NAN=Der Radius muss eine Zahl sein
+command.bring.unknownEntity=Unbekanntes Entity
+
+command.calc.description=Ein Taschenrechner (Operatoren: %,+,-,*,/,^)
+command.calc.example=/calc 5(7*8^(1/2)+(158.879-35.487)%7)
+command.calc.syntax=/calc <RECHNUNG>
+command.calc.videoURL=youtu.be/o6Kg7-uaLQQ
+command.calc.result=Das Ergebnis ist: %f
+command.calc.failure=Fehler: %s
+
+command.cannon.description=Feuert ein gezündetes TNT ab
+command.cannon.example=/cannon 10
+command.cannon.syntax=/cannon [STAERKE]
+command.cannon.videoURL=youtu.be/O5jFrNbQNUo
+command.cannon.NAN=Die Stärke muss eine Zahl sein
+command.cannon.success=Feuer!
+
+command.cheats.description=Schaltet Cheats an/aus (nur Singleplayer)
+command.cheats.example=/cheats on
+command.cheats.syntax=/cheats [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.cheats.videoURL=youtu.be/NBJvqfeSQXk
+command.cheats.on=Cheats erfolgreich eingeschaltet
+command.cheats.off=Cheats erfolgreich ausgeschaltet
+command.cheats.failure=Ungültiges Argument
+
+command.chest.description=Führt diverse Aktionen an Kisten aus
+command.chest.example=/chest swap
+command.chest.syntax=/chest <DROP|FILL|GET|SWAP|CLEAR>
+command.chest.videoURL=youtu.be/quWnfURTc9o
+command.chest.noBlockInSight=Kein Block in Sicht
+command.chest.noChest=Dieser Block ist keine Kiste
+
+command.cleardrops.description=Entfernt in der Umgebung liegende Items
+command.cleardrops.example=/cleardrops
+command.cleardrops.syntax=/cleardrops [RADIUS] [*|ITEM] [*|META] [NBT] [equal]
+command.cleardrops.videoURL=youtu.be/6GTCOyTvGb8
+command.cleardrops.removed=%s Item(s) entfernt
+command.cleardrops.NAN=Metadaten und/oder Radius müssen Zahlen sein
+
+command.climb.description=Erlaubt es, jeden Block hochzuklettern
+command.climb.example=/climb on
+command.climb.syntax=/climb [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.climb.videoURL=youtu.be/oJG4DvemZhg
+command.climb.on=Klettermodus eingeschaltet
+command.climb.off=Klettermodus ausgeschaltet
+command.climb.failure=Ungültiges Argument
+
+command.clone.description=Klont das NPC, das du anschaust
+command.clone.example=/clone 5
+command.clone.syntax=/clone [ANZAHL]
+command.clone.videoURL=youtu.be/gJ5Dn9FpaBs
+command.clone.invalidArg=Die Anzahl der Klone muss eine Zahl sein
+command.clone.noNPCFound=Kein NPC gefunden
+command.clone.success=NPC erfolgreich geklont
+command.clone.errored=Konnte Entity %s nicht spawnen
+
+command.compass.description=Legt das Kompassziel fest
+command.compass.example=/compass set home
+command.compass.syntax=/compass [RESET|SET [X Y Z|WAYPOINT]]
+command.compass.videoURL=youtu.be/y34sobu595U
+command.compass.NAN=Die Koordinaten müssen Zahlen sein
+command.compass.waypointNotFound=Waypoint %s nicht gefunden
+
+command.confuse.description=Verwirrt Entities in der Umgebung
+command.confuse.example=/confuse 20
+command.confuse.syntax=/confuse [RADIUS]
+command.confuse.videoURL=youtu.be/7gH0BDU5_bI
+command.confuse.invalidRadius=Der maximale Radius ist 50
+command.confuse.confused=%d Entities im Radius %f verwirrt
+command.confuse.NAN=Der Radius muss ein Zahl sein
+
+command.confusesuicide.description=Lässt Entities Selbstmord begehen
+command.confusesuicide.example=/confusesuicide 20
+command.confusesuicide.syntax=/confusesuicide [RADIUS]
+command.confusesuicide.videoURL=youtu.be/jsWL8mJHLXg
+command.confusesuicide.invalidRadius=Der maximale Radius ist 50
+command.confusesuicide.confused=%d Entities im Radius %f verwirrt
+command.confusesuicide.NAN=Der Radius muss ein Zahl sein
+
+command.creeper.description=Creeper werden dich nicht in die Luft jagen (aber sterben)
+command.creeper.example=/creeper off
+command.creeper.syntax=/creeper [global] [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.creeper.videoURL=youtu.be/fhhFjEdunjw
+command.creeper.on=Creeper Explosionen eingeschaltet
+command.creeper.off=Creeper Explosionen ausgeschaltet
+command.creeper.failure=Ungültiges Argument
+
+command.criticalhit.description=Du wirst immer kritische Treffer machen
+command.criticalhit.example=/criticalhit on
+command.criticalhit.syntax=/criticalhit [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.criticalhit.videoURL=youtu.be/yRmIplVE1Vw
+command.criticalhit.on=Krititsche Treffer eingeschaltet
+command.criticalhit.off=Krititsche Treffer ausgeschaltet
+command.criticalhit.failure=Ungültiges Argument
+
+command.cyclepainting.description=Lässt dich die Bilder eines Gemäldes durchschauen
+command.cyclepainting.example=/cyclepainting
+command.cyclepainting.syntax=/cyclepainting
+command.cyclepainting.videoURL=youtu.be/MSbpAicBdoE
+command.cyclepainting.noPainting=Du musst auf ein Gemälde schauen
+command.cyclepainting.noMoreArts=Keine weiteren Bilder gefunden
+
+command.damage.description=Schaltet Schaden an/aus
+command.damage.example=/damage off
+command.damage.syntax=/damage [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.damage.videoURL=youtu.be/-4ybChnBffA
+command.damage.on=Schaden eingeschaltet
+command.damage.off=Schaden ausgeschaltet
+command.damage.failure=Ungültiges Argument
+
+command.defuse.description=Entschärft nahes TNT und droppt es
+command.defuse.example=/defuse 50
+command.defuse.syntax=/defuse [RADIUS]
+command.defuse.videoURL=youtu.be/0ipC5LPgVVo
+command.defuse.invalidArg=Der Radius muss eine Zahl sein
+command.defuse.defused=TNT entschärft
+
+command.descend.description=Bringt dich bis zur nächsten Plattform unter deiner Position
+command.descend.example=/descend
+command.descend.syntax=/descend
+command.descend.videoURL=youtu.be/pEVqePI_n1E
+command.descend.descended=Du wurdest %d Blöcke nach unten befördert
+
+command.destroy.description=Zerstört Items in Inventaren (standardmäßig das gerade gehaltene)
+command.destroy.example=/destroy @b[type=Chest,r=50] stone
+command.destroy.syntax=/destroy [ZIEL] [*|SLOT|ITEM META NBT [equal]]
+command.destroy.videoURL=youtu.be/5ZgT_I5IdOY
+command.destroy.noCurrentItem=Kein Item ausgewählt
+command.destroy.NAN=Metadaten müssen eine Zahl sein
+command.destroy.invalidSlot=Ungültiger Slot %s
+command.destroy.invalidNBT=Die angegebenen NBT-Daten sind kein Compound Tag
+command.destroy.itemNotFound=Item %s wurde nicht gefunden
+
+command.difficulty.description=Legt die Schwierigkeit fest
+command.difficulty.example=/difficulty hard
+command.difficulty.syntax=/difficulty <PEACEFUL|0|EASY|1|NORMAL|2|HARD|3>
+command.difficulty.videoURL=youtu.be/DUgyfPEzWZE
+command.difficulty.setto=Schwierigkeit auf %s gesetzt
+command.difficulty.invalidDifficulty=Ungültiger Schwierigkeitsgrad %s
+
+command.dimension.description=Befördert dich zu einer anderen Dimension
+command.dimension.example=/dimension nether
+command.dimension.syntax=/dimension <NETHER|-1|NORMAL|SURFACE|0|END|1>
+command.dimension.videoURL=youtu.be/j0sWIelTDTU
+command.dimension.changed=Dimension gewechselt
+command.dimension.unknown=Unbekannte Dimension
+command.dimension.notSpecified=Du musst eine Dimension angeben
+
+command.dodrops.description=Schaltet Item Drops an/aus
+command.dodrops.example=/dodrops
+command.dodrops.syntax=/dodrops
+command.dodrops.videoURL=youtu.be/oxg3_z7YwcQ
+command.dodrops.enabled=Item Drops eingeschaltet
+command.dodrops.disabled=Item Drops ausgeschaltet
+
+command.dropstore.description=Legt alle deine Items in eine Kiste neben dich
+command.dropstore.example=/dropstore
+command.dropstore.syntax=/dropstore
+command.dropstore.videoURL=youtu.be/wcH2IH-v4E8
+command.dropstore.stored=Items abgelegt
+
+command.duplicate.description=Dupliziert das aktuelle Item
+command.duplicate.example=/duplicate
+command.duplicate.syntax=/duplicate
+command.duplicate.videoURL=youtu.be/4RZWEJ6xs-s
+command.duplicate.duplicated=Items dupliziert
+command.duplicate.notSelected=Kein Item ausgewählt
+
+command.effect.description=Fügt eine Effekt (eine Trank) zu dir hinzu
+command.effect.example=/effect add confusion
+command.effect.syntax=/effect <add <NAME|ID> [DAUER] [STAERKE] [PARTIKEL]>|remove <*|NAME|ID>|list>
+command.effect.videoURL=youtu.be/g7-diXrEKCU
+command.effect.more=Benutze '/effect list SEITE' und ersetze SEITE mit der Seitennummer, um mehr Effekte zu sehen
+command.effect.addSuccess=Effekt erfolgreich hinzugefügt
+command.effect.removeSuccess=Effekt erfolgreich entfernt
+command.effect.removeAllSuccess=Alle Effekte erfolgreich entfernt
+command.effect.NAN=Die Trank-ID muss eine Zahl sein
+command.effect.notFound=Trank nicht gefunden
+
+command.enchant.description=Fügt eine Verzauberung zum aktuellen Item hinzu
+command.enchant.example=/enchant add protect.fire
+command.enchant.syntax=/enchant <add <NAME> [LEVEL]|remove <*|NAME>|list>
+command.enchant.videoURL=youtu.be/OTo6FfGOl4w
+command.enchant.more=Benutze '/enchant list SEITE' und ersetze SEITE mit der Seitennummer, um mehr Verzauberungen zu sehen
+command.enchant.addSuccess=Verzauberung erfolgreich hinzugefügt
+command.enchant.removeSuccess=Verzauberung erfolgreich entfernt
+command.enchant.cantApply=Kann diese Verzauberung nicht auf das ausgewählte Item anwenden
+command.enchant.removeAllSuccess=Alle Verzauberungen erfolgreich entfernt
+command.enchant.NAN=Die Verzauberungs-ID muss eine Zahl sein
+command.enchant.notFound=Verzauberung nicht gefunden.
+
+command.enderman.description=Schaltet die Enderman Block Picks oder Teleports an/aus
+command.enderman.example=/enderman pickup off
+command.enderman.syntax=/enderman <PICKUP|TELEPORT> [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.enderman.videoURL=youtu.be/v9k_O8dOVa4
+command.enderman.pickup.on=Endermen werden Blöcke aufnehmen
+command.enderman.pickup.off=Endermen werden keine Blöcke aufnehmen
+command.enderman.teleport.on=Endermen werden sich teleportieren
+command.enderman.teleport.off=Endermen werden sich nicht teleportieren
+command.enderman.failure=Ungültiges Argument
+
+command.execute.decription=Führt einen Befehl für andere Spieler oder Entities aus
+command.execute.example=/execute @e[tye=Chicken,r=50] /kill
+command.execute.syntax=/execute <ZIEL|SPIELER> [relative X Y Z] <BEFEHL> [PARAMETER]
+command.execute.videoURL=youtu.be/g3C6jTBXeok
+command.execute.invalidTarget=Ungültiges Ziel
+command.execute.playerNotFound=Spieler %s nicht gefunden
+
+command.explode.description=Lässt dort wo du hinschaust eine Explosion entstehen
+command.explode.example=/explode 10
+command.explode.syntax=/explode [STRENGTH [X|Y|Z]]
+command.explode.videoURL=youtu.be/tEFNgyvxuow
+command.explode.NAN=Die Stärke und Koordinaten müssen eine Zahl sein
+command.explode.booooom=Booooom!
+command.explode.notInSight=Kein Block in Sicht
+
+command.explosions.description=Schaltet Explosionen an/aus
+command.explosions.example=/explosions off
+command.explosions.syntax=/explosions [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.explosions.videoURL=youtu.be/0DjjgfKZr2M
+command.explosions.on=Explosionen eingeschaltet
+command.explosions.off=Explosionen ausgeschaltet
+command.explosions.failure=Ungültiges Argument
+
+command.exterminate.description=Jagt Entities in die Luft
+command.exterminate.example=/exterminate 5
+command.exterminate.syntax=/exterminate [STAERKE]
+command.exterminate.videoURL=youtu.be/OXFK5INODfk
+command.exterminate.invalidArg=Die Stärke muss eine Zahl sein
+command.exterminate.boooom=Booooom!
+command.exterminate.notLiving=Das Entity lebt nicht
+command.exterminate.notFound=Kein Entity gefunden
+
+command.extinguish.description=Löscht Feuer
+command.extinguish.example=/extinguish me
+command.extinguish.syntax=/extinguish [ME|ALL [RADIUS]|RADIUS]
+command.extinguish.videoURL=youtu.be/8rf0IuLTbGM
+command.extinguish.invalidArg=Der Radius muss eine Zahl sein
+command.extinguish.extinguished=Feuer gelöscht
+
+command.falldamage.description=Schaltet Fallschaden an/aus
+command.falldamage.example=/falldamage off
+command.falldamage.syntax=/falldamage [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.falldamage.videoURL=youtu.be/s7xlFROC3iI
+command.falldamage.on=Du wirst Fallschaden nehmen
+command.falldamage.off=Du wirst keine Fallschaden nehmen
+command.falldamage.failure=Ungültiges Argument
+
+command.firedamage.description=Schaltet Feuerschaden an/aus
+command.firedamage.example=/firedamage off
+command.firedamage.syntax=/firedamage [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.firedamage.videoURL=youtu.be/IfzdzbC_OlI
+command.firedamage.on=Du wirst Feuerschaden nehmen
+command.firedamage.off=Du wirst keine Feuerschaden nehmen
+command.firedamage.failure=Ungültiges Argument
+
+command.firework.description=Startet eine Rakete
+command.firework.example=/firework
+command.firework.syntax=/firework [X Y Z]
+command.firework.videoURL=youtu.be/nsDPfNwyXeM
+command.firework.notFound=Kein Block in Sicht
+
+command.flammable.description=Legt die Entflammbarkeit für einen Block fest
+command.flammable.example=/flammable dirt 5 3
+command.flammable.syntax=/flammable <BLOCK <RESET|VORSCHUB ENTFLAMMBARKEIT>>
+command.flammable.videoURL=youtu.be/2IvU496Z9AE
+command.flammable.notFound=Kein Block in Sicht
+command.flammable.invalidArg=Der Vorschub und die Entflammbarkeit müssen Zahlen sein
+command.flammable.success=Entflammbarkeit erfolgreich geändert
+command.flammable.reset=Entflammbarkeit erfolgreich geändert
+command.flammable.notFound=Block nicht gefunden
+
+command.fluidmovement.description=Deaktiviert Wasser/Lava Movement
+command.fluidmovement.example=/fluidmovement false
+command.fluidmovement.syntax=/fluidmovement [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.fluidmovement.videoURL=youtu.be/L7K0GXpzInE
+command.fluidmovement.on=Flüssigkeits-Movement aktiviert
+command.fluidmovement.off=Flüssigkeits-Movement deaktiviert
+command.fluidmovement.failure=Üngultiges Argument.
+
+command.fly.description=Erlaubt es, zu fliegen
+command.fly.example=/fly on
+command.fly.syntax=/fly [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.fly.videoURL=youtu.be/40oaWSR3g4A
+command.fly.on=Flugmodus erfolgreich eingeschaltet
+command.fly.off=Flugmodus erfolgreich ausgeschaltet
+command.fly.failure=Ungültiges Argument
+
+command.freeze.description=Friert Entities ein
+command.freeze.example=/freeze ghast
+command.freeze.syntax=/freeze [ENTITY]
+command.freeze.videoURL=youtu.be/JSTjnjWdjsw
+command.freeze.on=Entities vom Typ %s erfolgreich eingefroren
+command.freeze.off=Entities vom Type %s erfolgreich aufgetaut
+command.freeze.failure=Üngultiges Argument.
+command.freeze.unknownEntity=Unbekanntes Entity
+command.freeze.invalidEntity=Ungültiges Entity %s
+
+command.freecam.description=Lässt dich die Kamera frei bewegen
+command.freecam.example=/freecam
+command.freecam.syntax=/freecam
+command.freecam.videoURL=youtu.be/WN7kiK83R7s
+command.freecam.off=Freecam erfolgreich ausgeschaltet
+command.freecam.on=Freecam erfolgreich eingeschaltet
+
+command.freezecam.description=Lässt die Kamera an der aktuellen Position festfrieren
+command.freezecam.example=/freezecam
+command.freezecam.syntax=/freezecam
+command.freezecam.videoURL=youtu.be/MecwzyHDYyU
+command.freezecam.off=Freezecam erfolgreich ausgeschaltet
+command.freezecam.on=Freezecam erfolgreich eingeschaltet
+
+command.give.description=Gibt dem Spieler Items
+command.give.example=/give stone 64
+command.give.syntax=/give <ITEM> [ANZAHL] [METADATEN] [NBT]
+command.give.videoURL=youtu.be/8Sn_2z6wg8M
+command.give.notFound=Item nicht gefunden
+command.give.noMeta=Das angegebene Item hat keine Metadaten
+command.give.noCompound=Die angegebenen NBT-Daten sind kein Compound Tag
+command.give.NAN=Metadaten und Anzahl müssen Zahlen sein
+
+command.grow.description=Lässt Plfanzen in der Umgebung wachsen
+command.grow.example=/grow 20
+command.grow.syntax=/grow [RADIUS]
+command.grow.videoURL=youtu.be/NPQvJOwLQDA
+command.grow.invalidArg=Der Radius muss eine Zahl sein
+command.grow.grown=Pflanzen gewachsen
+
+command.handshake.description=Frägt den Handshake-Status ab/führt ein Handshake durch
+command.handshake.example=/handshake redo
+command.handshake.syntax=/handshake <STATUS|REDO>
+command.handshake.videoURL=youtu.be/VqklcUfliKQ
+command.handshake.errored=Handshake fehlgeschlagen
+command.handshake.completed=Handshake komplett durchgeführt
+command.handshake.handshakeFinished=Handshake bereits durchgeführt
+command.handshake.sendingHandshake=Handshake wird gesendet
+command.handshake.invalidArgs=Falsche Benutzung. Benutze 'help handshake' um Hilfe zu bekommen.
+
+command.hardcore.description=Schaltet Hardcore an/aus
+command.hardcore.example=/hardcore off
+command.hardcore.syntax=/hardcore [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.hardcore.videoURL=youtu.be/5dkbCKnyQzA
+command.hardcore.on=Hardcoremodus erfolgreich eingeschaltet
+command.hardcore.off=Hardcoremodus erfolgreich ausgeschaltet
+command.hardcore.failure=Ungültiges Argument
+
+command.heal.description=Heilt dich
+command.heal.example=/heal
+command.heal.syntax=/heal [ANZAHL]
+command.heal.videoURL=youtu.be/XiVfzg4s77M
+command.heal.success=Erfolgreich geheilt
+command.heal.NAN=Die Anzahl, um wie viel du dich heilen willst, muss eine Zahl sein
+
+command.health.description=Legt deine Gesundheit fest
+command.health.example=/health 10
+command.health.syntax=/health <GET|MAX|MIN|VALUE>
+command.health.videoURL=youtu.be/5coj_lvQ0wU
+command.health.invalidParam=Ungültiges Argument
+command.health.success=Gesundheit erfolgreich festgelegt
+command.health.get=Deine Gesundheit beträgt %f
+
+command.helpSideServer.description=Gibt Hilfe zu Befehlen
+command.helpSideServer.example=/help
+command.helpSideServer.syntax=/help [SEITE|BEFEHL]
+command.helpSideServer.videoURL=youtu.be/qDs_D1kI3Ag
+
+command.home.description=Teleportiert dich zu deinem Spawnpunkt
+command.home.example=/home
+command.home.syntax=/home
+command.home.videoURL=youtu.be/3H-vnWXT2RQ
+command.home.atHome=Willkommen zu Hause
+
+command.hunger.description=Legt deinen Hunger fest oder (de)aktiviert Hunger
+command.hunger.example=/hunger off
+command.hunger.syntax=/hunger [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE|GET|MAX|MIN|wert]
+command.hunger.videoURL=youtu.be/Oh6U4baovgA
+command.hunger.invalidParam=Ungültiges Argument
+command.hunger.success=Hunger erfolgreich festgelegt
+command.hunger.error=Ein Fehler ist bei der Ausführung aufgetreten
+command.hunger.get=Dein Hunger beträgt %d
+command.hunger.off=Du wirst keinen Hunger haben
+command.hunger.on=Du wirst Hunger haben
+
+command.ignite.description=Zündet den Block an, den du anschaust
+command.ignite.example=/ignite
+command.ignite.syntax=/ignite
+command.ignite.videoURL=youtu.be/qpyY49zJs8k
+command.ignite.notInSight=Kein Block in Sicht
+
+command.ignorespawn.description=Verhindert das Spawned bestimmter Kreaturen
+command.ignorespawn.example=/ignorespawn enderman
+command.ignorespawn.syntax=/ignorespawn <ENTITY>
+command.ignorespawn.videoURL=youtu.be/j7A9hcgj8-Q
+command.ignorespawn.unknownEntity=Unbekannte Kreatur
+command.ignorespawn.removed=Spawn der Kreatur erlaubt
+command.ignorespawn.added=Spawn der Kreatur verboten
+
+command.infiniteitems.description=Schaltet unendliche Items an/aus
+command.infiniteitems.example=/infiniteitems on
+command.infiniteitems.syntax=/infiniteitems [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.infiniteitems.videoURL=youtu.be/mt9vCnsdhWY
+command.infiniteitems.on=Unendliche Items erfolgreich eingeschaltet
+command.infiniteitems.off=Unendliche Items erfolgreich ausgeschaltet
+command.infiniteitems.failure=Ungültiges Argument
+
+command.instantgrow.description=Lässt Pflanzen sofort wachsen
+command.instantgrow.example=/instantgrow on
+command.instantgrow.syntax=/instantgrow [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.instantgrow.videoURL=youtu.be/NvGkqc6pVm0
+command.instantgrow.on=Sofortiges Pflanzenwachstum erfolgreich eingeschaltet
+command.instantgrow.off=Sofortiges Pflanzenwachstum erfolgreich ausgeschaltet
+command.instantgrow.failure=Ungültiges Argument
+
+command.instantkill.description=Tötet Gegner sofort
+command.instantkill.example=/instantkill on
+command.instantkill.syntax=/instantkill [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.instantkill.videoURL=youtu.be/Uv4c_E1Jiak
+command.instantkill.on=Sofortiger Kill erfolgreich eingeschaltet
+command.instantkill.off=Sofortiger Kill erfolgreich ausgeschaltet
+command.instantkill.failure=Ungültiges Argument
+
+command.instantmine.description=Baut Blöcke sofort ab
+command.instantmine.example=/instantmine on
+command.instantmine.syntax=/instantmine [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.instantmine.videoURL=youtu.be/CbeCeGoJA1A
+command.instantmine.on=Sofortiger Abbau erfolgreich eingeschaltet
+command.instantmine.off=Sofortiger Abbau erfolgreich ausgeschaltet
+command.instantmine.failure=Ungültiges Argument
+
+command.inventory.description=Speichert/Lädt Inventare
+command.inventory.example=/inventory save test
+command.inventory.syntax=/inventory <SAVE|LOAD|DELETE> [NAME]
+command.inventory.videoURL=youtu.be/wF7_zcEsLcE
+command.inventory.noSettingsFound=Spieler Einstellungen nicht gefunden
+command.inventory.notFound=Inventar %s nicht gefunden
+command.inventory.removeSuccess=Inventar %s erfolgreich entfernt
+command.inventory.saveSuccess=Inventar %s erfolgreich gespeichert
+command.inventory.loadSuccess=Inventar %s erfolgreich geladen
+
+command.invisible.description=Schaltet Unsichtbarkeit an/aus
+command.invisible.example=/invisible off
+command.invisible.syntax=/invisible [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.invisible.videoURL=youtu.be/_33DoK-QIuU
+command.invisible.on=Du bist unsichtbar
+command.invisible.off=Du bist nicht mehr unsichtbar
+command.invisible.failure=Ungültiges Argument
+
+command.invrotate.description=Rotiert das Inventar
+command.invrotate.example=/invrotate item right
+command.invrotate.syntax=/invrotate [line|item|ANZAHL] [left|right|up|down]
+command.invrotate.videoURL=youtu.be/osbunopzC7k
+
+command.itemdamage.description=Schaltet Itemschaden an/aus
+command.itemdamage.example=/itemdamage diamond_pickaxe
+command.itemdamage.syntax=/itemdamage <ITEM>
+command.itemdamage.videoURL=youtu.be/zLUMNy_Jz-g
+command.itemdamage.enabled=Itemschaden erfolgreich eingeschaltet
+command.itemdamage.disabled=Itemschaden erfolgreich ausgeschaltet
+command.itemdamage.notFound=Item nicht gefunden
+
+command.itemname.description=Legt den Anzeigename des aktuellen Items fest
+command.itemname.example=/itemname Killer Sword
+command.itemname.syntax=/itemname <NAME>
+command.itemname.videoURL=youtu.be/x8Q36b_b6p0
+command.itemname.noSelection=Kein Item ausgewählt
+
+command.jump.description=Springt zu dem Block, den du anschaust
+command.jump.example=/jump
+command.jump.syntax=/jump
+command.jump.videoURL=youtu.be/FgYVynAZL3U
+command.jump.notInSight=Kein Block in Sicht
+
+command.jumpheight.description=Legt die Höhe deiner Sprünge fest
+command.jumpheight.example=/jumpheight 10
+command.jumpheight.syntax=/jumpheight <HOEHE>
+command.jumpheight.videoURL=youtu.be/r-tgSHdk-wY
+command.jumpheight.success=Sprunghöhe erfolgreich festgelegt
+command.jumpheight.reset=Sprunghöhe erfolgreich zurückgesetzt
+command.jumpheight.NAN=Die Höhe muss eine Zahl sein
+
+command.keepinventory.description=Lässt dich dein Inventar behalten wenn du stirbst
+command.keepinventory.example=/keepinventory on
+command.keepinventory.syntax=/keepinventory [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.keepinventory.videoURL=youtu.be/VM2gL2g2wUU
+command.keepinventory.on=Du wirst dein Inventar beim Sterben behalten
+command.keepinventory.off=YDu wirst dein Inventar beim Sterben nicht behalten
+command.keepinventory.failure=Ungültiges Argument
+
+command.kill.description=Tötet den Befehls-Sender
+command.kill.example=/kill
+command.kill.syntax=/kill
+command.kill.videoURL=youtu.be/JTFhHzjxDsc
+
+command.killall.description=Tötet Entities in deiner Umgebung
+command.killall.example=/killall creeper
+command.killall.syntax=/killall <ENTITY [RADIUS]>
+command.killall.videoURL=youtu.be/woTXoJD2qpw
+command.killall.unknownEntity=Unbekanntes Entity
+command.killall.NAN=Der Radius muss eine Zahl sein
+command.killall.invalidRadius=Der Radius muss zwischen 0 und 256 liegen
+command.killall.killed=%d Entities getötet
+
+command.killattacker.description=Tötet jeden Gegner, der dich angreift
+command.killattacker.example=/killattacker on
+command.killattacker.syntax=/killattacker [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.killattacker.videoURL=youtu.be/YUA0vBX32LA
+command.killattacker.on=Angreifer werden sterben
+command.killattacker.off=Angreifer werden nicht sterben
+command.killattacker.failure=Ungültiges Argument
+
+command.light.description=Beleuchtet die Welt
+command.light.example=/light
+command.light.syntax=/light
+command.light.videoURL=youtu.be/Vwxf-zC14_Q
+command.light.lightup=Licht an!
+command.light.restore=Originale Licht-Level wiederhergestellt
+
+command.melt.description=Schmilzt/Kocht Items
+command.melt.example=/melt all
+command.melt.syntax=/melt [all]
+command.melt.videoURL=youtu.be/23Y-YozxYfw
+command.melt.molten=%d Items geschmolzen
+
+command.mobdamage.description=Schaltet Mobschaden an/aus
+command.mobdamage.example=/mobdamage off
+command.mobdamage.syntax=/mobdamage [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.mobdamage.videoURL=youtu.be/waanv_z_AD4
+command.mobdamage.on=Du wirst Mobschaden nehmen
+command.mobdamage.off=Du wirst keine Mobschaden nehmen
+command.mobdamage.failure=Ungültiges Argument
+
+command.move.description=Bewegt dich eine Richtung entlang
+command.move.example=/move 5 north
+command.move.syntax=/move <DISTANZ <N|S|E|W|D|U>>
+command.move.videoURL=youtu.be/h2Cp0Qaniv8
+command.move.invalidDirection=Ungültige Richtung
+command.move.NAN=Die Distanz muss eine Zahl sein
+
+command.nbt.apply.inventory.description=Wendet NBT und Item Transformationen an Inventaren an
+command.nbt.apply.inventory.example=/nbt_apply_inventory @p slot.hotbar.5 {display : {Name : "Supersword"}}
+command.nbt.apply.inventory.syntax=/nbt_apply_inventory [ZIEL] [SLOT] <NBT|ITEM ANZAHL META NBT> [merge]
+command.nbt.apply.inventory.videoURL=youtu.be/HHqwzHWm1Ak
+
+command.nbt.apply.block.description=Wendet NBT Transformationen an Blöcken an oder setzt Blöcke
+command.nbt.apply.block.example=/nbt_apply_block -54 8 343 skull 0 replace {Owner : {Name : "ExamplePlayer"}}
+command.nbt.apply.block.syntax=/nbt_apply_block <ZIEL|X Y Z> <NBT|BLOCK META PALTZIERUNG NBT> [merge]
+command.nbt.apply.block.videoURL=youtu.be/NXLj_QvHBLs
+
+command.nbt.apply.entity.description=Wendet NBT Transformationen an Entities an
+command.nbt.apply.entity.example=/nbt_apply_entity @e[type=Pig,r=10] {Saddle: 1}
+command.nbt.apply.entity.syntax=/nbt_apply_entity <ZIEL> <NBT> [merge]
+command.nbt.apply.entity.videoURL=youtu.be/8b9lH03rCx8
+
+command.nbt.test.inventory.description=Zählt die Anzahl der Inventare die die gegebenen Bedingungen erfüllen
+command.nbt.test.inventory.example=/nbt_test_inventory @e[type=EntityHorse,r=50] slot.horse.3 {display : {Name : "Supersword"}} >5 <10
+command.nbt.test.inventory.syntax=/nbt_test_inventory [ZIEL] <SLOT> <NBT|ITEM ANZAHL META NBT> [equal] [GRENZEN]
+command.nbt.test.inventory.videoURL=youtu.be/IcRWQnShwmc
+
+command.nbt.test.block.description=Zählt die Anzahl an Blöcken die durch die Zielauswahl spezifiziert werden
+command.nbt.test.block.example=/nbt_test_block @b[id=skull,r=10,nbt={Owner:{Name:"ExamplePlayer"}}] =2
+command.nbt.test.block.syntax=/nbt_test_block <ZIEL> [equal] [GRENZEN]
+command.nbt.test.block.videoURL=youtu.be/PWog0Gyp_pQ
+
+command.nbt.test.entity.description=Zählt die Anzahl an Entities die durch die Zielauswahl spezifiziert werden
+command.nbt.test.entity.example=/nbt_test_entity @e[type=Pig,nbt={Saddle:1}]
+command.nbt.test.entity.syntax=/nbt_test_entity <ZIEL> [equal] [GRENZEN] >10 <50
+command.nbt.test.entity.videoURL=youtu.be/opVMnXz2ndQ
+
+command.nbt.noBounds=Du hast keine Grenzen für den Test angegeben
+command.nbt.matched=Test war erfolgreich
+command.nbt.noMatch=Teste fehlgeschlagen
+command.nbt.invalidTarget=Ungültiges Ziel
+command.nbt.NAN=Es war ein nicht-numerisches Argument angegeben, wo ein numerisches erwartet wurde
+command.nbt.blockNotFound=Block %s wurde nicht gefunden
+command.nbt.mustBeEntityTarget=Ein Entity-Test benötigt ein Entity-Ziel..
+command.nbt.invalidSlot=Ungültiger Slot: %s
+command.nbt.itemNotFound=Item %s nicht gefunden
+command.nbt.notABound=Keine gültigen Grenzen angegeben
+command.nbt.noCompound=Die angegeben NBT-Daten waren kein Compound Tag
+command.nbt.noCurrentItem=Kein Item ausgewählt
+command.nbt.mustBeBlockTarget=Ein Block-Test braucht ein Block-Ziel...
+
+command.noattack.description=Verhindert das Angreifen bestimmter Kreaturen
+command.noattack.example=/noattack Spider
+command.noattack.syntax=/noattack <ENTITY>
+command.noattack.videoURL=youtu.be/uHr0A5fNv3A
+command.noattack.unknownEntity=Unbekannte Kreatur
+command.noattack.notLiving=Das Entity ist kein lebendes Entity
+command.noattack.removed=Die Kreatur wird dich wieder angreifen
+command.noattack.added=Die Kreatur wird dich nicht angreifen
+
+command.noclip.description=Schaltet Clipping an/aus
+command.noclip.example=/noclip off
+command.noclip.syntax=/noclip [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.noclip.videoURL=youtu.be/mA5WYb-IOMU
+command.noclip.mustBeFlying=Du musst fliegen, um noclip zu nutzen
+command.noclip.enabled=Noclip eingeschaltet
+command.noclip.disabled=Noclip ausgeschaltet
+command.noclip.failure=Ungültiges Argument
+command.noclip.autodisable=Noclip automatisch ausgeschaltet. (Spieler fliegt nicht)
+command.noclip.reflectionError=Interner Fehler. Noclip kann nicht genutzt werden
+
+command.op.description=Macht einen Spieler zum Operator
+command.op.example=/op ExamplePlayer 4
+command.op.syntax=/op <SPIELER> [ZUGRIFFS_LEVEL]
+command.op.videoURL=youtu.be/qv9W9xORpH0
+command.op.playerNotFound=Spieler %s nicht gefunden
+
+command.open.description=Öffnet einen Container (z.B. die Enderchest)
+command.open.example=/open enderchest
+command.open.syntax=/open [X Y Z|enderchest|workbench|anvil|enchantment_table]
+command.open.videoURL=youtu.be/ytSfysYcfSo
+command.open.cantOpenTEs=Kann diesen Container nicht ohne Koordinaten öffnen
+command.open.invalidContainer=Ungültiger Container %s
+command.open.invalidBlock=Dieser Block ist kein Container
+command.open.NAN=Die Koordinaten müssen Zahlen sein
+command.open.noBlock=Kein Block in Sicht
+
+command.path.description=Erstellt einen Pfad unter deinen Füßen
+command.path.example=/path stone 4
+command.path.syntax=/path <BLOCK> [RADIUS]
+command.path.videoURL=youtu.be/QsHQZ-sYCIw
+command.path.unknownBlock=Unbekannter Block: %s
+command.path.invalidMeta=Ungültige Metadaten
+command.path.invalidRadius=Der Radius muss zwischen 0 und 256 liegen
+command.path.noChange=Du hast die Pfad-Einstellungen nicht geändert
+command.path.enabled=Pfad aktiviert
+command.path.disabled=Pfad deaktiviert
+
+command.permission.description=Legt das erforderliche Zugriffs-Level für einen Befehl fest
+command.permission.example=/permission set give 2
+command.permission.syntax=/permission <GET|RESET|SET> <BEFEHL> [LEVEL]
+command.permission.videoURL=youtu.be/qv9W9xORpH0
+command.permission.getPermission=Das nötige Zugriffslevel für Befehl %s ist %d
+command.permisson.permissionSet=Das benötigte Zugriffslevel für den Befehl %s ist jetzt %d
+command.permission.reseted=Das benötigte Zugriffslevel für den Befehl %s wurde auf %d zurückgesetzt
+command.permission.invalidCommand=Das Zugriffslevel für diesen Befehl kann nicht festgelegt werden
+command.permission.notNumeric=Das Zugriffslevel muss eine Zahl sein
+
+command.pick.description=Fügt den Block den du anschaust zum Inventar hinzu (wie im Kreativ-Modus)
+command.pick.example=/pick 27
+command.pick.syntax=/pick [ANZAHL]
+command.pick.videoURL=youtu.be/dpVSZLJZFrc
+command.pick.NAN=Die Anzahl muss eine Zahl sein
+command.pick.cantgive=Kann Item nicht geben
+command.pick.notInSight=Kein Block in Sicht
+
+command.pickup.description=Verhindert das Aufnehmen von Items
+command.pickup.example=/pickup grass
+command.pickup.syntax=/pickup <ITEM>
+command.pickup.videoURL=youtu.be/nMk28YPwv6w
+command.pickup.notFound=Unbekanntes Item
+command.pickup.removed=Item wird aufgenommen
+command.pickup.added=Item wird nicht aufgenommen
+
+command.reach.description=Legt deine Abbaudistanz fest
+command.reach.example=/reach 20
+command.reach.syntax=/reach <DISTANZ|RESET>
+command.reach.videoURL=youtu.be/RNzgEKbMxqY
+command.reach.reset=Abbaudistanz auf 5.0 zurückgesetzt
+command.reach.set=Abbaudistanz erfolgreich auf %s festgelegt
+command.reach.invalidArg=Ungültiges Argument
+
+command.refill.description=Füllt Itemstacks auf
+command.refill.example=/refill all
+command.refill.syntax=/refill [all]
+command.refill.videoURL=youtu.be/MIcUP0S9aeM
+command.refill.refilled=Items nachgefüllt
+command.refill.noSelection=Kein Item ausgewählt
+
+command.repair.description=Repariert Items
+command.repair.example=/repair all
+command.repair.syntax=/repair [all]
+command.repair.videoURL=youtu.be/rNRoG1jbhss
+
+command.return.description=Befördert dich zu dem Ort, an dem du vor einem Teleport oder Tod warst
+command.return.example=/return deathpoint
+command.return.syntax=/return [teleport|deathpoint]
+command.return.videoURL=youtu.be/WJAi9NM7huU
+command.return.noLastPos=Du hast letztlich keinen Teleport durchgeführt oder du bist nicht gestorben
+
+command.ride.description=Lässt die jedes Entity, das du anschaust reiten (Benutze ride erneut, um abzusteigen)
+command.ride.example=/ride
+command.ride.syntax=/ride
+command.ride.videoURL=youtu.be/EUmDAi_sM9Y
+command.ride.mounted=Auf Entity aufgestiegen
+command.ride.notLiving=Dieses Entity lebt nicht
+command.ride.notFound=Kein Entity gefunden
+command.ride.dismounted=Von Entity abgestiegen
+
+command.savemode.client.description=Ändert das Speicherverhalten for Client-Einstellungen (ob abhängig von Server/Welt/Dimension gespeichert werden soll)
+command.savemode.server.description=Ändert das Speicherverhalten for Server-Einstellungen (ob abhängig von Welt/Dimension gespeichert werden soll)
+command.savemode.global.description=Ändert das Speicherverhalten for globale Einstellungen (ob abhängig von Welt/Dimension gespeichert werden soll)
+command.savemode.client.example=/savemode_client set bindings true true false
+command.savemode.server.example=/savemode_server set waypoints true false
+command.savemode.global.example=/savemode_global set aliases true false
+command.savemode.client.syntax=/savemode_client <LIST [SEITE]|RESET|SET> [EINSTELLUNG] [true/false] [true/false] [true/false]
+command.savemode.server.syntax=/savemode_server <LIST [SEITE]|RESET|SET> [EINSTELLUNG] [true/false] [true/false]
+command.savemode.global.syntax=/savemode_global <LIST [SEITE]|RESET|SET> [EINSTELLUNG] [true/false] [true/false]
+command.savemode.client.videoURL=youtu.be/_u1UUioywWY
+command.savemode.global.videoURL=youtu.be/_u1UUioywWY
+command.savemode.server.videoURL=youtu.be/_u1UUioywWY
+command.savemode.notASetting=%s ist keine gültige Einstellung
+command.savemode.reseted=Speichermodus zurückgesetzt für %s
+command.savemode.set=Specihermodus erflogreich festgelegt für %s
+command.savemode.invalidArg=Ungültiges Argument
+command.savemode.server.more=Benutze '/savemode_server list SEITE' und ersetze SEITE mit der Seitenzahl um mehr Server-Einstellunge zu sehen
+command.savemode.client.more=Benutze '/savemode_client list SEITE' und ersetze SEITE mit der Seitenzahl um mehr Client-Einstellunge zu sehen
+command.savemode.global.more=Benutze '/savemode_global list SEITE' und ersetze SEITE mit der Seitenzahl um mehr globale Einstellunge zu sehen
+
+command.scuba.description=Erlaubt es, unter Wasser zu atmen
+command.scuba.example=/scuba on
+command.scuba.syntax=/scuba [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.scuba.videoURL=youtu.be/3EopjW4GU0c
+command.scuba.on=Scuba aktiviert
+command.scuba.off=Scuba deaktiviert
+command.scuba.failure=Ungültiges Argument
+
+command.setspawn.description=Legt den Spawnpunkt des Spielers fest
+command.setspawn.example=/setspawn
+command.setspawn.syntax=/setspawn [X|Y|Z]
+command.setspawn.videoURL=youtu.be/HMdmi-PSwsE
+command.setspawn.invalidPos=Ungültige Koordinaten
+
+command.sign.description=Erlaubt es, Schilder zu setzen oder zu bearbeiten
+command.sign.example=/sign edit {Das ist Zeile1} {Zeile2} {Eine Zeile} {Blabla}
+command.sign.syntax=/sign <ADD|EDIT> {Zeile1} {Zeile2} {Zeile3} {Zeile4}
+command.sign.videoURL=youtu.be/4lv0mSMlPKA
+command.sign.addsuccess=Schild erfolgreich hinzugefügt
+command.sign.editsuccess=Schild erfolgreich bearbeitet
+command.sign.bottom=Du kannst Schilder nicht an der Unterseite eines Blocks platzieren
+command.sign.noBlockInSight=Kein Block in Sicht
+
+command.slippery.description=Legt fest, wie stark man auf einem Block rutscht (kleine Zahlen verwenden!!!)
+command.slippery.example=/slippery grass 5
+command.slippery.syntax=/slippery <BLOCK <STARKE>|RESET>
+command.slippery.videoURL=youtu.be/bvj8pfPRprQ
+command.slippery.invalidArg=Ungültiges Argument
+command.slippery.success=Slippery erfolgreich festgelegt
+command.slippery.reset=Slippery erfolgreich zurückgesetzt
+command.slippery.notFound=Block nicht gefunden
+
+command.spawn.description=Spawnt Entities
+command.spawn.example=/spawn creeper 5
+command.spawn.syntax=/spawn <list [PAGE]|random|ENTITY [ANZAHL] [X Y Z] [NBT] [merge]>
+command.spawn.videoURL=youtu.be/RYdEBJmko44
+command.spawn.couldNotSpawn=Konnte Entity %s nicht spawnen
+command.spawn.NAN=Die Anzahl muss eine Zahl sein
+command.spawn.more=Benutze '/spawn list SEITE' und ersetze SEITE mit der Seitenzahl, um mehr Entity Namen zu sehen
+command.spawn.noCompound=Die angegebenen NBT-Daten sind kein Compound Tag
+
+command.spawner.description=Ändert das Entity, das ein Spawner spawnt (Ersten Buchstabe gross schreiben!)
+command.spawner.example=/spawner Skeleton
+command.spawner.syntax=/spawner <ENTITY> [X Y Z]
+command.spawner.videoURL=youtu.be/e81RnvCVMf8
+command.spawner.unknownEntityID=Unbekannte Entity ID
+command.spawner.unknownEntity=Unbekanntes Entity
+command.spawner.success=Spawner Entity erfolgreich geändert (eventuell muss die Welt neu geöffnet werden)
+command.spawner.notASpawner=Der Block, den du anschaust, ist kein Spawner
+
+command.spawnportal.description=Spawnt ein Portal zu einer anderen Dimension
+command.spawnportal.example=/spawnportal end
+command.spawnportal.syntax=/spawnportal <END|NETHER>
+command.spawnportal.videoURL=youtu.be/jSTw2H3AF4I
+command.spawnportal.endError=Konnte Ender-Portal nicht erstellen
+command.spawnportal.unknownPortal=Unbekannter Portal-Typ
+command.spawnportal.noArgs=Kein Portal angegeben
+
+command.speed.description=Legt die Lauf-, Flug-, oder Minecart-Geschwindigkeit fest
+command.speed.example=/speed fly set 10
+command.speed.syntax=/speed <WALK|FLY|MINECART> <GET|RESET|SET WERT>
+command.speed.videoURL=youtu.be/E9qVWEEarl0
+command.speed.NAN=Die Geschwindigkeit muss eine Zahl sein
+command.speed.walkSet=Laufgeschwindigkeit erfolgreich festgelegt
+command.speed.flySet=Fluggeschwindigkeit erfolgreich festgelegt
+command.speed.minecartSet=Minecart-Geschwindigkeit erfolgreich festgelegt
+command.speed.noArg=Geschwindigkeit nicht angegeben
+command.speed.getFly=Deine Fluggeschwindigkeit ist %f
+command.speed.getWalk=Deine Laufgeschwindigkeit ist %f
+command.speed.getMinecart=Deine Minecart-Geschwindigkeit ist %f
+command.speed.walkReset=Laufgeschwindigkeit erfolgreich zurückgesetzt
+command.speed.flyReset=Fluggeschwindigkeit erfolgreich zurückgesetzt
+command.speed.minecartReset=Minecart-Geschwindigkeit erfolgreich zurückgesetzt
+command.speed.error=Ein Fehler ist bei der Ausführung aufgetreten
+
+command.sprint.description=Erlaubt es, unendlich lange zu sprinten
+command.sprint.example=/sprint on
+command.sprint.syntax=/sprint [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.sprint.videoURL=youtu.be/qvOaMaUxNbY
+command.sprint.on=Unendliches Sprinten eingeschaltet
+command.sprint.off=Unendliches Sprinten ausgeschaltet
+command.sprint.failure=Ungültiges Argument
+
+command.stackcombine.description=Kombiniert Item-Stacks
+command.stackcombine.example=/stackcombime
+command.stackcombine.syntax=/stackcombime
+command.stackcombine.videoURL=youtu.be/XMqEjCbgXBE
+
+command.stepheight.description=Erlaubt es, die Schritthöhe festzulegen
+command.stepheight.example=/stepheight 10
+command.stepheight.syntax=/stepheight [WERT|RESET]
+command.stepheight.videoURL=youtu.be/aYCvmfSWAb4
+command.stepheight.setto=Schritthöhe erfolgreich auf %f festgelegt
+command.stepheight.reset=Schritthöhe erfolgreich zurückgesetzt
+command.stepheight.invalidArg=Ungültiges Argument
+
+command.sudo.description=Erlaubt es einen Befehl für einen anderen Spieler im LAN-Modus auszuführen
+command.sudo.example=/sudo player123 kill
+command.sudo.syntax=/sudo <PLAYER> <BEFEHL> [PARAMETER]
+command.sudo.videoURL=youtu.be/KaLTW2zVehM
+command.sudo.playerNotFound=Spieler nicht gefunden
+command.sudo.executed=Befehl '%s' wurde erfolgreich für Spieler '%s' ausgeführt
+command.sudo.notInLAN=Du bist nicht im LAN-Modus
+command.sudo.invalidArgs=Ungültige Argumente
+
+command.superpunch.description=Schlägt deine Gegner weit zurück
+command.superpunch.example=/superpunch 10
+command.superpunch.syntax=/superpunch <STAERKE|RESET>
+command.superpunch.videoURL=youtu.be/bfJBBJ9DPig
+command.superpunch.reset=Die Rückstoss-Stärke wurde erfolgreich zurückgesetzt
+command.superpunch.success=Die Rückstoss-Stärke wurde erfolgreich festgelegt
+command.superpunch.NAN=Die Starke muss eine Zahl sein
+
+command.teleport.description=Teleportiert dich zu Koordinaten oder zu einem anderen Spieler
+command.teleport.example=/teleport 156 57 234
+command.teleport.syntax=/teleport <SPIELER|X Y Z [YAW PITCH]>
+command.teleport.videoURL=youtu.be/WJAi9NM7huU
+command.teleport.NAN=Die Koordinaten müssen Zahlen sein
+command.teleport.invalidParams=Es fehlen Koordinaten
+command.teleport.playerNotFound=Spieler nicht gefunden
+
+command.var.description=Setzt/Löscht Variablen. Variablen können mit %%var%% genutzt werden (Prozent-Zeichen: "%%%%")
+command.var.global.description=Setzt/Löscht globale Servervariablen. Variablen können mit %%var%% genutzt werden (Prozent-Zeichen: "%%%%")
+command.var.example=/var set x Hallo Welt
+command.var.global.example=/var_global set x Hallo Welt
+command.var.syntax=/var [SET <NAME> <WERT>|DEL <NAME>|LIST [SEITE]|DELALL|CALC <NAME> <RECHNUNG>]
+command.var.global.syntax=/var_global [SET <NAME> <WERT>|DEL <NAME>|LIST [SEITE]|DELALL|CALC <NAME> <RECHNUNG>]
+command.var.videoURL=youtu.be/_y9YCCLL3tA
+command.var.global.videoURL=youtu.be/_y9YCCLL3tA
+command.var.varsDisabled=Spielervariablen deaktiviert
+command.var.global.varsDisabled=Globale Variablen deaktiviert
+command.var.invalidArg=Ungültiges Argument.
+command.var.notFound=Variable "%s" nicht gefunden
+command.var.get=Variable "%s" hat den Wert "%s"
+command.var.deleted=Variable "%s" gelöscht
+command.var.created=Variable "%s" auf Wert "%s" gesetzt
+command.var.deletedAll=Alle Variablen gelöscht
+command.var.notNumeric=Ungültige Berechnung
+command.var.cantBeResolved=Variablen %s nicht bekannt
+command.var.more=Benutze '/var(_global) list SEITE' und ersetze mit der Seitenzahl, um mehr Variablen zu sehen
+
+command.waterdamage.description=Schaltet Wasserschaden an/aus
+command.waterdamage.example=/waterdamage off
+command.waterdamage.syntax=/waterdamage [TRUE|FALSE|ON|OFF|0|1|ENABLE|DISABLE]
+command.waterdamage.videoURL=youtu.be/H86RthQZrAs
+command.waterdamage.on=Du wirst Wasserschaden nehmen
+command.waterdamage.off=Du wirst keine Wasserschaden nehmen
+command.waterdamage.failure=Ungültiges Argument
+
+command.waypoint.description=Legt Wegpunkte fest
+command.waypoint.example=/waypoint set test
+command.waypoint.syntax=/waypoint <SET <NAME [X|Y|Z]>|GOTO <NAME>|REMOVE <NAME>|LIST>
+command.waypoint.videoURL=youtu.be/FQEj92-BL5Y
+command.waypoint.NAN=Die Koordinaten müssen Zahlen sein
+command.waypoint.removed=Wegpunkt %s erfolgreich entfernt
+command.waypoint.notFound=Wegpunkt %s nicht gefunden
+command.waypoint.teleported=Erfolgreich zu Wegpunk %s teleportiert
+command.waypoint.invalidArgs=Ungültige Argumente
+
+command.weather.description=Legt das Wetter fest
+command.weather.example=/weather lightning
+command.weather.syntax=/weather <RAIN|THUNDER|LIGHTNING>
+command.weather.videoURL=youtu.be/ND06hsOW8k4
+command.weather.rainSuccess=Regen umgeschaltet
+command.weather.thunderSuccess=Gewitter umgeschaltet
+command.weather.lightningSuccess=Blitz eingeschlagen
+command.weather.notInSight=Kein Block in Sicht
+
+command.xray.description=Schaltet Xray an/aus und konfiguriert es
+command.xray.example=/xray config
+command.xray.syntax=/xray [ENABLE|DISABLE|CONFIG|LOAD <CONFIG>|SAVE <CONFIG>]
+command.xray.videoURL=youtu.be/ObXHBs9jpoo
+command.xray.enabled=Xray eingeschaltet
+command.xray.disabled=Xray ausgeschaltet
+command.xray.notFound=Xray Einstellung "%s" nicht gefunden
+command.xray.loaded=Xray Einstellung "%s" geladen
+command.xray.saved=Xray Einstellung "%s" gespeichert
