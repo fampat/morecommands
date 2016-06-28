@@ -29,7 +29,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.WorldSettings;
-import net.minecraft.world.WorldSettings.GameType;
+import net.minecraft.world.GameType;
 import net.minecraft.world.WorldType;
 
 @Command(

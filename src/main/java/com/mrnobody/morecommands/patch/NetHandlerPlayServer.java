@@ -124,12 +124,12 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
             {
                 if (getInt(networkTickCount) == 0)
                 {
-                	setDouble(firstGoodX, this.playerEntity.posX);
-                	setDouble(firstGoodY, this.playerEntity.posY);
-                	setDouble(firstGoodZ, this.playerEntity.posZ);
-                	setDouble(lastGoodX, this.playerEntity.posX);
-                	setDouble(lastGoodY, this.playerEntity.posY);
-                	setDouble(lastGoodZ, this.playerEntity.posX);
+            		setDouble(firstGoodX, this.playerEntity.posX);
+            		setDouble(firstGoodY, this.playerEntity.posY);
+            		setDouble(firstGoodZ, this.playerEntity.posZ);
+            		setDouble(lastGoodX, this.playerEntity.posX);
+            		setDouble(lastGoodY, this.playerEntity.posY);
+            		setDouble(lastGoodZ, this.playerEntity.posX);
                 }
 
                 if (getObject(targetPos) != null)
@@ -170,7 +170,7 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
 
                         if (i > 5)
                         {
-                            logger.debug(this.playerEntity.getName() + " is sending move packets too frequently (" + i + " packets since last tick)");
+                        	logger.debug("{} is sending move packets too frequently ({} packets since last tick)", this.playerEntity.getName(), i);
                             i = 1;
                         }
 
@@ -180,12 +180,12 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
 
                             if (d11 - d10 > (double)(f2 * (float)i) && (!this.mcServer.isSinglePlayer() || !this.mcServer.getServerOwner().equals(this.playerEntity.getName())))
                             {
-                                logger.warn(this.playerEntity.getName() + " moved too quickly! " + d7 + "," + d8 + "," + d9);
+                                logger.warn("{} moved too quickly! {},{},{}", this.playerEntity.getName(), d7, d8, d9);
                                 this.setPlayerLocation(this.playerEntity.posX, this.playerEntity.posY, this.playerEntity.posZ, this.playerEntity.rotationYaw, this.playerEntity.rotationPitch);
                                 return;
                             }
                         }
-
+                        
                         boolean flag2 = worldserver.getCollisionBoxes(this.playerEntity, this.playerEntity.getEntityBoundingBox().contract(0.0625D)).isEmpty();
                         d7 = d4 - getDouble(lastGoodX);
                         d8 = d5 - getDouble(lastGoodY);
@@ -211,17 +211,17 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
                         d11 = d7 * d7 + d8 * d8 + d9 * d9;
                         boolean flag = false;
                         
-                      //BYPASSES MOVED WORNGLY WARNING
+                        //BYPASSES MOVED WORNGLY WARNING
                         /*if (!this.playerEntity.isInvulnerableDimensionChange() && d11 > 0.0625D && !this.playerEntity.isPlayerSleeping() && !this.playerEntity.interactionManager.isCreative() && this.playerEntity.interactionManager.getGameType() != WorldSettings.GameType.SPECTATOR)
                         {
                             flag = true;
-                            logger.warn(this.playerEntity.getName() + " moved wrongly!");
+                            logger.wwarn("{} moved wrongly!", this.playerEntity.getName());
                         }*/
 
                         this.playerEntity.setPositionAndRotation(d4, d5, d6, f, f1);
                         this.playerEntity.addMovementStat(this.playerEntity.posX - d0, this.playerEntity.posY - d1, this.playerEntity.posZ - d2);
                         
-                      //BYPASSES NOCLIP CHECK
+                        //BYPASSES NOCLIP CHECK
                         /*if (!this.playerEntity.noClip && !this.playerEntity.isPlayerSleeping())
                         {
                             boolean flag1 = worldserver.getCubes(this.playerEntity, this.playerEntity.getEntityBoundingBox().func_186664_h(0.0625D)).isEmpty();

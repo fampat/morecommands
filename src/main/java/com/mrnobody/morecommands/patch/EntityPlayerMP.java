@@ -18,8 +18,8 @@ import net.minecraft.server.management.PlayerInteractionManager;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameType;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.WorldSettings;
 
 /**
  * The patched class of {@link net.minecraft.entity.player.EntityPlayerMP} <br>
@@ -140,14 +140,14 @@ public class EntityPlayerMP extends net.minecraft.entity.player.EntityPlayerMP {
 	
 	@Override
 	public void attackTargetEntityWithCurrentItem(Entity entity) {
-	      if (this.instantkill && this.interactionManager.getGameType() != WorldSettings.GameType.SPECTATOR) {
+	      if (this.instantkill && this.interactionManager.getGameType() != GameType.SPECTATOR) {
 	    	  IAttributeInstance attackDamage = this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
 	    	  double oldValue = attackDamage.getBaseValue();
 	    	  attackDamage.setBaseValue(Double.MAX_VALUE / 2);
 	    	  super.attackTargetEntityWithCurrentItem(entity);
 	          attackDamage.setBaseValue(oldValue);
 	          return;
-	       } else if (this.criticalhit && this.interactionManager.getGameType() != WorldSettings.GameType.SPECTATOR) {
+	       } else if (this.criticalhit && this.interactionManager.getGameType() != GameType.SPECTATOR) {
 	          double my = this.motionY;
 	          boolean og = this.onGround;
 	          boolean iw = this.inWater;

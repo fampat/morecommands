@@ -10,7 +10,7 @@ import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.stats.Achievement;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraft.world.WorldSettings.GameType;
+import net.minecraft.world.GameType;
 
 /**
  * A wrapper for the {@link EntityPlayerMP} class

@@ -29,9 +29,9 @@ import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingSetAttackTargetEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
+import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
-import net.minecraftforge.event.entity.player.PlayerOpenContainerEvent;
 import net.minecraftforge.event.world.BlockEvent.PlaceEvent;
 import net.minecraftforge.event.world.ExplosionEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -69,7 +69,7 @@ public class EventHandler<T extends Event> {
 	public static final ForgeEventHandler<WorldEvent.Unload>           UNLOAD_WORLD = new ForgeEventHandler<WorldEvent.Unload>(MinecraftForge.EVENT_BUS, WorldEvent.Unload.class, false);
 	public static final ForgeEventHandler<LivingDeathEvent>            DEATH = new ForgeEventHandler<LivingDeathEvent>(MinecraftForge.EVENT_BUS, LivingDeathEvent.class, false);
 	public static final ForgeEventHandler<EnderTeleportEvent>          ENDER_TELEPORT = new ForgeEventHandler<EnderTeleportEvent>(MinecraftForge.EVENT_BUS, EnderTeleportEvent.class, false);
-	public static final ForgeEventHandler<PlayerOpenContainerEvent>    OPEN_CONTAINER = new ForgeEventHandler<PlayerOpenContainerEvent>(MinecraftForge.EVENT_BUS, PlayerOpenContainerEvent.class, false);
+	public static final ForgeEventHandler<PlayerContainerEvent.Open>   OPEN_CONTAINER = new ForgeEventHandler<PlayerContainerEvent.Open>(MinecraftForge.EVENT_BUS, PlayerContainerEvent.Open.class, false);
 	
 	public static final EventHandler<ItemStackChangeSizeEvent> ITEMSTACK_CHANGE_SIZE = new EventHandler<ItemStackChangeSizeEvent>(ItemStackChangeSizeEvent.class, false);
 	public static final EventHandler<DamageItemEvent>          DAMAGE_ITEM = new EventHandler<DamageItemEvent>(DamageItemEvent.class, false);

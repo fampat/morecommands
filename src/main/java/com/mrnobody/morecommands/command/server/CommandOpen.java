@@ -35,7 +35,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.IInteractionObject;
 import net.minecraft.world.World;
-import net.minecraftforge.event.entity.player.PlayerOpenContainerEvent;
+import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 
 @Command(
@@ -45,7 +45,7 @@ import net.minecraftforge.fml.common.eventhandler.Event.Result;
 		syntax = "command.open.syntax",
 		videoURL = "command.open.videoURL"
 		)
-public class CommandOpen extends StandardCommand implements ServerCommandProperties, EventListener<PlayerOpenContainerEvent> {
+public class CommandOpen extends StandardCommand implements ServerCommandProperties, EventListener<PlayerContainerEvent.Open> {
 	public CommandOpen() {
 		EventHandler.OPEN_CONTAINER.register(this);
 	}
@@ -63,7 +63,7 @@ public class CommandOpen extends StandardCommand implements ServerCommandPropert
 	private Map<EntityPlayerMP, Container> allowedInteractions = new MapMaker().weakKeys().weakValues().makeMap();
 	
 	@Override
-	public void onEvent(PlayerOpenContainerEvent event) {
+	public void onEvent(PlayerContainerEvent.Open event) {
 		if (this.allowedInteractions.containsKey(event.getEntityPlayer())) {
 			if (this.allowedInteractions.get(event.getEntityPlayer()) == event.getEntityPlayer().openContainer) event.setResult(Result.ALLOW);
 			else this.allowedInteractions.remove(event.getEntityPlayer());

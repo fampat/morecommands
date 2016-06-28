@@ -21,9 +21,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.management.PlayerInteractionManager;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.WorldSettings;
 import net.minecraft.world.demo.DemoWorldManager;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -39,7 +39,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class DedicatedPlayerList extends net.minecraft.server.dedicated.DedicatedPlayerList {
 	private final Field uuidToPlayerMap = ReflectionHelper.getField(ObfuscatedField.PlayerList_uuidToPlayerMap);
 	
-	private WorldSettings.GameType gameType;
+	private GameType gameType;
 	private MinecraftServer mcServer;
 	
 	public DedicatedPlayerList(DedicatedServer server) {
@@ -185,7 +185,7 @@ public class DedicatedPlayerList extends net.minecraft.server.dedicated.Dedicate
     
     //Simply copied from PlayerList
     @SideOnly(Side.CLIENT)
-    public void setGameType(WorldSettings.GameType gameModeIn)
+    public void setGameType(GameType gameModeIn)
     {
         this.gameType = gameModeIn;
     }
