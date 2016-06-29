@@ -24,7 +24,7 @@ public final class Reference {
 	/** The website URL */
 	public static final String WEBSITE = "http://bit.ly/morecommands";
 	/** The build date */
-    public static final Date BUILD = new Date(1467139578438L);
+    public static final Date BUILD = new Date(System.currentTimeMillis()); //gets replaced during build process
 	
     /** @return the mod configuration directory */
 	public static final File getModDir() {return Reference.INSTANCE.MOD_DIR;}
