@@ -14,7 +14,6 @@ import org.objectweb.asm.Opcodes;
 public abstract class WriterTransformer extends ClassVisitor implements Transformer {
 	public WriterTransformer() {
 		super(Opcodes.ASM5);
-		this.cv = new ClassWriter(this.getWriteFlags());
 	}
 
 	/**
@@ -25,6 +24,7 @@ public abstract class WriterTransformer extends ClassVisitor implements Transfor
 		if (!this.getTransformClassNames().contains(transformedName)) return basicClass;
 		
 		MoreCommandsLoadingPlugin.logger.info("Transforming class " + transformedName);
+		this.cv = new ClassWriter(this.getWriteFlags());
 		
 		this.beforeTransform();
 		
