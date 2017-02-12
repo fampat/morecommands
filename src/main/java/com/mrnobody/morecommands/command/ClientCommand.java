@@ -4,8 +4,7 @@ import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.util.LanguageManager;
 
 import net.minecraft.command.ICommandSender;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.fml.relauncher.Side;
 
 /**
@@ -41,15 +40,11 @@ public final class ClientCommand<T extends StandardCommand & ClientCommandProper
 	}
 	
     @Override
-    public final boolean checkRequirements(ICommandSender sender, String[] params, Side side) {
+    public final ITextComponent checkRequirements(ICommandSender sender, String[] params, Side side) {
 		String lang = MoreCommands.INSTANCE.getCurrentLang(sender);
 		
-    	if (!(sender instanceof net.minecraft.client.entity.EntityPlayerSP)) {
-        	TextComponentString text = new TextComponentString(LanguageManager.translate(lang, "command.generic.cantUse"));
-        	text.getChatStyle().setColor(TextFormatting.RED);
-        	sender.addChatMessage(text);
-        	return false;
-    	}
+    	if (!(sender instanceof net.minecraft.client.entity.EntityPlayerSP))
+    		return makeChatMsg(LanguageManager.translate(lang, "command.generic.notClient"));
     	
     	return super.checkRequirements(sender, params, side);
     }

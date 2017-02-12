@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.event.Listeners.TwoEventListener;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -83,7 +84,7 @@ public final class Xray implements Runnable, TwoEventListener<TickEvent, RenderW
 	}
 	
 	/** The delay between xray updates */
-	private static final int DELAY = GlobalSettings.xrayUPS <= 0 ? 1000 : GlobalSettings.xrayUPS > 10 ? 100 : 1000 / GlobalSettings.xrayUPS;
+	private static final int DELAY = MoreCommandsConfig.xrayUPS <= 0 ? 1000 : MoreCommandsConfig.xrayUPS > 10 ? 100 : 1000 / MoreCommandsConfig.xrayUPS;
 	/** The default radius in which blocks should be highlighted */
 	private static final int DEFAULT_RADIUS = 32;
 	

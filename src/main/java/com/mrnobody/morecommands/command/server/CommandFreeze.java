@@ -7,14 +7,15 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.util.EntityUtils;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -81,12 +82,12 @@ public class CommandFreeze extends StandardCommand implements ServerCommandPrope
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		World world = sender.getWorld().getMinecraftWorld();
+	public String execute(CommandSender sender, String[] params) throws CommandException {
+		World world = sender.getWorld();
 		String entityType = "Mob";
 		
 		if (params.length > 0) {
-			if (com.mrnobody.morecommands.wrapper.Entity.getEntityClass(params[0]) == null) {
+			if (EntityUtils.getEntityClass(params[0], true) == null) {
 				try {entityType = EntityList.classToStringMapping.get(EntityList.idToClassMapping.get(Integer.parseInt(params[0])));}
 				catch (NumberFormatException e) {throw new CommandException("command.bring.unknownEntity", sender);}
 			}
@@ -94,7 +95,7 @@ public class CommandFreeze extends StandardCommand implements ServerCommandPrope
 		}
 		
 		if (entityType == null) throw new CommandException("command.freeze.unknownEntity", sender);
-		Class<?> cls = com.mrnobody.morecommands.wrapper.Entity.getEntityClass(entityType);
+		Class<? extends Entity> cls = EntityUtils.getEntityClass(entityType, true);
 		Class<? extends EntityLiving> entityClass;
 		
 		if (EntityLiving.class.isAssignableFrom(cls))
@@ -114,6 +115,8 @@ public class CommandFreeze extends StandardCommand implements ServerCommandPrope
 			this.worldsToFreeze.get(world).add(entityClass);
 			sender.sendLangfileMessage("command.freeze.on", entityType);
 		}
+		
+		return null;
 	}
 	
 	private static class ClassInheritanceSet<T> extends HashSet<Class<? extends T>> {
@@ -168,7 +171,7 @@ public class CommandFreeze extends StandardCommand implements ServerCommandPrope
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

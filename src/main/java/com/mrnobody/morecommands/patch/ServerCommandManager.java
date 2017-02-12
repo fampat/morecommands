@@ -4,12 +4,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import com.mrnobody.morecommands.command.AbstractCommand;
-import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.util.GlobalSettings;
+import com.mrnobody.morecommands.settings.GlobalSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 import com.mrnobody.morecommands.util.LanguageManager;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.util.Variables;
 
 import net.minecraft.command.CommandResultStats;
@@ -48,38 +51,35 @@ public class ServerCommandManager extends net.minecraft.command.ServerCommandMan
         {
             rawCommand = rawCommand.substring(1);
         }
-        
+
     	try {
-    		String world = MoreCommands.getProxy().getCurrentWorld(), dim = sender.getEntityWorld().provider.getDimensionType().getName();
+    		String world = sender.getEntityWorld().getSaveHandler().getWorldDirectory().getName(), dim = sender.getEntityWorld().provider.getDimensionType().getName();
     		
     		if (AbstractCommand.isSenderOfEntityType(sender, EntityPlayerMP.class)) {
-    			ServerPlayerSettings settings = AbstractCommand.getPlayerSettings(AbstractCommand.getSenderAsEntity(sender, EntityPlayerMP.class));
-    			PlayerPatches playerInfo = AbstractCommand.getSenderAsEntity(sender, EntityPlayerMP.class).getCapability(PlayerPatches.PATCHES_CAPABILITY, null);
-    			Map<String, String> playerVars = playerInfo != null && playerInfo.clientModded() ? new HashMap<String, String>() : settings.variables; //client takes care of replacing player variables
+    			ServerPlayerSettings settings = AbstractCommand.getSenderAsEntity(sender, EntityPlayerMP.class).getCapability(PlayerSettings.SETTINGS_CAP_SERVER, null);
+    			Map<String, String> playerVars = settings == null ? new HashMap<String, String>() : settings.variables;
     			
-    			if (GlobalSettings.enableGlobalVars && GlobalSettings.enablePlayerVars)
-    				rawCommand = Variables.replaceVars(rawCommand, playerVars, GlobalSettings.getVariables(world, dim));
-    			else if (GlobalSettings.enablePlayerVars)
-    				rawCommand = Variables.replaceVars(rawCommand, playerVars);
-    			else if (GlobalSettings.enableGlobalVars)
-    				rawCommand = Variables.replaceVars(rawCommand, GlobalSettings.getVariables(world, dim));
+    			if (MoreCommandsConfig.enableGlobalVars && MoreCommandsConfig.enablePlayerVars)
+    				rawCommand = Variables.replaceVars(rawCommand, true, playerVars, GlobalSettings.getInstance().variables.get(ImmutablePair.of(world, dim)));
+    			else if (MoreCommandsConfig.enablePlayerVars)
+    				rawCommand = Variables.replaceVars(rawCommand, true, playerVars);
+    			else if (MoreCommandsConfig.enableGlobalVars)
+    				rawCommand = Variables.replaceVars(rawCommand, true, GlobalSettings.getInstance().variables.get(ImmutablePair.of(world, dim)));
     		}
-    		else if (GlobalSettings.enableGlobalVars) 
-    			rawCommand = Variables.replaceVars(rawCommand, GlobalSettings.getVariables(world, dim));
+    		else if (MoreCommandsConfig.enableGlobalVars) 
+    			rawCommand = Variables.replaceVars(rawCommand, true, GlobalSettings.getInstance().variables.get(ImmutablePair.of(world, dim)));
     	}
         catch (Variables.VariablesCouldNotBeResolvedException vcnbre) {
-            TextComponentString text = new TextComponentString(LanguageManager.translate(MoreCommands.INSTANCE.getCurrentLang(sender), "command.var.cantBeResolved", vcnbre.getVariables().toString()));
-            text.getChatStyle().setColor(TextFormatting.RED); sender.addChatMessage(text);
-            rawCommand = vcnbre.getNewString();
+        	rawCommand = vcnbre.getNewString();
         }
-
+    	
     	 String[] astring = rawCommand.split(" ");
          String s = astring[0];
          astring = dropFirstString(astring);
          ICommand icommand = this.getCommands().get(s);
          int i = this.getUsernameIndex(icommand, astring);
          int j = 0;
-
+         
          if (icommand == null)
          {
              TextComponentTranslation textcomponenttranslation = new TextComponentTranslation("commands.generic.notFound", new Object[0]);

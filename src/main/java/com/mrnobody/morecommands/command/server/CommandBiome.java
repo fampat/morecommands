@@ -1,12 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ResourceLocation;
@@ -34,8 +34,8 @@ public class CommandBiome extends StandardCommand implements ServerCommandProper
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		BiomeGenBase biome = sender.getWorld().getMinecraftWorld().getBiomeGenForCoords(sender.getPosition());
+	public String execute(CommandSender sender, String[] params) throws CommandException {
+		BiomeGenBase biome = sender.getWorld().getBiomeGenForCoords(sender.getPosition());
 		
 		if (params.length > 0) {
 			if (params[0].equalsIgnoreCase("info")) sender.sendLangfileMessage("command.biome.info", biome.getBiomeName(), BiomeGenBase.getIdForBiome(biome));
@@ -61,6 +61,8 @@ public class CommandBiome extends StandardCommand implements ServerCommandProper
 			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
 		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 	
 	@Override
@@ -74,7 +76,7 @@ public class CommandBiome extends StandardCommand implements ServerCommandProper
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 	

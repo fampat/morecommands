@@ -2,18 +2,19 @@ package com.mrnobody.morecommands.core;
 
 import java.lang.reflect.Field;
 
+import com.google.common.collect.Maps;
 import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
 import com.mrnobody.morecommands.network.PacketHandlerServer;
 import com.mrnobody.morecommands.patch.DedicatedPlayerList;
 import com.mrnobody.morecommands.patch.ServerCommandManager;
-import com.mrnobody.morecommands.util.GlobalSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
+import com.mrnobody.morecommands.settings.SettingsProperty;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
-import com.mrnobody.morecommands.util.PlayerSettings;
 import com.mrnobody.morecommands.util.Reference;
 import com.mrnobody.morecommands.util.ReflectionHelper;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.server.MinecraftServer;
@@ -27,15 +28,14 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.Clone;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.common.event.FMLStateEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent.ServerConnectionFromClientEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent.ServerDisconnectionFromClientEvent;
 
 /**
  * The common Patcher class
@@ -87,7 +87,7 @@ public class CommonPatcher {
 			}
 		}
 		
-		if (this.applyServerConfigManagerPatch(event.getServer())) {
+		if (this.applyPlayerListPatch(event.getServer())) {
 			this.mod.getLogger().info("Server Configuration Manager Patches applied");
 			AppliedPatches.setServerConfigManagerPatched(true);
 		}
@@ -99,7 +99,7 @@ public class CommonPatcher {
 	 * @param server the minecraft server
 	 * @return whether the patch was applied successfully
 	 */
-	protected boolean applyServerConfigManagerPatch(MinecraftServer server){
+	protected boolean applyPlayerListPatch(MinecraftServer server){
 		if (server instanceof DedicatedServer) {
 			//must create new instance via reflection because "new" creates bytecode but the "DedicatedPlayerList" class
 			//is not available on the client so it will cause a NoClassDefFoundError, reflection creates the new instance dynamically
@@ -123,18 +123,17 @@ public class CommonPatcher {
 		
 		PlayerPatches pp1 = event.getOriginal().getCapability(PlayerPatches.PATCHES_CAPABILITY, null);
 		PlayerPatches pp2 = event.getEntityPlayer().getCapability(PlayerPatches.PATCHES_CAPABILITY, null);
+
+		if (settings2 != null) //Should never be null
+			settings2.init((EntityPlayerMP) event.getEntityPlayer(), settings);
 		
-		if (settings != null && settings2 != null && settings != settings2) {
-			settings2.cloneSettings(settings);
-			MoreCommands.getProxy().updateWorld((EntityPlayerMP) event.getEntityPlayer());
-		}
-		
-		if (pp1 != null && pp2 != null && pp1 != pp2) {
+		if (pp1 != pp2) {
 			pp2.setClientModded(pp1.clientModded());
 			pp2.setClientPlayerPatched(pp1.clientPlayerPatched());
 			pp2.setServerPlayHandlerPatched(pp1.serverPlayHandlerPatched());
-			pp2.setRenderGlobalPatched(pp1.renderGlobalPatched());
 		}
+		
+		this.mod.getPacketDispatcher().sendS14RemoteWorld((EntityPlayerMP) event.getEntityPlayer(), event.getEntityPlayer().worldObj.getSaveHandler().getWorldDirectory().getName());
 	}
 	
 	/**
@@ -144,37 +143,8 @@ public class CommonPatcher {
 	public void attachCapabilities(AttachCapabilitiesEvent.Entity event) {
 		if (event.getEntity() instanceof EntityPlayerMP) {
 			event.addCapability(PlayerPatches.PATCHES_IDENTIFIER, PlayerPatches.PATCHES_CAPABILITY.getDefaultInstance());
-			event.addCapability(PlayerSettings.SETTINGS_IDENTIFIER, new ServerPlayerSettings((EntityPlayerMP) event.getEntity()));
+			event.addCapability(PlayerSettings.SETTINGS_IDENTIFIER, PlayerSettings.SETTINGS_CAP_SERVER.getDefaultInstance());
 		}
-	}
-	
-	/**
-	 * Updates player settings when a player respawn event is received
-	 */
-	@SubscribeEvent
-	public void updateSettings(PlayerRespawnEvent event) {
-		if (!(event.player instanceof EntityPlayerMP)) return;
-		updateSettings((EntityPlayerMP) event.player, event.player.worldObj.provider.getDimensionType().getName());
-	}
-	
-	/**
-	 * Updates the player settings when a player dimension change event is received
-	 */
-	@SubscribeEvent
-	public void updateSettings(PlayerChangedDimensionEvent event) {
-		if (!(event.player instanceof EntityPlayerMP)) return;
-		updateSettings((EntityPlayerMP) event.player, event.player.getServer().worldServerForDimension(event.toDim).provider.getDimensionType().getName());
-	}
-	
-	/**
-	 * Updates the player settings of the player
-	 * @param player the player
-	 * @param the dimension name, retrievable via {@link net.minecraft.world.WorldProvider#getDimensionName()}
-	 */
-	private void updateSettings(EntityPlayerMP player, String dim) {
-		ServerPlayerSettings settings = player.getCapability(PlayerSettings.SETTINGS_CAP_SERVER, null);
-		MoreCommands.getProxy().updateWorld(player);
-		if (settings != null) settings.updateSettings(MoreCommands.getProxy().getCurrentServerNetAddress(), MoreCommands.getProxy().getCurrentWorld(), dim);
 	}
 	
 	/**
@@ -183,7 +153,6 @@ public class CommonPatcher {
 	 */
 	@SubscribeEvent
 	public void onJoin(EntityJoinWorldEvent event) {
-		if (event.getEntity() instanceof EntityPlayer) MoreCommands.getProxy().registerAliases((EntityPlayer) event.getEntity());
 		if (event.getEntity() instanceof EntityPlayerMP) {
 			EntityPlayerMP player = (EntityPlayerMP) event.getEntity();
 			PlayerPatches patches = player.getCapability(PlayerPatches.PATCHES_CAPABILITY, null);
@@ -197,28 +166,54 @@ public class CommonPatcher {
 		}
 	}
 	
+	/**
+	 * Invoked when a client connects to the server. Loads player settings
+	 * and sends a handshake to the client.
+	 */
+	@SubscribeEvent
+	public void clientConnect(ServerConnectionFromClientEvent event) {
+		EntityPlayerMP player = ((NetHandlerPlayServer) event.getHandler()).playerEntity;
+		ServerPlayerSettings settings = player.getCapability(PlayerSettings.SETTINGS_CAP_SERVER, null);
+		
+		if (settings != null)  //Should never be null
+			settings.init(player, new ServerPlayerSettings(player));
+		
+		//Packets are not intended to be sent at this point but is required here
+		//To prevent a NPE in OutboundTarget.selectNetworks(), we have to set the NetHandlerPlayServer
+		player.playerNetServerHandler = (NetHandlerPlayServer) event.getHandler();
+		
+		this.mod.getLogger().info("Requesting Client Handshake for Player '" + player.getName() + "'");
+		this.mod.getPacketDispatcher().sendS00Handshake(player);
+		this.mod.getPacketDispatcher().sendS14RemoteWorld(player, player.worldObj.getSaveHandler().getWorldDirectory().getName());
+		
+		//To prevent a NPE because Minecraft.thePlayer is not set at this point, reset playerNetServerHandler to null
+		player.playerNetServerHandler = null;
+		
+		if (MoreCommandsConfig.retryHandshake)
+			PacketHandlerServer.addPlayerToRetries(player);
+		
+	}
+
+	/**
+	 * Invoked when a client disconnects. Currently does nothing
+	 */
+	@SubscribeEvent
+	public void clientDisconnect(ServerDisconnectionFromClientEvent event) {}
 	
 	/**
-	 * Called on a player login. Sends a request for a handshake to the client,
-	 * loads the players settings and displays the welcome message if enabled.
-	 * Also loads aliases set by this player.
+	 * Called on a player login. Loads player settings if this somehow failed in
+	 * clientConnect() and displays a welcome message to the player.
 	 */
 	@SubscribeEvent
 	public void playerLogin(PlayerLoggedInEvent event) {
 		if (!(event.player instanceof EntityPlayerMP)) return;
 		EntityPlayerMP player = (EntityPlayerMP) event.player;
+		ServerPlayerSettings settings = player.getCapability(PlayerSettings.SETTINGS_CAP_SERVER, null);
 		
-		updateSettings(player, event.player.worldObj.provider.getDimensionType().getName());
-		if (MoreCommands.isServerSide())
-			this.mod.getPacketDispatcher().sendS14ChangeWorld(player, player.getServer().getFolderName());
+		if (settings != null)   //should never be null
+			settings.updateSettingsProperties(SettingsProperty.getPropertyMap(player));
 		
-		this.mod.getLogger().info("Requesting Client Handshake for Player '" + player.getName() + "'");
-		this.mod.getPacketDispatcher().sendS00Handshake(player);
-		
-		if (GlobalSettings.retryHandshake)
-			PacketHandlerServer.addPlayerToRetries(player);
-		
-		if (GlobalSettings.welcome_message) {
+		if (MoreCommandsConfig.welcome_message) {
 			ITextComponent icc1 = (new TextComponentString("MoreCommands (v" + Reference.VERSION + ") loaded")).setChatStyle((new Style()).setColor(TextFormatting.DARK_AQUA));
 			ITextComponent icc2 = (new TextComponentString(Reference.WEBSITE)).setChatStyle((new Style()).setColor(TextFormatting.YELLOW).setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Reference.WEBSITE)));
 			ITextComponent icc3 = (new TextComponentString(" - ")).setChatStyle((new Style()).setColor(TextFormatting.DARK_GRAY));
@@ -234,6 +229,11 @@ public class CommonPatcher {
 	public void playerLogout(PlayerLoggedOutEvent event) {
 		if (!(event.player instanceof EntityPlayerMP)) return;
 		ServerPlayerSettings settings = event.player.getCapability(PlayerSettings.SETTINGS_CAP_SERVER, null);
-		if (settings != null) {settings.updateSettings(null, null, null); settings.getManager().saveSettings();}
+		
+		if (settings!= null) {
+			settings.captureChannelsAndLeaveForLogout();
+			settings.resetSettingsProperties(Maps.<SettingsProperty, String>newEnumMap(SettingsProperty.class));
+			settings.getManager().saveSettings();
+		}
 	}
 }

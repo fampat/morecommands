@@ -2,12 +2,12 @@ package com.mrnobody.morecommands.command.server;
 
 import com.mojang.authlib.GameProfile;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.NumberInvalidException;
@@ -36,7 +36,7 @@ public class CommandOp extends StandardCommand implements ServerCommandPropertie
 	}
 	
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 0) {
 			MinecraftServer server = sender.getServer();
 			GameProfile profile = server.getPlayerProfileCache().getGameProfileForUsername(params[0]);
@@ -55,6 +55,8 @@ public class CommandOp extends StandardCommand implements ServerCommandPropertie
             notifyOperators(sender.getMinecraftISender(), this, "commands.op.success", params[0]);
         }
 		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 	
 	//Copied from net.minecraft.server.management.PlayerList
@@ -81,7 +83,7 @@ public class CommandOp extends StandardCommand implements ServerCommandPropertie
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return getRequiredPermissionLevel();
 	}
 	

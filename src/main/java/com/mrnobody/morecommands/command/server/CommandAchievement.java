@@ -10,15 +10,15 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
+import com.mrnobody.morecommands.util.EntityUtils;
 import com.mrnobody.morecommands.util.ReflectionHelper;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -62,8 +62,8 @@ public class CommandAchievement extends StandardCommand implements ServerCommand
         return "command.achievement.syntax";
     }
     
-    public void execute(CommandSender sender, String[] params) throws CommandException {
-    	final Player player = new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
+    public String execute(CommandSender sender, String[] params) throws CommandException {
+    	final EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
     	
     	if (params.length > 0) {
     		if(params[0].equals("list")) {
@@ -87,7 +87,7 @@ public class CommandAchievement extends StandardCommand implements ServerCommand
     		else if (params.length > 1 && params[0].equalsIgnoreCase("unlock")) {
     			if (params[1].equals("*")) {
                     Iterator<Achievement> iterator = AchievementList.ACHIEVEMENTS.iterator();
-                    while (iterator.hasNext()) player.addAchievement(iterator.next());
+                    while (iterator.hasNext()) EntityUtils.addAchievement(player, iterator.next());
         			sender.sendLangfileMessage("command.achievement.unlockAllSuccess");
     			}
     			else {
@@ -102,7 +102,7 @@ public class CommandAchievement extends StandardCommand implements ServerCommand
     					unlock.add(achievement.parentAchievement);
     				
     				Iterator<Achievement> iterator = Lists.reverse(unlock).iterator();
-    				while (iterator.hasNext()) player.addAchievement(iterator.next());
+    				while (iterator.hasNext()) EntityUtils.addAchievement(player, iterator.next());
     				
     				sender.sendLangfileMessage("command.achievement.unlockSuccess", params[1]);
     			}
@@ -110,7 +110,7 @@ public class CommandAchievement extends StandardCommand implements ServerCommand
     		else if (params.length > 1 && params[0].equalsIgnoreCase("lock")) {
     			if (params[1].equals("*")) {
                     Iterator<Achievement> iterator = Lists.reverse(AchievementList.ACHIEVEMENTS).iterator();
-                    while (iterator.hasNext()) player.removeAchievement(iterator.next());
+                    while (iterator.hasNext()) EntityUtils.removeAchievement(player, iterator.next());
         			sender.sendLangfileMessage("command.achievement.lockAllSuccess");
     			}
     			else {
@@ -130,13 +130,15 @@ public class CommandAchievement extends StandardCommand implements ServerCommand
     					lock.remove(achievement.parentAchievement);
     				
                     Iterator<Achievement> iterator = lock.iterator();
-                    while (iterator.hasNext()) player.removeAchievement(iterator.next());
+                    while (iterator.hasNext()) EntityUtils.removeAchievement(player, iterator.next());
         			sender.sendLangfileMessage("command.achievement.lockSuccess", params[1]);
     			}
     		}
     		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
     	}
     	else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+    	
+    	return null;
     }
     
 	@Override
@@ -150,7 +152,7 @@ public class CommandAchievement extends StandardCommand implements ServerCommand
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	
