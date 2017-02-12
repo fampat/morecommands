@@ -1,10 +1,13 @@
 package com.mrnobody.morecommands.patch;
 
-import com.mrnobody.morecommands.wrapper.EntityCamera;
+import com.mrnobody.morecommands.command.AbstractCommand.ResultAcceptingCommandSender;
+import com.mrnobody.morecommands.util.EntityCamera;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.entity.MoverType;
 import net.minecraft.stats.StatisticsManager;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 
 /**
@@ -15,7 +18,7 @@ import net.minecraft.world.World;
  * @author MrNobody98
  *
  */
-public class EntityPlayerSP extends net.minecraft.client.entity.EntityPlayerSP {
+public class EntityPlayerSP extends net.minecraft.client.entity.EntityPlayerSP implements ResultAcceptingCommandSender {
 	private boolean overrideOnLadder = false;
 	private boolean freezeCam = false;
 	private boolean freeCam = false;
@@ -30,6 +33,10 @@ public class EntityPlayerSP extends net.minecraft.client.entity.EntityPlayerSP {
 	
 	private NetHandlerPlayClient handler;
 	private StatisticsManager writer;
+
+	private String capturedCommandResult = null, cmdSentToServer = null;
+	private StringBuilder capturedCommandMessages = new StringBuilder();
+	private boolean captureNextCommandResult = false;	
 	
     public EntityPlayerSP(Minecraft mcIn, World worldIn, NetHandlerPlayClient p_i46278_3_, StatisticsManager p_i46278_4_) {
         super(mcIn, worldIn, p_i46278_3_, p_i46278_4_);
@@ -37,6 +44,64 @@ public class EntityPlayerSP extends net.minecraft.client.entity.EntityPlayerSP {
         this.writer = p_i46278_4_;
     }
 
+    /**
+     * This method should be invoked before this entity is passed to {@link net.minecraft.command.ICommandManager#executeCommand(net.minecraft.command.ICommandSender, String)}. 
+     * Invoking this method will make this entity capture the result of the command execution. Result either means the return value
+     * of the {@link com.mrnobody.morecommands.command.AbstractCommand#execute(com.mrnobody.morecommands.command.CommandSender, String[])} method
+     * if the command is a subclass of this class or, if it is not, or if the return value is null, the chat messages sent via the
+     * {@link #addChatMessage(IChatComponent)} method. After command execution, the captured results must be reset via the
+     * {@link #getCapturedCommandResult()} method. This method also returns the result. 
+     */
+    public void setCaptureNextCommandResult() {
+    	this.captureNextCommandResult = true;
+    }
+    
+    @Override
+    public void addChatMessage(ITextComponent message) {
+    	if (this.captureNextCommandResult) this.capturedCommandMessages.append(" " + message.getUnformattedText());
+    	super.addChatMessage(message);
+    }
+    
+    @Override
+    public void setCommandResult(String commandName, String[] args, String result) {
+    	if (this.captureNextCommandResult && result != null) 
+    		this.capturedCommandResult = result;
+    }
+    
+    /**
+     * Disables capturing of command results and resets and returns them.
+     * 
+     * @return the captured result of the command execution (requires enabling capturing before command execution via
+     * 			{@link #setCaptureNextCommandResult()}. Will never be null
+     * @see #setCaptureNextCommandResult()
+     */
+    public String getCapturedCommandResult() {
+    	String result = null;
+    	
+    	if (this.capturedCommandResult != null) result = this.capturedCommandResult;
+    	else result = this.capturedCommandMessages.toString().trim();
+    	
+    	this.capturedCommandResult = this.cmdSentToServer = null;
+    	this.capturedCommandMessages = new StringBuilder();
+    	this.captureNextCommandResult = false;
+    	
+    	return result;
+    }
+    
+    @Override
+    public void sendChatMessage(String message) {
+    	if (this.captureNextCommandResult && message.startsWith("/")) this.cmdSentToServer = message;
+    	else super.sendChatMessage(message);
+    }
+    
+    /**
+     * @return the last command that should have been sent to the server via {@link #sendChatMessage(String)}
+     * (if command result capturing is enabled via {@link #setCaptureNextCommandResult()}
+     */
+    public String getCmdSentToServer() {
+    	return this.cmdSentToServer;
+    }
+    
 	public void setFluidMovement(boolean fluidmovement) {
 		this.fluidmovement = fluidmovement;
 	}
@@ -120,14 +185,14 @@ public class EntityPlayerSP extends net.minecraft.client.entity.EntityPlayerSP {
 	public void setGravity(float gravity) {
 		this.gravity = gravity;
 	}
-	
+
     @Override
     public boolean isUser() {
     	return !(this.freeCam || this.freezeCam);
     }
 	
 	@Override
-	public void moveEntity(double x, double y, double z) {
+	public void moveEntity(MoverType mt, double x, double y, double z) {
 		if (this.freezeCam && Minecraft.getMinecraft().getRenderViewEntity() instanceof EntityCamera) {
 			((EntityCamera) Minecraft.getMinecraft().getRenderViewEntity()).setFreezeCamera(0, 0, 0, this.freezeCamYaw, this.freezeCamPitch);
 		}
@@ -136,7 +201,7 @@ public class EntityPlayerSP extends net.minecraft.client.entity.EntityPlayerSP {
 			return;
 		}
 		
-		super.moveEntity(x, y, z);
+		super.moveEntity(mt, x, y, z);
 	}
 	
 	@Override

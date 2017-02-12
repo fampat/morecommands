@@ -1,21 +1,33 @@
 package com.mrnobody.morecommands.patch;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Floats;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.settings.GlobalSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
+import com.mrnobody.morecommands.util.EntityUtils;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
 import com.mrnobody.morecommands.util.ReflectionHelper;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.util.Variables;
+import com.mrnobody.morecommands.util.WorldUtils;
 
+import net.minecraft.entity.MoverType;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.MobEffects;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketThreadUtil;
+import net.minecraft.network.play.client.CPacketChatMessage;
 import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
@@ -25,13 +37,12 @@ import net.minecraft.world.WorldServer;
 /**
  * The patched class of {@link net.minecraft.network.NetHandlerPlayServer} <br>
  * It controls incoming packets from the client. The patch is needed to allow <br>
- * noclipping
+ * noclipping and to replace variables in the chat.
  * 
  * @author MrNobody98
  *
  */
-public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlayServer
-{
+public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlayServer {
 	private static final Logger logger = LogManager.getLogger(net.minecraft.network.NetHandlerPlayServer.class);
 	private static final Field firstGoodX = ReflectionHelper.getField(ObfuscatedField.NetHandlerPlayServer_firstGoodX);
 	private static final Field firstGoodY = ReflectionHelper.getField(ObfuscatedField.NetHandlerPlayServer_firstGoodY);
@@ -66,7 +77,45 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
 	public boolean getOverrideNoclip() {
 		return this.overrideNoclip;
 	}
+	
+    @Override
+    public void processChatMessage(CPacketChatMessage p_147354_1_) {
+    	String message = p_147354_1_.getMessage();
 
+    	//required because because PacketThreadUtil.checkThreadAndQueue() terminates this method if we are not on the main thread
+    	if (this.playerEntity.getServerWorld().isCallingFromMinecraftThread()) {
+    		ServerPlayerSettings settings = this.playerEntity.getCapability(PlayerSettings.SETTINGS_CAP_SERVER, null);
+			Map<String, String> playerVars = settings == null ? new HashMap<String, String>() : settings.variables;
+    		boolean replaceIgnored;
+    		
+    		if (message.length() > 1 && message.charAt(0) == '%') {
+    			int end = message.indexOf('%', 1);
+    			String val = end > 0 ? playerVars.get(message.substring(1, end)) : null;
+    			
+    			replaceIgnored = val == null || !val.startsWith("/") ||
+    							(message.length() - 1 != end && message.charAt(end + 1) != ' ') ||
+    							!this.playerEntity.getServer().getCommandManager().getCommands().containsKey(val.substring(1));
+    		}
+    		else replaceIgnored = !message.startsWith("/") || !this.playerEntity.getServer().getCommandManager().getCommands().containsKey(message.substring(1).split(" ")[0]);
+    		
+        	try {
+        		String world = this.playerEntity.getEntityWorld().getSaveHandler().getWorldDirectory().getName(), dim = this.playerEntity.getEntityWorld().provider.getDimensionType().getName();
+        		
+    			if (MoreCommandsConfig.enableGlobalVars && MoreCommandsConfig.enablePlayerVars)
+    				message = Variables.replaceVars(message, replaceIgnored, playerVars, GlobalSettings.getInstance().variables.get(ImmutablePair.of(world, dim)));
+    			else if (MoreCommandsConfig.enablePlayerVars)
+    				message = Variables.replaceVars(message, replaceIgnored, playerVars);
+    			else if (MoreCommandsConfig.enableGlobalVars)
+    				message = Variables.replaceVars(message, replaceIgnored, GlobalSettings.getInstance().variables.get(ImmutablePair.of(world, dim)));
+        	}
+            catch (Variables.VariablesCouldNotBeResolvedException vcnbre) {
+                message = vcnbre.getNewString();
+            }
+    	}
+    	
+    	super.processChatMessage(new CPacketChatMessage(message));
+    }
+    
     @Override
     public void processPlayer(CPacketPlayer packet) {
         if (this.enabled && this.overrideNoclip) {
@@ -76,24 +125,24 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
         }
     }
     
-    private static void checkSafe(NetHandlerPlayServer handler, net.minecraft.entity.player.EntityPlayerMP player) {
+    private static void checkSafe(NetHandlerPlayServer handler, EntityPlayerMP player) {
 		if(handler.getOverrideNoclip() && !player.capabilities.isFlying) {
 			handler.setOverrideNoclip(false);
 			MoreCommands.INSTANCE.getPacketDispatcher().sendS06Noclip(player, false);
 			
 			(new CommandSender(player)).sendLangfileMessage("command.noclip.autodisable");
-			ascendPlayer(new Player(player));
+			ascendPlayer(player);
 		}
 	}
 
-	private static boolean ascendPlayer(Player player) {
+	private static boolean ascendPlayer(EntityPlayerMP player) {
 		BlockPos playerPos = player.getPosition();
-		if(player.getWorld().isClearBelow(playerPos) && playerPos.getY() > 0) {
+		if (WorldUtils.isClearBelow(player.worldObj, playerPos) && playerPos.getY() > 0) {
 			return false;
 		}
 		double y = playerPos.getY() - 1;
 		while (y < 260) {
-			if(player.getWorld().isClear(new BlockPos(playerPos.getX(), y++, playerPos.getZ()))) {
+			if (WorldUtils.isClear(player.worldObj, new BlockPos(playerPos.getX(), y++, playerPos.getZ()))) {
 				final double newY;
 				if(playerPos.getY() > 0) {
 					newY = y - 1;
@@ -101,7 +150,7 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
 					newY = y;
 				}
 				BlockPos newPos = new BlockPos(playerPos.getX() + 0.5F, newY, playerPos.getZ() + 0.5F);
-				player.setPosition(newPos);
+				EntityUtils.setPosition(player, newPos);
 				break;
 			}
 		}
@@ -124,12 +173,7 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
             {
                 if (getInt(networkTickCount) == 0)
                 {
-            		setDouble(firstGoodX, this.playerEntity.posX);
-            		setDouble(firstGoodY, this.playerEntity.posY);
-            		setDouble(firstGoodZ, this.playerEntity.posZ);
-            		setDouble(lastGoodX, this.playerEntity.posX);
-            		setDouble(lastGoodY, this.playerEntity.posY);
-            		setDouble(lastGoodZ, this.playerEntity.posX);
+                	this.captureCurrentPosition();
                 }
 
                 if (getObject(targetPos) != null)
@@ -196,7 +240,7 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
                             this.playerEntity.jump();
                         }
 
-                        this.playerEntity.moveEntity(d7, d8, d9);
+                        this.playerEntity.moveEntity(MoverType.PLAYER, d7, d8, d9);
                         this.playerEntity.onGround = packetIn.isOnGround();
                         double d12 = d8;
                         d7 = d4 - this.playerEntity.posX;
@@ -215,7 +259,7 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
                         /*if (!this.playerEntity.isInvulnerableDimensionChange() && d11 > 0.0625D && !this.playerEntity.isPlayerSleeping() && !this.playerEntity.interactionManager.isCreative() && this.playerEntity.interactionManager.getGameType() != WorldSettings.GameType.SPECTATOR)
                         {
                             flag = true;
-                            logger.wwarn("{} moved wrongly!", this.playerEntity.getName());
+                            logger.warn("{} moved wrongly!", this.playerEntity.getName());
                         }*/
 
                         this.playerEntity.setPositionAndRotation(d4, d5, d6, f, f1);
@@ -249,8 +293,17 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
         }
     }
 	
+    private void captureCurrentPosition() {
+		setDouble(firstGoodX, this.playerEntity.posX);
+		setDouble(firstGoodY, this.playerEntity.posY);
+		setDouble(firstGoodZ, this.playerEntity.posZ);
+		setDouble(lastGoodX, this.playerEntity.posX);
+		setDouble(lastGoodY, this.playerEntity.posY);
+		setDouble(lastGoodZ, this.playerEntity.posX);
+    }
+	
     private static boolean isMovePlayerPacketInvalid(CPacketPlayer packetIn) {
-        return Doubles.isFinite(packetIn.getX(0.0D)) && Doubles.isFinite(packetIn.getY(0.0D)) && Doubles.isFinite(packetIn.getZ(0.0D)) && Floats.isFinite(packetIn.getYaw(0.0F)) && Floats.isFinite(packetIn.getPitch(0.0F)) ? false : Math.abs(packetIn.getX(0.0D)) <= 3.0E7D && Math.abs(packetIn.getX(0.0D)) <= 3.0E7D;
+        return Doubles.isFinite(packetIn.getX(0.0D)) && Doubles.isFinite(packetIn.getY(0.0D)) && Doubles.isFinite(packetIn.getZ(0.0D)) && Floats.isFinite(packetIn.getPitch(0.0F)) && Floats.isFinite(packetIn.getYaw(0.0F)) ? false : Math.abs(packetIn.getX(0.0D)) <= 3.0E7D && Math.abs(packetIn.getX(0.0D)) <= 3.0E7D;
     }
 	
     private boolean getBoolean(Field field) {

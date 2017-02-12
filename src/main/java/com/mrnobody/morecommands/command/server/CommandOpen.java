@@ -4,22 +4,25 @@ import java.util.Map;
 
 import com.google.common.collect.MapMaker;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.util.EntityUtils;
+import com.mrnobody.morecommands.util.WorldUtils;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockAnvil;
 import net.minecraft.block.BlockWorkbench;
+import net.minecraft.client.gui.inventory.GuiScreenHorseInventory;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityMinecartContainer;
+import net.minecraft.entity.passive.AbstractChestHorse;
 import net.minecraft.entity.passive.EntityHorse;
 import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
@@ -71,12 +74,12 @@ public class CommandOpen extends StandardCommand implements ServerCommandPropert
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
-		Entity entity = new Player(player).traceEntity(128D);
+		Entity entity = EntityUtils.traceEntity(player, 128D);
 		
-		if (params.length == 0 && entity instanceof EntityHorse && ((EntityHorse) entity).isChested()) {
-			((EntityHorse) entity).openGUI(player);
+		if (params.length == 0 && entity instanceof AbstractChestHorse) {
+			((AbstractChestHorse) entity).openGUI(player);
 		}
 		else if (params.length == 0 && entity instanceof EntityVillager) {
 			player.displayVillagerTradeGui((EntityVillager) entity);
@@ -88,23 +91,23 @@ public class CommandOpen extends StandardCommand implements ServerCommandPropert
 			if (params.length == 0 || params.length > 2) {
 				BlockPos trace; 
 				
-				try {trace = params.length > 2 ? getCoordFromParams(sender.getMinecraftISender(), params, 0) : new Player(player).traceBlock(128D);}
+				try {trace = params.length > 2 ? getCoordFromParams(sender.getMinecraftISender(), params, 0) : EntityUtils.traceBlock(player, 128D);}
 				catch (NumberFormatException nfe) {throw new CommandException("command.open.NAN", sender);}
 				
 				if (trace == null)
 					throw new CommandException("command.open.noBlock", sender);
 				
 				TileEntity te = sender.getWorld().getTileEntity(trace);
-				Block block = sender.getWorld().getBlock(trace);
+				Block block = WorldUtils.getBlock(sender.getWorld(), trace);
 				
 				if (te instanceof IInteractionObject)
 					player.displayGui((IInteractionObject) te);
 				else if (te instanceof IInventory)
 					player.displayGUIChest((IInventory) te);
 				else if (block == Blocks.ANVIL)
-					player.displayGui(new BlockAnvil.Anvil(sender.getWorld().getMinecraftWorld(), trace));
+					player.displayGui(new BlockAnvil.Anvil(sender.getWorld(), trace));
 				else if (block == Blocks.CRAFTING_TABLE)
-					player.displayGui(new BlockWorkbench.InterfaceCraftingTable(sender.getWorld().getMinecraftWorld(), trace));
+					player.displayGui(new BlockWorkbench.InterfaceCraftingTable(sender.getWorld(), trace));
 				else 
 					throw new CommandException("command.open.invalidBlock", sender);
 			}
@@ -112,7 +115,7 @@ public class CommandOpen extends StandardCommand implements ServerCommandPropert
 				if (params[0].equalsIgnoreCase("enderchest"))
 					player.displayGUIChest(player.getInventoryEnderChest());
 				else if (params[0].equalsIgnoreCase("enchantment_table") || (params.length > 1 && params[0].equalsIgnoreCase("enchantment") && params[1].equalsIgnoreCase("table"))) {
-					final World w = sender.getWorld().getMinecraftWorld();
+					final World w = sender.getWorld();
 					
 					player.displayGui(new IInteractionObject() {
 						@Override public boolean hasCustomName() {return false;}
@@ -126,11 +129,11 @@ public class CommandOpen extends StandardCommand implements ServerCommandPropert
 					this.allowedInteractions.put(player, player.openContainer);
 				}
 				else if (params[0].equalsIgnoreCase("anvil")) {
-					player.displayGui(new BlockAnvil.Anvil(sender.getWorld().getMinecraftWorld(), BlockPos.ORIGIN)); 
+					player.displayGui(new BlockAnvil.Anvil(sender.getWorld(), BlockPos.ORIGIN)); 
 					this.allowedInteractions.put(player, player.openContainer);
 				}
 				else if (params[0].equalsIgnoreCase("workbench") || params[0].equalsIgnoreCase("crafting_table") || (params.length > 1 && params[0].equalsIgnoreCase("crafting") && params[1].equalsIgnoreCase("table")) ) {
-					player.displayGui(new BlockWorkbench.InterfaceCraftingTable(sender.getWorld().getMinecraftWorld(), BlockPos.ORIGIN));
+					player.displayGui(new BlockWorkbench.InterfaceCraftingTable(sender.getWorld(), BlockPos.ORIGIN));
 					this.allowedInteractions.put(player, player.openContainer);
 				}
 				else if (params[0].equalsIgnoreCase("furnace") || params[0].equalsIgnoreCase("brewing_stand") || (params.length > 1 && params[0].equalsIgnoreCase("brewing") && params[1].equalsIgnoreCase("stand")))
@@ -140,6 +143,8 @@ public class CommandOpen extends StandardCommand implements ServerCommandPropert
 			}
 			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
+		
+		return null;
 	}
 
 	@Override
@@ -153,7 +158,7 @@ public class CommandOpen extends StandardCommand implements ServerCommandPropert
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 

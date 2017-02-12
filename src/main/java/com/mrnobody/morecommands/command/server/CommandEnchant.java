@@ -1,17 +1,18 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.util.GlobalSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.EntityLivingBase;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
+import com.mrnobody.morecommands.util.EntityUtils;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.enchantment.Enchantment;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 
@@ -36,8 +37,8 @@ public class CommandEnchant extends StandardCommand implements ServerCommandProp
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		EntityLivingBase entity = new EntityLivingBase(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.EntityLivingBase.class));
+	public String execute(CommandSender sender, String[] params) throws CommandException {
+		EntityLivingBase entity = getSenderAsEntity(sender.getMinecraftISender(), EntityLivingBase.class);
 		
 		if (params.length > 0) {
     		if(params[0].equalsIgnoreCase("list")) {
@@ -61,13 +62,13 @@ public class CommandEnchant extends StandardCommand implements ServerCommandProp
     		}
     		else if (params[0].equalsIgnoreCase("remove")) {
     			if (params.length <= 1 || (params.length > 1 && params[1].equalsIgnoreCase("*"))) {
-    				entity.removeEnchantments();
+    				EntityUtils.removeEnchantments(entity);
     				sender.sendLangfileMessage("command.enchant.removeAllSuccess");
     			}
     			else if (params.length > 1) {
     				Enchantment e = getEnchantment(params[1]);
     				
-    				if (e != null) entity.removeEnchantment(e);
+    				if (e != null) EntityUtils.removeEnchantment(entity, e);
     				else throw new CommandException("command.enchant.notFound", sender);
     				
     				sender.sendLangfileMessage("command.enchant.removeSuccess");
@@ -84,7 +85,7 @@ public class CommandEnchant extends StandardCommand implements ServerCommandProp
 				Enchantment e = getEnchantment(params[1]);
 				
 				if (e != null) {
-					if (!entity.addEnchantment(e, level, GlobalSettings.strictEnchanting))
+					if (!EntityUtils.addEnchantment(entity, e, level, MoreCommandsConfig.strictEnchanting))
 						throw new CommandException("command.enchant.cantApply", sender);
 				}
 				else throw new CommandException("command.enchant.notFound", sender);
@@ -94,6 +95,8 @@ public class CommandEnchant extends StandardCommand implements ServerCommandProp
     		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
 		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 	
 	@Override
@@ -107,12 +110,12 @@ public class CommandEnchant extends StandardCommand implements ServerCommandProp
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	
 	@Override
 	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
-		return isSenderOfEntityType(sender, net.minecraft.entity.EntityLivingBase.class);
+		return isSenderOfEntityType(sender, EntityLivingBase.class);
 	}
 }

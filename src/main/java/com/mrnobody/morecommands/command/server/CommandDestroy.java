@@ -4,13 +4,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.TargetSelector;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -18,6 +18,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -44,7 +45,7 @@ public class CommandDestroy extends StandardCommand implements ServerCommandProp
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		params = reparseParamsWithNBTData(params);
 		boolean isTarget = params.length > 0 && isTargetSelector(params[0]);
 		int startIndex = isTarget ? 1 : 0; int clearMode, slot = -1; 
@@ -70,7 +71,7 @@ public class CommandDestroy extends StandardCommand implements ServerCommandProp
 				}
 				
 				if (params.length > startIndex + 2) {
-					NBTBase base = getNBTFromParam(params[startIndex + 2], sender.getMinecraftISender());
+					NBTBase base = getNBTFromParam(params[startIndex + 2]);
 					if (base == null || !(base instanceof NBTTagCompound)) throw new CommandException("command.destroy.invalidNBT", sender);
 					nbt = (NBTTagCompound) base;
 				}
@@ -89,19 +90,19 @@ public class CommandDestroy extends StandardCommand implements ServerCommandProp
 			
 			if (clearMode == 0) {
 				for (Entity entity : entities) {
-					if (TargetSelector.replaceCurrentItem(entity, null)) replaced++;
+					if (TargetSelector.replaceCurrentItem(entity, ItemStack.field_190927_a)) replaced++;
 					if (entity instanceof EntityPlayer) ((EntityPlayer) entity).inventoryContainer.detectAndSendChanges();
 				}
 			}
 			else if (clearMode == 1) {
 				for (Entity entity : entities) {
-					if (TargetSelector.replaceItemInInventory(entity, slot, null)) replaced++;
+					if (TargetSelector.replaceItemInInventory(entity, slot, ItemStack.field_190927_a)) replaced++;
 					if (entity instanceof EntityPlayer) ((EntityPlayer) entity).inventoryContainer.detectAndSendChanges();
 				}
 			}
 			else if (clearMode == 2) {
 				for (Entity entity : entities) {
-					if (TargetSelector.replaceMatchingItems(entity, item, meta, nbt, equalLists, null)) replaced++;
+					if (TargetSelector.replaceMatchingItems(entity, item, meta, nbt, equalLists, ItemStack.field_190927_a)) replaced++;
 					if (entity instanceof EntityPlayer) ((EntityPlayer) entity).inventoryContainer.detectAndSendChanges();
 				}
 			}
@@ -116,7 +117,7 @@ public class CommandDestroy extends StandardCommand implements ServerCommandProp
 					
 					@Override public void applyToTileEntity(TileEntity entity) {
 						if (entity instanceof IInventory) 
-							TargetSelector.replaceItemInInventory((IInventory) entity, slot_f, null);
+							TargetSelector.replaceItemInInventory((IInventory) entity, slot_f, ItemStack.field_190927_a);
 					}
 				});
 			}
@@ -131,11 +132,13 @@ public class CommandDestroy extends StandardCommand implements ServerCommandProp
 					
 					@Override public void applyToTileEntity(TileEntity entity) {
 						if (entity instanceof IInventory) 
-							TargetSelector.replaceMatchingItems((IInventory) entity, item_f, meta_f, nbt_f, equalLists_f, null);
+							TargetSelector.replaceMatchingItems((IInventory) entity, item_f, meta_f, nbt_f, equalLists_f, ItemStack.field_190927_a);
 					}
 				});
 			}
 		}
+		
+		return null;
 	}
 	
 	@Override
@@ -149,7 +152,7 @@ public class CommandDestroy extends StandardCommand implements ServerCommandProp
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 	

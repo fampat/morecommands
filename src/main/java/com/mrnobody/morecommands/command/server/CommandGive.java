@@ -3,13 +3,13 @@ package com.mrnobody.morecommands.command.server;
 import java.util.Arrays;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.util.EntityUtils;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -37,9 +37,9 @@ public class CommandGive extends StandardCommand implements ServerCommandPropert
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params)throws CommandException {
+	public String execute(CommandSender sender, String[] params)throws CommandException {
 		if (params.length > 0) {
-			Player player = new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
+			EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 			Item item = getItem(params[0]);
 			
 			if (item != null) {
@@ -58,15 +58,17 @@ public class CommandGive extends StandardCommand implements ServerCommandPropert
 				
 				if (params.length > 3) {
 					String nbtString = rejoinParams(Arrays.copyOfRange(params, 3, params.length));
-					nbt = getNBTFromParam(params[3], sender.getMinecraftISender());
+					nbt = getNBTFromParam(params[3]);
 					if (!(nbt instanceof NBTTagCompound)) throw new CommandException("command.give.noCompound", sender);
 				}
 				
-				player.givePlayerItem(item, quantity, meta, (NBTTagCompound) nbt);
+				EntityUtils.givePlayerItem(player, item, quantity, meta, (NBTTagCompound) nbt);
 			}
 			else throw new CommandException("command.give.notFound", sender);
 		}
 		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 	
 	@Override
@@ -80,7 +82,7 @@ public class CommandGive extends StandardCommand implements ServerCommandPropert
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

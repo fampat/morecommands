@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.MultipleCommands;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
@@ -15,8 +17,6 @@ import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.DummyCommand;
 import com.mrnobody.morecommands.util.LanguageManager;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
@@ -47,7 +47,7 @@ public class CommandHelp extends StandardCommand implements ServerCommandPropert
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		String langCode = MoreCommands.getProxy().getLang(sender.getMinecraftISender());
 		
 		final ITextComponent HEADING = new TextComponentString(LanguageManager.translate(langCode, "command.generic.help.commandheader")).setStyle(new Style().setColor(TextFormatting.GREEN));
@@ -124,6 +124,8 @@ public class CommandHelp extends StandardCommand implements ServerCommandPropert
 				sender.sendChatComponent(FOOTER);
 			}
 		}
+		
+		return null;
 	}
 	
 	private String[] getInfo(ServerCommand<?> cmd) {
@@ -155,7 +157,7 @@ public class CommandHelp extends StandardCommand implements ServerCommandPropert
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 	

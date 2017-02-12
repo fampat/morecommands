@@ -1,16 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
-import com.mrnobody.morecommands.util.GlobalSettings;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.monster.EntityCreeper;
@@ -25,6 +24,8 @@ import net.minecraftforge.event.world.ExplosionEvent;
 		videoURL = "command.creeper.videoURL"
 		)
 public class CommandCreeper extends StandardCommand implements ServerCommandProperties, EventListener<ExplosionEvent> {
+	private boolean creeperExplosion = true;
+	
 	public CommandCreeper() {
 		EventHandler.EXPLOSION.register(this);
 	}
@@ -32,7 +33,7 @@ public class CommandCreeper extends StandardCommand implements ServerCommandProp
 	@Override
 	public void onEvent(ExplosionEvent event) {
 		if (event instanceof ExplosionEvent.Start && event.getExplosion().getExplosivePlacedBy() instanceof EntityCreeper) {
-			if (!GlobalSettings.creeperExplosion) {event.setCanceled(true); return;}
+			if (!this.creeperExplosion) {event.setCanceled(true); return;}
 			
 			EntityCreeper creeper = (EntityCreeper) event.getExplosion().getExplosivePlacedBy();
 			
@@ -54,17 +55,18 @@ public class CommandCreeper extends StandardCommand implements ServerCommandProp
 	}
 	
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		boolean global = params.length > 0 && params[0].equalsIgnoreCase("global");
 		ServerPlayerSettings settings = global ? null : getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
 		
 		try {
-			if (!global) settings.creeperExplosion = parseTrueFalse(params, 0, settings.creeperExplosion);
-			else GlobalSettings.creeperExplosion = parseTrueFalse(params, 1, GlobalSettings.creeperExplosion);
+			if (!global) settings.creeperExplosion = parseTrueFalse(params, 0, !settings.creeperExplosion);
+			else this.creeperExplosion = parseTrueFalse(params, 1, !this.creeperExplosion);
 		}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.creeper.failure", sender);}
 		
-		sender.sendLangfileMessage((global ? GlobalSettings.creeperExplosion : settings.creeperExplosion) ? "command.creeper.on" : "command.creeper.off");
+		sender.sendLangfileMessage((global ? this.creeperExplosion : settings.creeperExplosion) ? "command.creeper.on" : "command.creeper.off");
+		return null;
 	}
 	
 	@Override
@@ -78,7 +80,7 @@ public class CommandCreeper extends StandardCommand implements ServerCommandProp
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

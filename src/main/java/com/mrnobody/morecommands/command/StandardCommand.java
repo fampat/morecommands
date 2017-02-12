@@ -1,10 +1,8 @@
 package com.mrnobody.morecommands.command;
 
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.fml.relauncher.Side;
 
 /**
@@ -17,9 +15,28 @@ import net.minecraftforge.fml.relauncher.Side;
 public abstract class StandardCommand extends AbstractCommand {
 	@Override
 	public final void execute(MinecraftServer server, ICommandSender sender, String[] params) throws net.minecraft.command.CommandException {
-    	if (this.checkRequirements(sender, params, this instanceof ClientCommandProperties ? Side.CLIENT : Side.SERVER)) {
-        	try {this.execute(new CommandSender(sender), params);}
-        	catch (CommandException e) {throw new net.minecraft.command.CommandException(e.getMessage());}
+		ITextComponent error = this.checkRequirements(sender, params, this instanceof ClientCommandProperties ? Side.CLIENT : Side.SERVER);
+		ResultAcceptingCommandSender resultAcceptor = sender instanceof ResultAcceptingCommandSender ? (ResultAcceptingCommandSender) sender : null;
+		
+    	if (error == null) {
+        	try {
+        		String result = this.execute(new CommandSender(sender), params);
+        		if (resultAcceptor != null) resultAcceptor.setCommandResult(this.getCommandName(), params, result);
+        	}
+        	catch (CommandException e) {
+        		if (e.getCause() instanceof net.minecraft.command.CommandException) {
+        			if (resultAcceptor != null) resultAcceptor.setCommandResult(this.getCommandName(), params, e.getCause().getMessage());
+        			if (e.getCause().getMessage() != null) throw (net.minecraft.command.CommandException) e.getCause();
+        		}
+        		else {
+        			if (resultAcceptor != null) resultAcceptor.setCommandResult(this.getCommandName(), params, e.getMessage());
+        			if (e.getMessage() != null) throw new net.minecraft.command.CommandException(e.getMessage());
+        		}
+        	}
+    	}
+    	else {
+    		sender.addChatMessage(error);
+    		if (resultAcceptor != null) resultAcceptor.setCommandResult(this.getCommandName(), params, error.getUnformattedText());
     	}
 	}
 }

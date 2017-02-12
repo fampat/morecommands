@@ -1,7 +1,6 @@
 package com.mrnobody.morecommands.util;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,6 +40,8 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.item.EntityArmorStand;
+import net.minecraft.entity.passive.AbstractChestHorse;
+import net.minecraft.entity.passive.AbstractHorse;
 import net.minecraft.entity.passive.EntityHorse;
 import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.passive.HorseArmorType;
@@ -63,6 +64,7 @@ import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -89,7 +91,7 @@ public final class TargetSelector {
 	private TargetSelector() {}
 	
 	/** This matches the at-tokens introduced for command blocks, including their arguments, if any. */
-	private static final Pattern tokenPattern = Pattern.compile("^^@([pareb])(?:\\[([\\w=,!-]*)\\])?$");
+	private static final Pattern tokenPattern = Pattern.compile("^@([pareb])(?:\\[([\\w=,!-]*)\\])?$");
 	/** This matches things like "-1,,4", and is used for getting x,y,z,range from the token's argument list. */
 	private static final Pattern intListPattern = Pattern.compile("\\G([-!]?[\\w-]*)(?:$|,)");
 	/** This matches things like "rm=4,c=2" and is used for handling named token arguments. */
@@ -103,6 +105,9 @@ public final class TargetSelector {
     private static final ImmutableSet<String> blockTargetTypes = ImmutableSet.of("b");
     /** a pattern to check whether a target selector has arguments */
     private static final Pattern isTargetSeletorWithArguments = Pattern.compile("^@[pareb]\\[$");
+    
+    private static final ResourceLocation LIGHTNING= new ResourceLocation("lightning_bolt");
+    private static final ResourceLocation PLAYER = new ResourceLocation("player");
     
     /**
      * Creates an argument map from the given argument map.
@@ -346,7 +351,7 @@ public final class TargetSelector {
 				final List<NBTBase> disallowedNbt = Lists.<NBTBase>newArrayList();
 				
 				for (String nbt : nbtData) {
-					if (nbt == null) continue; NBTBase tag = AbstractCommand.getNBTFromParam(nbt.startsWith("!") ? nbt.substring(1) : nbt, sender);
+					if (nbt == null) continue; NBTBase tag = AbstractCommand.getNBTFromParam(nbt.startsWith("!") ? nbt.substring(1) : nbt);
 					if (tag == null) continue;
 					
 					if (nbt.startsWith("!")) disallowedNbt.add(tag);
@@ -576,9 +581,10 @@ public final class TargetSelector {
         	getEntityTeamPredicates(argumentMap, predicateBuilder);
         	getEntityScorePredicates(sender.getServer() == null ? FMLCommonHandler.instance().getMinecraftServerInstance() : sender.getServer(), argumentMap, predicateBuilder);
         	getEntityNamePredicates(argumentMap, predicateBuilder);
+        	getEntityTagPredicates(argumentMap, predicateBuilder);
         	getEntityRadiusPredicates(argumentMap, coordinate, predicateBuilder);
         	getEntityLookPredicates(argumentMap, predicateBuilder);
-        	getEntityNBTPredicates(argumentMap, sender, predicateBuilder);
+        	getEntityNBTPredicates(argumentMap, predicateBuilder);
 			
 			while (worlds.hasNext()) {
                 World world = worlds.next();
@@ -687,17 +693,14 @@ public final class TargetSelector {
 	        int radius = getIntWithDefault(argumentMap, "r", -1);
 	        Predicate<Entity> entityPredicates = Predicates.<Entity>and(predicates);
 	        Predicate<Entity> entityAlivePredicates = Predicates.<Entity>and(isEntityAlive, entityPredicates);
-
-            int playerCount = world.playerEntities.size();
-            int entityCount = world.loadedEntityList.size();
-            boolean lessPlayers = playerCount < entityCount / 16;
+	        
             final AxisAlignedBB aabb;
 
             if (!argumentMap.containsKey("dx") && !argumentMap.containsKey("dy") && !argumentMap.containsKey("dz")) {
                 if (radius >= 0) {
                     aabb = new AxisAlignedBB((double) (coord.getX() - radius), (double) (coord.getY() - radius), (double) (coord.getZ() - radius), (double) (coord.getX() + radius + 1), (double) (coord.getY() + radius + 1), (double) (coord.getZ() + radius + 1));
 
-                    if (targetIsPlayer && lessPlayers && !randomTargetSpecified)
+                    if (targetIsPlayer && !randomTargetSpecified)
                     	entities.addAll(world.getPlayers(entityClass, entityAlivePredicates));
                     else
                     	entities.addAll(world.getEntitiesWithinAABB(entityClass, aabb, entityAlivePredicates));
@@ -712,7 +715,7 @@ public final class TargetSelector {
             else {
                 aabb = getAABB(coord, dx, dy, dz);
 
-                if (targetIsPlayer && lessPlayers && !randomTargetSpecified) {
+                if (targetIsPlayer && !randomTargetSpecified) {
                 	Predicate<Entity> entityInAABB = new Predicate<Entity>() {
                 		@Override public boolean apply(Entity entity) {
                 			return entity != null && aabb.intersectsWith(entity.getEntityBoundingBox());
@@ -753,10 +756,9 @@ public final class TargetSelector {
 		 * Creates predicates which accept only entities which have certain nbt data
 		 * 
 		 * @param argumentMap the argument map
-		 * @param sender the command sender
 		 * @param predicateBuilder the list builder to add the predicates to
 		 */
-		private static void getEntityNBTPredicates(ListMultimap<String, String> argumentMap, ICommandSender sender, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
+		private static void getEntityNBTPredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
 			final boolean equalLists = argumentMap.containsKey("nbtm") && argumentMap.get("nbtm").get(0).equalsIgnoreCase("EQUAL");
 			List<String> nbtData = argumentMap.get("nbt");
 	        
@@ -765,7 +767,7 @@ public final class TargetSelector {
 				final List<NBTBase> disallowedNbt = Lists.<NBTBase>newArrayList();
 				
 				for (String nbt : nbtData) {
-					if (nbt == null) continue; NBTBase tag = AbstractCommand.getNBTFromParam(nbt.startsWith("!") ? nbt.substring(1) : nbt, sender);
+					if (nbt == null) continue; NBTBase tag = AbstractCommand.getNBTFromParam(nbt.startsWith("!") ? nbt.substring(1) : nbt);
 					if (tag == null) continue;
 					
 					if (nbt.startsWith("!")) disallowedNbt.add(tag);
@@ -775,7 +777,7 @@ public final class TargetSelector {
 				predicateBuilder.add(new Predicate<Entity>() {
 					@Override public boolean apply(Entity entity) {
 						NBTTagCompound compound = new NBTTagCompound(); entity.writeToNBT(compound);
-						compound.setString("id", getEntityNameString(entity));
+						compound.setString("id", getEntityName(entity).toString());
 						
 						for (NBTBase nbt : allowedNbt)
 							if (nbtContains(compound, nbt, !equalLists)) return true;
@@ -909,7 +911,7 @@ public final class TargetSelector {
 		 * @param argumentMap the argument map
 		 * @param predicateBuilder the list builder to add the predicates to
 		 */
-		private static void getTagPredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
+		private static void getEntityTagPredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
 			List<String> tags = argumentMap.get("tag");
 			
 			if (tags != null && !tags.isEmpty()) {
@@ -943,7 +945,7 @@ public final class TargetSelector {
 		 */
 		private static void getEntityScorePredicates(final MinecraftServer server, ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
 	        final Map<String, Integer> scores = getScores(argumentMap);
-
+	        
 	        if (scores != null && !scores.isEmpty()) {
 	        	predicateBuilder.add(new Predicate<Entity>() {
 	                public boolean apply(Entity entity) {
@@ -1072,10 +1074,13 @@ public final class TargetSelector {
 				try {id = Integer.parseInt(type); isID = true;}
 				catch (NumberFormatException nfe) {id = -1; isID = false;}
 				
-				for (GameType gt : GameType.values()) {
-					if (!isID && gt.getName().equalsIgnoreCase(type)) gameTypes.add(gt);
-					else if (isID && gt.getID() == id) gameTypes.add(gt);
-				}
+				GameType gt;
+				
+				if (isID) gt = GameType.parseGameTypeWithDefault(id, GameType.NOT_SET);
+				else gt = GameType.parseGameTypeWithDefault(type, GameType.NOT_SET);
+				
+				if (gt != GameType.NOT_SET)
+					gameTypes.add(gt);
 			}
 			
 			return gameTypes;
@@ -1115,18 +1120,18 @@ public final class TargetSelector {
 	        List<String> entityTypes = argumentMap.get("type");
 	        
 	        if (entityTypes != null && !entityTypes.isEmpty() && (targetType.equals("e") || targetType.equals("r"))) {
-				final List<String> allowedTypes = Lists.<String>newArrayList();
-				final List<String> disallowedTypes = Lists.<String>newArrayList();
+				final List<ResourceLocation> allowedTypes = Lists.<ResourceLocation>newArrayList();
+				final List<ResourceLocation> disallowedTypes = Lists.<ResourceLocation>newArrayList();
 				
 				for (String type : entityTypes) {
 					if (type == null) continue;
-					if (type.startsWith("!")) disallowedTypes.add(type.substring(1));
-					else allowedTypes.add(type);
+					if (type.startsWith("!")) disallowedTypes.add(new ResourceLocation(type.substring(1)));
+					else allowedTypes.add(new ResourceLocation(type));
 				}
 				
 				predicateBuilder.add(new Predicate<Entity>() {
 					@Override public boolean apply(Entity entity) {
-						String entityType = getEntityNameString(entity); if (entityType == null) return false;
+						ResourceLocation entityType = getEntityName(entity); if (entityType == null) return false;
 						return allowedTypes.contains(entityType) || (!disallowedTypes.isEmpty() && !disallowedTypes.contains(entityType));
 					}
 				});
@@ -1146,11 +1151,11 @@ public final class TargetSelector {
 		 * @param entity the entity
 		 * @return the string representing the entity type
 		 */
-		private static String getEntityNameString(Entity entity) {
-			String entityName = (String)EntityList.CLASS_TO_NAME.get(entity.getClass());
-
-			if (entityName == null && entity instanceof EntityPlayer) entityName = "Player";
-			else if (entityName == null && entity instanceof EntityLightningBolt) entityName = "LightningBolt";
+		private static ResourceLocation getEntityName(Entity entity) {
+			ResourceLocation entityName = EntityList.func_191306_a(entity.getClass());
+			
+			if (entityName == null && entity instanceof EntityPlayer) entityName = PLAYER;
+			else if (entityName == null && entity instanceof EntityLightningBolt) entityName = LIGHTNING;
 
 			return entityName;
 	    }
@@ -1169,7 +1174,7 @@ public final class TargetSelector {
 	        for (String type : types) {
 	        	type = type != null && type.startsWith("!") ? type.substring(1) : type;
 	        	
-	        	if (type != null && !isStringValidEntityType(type)) {
+	        	if (type == null || (type != null && !isStringValidEntityType(type))) {
 	        		ITextComponent component = new TextComponentTranslation("commands.generic.entity.invalidType", type);
 	        		component.getStyle().setColor(TextFormatting.RED);
 		            sender.addChatMessage(component);
@@ -1187,28 +1192,7 @@ public final class TargetSelector {
 		 * @return whether the given entity type string is valid
 		 */
 		private static boolean isStringValidEntityType(String type) {
-			return "Player".equals(type) || getEntityNameList().contains(type);
-		}
-		
-		/**
-		 * Gets the list of existing entity names
-		 * 
-		 * @return the entity name list
-		 */
-		private static List<String> getEntityNameList() {
-			ArrayList<String> entityNames = Lists.<String>newArrayList();
-			Iterator<String> iterator = EntityList.NAME_TO_CLASS.keySet().iterator();
-
-			while (iterator.hasNext()) {
-				String name = iterator.next();
-				Class entityClass = (Class) EntityList.NAME_TO_CLASS.get(name);
-
-				if (!Modifier.isAbstract(entityClass.getModifiers()))
-					entityNames.add(name);
-			}
-
-			entityNames.add("LightningBolt");
-			return entityNames;
+			return EntityList.isStringValidEntityName(new ResourceLocation(type));
 		}
 	}
 	
@@ -1400,7 +1384,7 @@ public final class TargetSelector {
      */
     public static boolean replaceCurrentItem(Entity entity, ItemStack item) {
     	if (entity instanceof EntityLivingBase) {
-    		entity.setItemStackToSlot(EntityEquipmentSlot.MAINHAND, item == null ? null : item.copy());
+    		entity.setItemStackToSlot(EntityEquipmentSlot.MAINHAND, item == ItemStack.field_190927_a ? ItemStack.field_190927_a : item.copy());
     		return true;
     	}
     	else return false;
@@ -1416,7 +1400,7 @@ public final class TargetSelector {
      */
     public static boolean replaceCurrentTag(Entity entity, NBTTagCompound tag, boolean mergeLists) {
     	if (entity instanceof EntityLivingBase) {
-    		if (((EntityLivingBase) entity).getItemStackFromSlot(EntityEquipmentSlot.MAINHAND) != null) {
+    		if (((EntityLivingBase) entity).getItemStackFromSlot(EntityEquipmentSlot.MAINHAND) != ItemStack.field_190927_a) {
     			ItemStack stack = ((EntityLivingBase) entity).getItemStackFromSlot(EntityEquipmentSlot.MAINHAND).copy();
     			nbtMerge(stack.getTagCompound(), tag, mergeLists);
     			entity.setItemStackToSlot(EntityEquipmentSlot.MAINHAND, stack);
@@ -1452,13 +1436,13 @@ public final class TargetSelector {
     		NBTTagCompound compound = null; int slot = entity instanceof EntityHorse ? 2 : 0;
     		
     		for (; slot < handler.getSlots(); slot++) {
-    			ItemStack stack = handler.getStackInSlot(slot); if (stack == null) continue;
+    			ItemStack stack = handler.getStackInSlot(slot); if (stack == ItemStack.field_190927_a) continue;
     			if (matchingNBT != null) {compound = new NBTTagCompound(); stack.writeToNBT(compound);}
     			
     			if ((matchingItem == null || stack.getItem() == matchingItem) && 
     				(matchingMeta == -1 || stack.getItemDamage() == matchingMeta) && 
     				(matchingNBT == null || nbtContains(compound, matchingNBT, !equalLists))) 
-    				handler.setStackInSlot(slot, item == null ? null : item.copy());
+    				handler.setStackInSlot(slot, item == ItemStack.field_190927_a ? ItemStack.field_190927_a : item.copy());
     		}
     		
     		return true;
@@ -1481,13 +1465,13 @@ public final class TargetSelector {
     	NBTTagCompound compound = null;
     	
     	for (int i = 0; i < inventory.getSizeInventory(); i++) {
-    		ItemStack stack = inventory.getStackInSlot(i); if (stack == null) continue; 
+    		ItemStack stack = inventory.getStackInSlot(i); if (stack == ItemStack.field_190927_a) continue; 
     		if (matchingNBT != null) {compound = new NBTTagCompound(); stack.writeToNBT(compound);}
     		
 			if ((matchingItem == null || stack.getItem() == matchingItem) && 
     			(matchingMeta == -1 || stack.getItemDamage() == matchingMeta) && 
     			(matchingNBT == null || nbtContains(compound, matchingNBT, !equalLists))) 
-				inventory.setInventorySlotContents(i, item == null ? null : item.copy());
+				inventory.setInventorySlotContents(i, item == ItemStack.field_190927_a ? ItemStack.field_190927_a : item.copy());
     	}
     	
     	return true;
@@ -1507,7 +1491,7 @@ public final class TargetSelector {
     	
     	if (slot >= inventory.getSizeInventory() || slot < 0) return false;
     	else {
-    		if (inventory.getStackInSlot(slot) != null) {
+    		if (inventory.getStackInSlot(slot) != ItemStack.field_190927_a) {
     			ItemStack stack = inventory.getStackInSlot(slot).copy();
     			nbtMerge(stack.getTagCompound(), tag, mergeLists);
     			inventory.setInventorySlotContents(slot, stack);
@@ -1528,7 +1512,7 @@ public final class TargetSelector {
     	slot -= 100;
     	
     	if (slot >= inventory.getSizeInventory() || slot < 0) return false;
-    	else {inventory.setInventorySlotContents(slot, item == null ? null : item.copy()); return true;}
+    	else {inventory.setInventorySlotContents(slot, item == ItemStack.field_190927_a ? ItemStack.field_190927_a : item.copy()); return true;}
     }
     
     /**
@@ -1556,7 +1540,7 @@ public final class TargetSelector {
      *         Also false if reflective access failed (only needed for special horse inventory slots such as saddle, armor and chest)
      */
     public static boolean replaceItemInInventory(Entity entity, int slot, ItemStack item) {
-    	try {return replaceItemOrTagInInventory(entity, slot, item == null ? null : item.copy(), null, false);}
+    	try {return replaceItemOrTagInInventory(entity, slot, item == ItemStack.field_190927_a ? ItemStack.field_190927_a : item.copy(), null, false);}
     	catch (Exception ex) {return false;}
     }
     
@@ -1584,13 +1568,13 @@ public final class TargetSelector {
     			if (!(entity instanceof EntityLivingBase)) return false;
     			EntityLivingBase living = (EntityLivingBase) entity;
     			
-        		if (living.getItemStackFromSlot(equSlot) != null) {
+        		if (living.getItemStackFromSlot(equSlot) != ItemStack.field_190927_a) {
         			stack = living.getItemStackFromSlot(equSlot).copy();
         			nbtMerge(stack.getTagCompound(), tag, mergeLists);
         			living.setItemStackToSlot(equSlot, stack);
         		}
     		}
-    		else entity.setItemStackToSlot(equSlot, stack == null ? null : stack.copy());
+    		else entity.setItemStackToSlot(equSlot, stack == ItemStack.field_190927_a ? ItemStack.field_190927_a : stack.copy());
     	}
     	else if (slot >= 100 && slot < 200) {
     		slot -= 100;
@@ -1600,13 +1584,13 @@ public final class TargetSelector {
     		IItemHandlerModifiable inventory = (IItemHandlerModifiable) h;
     		if (slot >= inventory.getSlots()) return false;
     		else if (tag != null) {
-        		if (inventory.getStackInSlot(slot) != null) {
+        		if (inventory.getStackInSlot(slot) != ItemStack.field_190927_a) {
         			stack = inventory.getStackInSlot(slot).copy();
         			nbtMerge(stack.getTagCompound(), tag, mergeLists);
         			inventory.setStackInSlot(slot, stack);
         		}
     		}
-    		else inventory.setStackInSlot(slot, stack == null ? null : stack.copy());
+    		else inventory.setStackInSlot(slot, stack == ItemStack.field_190927_a ? ItemStack.field_190927_a : stack.copy());
     	}
     	else if (slot >= 200 && slot < 300 && entity instanceof EntityPlayer) {
     		EntityPlayer player = (EntityPlayer) entity;
@@ -1614,13 +1598,13 @@ public final class TargetSelector {
     		
     		if (slot >= player.getInventoryEnderChest().getSizeInventory()) return false;
     		else if (tag != null) {
-        		if (player.getInventoryEnderChest().getStackInSlot(slot) != null) {
+        		if (player.getInventoryEnderChest().getStackInSlot(slot) != ItemStack.field_190927_a) {
         			stack = player.getInventoryEnderChest().getStackInSlot(slot).copy();
         			nbtMerge(stack.getTagCompound(), tag, mergeLists);
         			player.getInventoryEnderChest().setInventorySlotContents(slot, stack);
         		}
     		}
-    		else player.getInventoryEnderChest().setInventorySlotContents(slot, stack == null ? null : stack.copy());
+    		else player.getInventoryEnderChest().setInventorySlotContents(slot, stack == ItemStack.field_190927_a ? ItemStack.field_190927_a : stack.copy());
     	}
     	else if (slot >= 300 && slot < 400 && entity instanceof EntityVillager) {
     		EntityVillager villager = (EntityVillager) entity;
@@ -1628,16 +1612,16 @@ public final class TargetSelector {
     		
     		if (slot >= villager.getVillagerInventory().getSizeInventory()) return false;
     		else if (tag != null) {
-        		if (villager.getVillagerInventory().getStackInSlot(slot) != null) {
+        		if (villager.getVillagerInventory().getStackInSlot(slot) != ItemStack.field_190927_a) {
         			stack = villager.getVillagerInventory().getStackInSlot(slot).copy();
         			nbtMerge(stack.getTagCompound(), tag, mergeLists);
         			villager.getVillagerInventory().setInventorySlotContents(slot, stack);
         		}
     		}
-    		else villager.getVillagerInventory().setInventorySlotContents(slot, stack == null ? null : stack.copy());
+    		else villager.getVillagerInventory().setInventorySlotContents(slot, stack == ItemStack.field_190927_a ? ItemStack.field_190927_a : stack.copy());
     	}
-    	else if (slot >= 400 && slot < 500 && entity instanceof EntityHorse) {
-    		if (!handleHorseSpecialSlots((EntityHorse) entity, slot - 400, stack, tag, mergeLists)) return false;
+    	else if (slot >= 400 && slot < 500 && entity instanceof AbstractHorse) {
+    		if (!handleHorseSpecialSlots((AbstractHorse) entity, slot - 400, stack, tag, mergeLists)) return false;
     	}
     	else return false;
     	
@@ -1654,11 +1638,11 @@ public final class TargetSelector {
      */
     private static boolean acceptStack(Entity entity, EntityEquipmentSlot slot, ItemStack stack) {
     	if (entity instanceof EntityArmorStand || entity instanceof EntityLiving) {
-    		if (stack != null && !EntityLiving.isItemStackInSlot(slot, stack) && slot != EntityEquipmentSlot.HEAD) return false;
+    		if (stack != ItemStack.field_190927_a && !EntityLiving.isItemStackInSlot(slot, stack) && slot != EntityEquipmentSlot.HEAD) return false;
     		else return true;
     	}
     	else if (entity instanceof EntityPlayer) {
-    		if (slot.getSlotType() == EntityEquipmentSlot.Type.ARMOR && stack != null && stack.getItem() != null) {
+    		if (slot.getSlotType() == EntityEquipmentSlot.Type.ARMOR && stack != ItemStack.field_190927_a && stack.getItem() != null) {
     			if (!(stack.getItem() instanceof ItemArmor) && !(stack.getItem() instanceof ItemElytra)) {
     				if (slot != EntityEquipmentSlot.HEAD) return false;
     				else return true;
@@ -1683,7 +1667,7 @@ public final class TargetSelector {
      * @return whether the given data was valid (valid slot, valid item, etc.) and whether the special slots could successfully be handled
      * @throws Exeption if reflective access failed
      */
-    private static boolean handleHorseSpecialSlots(EntityHorse horse, int slot, ItemStack stack, NBTTagCompound tag, boolean mergeLists) throws Exception {
+    private static boolean handleHorseSpecialSlots(AbstractHorse horse, int slot, ItemStack stack, NBTTagCompound tag, boolean mergeLists) throws Exception {
     	IItemHandler h = horse.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
     	IItemHandlerModifiable inventory = h instanceof IItemHandlerModifiable ? (IItemHandlerModifiable) h : null;
     	if (initChest == null || updateSlots == null || inventory == null) return false;
@@ -1691,7 +1675,7 @@ public final class TargetSelector {
     	if (tag != null) {
     		if (slot < inventory.getSlots()) return false;
     		
-    		if (inventory.getStackInSlot(slot) != null) {
+    		if (inventory.getStackInSlot(slot) != ItemStack.field_190927_a) {
     			stack = inventory.getStackInSlot(slot).copy();
     			nbtMerge(stack.getTagCompound(), tag, mergeLists);
     			inventory.setStackInSlot(slot, stack);
@@ -1701,15 +1685,15 @@ public final class TargetSelector {
     		return true;
     	}
     	
-    	if (slot == 99 && horse.getType().canBeChested()) {
-    		if (stack == null || horse.isChested()) {
-    			horse.setChested(false);
+    	if (slot == 99 && horse instanceof AbstractChestHorse) {
+    		if (stack == ItemStack.field_190927_a || ((AbstractChestHorse) horse).func_190695_dh()) {
+    			((AbstractChestHorse) horse).setChested(false);
     			initChest.invoke(horse);
     			return true;
     		}
     		
-    		if (stack != null && stack.getItem() == Item.getItemFromBlock(Blocks.CHEST) && !horse.isChested()) {
-    			horse.setChested(true);
+    		if (stack != ItemStack.field_190927_a && stack.getItem() == Item.getItemFromBlock(Blocks.CHEST) && !(horse instanceof AbstractChestHorse)) {
+    			((AbstractChestHorse) horse).setChested(true);
     			initChest.invoke(horse);
     			return true;
     		}
@@ -1717,9 +1701,9 @@ public final class TargetSelector {
     		return false;
     	}
     	else if (slot >= 0 && slot < 2 && slot < inventory.getSlots()) {
-    		if (slot == 0 && stack != null && stack.getItem() != Items.SADDLE) return false;
-    		else if (slot != 1 || (stack == null || HorseArmorType.isHorseArmor(stack.getItem())) && horse.getType().isHorse()) {
-    			inventory.setStackInSlot(slot, stack == null ? null : stack.copy());
+    		if (slot == 0 && stack != ItemStack.field_190927_a && stack.getItem() != Items.SADDLE) return false;
+    		else if (slot != 1 || (stack == ItemStack.field_190927_a || horse.func_190682_f(stack)) && horse.func_190677_dK()) {
+    			inventory.setStackInSlot(slot, stack == ItemStack.field_190927_a ? ItemStack.field_190927_a : stack.copy());
     			updateSlots.invoke(horse);
     			return true;
     		}
@@ -1745,11 +1729,11 @@ public final class TargetSelector {
     	else {
     		ItemStack stackInSlot = inventory.getStackInSlot(slot);
     		
-        	if (stack == null || stackInSlot == null) return stackInSlot == null && stack == null;
+        	if (stack == ItemStack.field_190927_a || stackInSlot == ItemStack.field_190927_a) return stackInSlot == ItemStack.field_190927_a && stack == ItemStack.field_190927_a;
         	else {
         		boolean matches = stack.getItem() == null || stack.getItem() == stackInSlot.getItem();
         		matches = matches && (noMeta || stack.getItemDamage() == stackInSlot.getItemDamage());
-        		matches = matches && (stack.stackSize == -1 || stack.stackSize == stackInSlot.stackSize);
+        		matches = matches && (stack.func_190926_b() || stack.func_190916_E() == stackInSlot.func_190916_E());
         		matches = matches && nbtContains(stackInSlot.getTagCompound(), stack.getTagCompound(), !equalLists);
         		return matches;
         	}
@@ -1802,11 +1786,11 @@ public final class TargetSelector {
     	}
     	else return false;
     	
-    	if (stack == null || stackInSlot == null) return stackInSlot == null && stack == null;
+    	if (stack == ItemStack.field_190927_a || stackInSlot == ItemStack.field_190927_a) return stackInSlot == ItemStack.field_190927_a && stack == ItemStack.field_190927_a;
     	else {
     		boolean matches = stack.getItem() == null || stack.getItem() == stackInSlot.getItem();
     		matches = matches && (noMeta || stack.getItemDamage() == stackInSlot.getItemDamage());
-    		matches = matches && (stack.stackSize == -1 || stack.stackSize == stackInSlot.stackSize);
+    		matches = matches && (stack.func_190926_b() || stack.func_190916_E() == stackInSlot.func_190916_E());
     		matches = matches && nbtContains(stackInSlot.getTagCompound(), stack.getTagCompound(), !equalLists);
     		return matches;
     	}

@@ -1,17 +1,19 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Entity;
-import com.mrnobody.morecommands.wrapper.World;
+import com.mrnobody.morecommands.util.EntityUtils;
+import com.mrnobody.morecommands.util.WorldUtils;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 @Command(
 		name = "weather",
@@ -33,7 +35,7 @@ public class CommandWeather extends StandardCommand implements ServerCommandProp
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		World world = sender.getWorld();
 		
 		if (params.length > 0) {
@@ -52,27 +54,29 @@ public class CommandWeather extends StandardCommand implements ServerCommandProp
 	    	}
 	    	
 	    	if (params[0].equalsIgnoreCase("rain")) {
-	    		if (entered) world.setRaining(state);
-	    		else world.setRaining(!world.isRaining());
+	    		if (entered) WorldUtils.setRaining(world, state);
+	    		else WorldUtils.setRaining(world, !WorldUtils.isRaining(world));
 	    		sender.sendLangfileMessage("command.weather.rainSuccess");
 	    	}
 	    	
 	    	if (params[0].equalsIgnoreCase("thunder")) {
-	    		if (entered) world.setThunder(state);
-	    		else world.setThunder(!world.isThunder());
+	    		if (entered) WorldUtils.setThunder(world, state);
+	    		else WorldUtils.setThunder(world, !WorldUtils.isThunder(world));
 	    		sender.sendLangfileMessage("command.weather.thunderSuccess");
 	    	}
 	    	
 	    	if (params[0].equalsIgnoreCase("lightning")) {
 	    		BlockPos hit = params.length > 3 ? getCoordFromParams(sender.getMinecraftISender(), params, 1) : 
-	    				isSenderOfEntityType(sender.getMinecraftISender(), net.minecraft.entity.Entity.class) ?
-	    				new Entity(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.Entity.class)).traceBlock(128) :
+	    				isSenderOfEntityType(sender.getMinecraftISender(), Entity.class) ?
+	    				EntityUtils.traceBlock(getSenderAsEntity(sender.getMinecraftISender(), Entity.class), 128) :
 	    				sender.getPosition();
-	    		if (hit != null) {world.useLightning(hit); sender.sendLangfileMessage("command.weather.lightningSuccess");}
+	    		if (hit != null) {WorldUtils.useLightning(world, hit); sender.sendLangfileMessage("command.weather.lightningSuccess");}
 	    		else throw new CommandException("command.weather.notInSight", sender);
 	    	}
 		}
 		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 
 	@Override
@@ -86,7 +90,7 @@ public class CommandWeather extends StandardCommand implements ServerCommandProp
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

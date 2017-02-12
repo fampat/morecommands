@@ -6,10 +6,12 @@ import java.util.UUID;
 
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
+import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
+import com.mrnobody.morecommands.util.ChatChannel;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
-import com.mrnobody.morecommands.util.PlayerSettings;
 import com.mrnobody.morecommands.util.ReflectionHelper;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -21,6 +23,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.management.PlayerInteractionManager;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -48,6 +51,12 @@ public class DedicatedPlayerList extends net.minecraft.server.dedicated.Dedicate
 	}
 	
 	@Override
+	public void sendChatMsgImpl(ITextComponent message, boolean isSystemMessage) {
+		MoreCommands.getProxy().ensureChatChannelsLoaded();
+		ChatChannel.getMasterChannel().sendChatMessage(message, isSystemMessage ? (byte) 1 : (byte) 0);
+	}
+
+	@Override
     public EntityPlayerMP createPlayerForUser(GameProfile profile)
     {
         UUID uuid = EntityPlayer.getUUID(profile);
@@ -63,7 +72,7 @@ public class DedicatedPlayerList extends net.minecraft.server.dedicated.Dedicate
             }
         }
         
-        EntityPlayerMP entityplayermp2 = (EntityPlayerMP)this.getPlayerByUUID(profile.getId());
+        EntityPlayerMP entityplayermp2 = (EntityPlayerMP) this.getPlayerByUUID(profile.getId());
 
         if (entityplayermp2 != null && !list.contains(entityplayermp2))
         {
@@ -92,7 +101,7 @@ public class DedicatedPlayerList extends net.minecraft.server.dedicated.Dedicate
     @Override
     public EntityPlayerMP recreatePlayerEntity(EntityPlayerMP playerIn, int dimension, boolean conqueredEnd)
     {
-    	World world = mcServer.worldServerForDimension(dimension);
+        World world = mcServer.worldServerForDimension(dimension);
         if (world == null)
         {
             dimension = 0;
@@ -178,8 +187,8 @@ public class DedicatedPlayerList extends net.minecraft.server.dedicated.Dedicate
         	entityplayermp.inventory.copyInventory(playerIn.inventory);
         	((com.mrnobody.morecommands.patch.EntityPlayerMP) entityplayermp).setKeepInventory(true);
         }
-        
-        net.minecraftforge.fml.common.FMLCommonHandler.instance().firePlayerRespawnEvent(entityplayermp);
+
+        net.minecraftforge.fml.common.FMLCommonHandler.instance().firePlayerRespawnEvent(entityplayermp, conqueredEnd);
         return entityplayermp;
     }
     

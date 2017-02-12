@@ -1,12 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.item.EntityItem;
@@ -34,15 +34,15 @@ public class CommandDuplicate extends StandardCommand implements ServerCommandPr
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 		
 		if (params.length > 0 && params[0].equalsIgnoreCase("all")) {
 			for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
-				if (player.inventory.getStackInSlot(i) == null) continue;
+				if (player.inventory.getStackInSlot(i) == ItemStack.field_190927_a) continue;
 				
 				ItemStack item = player.inventory.getStackInSlot(i);
-				ItemStack duplicate = new ItemStack(item.getItem(), item.stackSize, item.getItemDamage());
+				ItemStack duplicate = new ItemStack(item.getItem(), item.func_190916_E(), item.getItemDamage());
 				if (item.getTagCompound() != null) duplicate.setTagCompound((NBTTagCompound) item.getTagCompound().copy());
 				
 				EntityItem itemEntity = new EntityItem(player.worldObj, player.posX, player.posY, player.posZ, duplicate);
@@ -50,16 +50,17 @@ public class CommandDuplicate extends StandardCommand implements ServerCommandPr
 			}
 		}
 		else {
-			if (player.getHeldItemMainhand() == null)
+			if (player.getHeldItemMainhand() == ItemStack.field_190927_a)
 				throw new CommandException("command.duplicate.notSelected", sender);
 			ItemStack item = player.getHeldItemMainhand();
-			ItemStack duplicate = new ItemStack(item.getItem(), item.stackSize, item.getItemDamage());
+			ItemStack duplicate = new ItemStack(item.getItem(), item.func_190916_E(), item.getItemDamage());
 			if (item.getTagCompound() != null) duplicate.setTagCompound((NBTTagCompound) item.getTagCompound().copy());
 			EntityItem itemEntity = new EntityItem(player.worldObj, player.posX, player.posY, player.posZ, duplicate);
 			player.worldObj.spawnEntityInWorld(itemEntity);
 		}
 		
 		sender.sendLangfileMessage("command.duplicate.duplicated");
+		return null;
 	}
 	
 	@Override
@@ -73,7 +74,7 @@ public class CommandDuplicate extends StandardCommand implements ServerCommandPr
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

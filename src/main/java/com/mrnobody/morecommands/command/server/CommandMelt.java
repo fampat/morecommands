@@ -1,14 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.IEntityMultiPart;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
@@ -34,7 +35,7 @@ public class CommandMelt extends StandardCommand implements ServerCommandPropert
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params)throws CommandException {
+	public String execute(CommandSender sender, String[] params)throws CommandException {
 		boolean all = false;
 		if (params.length > 0 && params[0].equalsIgnoreCase("all")) all = true;
 		
@@ -43,22 +44,23 @@ public class CommandMelt extends StandardCommand implements ServerCommandPropert
 		int smelt = 0;
 		
 		if (!all) {
-			if (player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND) == null) return;
+			if (player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND) == ItemStack.field_190927_a) return null;
 			result = FurnaceRecipes.instance().getSmeltingResult(player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND));
-			if (result != null) player.setItemStackToSlot(EntityEquipmentSlot.MAINHAND, new ItemStack(result.getItem(),
-								player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND).stackSize, result.getItemDamage()));
+			if (result != ItemStack.field_190927_a) player.setItemStackToSlot(EntityEquipmentSlot.MAINHAND, new ItemStack(result.getItem(),
+													player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND).func_190916_E(), result.getItemDamage()));
 		}
 		else {
 			for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
-				if (player.inventory.getStackInSlot(i) == null) continue;
+				if (player.inventory.getStackInSlot(i) == ItemStack.field_190927_a) continue;
 				result = FurnaceRecipes.instance().getSmeltingResult(player.inventory.getStackInSlot(i));
-				if (result != null) player.inventory.setInventorySlotContents(i, new ItemStack(result.getItem(),
-									player.inventory.getStackInSlot(i).stackSize, result.getItemDamage()));
-				if (result != null) smelt++;
+				if (result != ItemStack.field_190927_a) player.inventory.setInventorySlotContents(i, new ItemStack(result.getItem(),
+														player.inventory.getStackInSlot(i).func_190916_E(), result.getItemDamage()));
+				if (result != ItemStack.field_190927_a) smelt++;
 			}
 		}
 		
 		sender.sendLangfileMessage("command.melt.molten", smelt);
+		return null;
 	}
 	
 	@Override
@@ -72,7 +74,7 @@ public class CommandMelt extends StandardCommand implements ServerCommandPropert
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

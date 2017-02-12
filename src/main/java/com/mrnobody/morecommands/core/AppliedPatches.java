@@ -14,6 +14,7 @@ import net.minecraftforge.common.capabilities.ICapabilityProvider;
 
 /**
  * Class containing Information to the patches applied to players, server and client
+ * and some other state information.
  * 
  * @author MrNobody98
  *

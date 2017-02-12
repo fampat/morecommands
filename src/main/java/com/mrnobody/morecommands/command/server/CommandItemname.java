@@ -1,15 +1,16 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.ItemStack;
 
 @Command(
 		name = "itemname",
@@ -31,20 +32,22 @@ public class CommandItemname extends StandardCommand implements ServerCommandPro
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params)throws CommandException {
+	public String execute(CommandSender sender, String[] params)throws CommandException {
 		if (params.length > 0) {
 			EntityLivingBase entity = getSenderAsEntity(sender.getMinecraftISender(), EntityLivingBase.class);
 			String name = "";
 			
 			for (String param : params) name += " " + param;
 			
-			if (entity.getHeldItemMainhand() != null)
+			if (entity.getHeldItemMainhand() != ItemStack.field_190927_a)
 				entity.getHeldItemMainhand().setStackDisplayName(name.trim());
 			else
 				throw new CommandException("command.itemname.noSelection", sender);
 		}
 		else
 			throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 	
 	@Override
@@ -58,7 +61,7 @@ public class CommandItemname extends StandardCommand implements ServerCommandPro
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

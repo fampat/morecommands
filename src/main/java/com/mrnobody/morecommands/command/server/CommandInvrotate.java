@@ -1,16 +1,17 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 
 @Command(
 		name = "invrotate",
@@ -30,7 +31,7 @@ public class CommandInvrotate extends StandardCommand implements ServerCommandPr
         return "command.invrotate.syntax";
     }
     
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		int items = 9;
 		boolean leftToRight = true;
 		
@@ -49,23 +50,24 @@ public class CommandInvrotate extends StandardCommand implements ServerCommandPr
 			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
 		
-		ItemStack main[] = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class).inventory.mainInventory;
-		ItemStack sorted[] = new ItemStack[main.length];
-		items %= main.length;
+		NonNullList<ItemStack> main = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class).inventory.mainInventory;
+		NonNullList<ItemStack> sorted = NonNullList.func_191197_a(main.size(), ItemStack.field_190927_a);
+		items %= main.size();
         
-		for (int i = 0; i < main.length; i++) {
+		for (int i = 0; i < main.size(); i++) {
 			int pos = 0;
 			
 			if (leftToRight) pos = i + items;
 			else pos = i - items;
 			
-			pos = pos < 0 ? main.length + pos : pos;
-			sorted[pos % main.length] = main[i];
+			pos = pos < 0 ? main.size() + pos : pos;
+			sorted.set(pos % main.size(), main.get(i));
 		}
 		
 		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
-		for (int i = 0; i < sorted.length; i++) player.inventory.mainInventory[i] = sorted[i];
-		main = null;
+		for (int i = 0; i < sorted.size(); i++) player.inventory.mainInventory.set(i, sorted.get(i));
+		
+		return null;
 	}
     
 	@Override
@@ -79,7 +81,7 @@ public class CommandInvrotate extends StandardCommand implements ServerCommandPr
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 	
