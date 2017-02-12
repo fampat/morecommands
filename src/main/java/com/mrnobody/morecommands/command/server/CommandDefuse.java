@@ -3,12 +3,12 @@ package com.mrnobody.morecommands.command.server;
 import java.util.Iterator;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -41,7 +41,7 @@ public class CommandDefuse extends StandardCommand implements ServerCommandPrope
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		double radius = 16;
 		
 		if (params.length > 0) {
@@ -49,7 +49,7 @@ public class CommandDefuse extends StandardCommand implements ServerCommandPrope
 			catch (NumberFormatException nfe) {throw new CommandException("command.defuse.invalidArg", sender);}
 		}
 		
-		World world = sender.getWorld().getMinecraftWorld();
+		World world = sender.getWorld();
 		BlockPos pos = sender.getPosition();
 		
 		Iterator<EntityTNTPrimed> tntPrimedIterator = world.getEntitiesWithinAABB(EntityTNTPrimed.class, new AxisAlignedBB(pos.getX() - radius, pos.getY() - radius, pos.getZ() - radius, pos.getX() + radius, pos.getY() + radius, pos.getZ() + radius)).iterator();
@@ -63,6 +63,7 @@ public class CommandDefuse extends StandardCommand implements ServerCommandPrope
 		}
 		
 		sender.sendLangfileMessage("command.defuse.defused");
+		return null;
 	}
 	
 	@Override
@@ -76,7 +77,7 @@ public class CommandDefuse extends StandardCommand implements ServerCommandPrope
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

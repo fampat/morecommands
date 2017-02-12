@@ -1,12 +1,14 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.util.EntityUtils;
+import com.mrnobody.morecommands.util.WorldUtils;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -33,11 +35,10 @@ public class CommandExterminate extends StandardCommand implements ServerCommand
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		int strength = 4;
-		com.mrnobody.morecommands.wrapper.Entity entity = new com.mrnobody.morecommands.wrapper.Entity(
-		getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.Entity.class));
-		Entity hit = entity.traceEntity(128.0D);
+		Entity entity = getSenderAsEntity(sender.getMinecraftISender(), Entity.class);
+		Entity hit = EntityUtils.traceEntity(entity, 128.0D);
 		
 		if (hit != null) {
 			if (hit instanceof EntityLiving)  {
@@ -46,13 +47,15 @@ public class CommandExterminate extends StandardCommand implements ServerCommand
 					catch (NumberFormatException nfe) {throw new CommandException("command.exterminate.invalidArg", sender);}
 				}
 				
-				entity.getWorld().createExplosion(entity.getMinecraftEntity(), new BlockPos(hit.posX, hit.posY, hit.posZ), strength);
+				WorldUtils.createExplosion(entity.worldObj, entity, new BlockPos(hit.posX, hit.posY, hit.posZ), strength);
 				
 				sender.sendLangfileMessage("command.exterminate.boooom");
 			}
 			else throw new CommandException("command.exterminate.notLiving", sender);
 		}
 		else throw new CommandException("command.exterminate.notFound", sender);
+		
+		return null;
 	}
 	
 	@Override
@@ -66,7 +69,7 @@ public class CommandExterminate extends StandardCommand implements ServerCommand
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

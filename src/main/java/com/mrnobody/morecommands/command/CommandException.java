@@ -1,4 +1,4 @@
-package com.mrnobody.morecommands.wrapper;
+package com.mrnobody.morecommands.command;
 
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.util.LanguageManager;

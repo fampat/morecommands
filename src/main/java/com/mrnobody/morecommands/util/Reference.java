@@ -16,7 +16,7 @@ public final class Reference {
 	/** the mod id */
 	public static final String MODID = "mrnobody_morecommands";
 	/** the mod version */
-	public static final String VERSION = "4.0";
+	public static final String VERSION = "4.1";
 	/** the mod name */
 	public static final String NAME = "MoreCommands";
 	/** the mod network channel name */

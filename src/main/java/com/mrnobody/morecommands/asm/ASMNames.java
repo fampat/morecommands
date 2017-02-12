@@ -28,6 +28,7 @@ public final class ASMNames {
 	 * @author MrNobody98
 	 */
 	public static enum Type {
+		Object("java.lang.Object"),
 		BlockPos("net.minecraft.util.math.BlockPos"),
 		EnumFacing("net.minecraft.util.EnumFacing"),
 		EnumHand("net.minecraft.util.EnumHand"),
@@ -43,7 +44,8 @@ public final class ASMNames {
 		BlockRailBase("net.minecraft.block.BlockRailBase"),
 		EntityMinecart("net.minecraft.entity.item.EntityMinecart"),
 		EntityLivingBase("net.minecraft.entity.EntityLivingBase"),
-		DamageItemEvent("com.mrnobody.morecommands.event.DamageItemEvent")
+		DamageItemEvent("com.mrnobody.morecommands.event.DamageItemEvent"),
+		Style("net.minecraft.util.text.Style")
 		;
 		
 		private final String name, internalName, descriptor;
@@ -85,6 +87,7 @@ public final class ASMNames {
 	 * @author MrNobody98
 	 */
 	public static enum Method {
+		Object_init(Type.Object, "<init>", "<init>", "V"),
 		ItemStack_onItemUse(Type.ItemStack, "onItemUse", "func_179546_a", Type.EnumActionResult.getDesc(), Type.EntityPlayer.getDesc(), Type.World.getDesc(), Type.BlockPos.getDesc(), Type.EnumHand.getDesc(), Type.EnumFacing.getDesc(), "FFF"),
 		ItemStack_getItem(Type.ItemStack, "getItem", "func_77973_b", Type.Item.getDesc()),
 		Item_onItemUse(Type.Item, "onItemUse", "func_180614_a", Type.EnumActionResult.getDesc(), Type.ItemStack.getDesc(), Type.EntityPlayer.getDesc(), Type.World.getDesc(), Type.BlockPos.getDesc(), Type.EnumHand.getDesc(), Type.EnumFacing.getDesc(), "FFF"),
@@ -93,7 +96,8 @@ public final class ASMNames {
 		ForgeHooks_onPlaceItemIntoWorld(Type.ForgeHooks, "onPlaceItemIntoWorld", "onPlaceItemIntoWorld", Type.EnumActionResult.getDesc(), Type.ItemStack.getDesc(), Type.EntityPlayer.getDesc(), Type.World.getDesc(), Type.BlockPos.getDesc(), Type.EnumFacing.getDesc(), "FFF", Type.EnumHand.getDesc()),
 		BlockRailBase_getRailMaxSpeed(Type.BlockRailBase, "getRailMaxSpeed", "getRailMaxSpeed", "F", Type.World.getDesc(), Type.EntityMinecart.getDesc(), Type.BlockPos.getDesc()),
 		ItemStack_damageItem(Type.ItemStack, "damageItem", "func_77972_a", "V", "I", Type.EntityLivingBase.getDesc()),
-		DamageItemEvent_init(Type.DamageItemEvent, "<init>", "<init>", "V", Type.EntityLivingBase.getDesc(), "I", Type.ItemStack.getDesc())
+		DamageItemEvent_init(Type.DamageItemEvent, "<init>", "<init>", "V", Type.EntityLivingBase.getDesc(), "I", Type.ItemStack.getDesc()),
+		Style_init(Type.Style, "<init>", "<init>", "V")
 		;
 		
 		private final String deobfName, obfName, descriptor;
@@ -171,7 +175,8 @@ public final class ASMNames {
 		EventHandler_ITEMSTACK_CHANGE_SIZE(Type.EventHandler, "ITEMSTACK_CHANGE_SIZE", "ITEMSTACK_CHANGE_SIZE", Type.EventHandler.getDesc()),
 		EventHandler_DAMAGE_ITEM(Type.EventHandler, "DAMAGE_ITEM", "DAMAGE_ITEM", Type.EventHandler.getDesc()),
 		ItemStackChangeSizeEvent_newSize(Type.ItemStackChangeSizeEvent, "newSize", "newSize", "I"),
-		DamageItemEvent_damage(Type.DamageItemEvent, "damage", "damage", "I")
+		DamageItemEvent_damage(Type.DamageItemEvent, "damage", "damage", "I"),
+		Style_parentStyle(Type.Style, "parentStyle", "field_150249_a", Type.Style.getDesc())
 		;
 		
 		private final String deobfName, obfName, descriptor;

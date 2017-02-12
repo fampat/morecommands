@@ -1,15 +1,17 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Entity;
+import com.mrnobody.morecommands.util.EntityUtils;
+import com.mrnobody.morecommands.util.WorldUtils;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 
 @Command(
@@ -32,10 +34,10 @@ public class CommandExplode extends StandardCommand implements ServerCommandProp
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Entity entity = new Entity(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.Entity.class));
+	public String execute(CommandSender sender, String[] params) throws CommandException {
+		Entity entity = getSenderAsEntity(sender.getMinecraftISender(), Entity.class);
 		int size = 4;
-		BlockPos spawn = entity.traceBlock(128.0D);
+		BlockPos spawn = EntityUtils.traceBlock(entity, 128.0D);
 		boolean success = spawn != null;
 		double x = 0.0D, y = 0.0D, z = 0.0D;
 		if (spawn != null) {
@@ -60,10 +62,12 @@ public class CommandExplode extends StandardCommand implements ServerCommandProp
 		}
 		
 		if (success) {
-			entity.getWorld().createExplosion(entity.getMinecraftEntity(), new BlockPos(x, y, z), size);
+			WorldUtils.createExplosion(entity.worldObj, entity, new BlockPos(x, y, z), size);
 			sender.sendLangfileMessage("command.explode.booooom");
 		}
 		else throw new CommandException("command.explode.notInSight", sender);
+		
+		return null;
 	}
 	
 	@Override
@@ -77,12 +81,12 @@ public class CommandExplode extends StandardCommand implements ServerCommandProp
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	
 	@Override
 	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
-		return isSenderOfEntityType(sender, net.minecraft.entity.Entity.class);
+		return isSenderOfEntityType(sender, Entity.class);
 	}
 }

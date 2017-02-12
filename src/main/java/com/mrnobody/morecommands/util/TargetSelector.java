@@ -346,7 +346,7 @@ public final class TargetSelector {
 				final List<NBTBase> disallowedNbt = Lists.<NBTBase>newArrayList();
 				
 				for (String nbt : nbtData) {
-					if (nbt == null) continue; NBTBase tag = AbstractCommand.getNBTFromParam(nbt.startsWith("!") ? nbt.substring(1) : nbt, sender);
+					if (nbt == null) continue; NBTBase tag = AbstractCommand.getNBTFromParam(nbt.startsWith("!") ? nbt.substring(1) : nbt);
 					if (tag == null) continue;
 					
 					if (nbt.startsWith("!")) disallowedNbt.add(tag);
@@ -576,9 +576,10 @@ public final class TargetSelector {
         	getEntityTeamPredicates(argumentMap, predicateBuilder);
         	getEntityScorePredicates(sender.getServer() == null ? FMLCommonHandler.instance().getMinecraftServerInstance() : sender.getServer(), argumentMap, predicateBuilder);
         	getEntityNamePredicates(argumentMap, predicateBuilder);
+        	getEntityTagPredicates(argumentMap, predicateBuilder);
         	getEntityRadiusPredicates(argumentMap, coordinate, predicateBuilder);
         	getEntityLookPredicates(argumentMap, predicateBuilder);
-        	getEntityNBTPredicates(argumentMap, sender, predicateBuilder);
+        	getEntityNBTPredicates(argumentMap, predicateBuilder);
 			
 			while (worlds.hasNext()) {
                 World world = worlds.next();
@@ -753,10 +754,9 @@ public final class TargetSelector {
 		 * Creates predicates which accept only entities which have certain nbt data
 		 * 
 		 * @param argumentMap the argument map
-		 * @param sender the command sender
 		 * @param predicateBuilder the list builder to add the predicates to
 		 */
-		private static void getEntityNBTPredicates(ListMultimap<String, String> argumentMap, ICommandSender sender, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
+		private static void getEntityNBTPredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
 			final boolean equalLists = argumentMap.containsKey("nbtm") && argumentMap.get("nbtm").get(0).equalsIgnoreCase("EQUAL");
 			List<String> nbtData = argumentMap.get("nbt");
 	        
@@ -765,7 +765,7 @@ public final class TargetSelector {
 				final List<NBTBase> disallowedNbt = Lists.<NBTBase>newArrayList();
 				
 				for (String nbt : nbtData) {
-					if (nbt == null) continue; NBTBase tag = AbstractCommand.getNBTFromParam(nbt.startsWith("!") ? nbt.substring(1) : nbt, sender);
+					if (nbt == null) continue; NBTBase tag = AbstractCommand.getNBTFromParam(nbt.startsWith("!") ? nbt.substring(1) : nbt);
 					if (tag == null) continue;
 					
 					if (nbt.startsWith("!")) disallowedNbt.add(tag);
@@ -909,7 +909,7 @@ public final class TargetSelector {
 		 * @param argumentMap the argument map
 		 * @param predicateBuilder the list builder to add the predicates to
 		 */
-		private static void getTagPredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
+		private static void getEntityTagPredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
 			List<String> tags = argumentMap.get("tag");
 			
 			if (tags != null && !tags.isEmpty()) {

@@ -4,7 +4,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
@@ -13,9 +15,6 @@ import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedMethod;
 import com.mrnobody.morecommands.util.ReflectionHelper;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.item.EntityMinecart;
@@ -63,8 +62,8 @@ public class CommandSpeed extends StandardCommand implements ServerCommandProper
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = params.length > 0 && params[0].equalsIgnoreCase("minecart") ? null : new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
+	public String execute(CommandSender sender, String[] params) throws CommandException {
+		EntityPlayerMP player = params.length > 0 && params[0].equalsIgnoreCase("minecart") ? null : getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 		if (this.minecartSpeed == null || this.setRailSpeed == null || this.walkSpeed == null || this.flySpeed == null)
 			throw new CommandException("command.speed.error", sender);
 		
@@ -78,12 +77,12 @@ public class CommandSpeed extends StandardCommand implements ServerCommandProper
 						catch (NumberFormatException nfe) {throw new CommandException("command.speed.NAN", sender);}
 						
 						if (params[0].equalsIgnoreCase("walk")) {
-							try {this.walkSpeed.setFloat(player.getMinecraftPlayer().capabilities, speed / 10);}
+							try {this.walkSpeed.setFloat(player.capabilities, speed / 10);}
 							catch (Exception ex) {throw new CommandException("command.speed.error", sender);}
 							sender.sendLangfileMessage("command.speed.walkSet");
 						}
 						else if (params[0].equalsIgnoreCase("fly")) {
-							try {this.flySpeed.setFloat(player.getMinecraftPlayer().capabilities, speed / 10);}
+							try {this.flySpeed.setFloat(player.capabilities, speed / 10);}
 							catch (Exception ex) {throw new CommandException("command.speed.error", sender);}
 							sender.sendLangfileMessage("command.speed.flySet");
 						}
@@ -97,23 +96,23 @@ public class CommandSpeed extends StandardCommand implements ServerCommandProper
 						}
 						
 						if (player != null)
-							player.getMinecraftPlayer().sendPlayerAbilities();
+							player.sendPlayerAbilities();
 					}
 					else throw new CommandException("command.speed.noArg", sender);
 				}
 				else if (params[1].equalsIgnoreCase("get")) {
-					if (params[0].equalsIgnoreCase("walk")) {sender.sendLangfileMessage("command.speed.getWalk", player.getMinecraftPlayer().capabilities.getWalkSpeed() * 10);}
-					else if (params[0].equalsIgnoreCase("fly")) {sender.sendLangfileMessage("command.speed.getFly", player.getMinecraftPlayer().capabilities.getFlySpeed() * 10);}
+					if (params[0].equalsIgnoreCase("walk")) {sender.sendLangfileMessage("command.speed.getWalk", player.capabilities.getWalkSpeed() * 10);}
+					else if (params[0].equalsIgnoreCase("fly")) {sender.sendLangfileMessage("command.speed.getFly", player.capabilities.getFlySpeed() * 10);}
 					else if (params[0].equalsIgnoreCase("minecart")) {sender.sendLangfileMessage("command.speed.getMinecart", this.currentMinecartSpeed * 10);}
 				}
 				else if (params[1].equalsIgnoreCase("reset")) {
 					if (params[0].equalsIgnoreCase("walk")) {
-						try {this.walkSpeed.setFloat(player.getMinecraftPlayer().capabilities, this.walkSpeedDefault);}
+						try {this.walkSpeed.setFloat(player.capabilities, this.walkSpeedDefault);}
 						catch (Exception ex) {throw new CommandException("command.speed.error", sender);}
 						sender.sendLangfileMessage("command.speed.walkReset");
 					}
 					else if (params[0].equalsIgnoreCase("fly")) {
-						try {this.flySpeed.setFloat(player.getMinecraftPlayer().capabilities, this.flySpeedDefault);}
+						try {this.flySpeed.setFloat(player.capabilities, this.flySpeedDefault);}
 						catch (Exception ex) {throw new CommandException("command.speed.error", sender);}
 						sender.sendLangfileMessage("command.speed.flyReset");
 					}
@@ -127,13 +126,15 @@ public class CommandSpeed extends StandardCommand implements ServerCommandProper
 					}
 					
 					if (player != null)
-						player.getMinecraftPlayer().sendPlayerAbilities();
+						player.sendPlayerAbilities();
 				}
 				else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 			}
 			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
 		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 	
 	@Override
@@ -147,7 +148,7 @@ public class CommandSpeed extends StandardCommand implements ServerCommandProper
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	
