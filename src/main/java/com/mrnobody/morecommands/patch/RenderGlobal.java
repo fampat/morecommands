@@ -7,7 +7,7 @@ import net.minecraft.entity.Entity;
 /**
  * The patched class of {@link net.minecraft.client.renderer.RenderGlobal} <br>
  * When using noclip the terrain isn't rendered if the player is not spectator.
- * The patch of this class overrides the spectator check
+ * The patch of this class overrides the spectator check.
  * 
  * @author MrNobody98
  *

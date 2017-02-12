@@ -9,17 +9,19 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import com.mojang.realmsclient.gui.ChatFormatting;
 import com.mrnobody.morecommands.command.AbstractCommand;
 import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.util.GlobalSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 import com.mrnobody.morecommands.util.LanguageManager;
-import com.mrnobody.morecommands.util.PlayerSettings;
 import com.mrnobody.morecommands.util.Reference;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
 /**
@@ -66,8 +68,8 @@ public class PacketHandlerServer {
 	 */
 	public static void addPlayerToRetries(EntityPlayerMP player) {
 		handshakeRetries.put(player, new HandshakeRetry(
-				GlobalSettings.handshakeTimeout < 0 ? 3 : GlobalSettings.handshakeTimeout > 10 ? 10 : GlobalSettings.handshakeTimeout,
-				GlobalSettings.handshakeRetries < 0 ? 3 : GlobalSettings.handshakeRetries > 10 ? 10 : GlobalSettings.handshakeRetries));
+				MoreCommandsConfig.handshakeTimeout < 0 ? 3 : MoreCommandsConfig.handshakeTimeout > 10 ? 10 : MoreCommandsConfig.handshakeTimeout,
+				MoreCommandsConfig.handshakeRetries < 0 ? 3 : MoreCommandsConfig.handshakeRetries > 10 ? 10 : MoreCommandsConfig.handshakeRetries));
 	}
 	
 	/**
@@ -109,16 +111,23 @@ public class PacketHandlerServer {
 		retryHandshake.cancel(true);
 		handshakeRetries.clear();
 	}
-	
+
 	/**
 	 * Executes the startup commands that are intended to be executed on the server's startup.
-	 * This method is only invoked on dedicated servers
 	 */
 	public static void executeStartupCommands() {
-		for (String command : MoreCommands.INSTANCE.getStartupCommands()) {
-			FMLCommonHandler.instance().getMinecraftServerInstance().getCommandManager().executeCommand(FMLCommonHandler.instance().getMinecraftServerInstance(), command);
-			MoreCommands.INSTANCE.getLogger().info("Executed startup command '" + command + "'");
-		}
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {Thread.sleep(MoreCommandsConfig.startupDelay * 1000);}
+				catch (InterruptedException ex) {}
+				
+				for (String command : MoreCommandsConfig.startupCommands) {
+					FMLCommonHandler.instance().getMinecraftServerInstance().getCommandManager().executeCommand(FMLCommonHandler.instance().getMinecraftServerInstance(), command);
+					MoreCommands.INSTANCE.getLogger().info("Executed startup command '" + command + "'");
+				}
+			}
+		}, "MoreCommands Startup Commands Thread (Server)").start();
 	}
 	
 	/**
@@ -156,14 +165,24 @@ public class PacketHandlerServer {
 	}
 	
 	/**
-	 * Called if the client wants to know or modify world information (not available client side)
+	 * Executes a command and sends the result (the chat messages) back to the client
+	 * 
 	 * @param player the player
-	 * @param output whether to enable or disable chat output
+	 * @param executionID the id to identify the command on the client
+	 * @param command the command
 	 */
-	public void handleWorld(EntityPlayerMP player, String[] params) {
-		if (player.getServer().getCommandManager().getCommands().get("world") instanceof AbstractCommand)
-			player.getServer().getCommandManager().executeCommand(player, "world " + AbstractCommand.rejoinParams(params));
-		else
-			player.addChatMessage(new TextComponentString(LanguageManager.translate(MoreCommands.INSTANCE.getCurrentLang(player), "command.world.notFound")));
+	public void handleExecuteRemoteCommand(EntityPlayerMP player, int executionID, String command) {
+		if (!AbstractCommand.isSenderOfEntityType(player, com.mrnobody.morecommands.patch.EntityPlayerMP.class)) {
+			String result = LanguageManager.translate(MoreCommands.INSTANCE.getCurrentLang(player), "command.generic.serverPlayerNotPatched");
+			TextComponentString text = new TextComponentString(result); text.getStyle().setColor(TextFormatting.RED);
+			player.addChatMessage(text); MoreCommands.INSTANCE.getPacketDispatcher().sendS17RemoteCommandResult(player, executionID, result);
+			return;
+		}
+		
+		com.mrnobody.morecommands.patch.EntityPlayerMP patchedPlayer = AbstractCommand.getSenderAsEntity(player, com.mrnobody.morecommands.patch.EntityPlayerMP.class);
+		patchedPlayer.setCaptureNextCommandResult();
+		
+		player.getServer().getCommandManager().executeCommand(patchedPlayer, command);
+		MoreCommands.INSTANCE.getPacketDispatcher().sendS17RemoteCommandResult(player, executionID, patchedPlayer.getCapturedCommandResult());
 	}
 }

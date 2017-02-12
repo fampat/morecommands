@@ -1,15 +1,16 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Entity;
+import com.mrnobody.morecommands.util.EntityUtils;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 
 @Command(
@@ -32,29 +33,31 @@ public class CommandMove extends StandardCommand implements ServerCommandPropert
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Entity entity = new Entity(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.Entity.class));
+	public String execute(CommandSender sender, String[] params) throws CommandException {
+		Entity entity = getSenderAsEntity(sender.getMinecraftISender(), Entity.class);
 		
 		if (params.length > 1) {
 			try {
 				int distance = Integer.parseInt(params[0]);
 				
 				if (params[1].toUpperCase().startsWith("N")) {
-					entity.setPosition(new BlockPos(entity.getPosition().getX(), entity.getPosition().getY(), entity.getPosition().getZ() - distance));
+					EntityUtils.setPosition(entity, new BlockPos(entity.posX, entity.posY, entity.posZ - distance));
 				} else if (params[1].toUpperCase().startsWith("E")) {
-					entity.setPosition(new BlockPos(entity.getPosition().getX() + distance, entity.getPosition().getY(), entity.getPosition().getZ()));
+					EntityUtils.setPosition(entity, new BlockPos(entity.posX + distance, entity.posY, entity.posZ));
 				} else if (params[1].toUpperCase().startsWith("S")) {
-					entity.setPosition(new BlockPos(entity.getPosition().getX(), entity.getPosition().getY(), entity.getPosition().getZ() + distance));
+					EntityUtils.setPosition(entity, new BlockPos(entity.posX, entity.posY, entity.posZ + distance));
 				} else if (params[1].toUpperCase().startsWith("W")) {
-					entity.setPosition(new BlockPos(entity.getPosition().getX() - distance, entity.getPosition().getY(), entity.getPosition().getZ()));
+					EntityUtils.setPosition(entity, new BlockPos(entity.posX - distance, entity.posY, entity.posZ));
 				} else if (params[1].toUpperCase().startsWith("U")) {
-					entity.setPosition(new BlockPos(entity.getPosition().getX(), entity.getPosition().getY() + distance, entity.getPosition().getZ()));
+					EntityUtils.setPosition(entity, new BlockPos(entity.posX, entity.posY + distance, entity.posZ));
 				} else if (params[1].toUpperCase().startsWith("D")) {
-					entity.setPosition(new BlockPos(entity.getPosition().getX(), entity.getPosition().getY() - distance, entity.getPosition().getZ()));
+					EntityUtils.setPosition(entity, new BlockPos(entity.posX, entity.posY - distance, entity.posZ));
 				} else throw new CommandException("command.move.invalidDirection", sender);
 			} catch (NumberFormatException e) {throw new CommandException("command.move.NAN", sender);}
 		}
 		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 	
 	@Override
@@ -68,12 +71,12 @@ public class CommandMove extends StandardCommand implements ServerCommandPropert
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	
 	@Override
 	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
-		return isSenderOfEntityType(sender, net.minecraft.entity.Entity.class);
+		return isSenderOfEntityType(sender, Entity.class);
 	}
 }

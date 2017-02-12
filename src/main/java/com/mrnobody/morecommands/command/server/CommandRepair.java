@@ -1,13 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -34,18 +33,20 @@ public class CommandRepair extends StandardCommand implements ServerCommandPrope
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		String repair = "this";
 		if (params.length > 0 && params[0].equalsIgnoreCase("all")) repair = "all";
 		
-		Player player = new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
+		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 		
-		if (repair.equals("this")) {this.resetDamageOnItem(player.getMinecraftPlayer().getItemStackFromSlot(EntityEquipmentSlot.MAINHAND));}
+		if (repair.equals("this")) {this.resetDamageOnItem(player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND));}
 		else if (repair.equals("all")) {
-			for (int i = 0; i < player.getMinecraftPlayer().inventory.getSizeInventory(); i++) {
-	        	 this.resetDamageOnItem(player.getMinecraftPlayer().inventory.getStackInSlot(i));
+			for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
+	        	 this.resetDamageOnItem(player.inventory.getStackInSlot(i));
 	         }
 		}
+		
+		return null;
 	}
 	
 	private void resetDamageOnItem(ItemStack stack) {
@@ -65,7 +66,7 @@ public class CommandRepair extends StandardCommand implements ServerCommandPrope
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

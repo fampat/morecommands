@@ -1,9 +1,9 @@
-package com.mrnobody.morecommands.wrapper;
+package com.mrnobody.morecommands.command;
 
 import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 import com.mrnobody.morecommands.util.LanguageManager;
-import com.mrnobody.morecommands.util.PlayerSettings;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -13,6 +13,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
 /**
@@ -34,15 +35,6 @@ public final class CommandSender {
 	 */
 	public CommandSender(ICommandSender sender) {
 		this.sender = sender;
-	}
-	
-	/**
-	 * Constructs a new {@link CommandSender} with a {@link Player}
-	 * 
-	 * @param player the {@link Player}
-	 */
-	public CommandSender(Player player) {
-		this(player.getMinecraftPlayer());
 	}
 	
 	/**
@@ -163,7 +155,7 @@ public final class CommandSender {
 	 * @return the command sender's world
 	 */
 	public World getWorld() {
-		return new World(this.sender.getEntityWorld());
+		return this.sender.getEntityWorld();
 	}
 	
 	/**

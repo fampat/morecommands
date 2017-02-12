@@ -1,12 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -34,7 +34,7 @@ public class CommandMelt extends StandardCommand implements ServerCommandPropert
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params)throws CommandException {
+	public String execute(CommandSender sender, String[] params)throws CommandException {
 		boolean all = false;
 		if (params.length > 0 && params[0].equalsIgnoreCase("all")) all = true;
 		
@@ -43,7 +43,7 @@ public class CommandMelt extends StandardCommand implements ServerCommandPropert
 		int smelt = 0;
 		
 		if (!all) {
-			if (player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND) == null) return;
+			if (player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND) == null) return null;
 			result = FurnaceRecipes.instance().getSmeltingResult(player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND));
 			if (result != null) player.setItemStackToSlot(EntityEquipmentSlot.MAINHAND, new ItemStack(result.getItem(),
 								player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND).stackSize, result.getItemDamage()));
@@ -59,6 +59,7 @@ public class CommandMelt extends StandardCommand implements ServerCommandPropert
 		}
 		
 		sender.sendLangfileMessage("command.melt.molten", smelt);
+		return null;
 	}
 	
 	@Override
@@ -72,7 +73,7 @@ public class CommandMelt extends StandardCommand implements ServerCommandPropert
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

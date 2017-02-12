@@ -5,13 +5,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.tuple.ImmutableTriple;
-import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -21,11 +17,13 @@ import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
 import com.mrnobody.morecommands.network.PacketDispatcher;
-import com.mrnobody.morecommands.util.DynamicClassLoader;
-import com.mrnobody.morecommands.util.GlobalSettings;
+import com.mrnobody.morecommands.settings.GlobalSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.util.DefaultChannelPolicies;
+import com.mrnobody.morecommands.util.CommandClassLoader;
 import com.mrnobody.morecommands.util.LanguageManager;
 import com.mrnobody.morecommands.util.ObfuscatedNames;
-import com.mrnobody.morecommands.util.PlayerSettings;
 import com.mrnobody.morecommands.util.Reference;
 
 import net.minecraft.command.ICommandSender;
@@ -74,8 +72,8 @@ public enum MoreCommands {
 	 */
 	public static enum ServerType {INTEGRATED, DEDICATED, ALL}
 	
-	private final DynamicClassLoader commandClassLoader = new DynamicClassLoader(MoreCommands.class.getClassLoader());
-	private final Pattern ipPattern = Pattern.compile("^(\\d{1,3}\\.){3}\\d{1,3}:\\d{1,5}[ \t]*\\{$");
+	private final CommandClassLoader commandClassLoader = new CommandClassLoader(MoreCommands.class.getClassLoader());
+	private List<String> disabledCommands;
 	
 	private PacketDispatcher dispatcher;
 	private Logger logger;
@@ -85,11 +83,6 @@ public enum MoreCommands {
 	
 	private final String serverCommandsPackage = "com.mrnobody.morecommands.command.server";
 	private List<Class<? extends StandardCommand>> serverCommandClasses = new ArrayList<Class<? extends StandardCommand>>();
-	
-	private List<String> disabledCommands;
-	private List<String> startupCommands;
-	private List<String> startupMultiplayerCommands;
-	private Map<String, List<String>> startupServerCommands;
 	
 	/**
 	 * @return The running proxy
@@ -113,7 +106,7 @@ public enum MoreCommands {
 	}
 	
 	/**
-	 * @return The running environment (client or server)
+	 * @return The running environment (client or server). This returns null if used before Proxy instantiation
 	 */
 	public static Side getEnvironment() {
 		if (MoreCommands.isClientSide()) return Side.CLIENT;
@@ -166,7 +159,7 @@ public enum MoreCommands {
 	/**
 	 * @return the dynamic class loader responsible for command class loading
 	 */
-	public DynamicClassLoader getCommandClassLoader() {
+	public CommandClassLoader getCommandClassLoader() {
 		return this.commandClassLoader;
 	}
 	
@@ -195,7 +188,7 @@ public enum MoreCommands {
 	 */
 	@NetworkCheckHandler
 	public boolean acceptConnection(Map<String, String> mods, Side side) {
-		if ((side == Side.CLIENT && GlobalSettings.clientMustHaveMod) || (side == Side.SERVER && GlobalSettings.serverMustHaveMod))
+		if ((side == Side.CLIENT && MoreCommandsConfig.clientMustHaveMod) || (side == Side.SERVER && MoreCommandsConfig.serverMustHaveMod))
 			return mods.containsKey(Reference.MODID) ? mods.get(Reference.MODID).equals(Reference.VERSION) : false;
 		else
 			return true;
@@ -219,22 +212,19 @@ public enum MoreCommands {
 		Reference.init(event);
 		LanguageManager.readTranslations();
 		
-		GlobalSettings.init();
-		GlobalSettings.readSettings();
+		GlobalSettings.getInstance(); //init
+		MoreCommandsConfig.readConfig();
 		
 		PlayerSettings.registerCapabilities();
 		PlayerPatches.registerCapability();
+		
+		DefaultChannelPolicies.registerPolicies();
 		
 		this.dispatcher = new PacketDispatcher();
 		if (this.loadCommands()) this.logger.info("Command Classes successfully loaded");
 		
 		this.disabledCommands = this.readDisabledCommands();
 		this.getLogger().info("Following commands were disabled: " + this.disabledCommands);
-		
-		Triple<List<String>, List<String>, Map<String, List<String>>> startupCommands = this.parseStartupFiles();
-		this.startupCommands = startupCommands.getLeft();
-		this.startupMultiplayerCommands = startupCommands.getMiddle();
-		this.startupServerCommands = startupCommands.getRight();
 		
 		MoreCommands.proxy.preInit(event);
 	}
@@ -335,66 +325,5 @@ public enum MoreCommands {
 		catch (IOException ex) {ex.printStackTrace(); this.getLogger().info("Could not read disable.cfg");}
 		
 		return builder.build();
-	}
-	
-	/**
-	 * Reads the files containing the command that shall be executed on startup
-	 * 
-	 * @return A {@link Triple} of which the left value is the commands that should be run after server startup,
-	 * 		   the middle value is the command that should be run on every server the player joins and the right
-	 * 		   value is the map of commands which should only be run on certain servers
-	 */
-	private Triple<List<String>, List<String>, Map<String, List<String>>> parseStartupFiles() {
-		final List<String> startupCommands = new ArrayList<String>();
-		final List<String> startupCommandsM = new ArrayList<String>();
-		final Map<String, List<String>> startupCommandsMap = new HashMap<String, List<String>>();
-		
-		try {
-			File startup = new File(Reference.getModDir(), "startup.cfg");
-			File startupMultiplayer = new File(Reference.getModDir(), "startup_multiplayer.cfg");
-			if (!startup.exists() || !startup.isFile()) startup.createNewFile();
-			if (!startupMultiplayer.exists() || !startupMultiplayer.isFile()) startupMultiplayer.createNewFile();
-		
-			BufferedReader br = new BufferedReader(new FileReader(startup));
-			String line; while ((line = br.readLine()) != null) {if (!line.startsWith("#")) startupCommands.add(line.trim());}
-			br.close();
-			
-			br = new BufferedReader(new FileReader(startupMultiplayer));
-			boolean bracketOpen = false;
-			String addr = null;
-			
-			while ((line = br.readLine()) != null) {
-				if (!bracketOpen && ipPattern.matcher(line.trim()).matches()) {bracketOpen = true; addr = line.split("\\{")[0].trim();}
-				else if (bracketOpen && line.trim().equals("}")) {bracketOpen = false;}
-				else if (!bracketOpen && !line.startsWith("#")) startupCommandsM.add(line.trim());
-				else if (bracketOpen && !line.startsWith("#")) {
-					if (!startupCommandsMap.containsKey(addr)) startupCommandsMap.put(addr, new ArrayList<String>());
-					startupCommandsMap.get(addr).add(line.trim());
-				}
-			}
-			
-			br.close();
-		}
-		catch (IOException ex) {ex.printStackTrace(); this.logger.info("Startup commands file could not be read");}
-		
-		return ImmutableTriple.of(startupCommands, startupCommandsM, startupCommandsMap);
-	}
-	
-	/**
-	 * @return The commands that should be executed after server startup
-	 */
-	public List<String> getStartupCommands() {
-		return new ArrayList<String>(this.startupCommands);
-	}
-	
-	/**
-	 * @param socketAddress the Socket Address of the server
-	 * @return The commands that should be executed when the server joins a server with the given address
-	 */
-	public List<String> getStartupCommandsMultiplayer(String socketAddress) {
-		socketAddress = socketAddress.trim(); if (socketAddress.startsWith("/")) socketAddress = socketAddress.substring(1);
-		List<String> commands = new ArrayList<String>(this.startupMultiplayerCommands);
-		if (this.startupServerCommands.containsKey(socketAddress)) commands.addAll(this.startupServerCommands.get(socketAddress));
-		return commands;
 	}
 }
