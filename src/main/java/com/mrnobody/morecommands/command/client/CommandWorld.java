@@ -13,7 +13,9 @@ import java.util.Random;
 
 import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.AppliedPatches;
 import com.mrnobody.morecommands.core.MoreCommands;
@@ -21,8 +23,6 @@ import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedMethod;
 import com.mrnobody.morecommands.util.ReflectionHelper;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.client.LoadingScreenRenderer;
 import net.minecraft.client.Minecraft;
@@ -54,7 +54,7 @@ public class CommandWorld extends StandardCommand implements ClientCommandProper
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 0) {
 			if (params[0].equalsIgnoreCase("load") && params.length > 1) {
 				String world = "";
@@ -119,11 +119,13 @@ public class CommandWorld extends StandardCommand implements ClientCommandProper
 				if (!AppliedPatches.serverModded())
 					throw new CommandException("command.world.serverNotModded", sender);
 				
-				MoreCommands.INSTANCE.getPacketDispatcher().sendC02World(params);
+				Minecraft.getMinecraft().thePlayer.sendChatMessage("/world " + rejoinParams(params));
 			}
 			else throw new CommandException("command.world.invalidArg", sender);
 		}
 		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 
 	@Override
@@ -137,7 +139,7 @@ public class CommandWorld extends StandardCommand implements ClientCommandProper
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 

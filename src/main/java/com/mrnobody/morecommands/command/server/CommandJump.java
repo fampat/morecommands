@@ -1,15 +1,17 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Entity;
+import com.mrnobody.morecommands.util.EntityUtils;
+import com.mrnobody.morecommands.util.WorldUtils;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 
 @Command(
@@ -32,20 +34,22 @@ public class CommandJump extends StandardCommand implements ServerCommandPropert
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Entity entity = new Entity(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.Entity.class));
-		BlockPos hit = entity.traceBlock(128);
+	public String execute(CommandSender sender, String[] params) throws CommandException {
+		Entity entity = getSenderAsEntity(sender.getMinecraftISender(),Entity.class);
+		BlockPos hit = EntityUtils.traceBlock(entity, 128);
 		
 		if (hit == null) throw new CommandException("command.jump.notInSight", sender);
 		else {
 			int y = hit.getY() + 1;
 			while (y < 260) {
-				if (entity.getWorld().isClear(new BlockPos(hit.getX(), y++, hit.getZ()))) {
-					entity.setPosition(new BlockPos(hit.getX() + 0.5F, --y, hit.getZ() + 0.5F));
+				if (WorldUtils.isClear(entity.worldObj, new BlockPos(hit.getX(), y++, hit.getZ()))) {
+					EntityUtils.setPosition(entity, new BlockPos(hit.getX() + 0.5F, --y, hit.getZ() + 0.5F));
 					break;
 				}
 			}
 		}
+		
+		return null;
 	}
 	
 	@Override
@@ -59,12 +63,12 @@ public class CommandJump extends StandardCommand implements ServerCommandPropert
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	
 	@Override
 	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
-		return isSenderOfEntityType(sender, net.minecraft.entity.Entity.class);
+		return isSenderOfEntityType(sender,Entity.class);
 	}
 }

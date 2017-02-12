@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import com.google.common.collect.Lists;
 import com.mrnobody.morecommands.core.MoreCommands;
 
 /**
@@ -20,7 +21,7 @@ import com.mrnobody.morecommands.core.MoreCommands;
  * 
  * @author MrNobody98
  */
-public class DynamicClassLoader {
+public class CommandClassLoader {
 	/**
 	 * The class loader
 	 */
@@ -34,7 +35,7 @@ public class DynamicClassLoader {
 	
 	private int rsrcWriteIndex = 0;
 	
-	public DynamicClassLoader(ClassLoader loader) {
+	public CommandClassLoader(ClassLoader loader) {
 		this.CLASSLOADER = loader;
 	}
 	
@@ -69,11 +70,11 @@ public class DynamicClassLoader {
 			
 			if (clientClasses) {
 				this.clientCommandClasses.addAll(commandClasses);
-				return this.clientCommandClasses;
+				return Lists.newArrayList(this.clientCommandClasses);
 			}
 			else {
 				this.serverCommandClasses.addAll(commandClasses);
-				return this.serverCommandClasses;
+				return Lists.newArrayList(this.serverCommandClasses);
 			}
 		}
 		else return null;

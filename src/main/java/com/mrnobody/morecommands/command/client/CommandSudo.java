@@ -4,11 +4,11 @@ import java.util.Iterator;
 
 import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandManager;
 import net.minecraft.entity.player.EntityPlayer;
@@ -34,7 +34,7 @@ public class CommandSudo extends StandardCommand implements ClientCommandPropert
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 1 && sender.getServer() instanceof IntegratedServer && 
 								((IntegratedServer) sender.getServer()).getPublic()) {
 			EntityPlayer player = null;
@@ -73,6 +73,8 @@ public class CommandSudo extends StandardCommand implements ClientCommandPropert
 		else if (!(sender.getServer() instanceof IntegratedServer)) throw new CommandException("command.sudo.notInLAN", sender);
 		else if (!((IntegratedServer) sender.getServer()).getPublic()) throw new CommandException("command.sudo.notInLAN", sender);
 		else throw new CommandException("command.sudo.invalidArgs", sender);
+		
+		return null;
 	}
 	
 	@Override
@@ -86,7 +88,7 @@ public class CommandSudo extends StandardCommand implements ClientCommandPropert
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 

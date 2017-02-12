@@ -1,15 +1,16 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.EntityLivingBase;
+import com.mrnobody.morecommands.util.EntityUtils;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
@@ -35,8 +36,8 @@ public class CommandEffect extends StandardCommand implements ServerCommandPrope
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		EntityLivingBase entity = new EntityLivingBase(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.EntityLivingBase.class));
+	public String execute(CommandSender sender, String[] params) throws CommandException {
+		EntityLivingBase entity = getSenderAsEntity(sender.getMinecraftISender(), EntityLivingBase.class);
 		
 		if (params.length > 0) {
     		if(params[0].equals("list")) {
@@ -60,13 +61,13 @@ public class CommandEffect extends StandardCommand implements ServerCommandPrope
     		}
     		else if (params[0].equals("remove") && params.length > 1) {
 				if (params[1].equalsIgnoreCase("*")) {
-					entity.removeAllPotionEffects(); 
+					EntityUtils.removeAllPotionEffects(entity); 
 					sender.sendLangfileMessage("command.effect.removeAllSuccess");
-					return;
+					return null;
 				}
 				
 				Potion potion = getPotion(params[1]);
-				if (potion != null) entity.removePotionEffect(potion);
+				if (potion != null) EntityUtils.removePotionEffect(entity, potion);
 				else throw new CommandException("command.effect.notFound", sender);
 				
 				sender.sendLangfileMessage("command.effect.removeSuccess");
@@ -90,7 +91,7 @@ public class CommandEffect extends StandardCommand implements ServerCommandPrope
 					invisible = Boolean.parseBoolean(params[4]);
 				
 				Potion potion = getPotion(params[1]);
-				if (potion != null) entity.addPotionEffect(potion, duration, strength, invisible);
+				if (potion != null) EntityUtils.addPotionEffect(entity, potion, duration, strength, invisible);
 				else throw new CommandException("command.effect.notFound", sender);
 				
 				sender.sendLangfileMessage("command.effect.addSuccess");
@@ -98,6 +99,8 @@ public class CommandEffect extends StandardCommand implements ServerCommandPrope
     		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
 		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 	
 	@Override
@@ -111,12 +114,12 @@ public class CommandEffect extends StandardCommand implements ServerCommandPrope
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	
 	@Override
 	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
-		return isSenderOfEntityType(sender, net.minecraft.entity.EntityLivingBase.class);
+		return isSenderOfEntityType(sender, EntityLivingBase.class);
 	}
 }

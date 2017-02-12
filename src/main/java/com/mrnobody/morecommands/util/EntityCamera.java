@@ -1,4 +1,4 @@
-package com.mrnobody.morecommands.wrapper;
+package com.mrnobody.morecommands.util;
 
 import com.mrnobody.morecommands.patch.EntityPlayerSP;
 

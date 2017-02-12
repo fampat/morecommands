@@ -1,47 +1,49 @@
 package com.mrnobody.morecommands.command.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
-
-import org.apache.commons.lang3.tuple.Triple;
+import java.util.Set;
 
 import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.util.ClientPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.settings.ClientPlayerSettings;
+import com.mrnobody.morecommands.settings.SettingsProperty;
 
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.util.text.TextFormatting;
 
 @Command(
-		name = "savemode_client",
-		description = "command.savemode.client.description",
-		example = "command.savemode.client.example",
-		syntax = "command.savemode.client.syntax",
-		videoURL = "command.savemode.client.videoURL"
+		name = "settings_client",
+		description = "command.settings.client.description",
+		example = "command.settings.client.example",
+		syntax = "command.settings.client.syntax",
+		videoURL = "command.settings.client.videoURL"
 		)
-public class CommandSavemode extends StandardCommand implements ClientCommandProperties {
+public class CommandSettings extends StandardCommand implements ClientCommandProperties {
 	private static final int PAGE_MAX = 15;
 	
 	@Override
 	public String getCommandName() {
-		return "savemode_client";
+		return "settings_client";
 	}
-
+	
 	@Override
 	public String getCommandUsage() {
-		return "command.savemode.client.syntax";
+		return "command.settings.client.syntax";
 	}
-
+	
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		if (!isSenderOfEntityType(sender.getMinecraftISender(), EntityPlayerSP.class))
 			throw new CommandException("command.generic.notAPlayer", sender);
-		
+
 		ClientPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerSP.class));
 		
 		if (params.length > 0) {
@@ -63,36 +65,43 @@ public class CommandSavemode extends StandardCommand implements ClientCommandPro
 				for (int i = page * PAGE_MAX; i < stop && i < list.size(); i++)
 					sender.sendStringMessage(" - '" + list.get(i) + "'");
 				
-				sender.sendLangfileMessage("command.savemode.client.more", TextFormatting.RED);
+				sender.sendLangfileMessage("command.settings.client.more", TextFormatting.RED);
+			}
+			else if (params[0].equalsIgnoreCase("reload")) {
+				settings.refresh();
+				sender.sendLangfileMessage("command.settings.reloaded");
 			}
 			else if (params.length > 1) {
 				String type = params[1];
 				
 				if (!ClientPlayerSettings.CLIENT_SETTINGS.contains(type) && !ClientPlayerSettings.COMMON_SETTINGS.contains(type))
-					throw new CommandException("command.savemode.notASetting", sender, type);
-				
-				Triple<Boolean, Boolean, Boolean> default_ = settings.getSaveProperties(type);
+					throw new CommandException("command.settings.notASetting", sender, type);
 				
 				if (params[0].equalsIgnoreCase("reset")) {
-					settings.clearProps(type);
-					sender.sendLangfileMessage("command.savemode.reseted", type);
+					settings.setPutProperties(type, SettingsProperty.SERVER_PROPERTY);
+					sender.sendLangfileMessage("command.settings.reseted", type);
 				}
-				else if (params.length > 2 && params[0].equalsIgnoreCase("set")){
-					try {
-						boolean server = params.length > 2 ? parseTrueFalse(params, 2, default_.getLeft()) : default_.getLeft();
-						boolean world = params.length > 3 ? parseTrueFalse(params, 3, default_.getMiddle()) : default_.getMiddle();
-						boolean dim = params.length > 4 ? parseTrueFalse(params, 4, default_.getRight()) : default_.getRight();
-						
-						settings.setProps(type, server, world, dim);
-						sender.sendLangfileMessage("command.savemode.set", type);
+				else if (params[0].equalsIgnoreCase("set")) {
+					Set<SettingsProperty> set = EnumSet.noneOf(SettingsProperty.class);
+					
+					if (params.length > 2) {
+						for (String s : Arrays.copyOfRange(params, 2, params.length)) {
+							SettingsProperty prop = SettingsProperty.getByName(s);
+							if (prop == null) throw new CommandException("command.settings.invalidProperty", sender, s);
+							set.add(prop);
+						}
 					}
-					catch (IllegalArgumentException ex) {throw new CommandException("command.savemode.invalidArg", sender);}
+					
+					settings.setPutProperties(type, set.toArray(new SettingsProperty[set.size()]));
+					sender.sendLangfileMessage("command.settings.set", type);
 				}
 				else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 			}
 			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
 		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 
 	@Override
@@ -106,7 +115,7 @@ public class CommandSavemode extends StandardCommand implements ClientCommandPro
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 	
