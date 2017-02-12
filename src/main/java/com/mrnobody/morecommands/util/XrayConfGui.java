@@ -135,8 +135,8 @@ public class XrayConfGui extends GuiScreen {
 		@Override
 		public void actionPerformed(GuiButton button) {
 			if (button.id == 4) {boolean flag = ((GuiCheckBox) button).isChecked(); this.redSlider.enabled = flag; this.greenSlider.enabled = flag; this.blueSlider.enabled = flag;}
-			if (button.id == 98) {XrayConfGui.this.setBlockInfo(redSlider.sliderValue, greenSlider.sliderValue, blueSlider.sliderValue, this.enableBox.isChecked()); mc.thePlayer.closeScreen();}
-			else if (button.id == 99) mc.thePlayer.closeScreen();
+			if (button.id == 98) {XrayConfGui.this.setBlockInfo(redSlider.sliderValue, greenSlider.sliderValue, blueSlider.sliderValue, this.enableBox.isChecked()); mc.player.closeScreen();}
+			else if (button.id == 99) mc.player.closeScreen();
 		}
 	
 		@Override
@@ -261,7 +261,7 @@ public class XrayConfGui extends GuiScreen {
 					this.loadConfigGUI(this.xray.drawBlock(this.blockList[this.elementSelected]));
 			}
 			else if (button.id == 0) {
-				this.mc.thePlayer.closeScreen();
+				this.mc.player.closeScreen();
 			}
 		}
 	}

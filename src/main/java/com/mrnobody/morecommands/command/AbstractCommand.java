@@ -11,12 +11,10 @@ import com.google.common.collect.ImmutableMap;
 import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.util.ClientPlayerSettings;
+import com.mrnobody.morecommands.settings.ClientPlayerSettings;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 import com.mrnobody.morecommands.util.LanguageManager;
-import com.mrnobody.morecommands.util.PlayerSettings;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -32,6 +30,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.relauncher.Side;
@@ -49,24 +48,43 @@ public abstract class AbstractCommand extends net.minecraft.command.CommandBase 
 	@Override
 	public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
 		if (this.getRequiredPermissionLevel() == 0) return true;
-		else return sender.canCommandSenderUseCommand(this.getRequiredPermissionLevel(), this.getCommandName());
+		else return sender.canUseCommand(this.getRequiredPermissionLevel(), this.getCommandName());
+	}
+	
+	/**
+	 * @return whether the command sender can use this command including execution arguments
+	 */
+	public boolean checkPermission(MinecraftServer server, ICommandSender p_71519_1_, String[] params) {
+		if (this.getRequiredPermissionLevel(params) == 0) return true;
+		else return p_71519_1_.canUseCommand(this.getRequiredPermissionLevel(params), this.getCommandName());
 	}
 	
 	/**
 	 * @return The required permission level
 	 */
 	@Override
-    public int getRequiredPermissionLevel() {return this.getDefaultPermissionLevel();}
+    public int getRequiredPermissionLevel() {return this.getDefaultPermissionLevel(null);}
+    
+	/**
+	 * @param params the arguments for a call of this command
+	 * @return the permission level required for the given commands
+	 */
+	public int getRequiredPermissionLevel(String[] params) {return this.getDefaultPermissionLevel(params);}
+
+	/**
+	 * @return The command name
+	 */
+    public final String getName() {return this.getCommandName();}
     
 	/**
 	 * @return The command usage
 	 */
-    public final String getCommandUsage(ICommandSender sender) {return this.getCommandUsage();}
+    public final String getUsage(ICommandSender sender) {return this.getCommandUsage();}
     
 	/**
 	 * processes the command
 	 */
-    public abstract void execute(MinecraftServer server, ICommandSender sender, String[] params) throws net.minecraft.command.CommandException;
+    public abstract void execute(MinecraftServer server, ICommandSender sender, String[] params) throws net.minecraft.command.CommandException;   
     
 	/**
 	 * @return The command name
@@ -83,9 +101,11 @@ public abstract class AbstractCommand extends net.minecraft.command.CommandBase 
 	 * 
 	 * @param sender the command sender
 	 * @param params the command parameters
+	 * @return A string representing the result of the command, this is not intended to be used for chat
+	 *         but e.g. as the content of a variable (see the "/var grab" command). May be null if there's no special result.
 	 * @throws CommandException if the command couldn't be processed for some reason
 	 */
-    public abstract void execute(CommandSender sender, String[] params) throws CommandException;
+    public abstract String execute(CommandSender sender, String[] params) throws CommandException;
     
 	/**
 	 * @return The requirements for a command to be executed
@@ -98,9 +118,10 @@ public abstract class AbstractCommand extends net.minecraft.command.CommandBase 
     public abstract ServerType getAllowedServerType();
     
 	/**
+	 * @param params the arguments of this command execution. THIS MAY BE NULL if it was not possible to get the arguments
 	 * @return The default permission level
 	 */
-    public abstract int getDefaultPermissionLevel();
+    public abstract int getDefaultPermissionLevel(String[] args);
     
 	/**
 	 * Checks the command sender whether he can use this command with the given parameters
@@ -109,17 +130,17 @@ public abstract class AbstractCommand extends net.minecraft.command.CommandBase 
 	 * @param params the command parameters
 	 * @param side the side on which this command is executed
 	 * 
-	 * @return whether the command requirements are satisfied
+	 * @return null if all requirements are satisfied, an IChatComponent containing an error message if not
 	 */
-    public boolean checkRequirements(ICommandSender sender, String[] params, Side side) {
+    public ITextComponent checkRequirements(ICommandSender sender, String[] params, Side side) {
     	String lang = MoreCommands.INSTANCE.getCurrentLang(sender);
     	
     	if (!(this.getAllowedServerType() == ServerType.ALL || this.getAllowedServerType() == MoreCommands.getServerType())) {
     		if (this.getAllowedServerType() == ServerType.INTEGRATED)
-    			sendChatMsg(sender, LanguageManager.translate(lang, "command.generic.notIntegrated"));
+    			return makeChatMsg(LanguageManager.translate(lang, "command.generic.notIntegrated"));
     		if (this.getAllowedServerType() == ServerType.DEDICATED) 
-    			sendChatMsg(sender, LanguageManager.translate(lang, "command.generic.notDedicated"));
-    		return false;
+    			return makeChatMsg(LanguageManager.translate(lang, "command.generic.notDedicated"));
+    		throw new IllegalStateException("This should not happen");
     	}
     	
     	PlayerPatches clientInfo = isSenderOfEntityType(sender, EntityPlayerMP.class) ? 
@@ -136,18 +157,17 @@ public abstract class AbstractCommand extends net.minecraft.command.CommandBase 
     	
     	for (CommandRequirement requierement : requierements) {
     		if (!requierement.isSatisfied(sender, clientInfo, side)) {
-    			sendChatMsg(sender, LanguageManager.translate(lang, requierement.getLangfileMsg(side)));
-    			return false;
+    			return makeChatMsg(LanguageManager.translate(lang, requierement.getLangfileMsg(side)));
     		}
     	}
     	
-    	return true;
+    	return null;
     }
     
-    private final void sendChatMsg(ICommandSender sender, String msg) {
+    protected final ITextComponent makeChatMsg(String msg) {
     	TextComponentString text = new TextComponentString(msg);
     	text.getStyle().setColor(TextFormatting.RED);
-    	sender.addChatMessage(text);
+    	return text;
     }
     
     @Override
@@ -177,11 +197,11 @@ public abstract class AbstractCommand extends net.minecraft.command.CommandBase 
     /**
      * returns true if the value of <b>params[index]</b> is <b>"enable"</b>, <b>"on"</b>, <b>"1"</b> or <b>"true"</b>,<br>
      * false if this value is <b>"disable"</b>, <b>"off"</b>, <b>"0"</b> or <b>"false"</b>.<br>
-     * If the index does not exist, it will return <b>default_</b> NEGATED.
+     * If the index does not exist, it will return <b>default_</b>.
      * 
      * @param params the command arguments
      * @param index the index to be parsed
-     * @param default_ the negated default value
+     * @param default_ the default value
      * @return the parsed boolean argument
      * 
      * @throws IllegalArgumentException if <b>params[index]</b> is none of the values named above
@@ -198,7 +218,7 @@ public abstract class AbstractCommand extends net.minecraft.command.CommandBase 
             }
             else throw new IllegalArgumentException("Invalid Argument");
         }
-        else return !default_;
+        else return default_;
     }
     
     /**
@@ -349,7 +369,7 @@ public abstract class AbstractCommand extends net.minecraft.command.CommandBase 
      * @param sender the command sender
      * @return the parsed NBTBase
      */
-    public static NBTTagCompound getNBTFromParam(String param, ICommandSender sender) {
+    public static NBTTagCompound getNBTFromParam(String param) {
     	if (isNBTParam(param)) {
     		NBTBase nbt = null;
     		
@@ -497,5 +517,23 @@ public abstract class AbstractCommand extends net.minecraft.command.CommandBase 
     	ClientPlayerSettings settings = player.getCapability(PlayerSettings.SETTINGS_CAP_CLIENT, null);
     	if (settings == null) settings = PlayerSettings.SETTINGS_CAP_CLIENT.getDefaultInstance();
     	return settings;
+    }
+
+    /**
+     * An interface extending {@link ICommandSender} which has an additional method
+     * <i>setCommandResult</i> which is used to notify the send about the result of a 
+     * command. The result is the return value of {@link AbstractCommand#execute(CommandSender, String[])}
+     * 
+     * @author MrNobody98
+     */
+    public static interface ResultAcceptingCommandSender extends ICommandSender {
+    	/**
+    	 * Invoked after the execution of a command to notify the sender about the command result
+    	 * 
+    	 * @param commandName the command name
+    	 * @param args the arguments used for execution
+    	 * @param result the result
+    	 */
+    	void setCommandResult(String commandName, String[] args, String result);
     }
 }

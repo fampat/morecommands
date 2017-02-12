@@ -1,15 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 import com.mrnobody.morecommands.util.LanguageManager;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -36,17 +36,19 @@ public class CommandOutput extends StandardCommand implements ServerCommandPrope
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
     	boolean output;
     	
-		try {output = parseTrueFalse(params, 0, settings.output);}
+		try {output = parseTrueFalse(params, 0, !settings.output);}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.output.failure", sender);}
         
         settings.output = output;
         
-		sender.getMinecraftISender().addChatMessage(new TextComponentString(LanguageManager.translate(
+		sender.getMinecraftISender().sendMessage(new TextComponentString(LanguageManager.translate(
 				MoreCommands.INSTANCE.getCurrentLang(sender.getMinecraftISender()), output ? "command.output.on" : "command.output.off")));
+	
+		return null;
 	}
 	
 	@Override
@@ -60,7 +62,7 @@ public class CommandOutput extends StandardCommand implements ServerCommandPrope
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 	

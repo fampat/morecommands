@@ -9,6 +9,7 @@ import org.apache.commons.lang3.tuple.MutablePair;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
 
 /**
  * A class to parse calculations.<br>
@@ -35,7 +36,7 @@ public final class CalculationParser {
 	 * @throws NumberFormatException if the calculation string is invalid
 	 */
 	public static double parseCalculation(String calc) throws NumberFormatException {
-		if (GlobalSettings.useRegexCalcParser) return parseCalculationViaRegex(calc.replace(",", ".").replace(" ", ""));
+		if (MoreCommandsConfig.useRegexCalcParser) return parseCalculationViaRegex(calc.replace(",", ".").replace(" ", ""));
 		else return parseCalculationManually(calc.replace(",", ".").replace(" ", ""));
 	}
 	

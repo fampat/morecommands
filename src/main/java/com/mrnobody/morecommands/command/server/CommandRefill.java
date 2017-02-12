@@ -1,17 +1,18 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.ItemStack;
 
 @Command(
 		name = "refill",
@@ -33,23 +34,25 @@ public class CommandRefill extends StandardCommand implements ServerCommandPrope
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params)throws CommandException {
+	public String execute(CommandSender sender, String[] params)throws CommandException {
 		EntityPlayer player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 		
 		if (params.length > 0 && params[0].equalsIgnoreCase("all")) {
 			for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
-				if (player.inventory.getStackInSlot(i) != null) 
-					player.inventory.getStackInSlot(i).stackSize = player.inventory.getStackInSlot(i).getMaxStackSize();
+				if (player.inventory.getStackInSlot(i) != ItemStack.EMPTY) 
+					player.inventory.getStackInSlot(i).setCount(player.inventory.getStackInSlot(i).getMaxStackSize());
 			}
 		}
 		else {
-			if (player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND) != null) 
-				player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND).stackSize = player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND).getMaxStackSize();
+			if (player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND) != ItemStack.EMPTY) 
+				player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND).setCount(player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND).getMaxStackSize());
 			else
 				throw new CommandException("command.refill.noSelection", sender);
 		}
 		
 		sender.sendLangfileMessage("command.refill.refilled");
+		
+		return null;
 	}
 	
 	@Override
@@ -63,7 +66,7 @@ public class CommandRefill extends StandardCommand implements ServerCommandPrope
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

@@ -1,14 +1,14 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -34,7 +34,7 @@ public class CommandCompass extends StandardCommand implements ServerCommandProp
 	}
 	
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 0) {
 			EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 			
@@ -55,7 +55,7 @@ public class CommandCompass extends StandardCommand implements ServerCommandProp
 					
 					if (waypoint == null) throw new CommandException("command.compass.waypointNotFound", sender, params[1]);
 					else {
-						MoreCommands.INSTANCE.getPacketDispatcher().sendS13SetCompassTarget(player, MathHelper.floor_double(waypoint[0]), MathHelper.floor_double(waypoint[2]));
+						MoreCommands.INSTANCE.getPacketDispatcher().sendS13SetCompassTarget(player, MathHelper.floor(waypoint[0]), MathHelper.floor(waypoint[2]));
 						getPlayerSettings(player).hasModifiedCompassTarget = true;
 						getPlayerSettings(player).waypointCompassTarget = params[1];
 					}
@@ -69,6 +69,8 @@ public class CommandCompass extends StandardCommand implements ServerCommandProp
 			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
 		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 
 	@Override
@@ -82,7 +84,7 @@ public class CommandCompass extends StandardCommand implements ServerCommandProp
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 

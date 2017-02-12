@@ -1,12 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -28,31 +28,33 @@ public class CommandStackcombine extends StandardCommand implements ServerComman
 		return "command.stackcombine.syntax";
 	}
     
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 		
 		for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
 			ItemStack sloti = player.inventory.getStackInSlot(i);
-			if (sloti == null) continue;
+			if (sloti == ItemStack.EMPTY) continue;
 			
             for (int j = i + 1; j < player.inventory.getSizeInventory(); j++) {
             	ItemStack slotj = player.inventory.getStackInSlot(i);
-            	if (slotj == null) continue;
+            	if (slotj == ItemStack.EMPTY) continue;
             	
             	if (sloti.isItemEqual(slotj)) {
-            		if (sloti.stackSize + slotj.stackSize > sloti.getMaxStackSize()) {
-            			int noItems = sloti.stackSize + slotj.stackSize;
-            			sloti.stackSize = sloti.getMaxStackSize(); noItems -= sloti.getMaxStackSize();
-            			slotj.stackSize = noItems > sloti.getMaxStackSize() ? sloti.getMaxStackSize() : noItems;
+            		if (sloti.getCount() + slotj.getCount() > sloti.getMaxStackSize()) {
+            			int noItems = sloti.getCount() + slotj.getCount();
+            			sloti.setCount(sloti.getMaxStackSize()); noItems -= sloti.getMaxStackSize();
+            			slotj.setCount(noItems > sloti.getMaxStackSize() ? sloti.getMaxStackSize() : noItems);
             			noItems -= sloti.getMaxStackSize();
             		}
             		else {
-            			sloti.stackSize += slotj.stackSize;
-            			player.inventory.setInventorySlotContents(j, null);
+            			sloti.setCount(sloti.getCount() + slotj.getCount());
+            			player.inventory.setInventorySlotContents(j, ItemStack.EMPTY);
             		}
             	}
             }
 		}
+		
+		return null;
 	}
     
 	@Override
@@ -66,7 +68,7 @@ public class CommandStackcombine extends StandardCommand implements ServerComman
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 	

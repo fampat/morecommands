@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.MultipleCommands;
 import com.mrnobody.morecommands.command.ServerCommand;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
@@ -15,8 +17,6 @@ import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.DummyCommand;
 import com.mrnobody.morecommands.util.LanguageManager;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
@@ -47,7 +47,7 @@ public class CommandHelp extends StandardCommand implements ServerCommandPropert
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		String langCode = MoreCommands.getProxy().getLang(sender.getMinecraftISender());
 		
 		final ITextComponent HEADING = new TextComponentString(LanguageManager.translate(langCode, "command.generic.help.commandheader")).setStyle(new Style().setColor(TextFormatting.GREEN));
@@ -115,15 +115,17 @@ public class CommandHelp extends StandardCommand implements ServerCommandPropert
 				
 				sender.sendChatComponent(HEADING);
 				
-				sender.sendChatComponent(NAME.appendSibling(new TextComponentString(command.getCommandName()).setStyle(new Style().setColor(TextFormatting.WHITE))));
+				sender.sendChatComponent(NAME.appendSibling(new TextComponentString(command.getName()).setStyle(new Style().setColor(TextFormatting.WHITE))));
 				sender.sendChatComponent(DESCRIPTION.appendSibling(new TextComponentString(LanguageManager.translate(langCode, "command.generic.help.noDescription")).setStyle(new Style().setColor(TextFormatting.WHITE))));
-				sender.sendChatComponent(SYNTAX.appendSibling(new TextComponentTranslation(command.getCommandUsage(sender.getMinecraftISender())).setStyle(new Style().setColor(TextFormatting.WHITE))));
+				sender.sendChatComponent(SYNTAX.appendSibling(new TextComponentTranslation(command.getUsage(sender.getMinecraftISender())).setStyle(new Style().setColor(TextFormatting.WHITE))));
 				sender.sendChatComponent(EXAMPLE.appendSibling(new TextComponentString(LanguageManager.translate(langCode, "command.generic.help.noExample")).setStyle(new Style().setColor(TextFormatting.WHITE))));
 				sender.sendChatComponent(VIDEO.appendSibling(new TextComponentString(LanguageManager.translate(langCode, "command.generic.help.noVideo")).setStyle(new Style().setColor(TextFormatting.WHITE))));
 				
 				sender.sendChatComponent(FOOTER);
 			}
 		}
+		
+		return null;
 	}
 	
 	private String[] getInfo(ServerCommand<?> cmd) {
@@ -155,7 +157,7 @@ public class CommandHelp extends StandardCommand implements ServerCommandPropert
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 	

@@ -1,11 +1,10 @@
 package com.mrnobody.morecommands.command;
 
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.fml.relauncher.Side;
 
 /**
@@ -37,20 +36,45 @@ public abstract class CommandBase<T extends StandardCommand> extends AbstractCom
 	}
 	
 	@Override
+	public boolean checkPermission(MinecraftServer server, ICommandSender p_71519_1_) {
+		return true;
+	}
+	
+	@Override
+	public boolean checkPermission(MinecraftServer server, ICommandSender p_71519_1_, String[] params) {
+		return true;
+	}
+	
+	@Override
 	public final void execute(MinecraftServer server, ICommandSender sender, String[] params) throws net.minecraft.command.CommandException {
-    	if (this.checkRequirements(sender, params, this.getSide())) {
-        	try {this.execute(new CommandSender(sender), params);}
-        	catch (CommandException e) {
-        		if (e.getCause() instanceof net.minecraft.command.CommandException)
-    				throw (net.minecraft.command.CommandException) e.getCause();
-        		else if (e.getMessage() != null) throw new net.minecraft.command.CommandException(e.getMessage());
+		ITextComponent error = this.checkRequirements(sender, params, this.getSide());
+		ResultAcceptingCommandSender resultAcceptor = sender instanceof ResultAcceptingCommandSender ? (ResultAcceptingCommandSender) sender : null;
+		
+    	if (error == null) {
+        	try {
+        		String result = this.execute(new CommandSender(sender), params);
+        		if (resultAcceptor != null) resultAcceptor.setCommandResult(this.getCommandName(), params, result);
         	}
+        	catch (CommandException e) {
+        		if (e.getCause() instanceof net.minecraft.command.CommandException) {
+        			if (resultAcceptor != null) resultAcceptor.setCommandResult(this.getCommandName(), params, e.getCause().getMessage());
+        			if (e.getCause().getMessage() != null) throw (net.minecraft.command.CommandException) e.getCause();
+        		}
+        		else {
+        			if (resultAcceptor != null) resultAcceptor.setCommandResult(this.getCommandName(), params, e.getMessage());
+        			if (e.getMessage() != null) throw new net.minecraft.command.CommandException(e.getMessage());
+        		}
+        	}
+    	}
+    	else {
+    		sender.sendMessage(error);
+    		if (resultAcceptor != null) resultAcceptor.setCommandResult(this.getCommandName(), params, error.getUnformattedText());
     	}
     }
 	
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		this.delegate.execute(sender, params);
+	public String execute(CommandSender sender, String[] params) throws CommandException {
+		return this.delegate.execute(sender, params);
 	}
 
 	@Override
@@ -64,8 +88,8 @@ public abstract class CommandBase<T extends StandardCommand> extends AbstractCom
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
-		return this.delegate.getDefaultPermissionLevel();
+	public int getDefaultPermissionLevel(String[] args) {
+		return this.delegate.getDefaultPermissionLevel(args);
 	}
 	
 	/**

@@ -1,21 +1,23 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.TwoEventListener;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
+import com.mrnobody.morecommands.util.EntityUtils;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingSetAttackTargetEvent;
 
@@ -64,14 +66,14 @@ public class CommandNoattack extends StandardCommand implements ServerCommandPro
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
     	
 		if (params.length > 0) {
-			Class<? extends Entity> entityClass = (Class<? extends Entity>) com.mrnobody.morecommands.wrapper.Entity.getEntityClass(params[0]);
+			Class<? extends Entity> entityClass = (Class<? extends Entity>) EntityUtils.getEntityClass(new ResourceLocation(params[0]), true);
 				
 			if (entityClass == null) {
-				try {entityClass = (Class<? extends Entity>) EntityList.ID_TO_CLASS.get(Integer.parseInt(params[0]));}
+				try {entityClass = EntityUtils.getEntityClass(EntityUtils.getEntityName(Integer.parseInt(params[0])), false);}
 				catch (NumberFormatException nfe) {throw new CommandException("command.noattack.unknownEntity", sender);}
 			}
 			
@@ -88,6 +90,8 @@ public class CommandNoattack extends StandardCommand implements ServerCommandPro
 			}
 		}
 		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 
 	@Override
@@ -101,7 +105,7 @@ public class CommandNoattack extends StandardCommand implements ServerCommandPro
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 

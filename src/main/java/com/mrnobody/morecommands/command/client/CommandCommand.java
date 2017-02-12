@@ -5,12 +5,12 @@ import java.util.Map;
 
 import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.AppliedPatches;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommand;
@@ -37,13 +37,13 @@ public class CommandCommand extends StandardCommand implements ClientCommandProp
     }
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 1) {
 			if (params[0].equalsIgnoreCase("enable")) {
 				ICommand enable = this.disabledCommands.get(params[1]);
 				
 				if (enable == null && AppliedPatches.serverModded())
-					Minecraft.getMinecraft().thePlayer.sendChatMessage("/command enable " + params[1]);
+					Minecraft.getMinecraft().player.sendChatMessage("/command enable " + params[1]);
 				else if (enable != null) {
 					ClientCommandHandler.instance.registerCommand(enable);
 					this.disabledCommands.remove(params[1]);
@@ -57,9 +57,9 @@ public class CommandCommand extends StandardCommand implements ClientCommandProp
 				ICommand disable = (ICommand) ClientCommandHandler.instance.getCommands().get(params[1]);
 				
 				if (disable == null && AppliedPatches.serverModded())
-					Minecraft.getMinecraft().thePlayer.sendChatMessage("/command disable " + params[1]);
+					Minecraft.getMinecraft().player.sendChatMessage("/command disable " + params[1]);
 				else if (disable != null) {
-					this.disabledCommands.put(disable.getCommandName(), disable);
+					this.disabledCommands.put(disable.getName(), disable);
 					ClientCommandHandler.instance.getCommands().remove(params[1]);
 					sender.sendLangfileMessage("command.command.disabled");
 				}
@@ -68,6 +68,8 @@ public class CommandCommand extends StandardCommand implements ClientCommandProp
 			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
 		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 	
 	@Override
@@ -86,7 +88,7 @@ public class CommandCommand extends StandardCommand implements ClientCommandProp
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 }

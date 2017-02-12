@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.event.Listeners.TwoEventListener;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -83,7 +84,7 @@ public final class Xray implements Runnable, TwoEventListener<TickEvent, RenderW
 	}
 	
 	/** The delay between xray updates */
-	private static final int DELAY = GlobalSettings.xrayUPS <= 0 ? 1000 : GlobalSettings.xrayUPS > 10 ? 100 : 1000 / GlobalSettings.xrayUPS;
+	private static final int DELAY = MoreCommandsConfig.xrayUPS <= 0 ? 1000 : MoreCommandsConfig.xrayUPS > 10 ? 100 : 1000 / MoreCommandsConfig.xrayUPS;
 	/** The default radius in which blocks should be highlighted */
 	private static final int DEFAULT_RADIUS = 32;
 	
@@ -128,13 +129,13 @@ public final class Xray implements Runnable, TwoEventListener<TickEvent, RenderW
 	 * Updates the local player's position and starts the xray thread if xray was enabled
 	 */
 	public void onEvent1(TickEvent event) {
-		if (!(event instanceof TickEvent.ClientTickEvent) || event.phase != TickEvent.Phase.END || this.mc.thePlayer == null) return;
+		if (!(event instanceof TickEvent.ClientTickEvent) || event.phase != TickEvent.Phase.END || this.mc.player == null) return;
 		
-		this.localPlayerX = MathHelper.floor_double(this.mc.thePlayer.posX);
-		this.localPlayerY = MathHelper.floor_double(this.mc.thePlayer.posY);
-		this.localPlayerZ = MathHelper.floor_double(this.mc.thePlayer.posZ);
+		this.localPlayerX = MathHelper.floor(this.mc.player.posX);
+		this.localPlayerY = MathHelper.floor(this.mc.player.posY);
+		this.localPlayerZ = MathHelper.floor(this.mc.player.posZ);
 
-		if (this.xrayEnabled && (this.thread == null || !this.thread.isAlive()) && this.mc.theWorld != null && this.mc.thePlayer != null) {
+		if (this.xrayEnabled && (this.thread == null || !this.thread.isAlive()) && this.mc.world != null && this.mc.player != null) {
 			this.thread = new Thread(this);
 			this.thread.setDaemon(false);
 			this.thread.setName("MoreCommands Xray Thread");
@@ -146,14 +147,14 @@ public final class Xray implements Runnable, TwoEventListener<TickEvent, RenderW
 	 * Draws the highlighting for the block for which xray is enabled
 	 */
 	public void onEvent2(RenderWorldLastEvent event) {
-		if (this.mc.theWorld != null && this.xrayEnabled) {
+		if (this.mc.world != null && this.xrayEnabled) {
 			float f = event.getPartialTicks();
-			float px = (float) this.mc.thePlayer.posX;
-			float py = (float) this.mc.thePlayer.posY;
-			float pz = (float) this.mc.thePlayer.posZ;
-			float mx = (float) this.mc.thePlayer.prevPosX;
-			float my = (float) this.mc.thePlayer.prevPosY;
-			float mz = (float) this.mc.thePlayer.prevPosZ;
+			float px = (float) this.mc.player.posX;
+			float py = (float) this.mc.player.posY;
+			float pz = (float) this.mc.player.posZ;
+			float mx = (float) this.mc.player.prevPosX;
+			float my = (float) this.mc.player.prevPosY;
+			float mz = (float) this.mc.player.prevPosZ;
 			float dx = mx + (px - mx) * f;
 			float dy = my + (py - my) * f;
 			float dz = mz + (pz - mz) * f;
@@ -165,7 +166,7 @@ public final class Xray implements Runnable, TwoEventListener<TickEvent, RenderW
 	 * Invoked when the client world is unloaded. Resets all xray settings and stops the xray thread
 	 */
 	public void onEvent(WorldEvent.Unload event) {
-		if (event.getWorld() == Minecraft.getMinecraft().theWorld) {
+		if (event.getWorld() == Minecraft.getMinecraft().world) {
 			this.changeXraySettings(DEFAULT_RADIUS, false);
 			
 			if (this.thread != null && this.thread.isAlive()) {
@@ -187,7 +188,7 @@ public final class Xray implements Runnable, TwoEventListener<TickEvent, RenderW
 				try {Thread.sleep(DELAY);}
 				catch (InterruptedException ex) {break;}
 				
-				if (this.xrayEnabled && !this.blockSettings.isEmpty() && this.mc != null && this.mc.theWorld != null && this.mc.thePlayer != null) {
+				if (this.xrayEnabled && !this.blockSettings.isEmpty() && this.mc != null && this.mc.world != null && this.mc.player != null) {
 					List<BlockPosition> temp = new ArrayList<BlockPosition>();
 					int radius = this.blockRadius;
 					int px = this.localPlayerX;
@@ -197,7 +198,7 @@ public final class Xray implements Runnable, TwoEventListener<TickEvent, RenderW
 					for (int y = Math.max(0, py - 96); y < py + 32; y++) {
 						for (int x = px - radius; x < px + radius; x++) {
 							for (int z = pz - radius; z < pz + radius; z++) {
-								IBlockState state = this.mc.theWorld.getBlockState(new BlockPos(x, y, z));
+								IBlockState state = this.mc.world.getBlockState(new BlockPos(x, y, z));
 								if (state == null || state.getBlock() == null) continue;
 								
 								for(BlockSettings settings : this.blockSettings.values()){

@@ -1,12 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -33,7 +33,7 @@ public class CommandAir extends StandardCommand implements ServerCommandProperti
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		Entity entity = getSenderAsEntity(sender.getMinecraftISender(), Entity.class);
     	
 		if (params.length > 0 && entity.isInWater()) {
@@ -47,6 +47,8 @@ public class CommandAir extends StandardCommand implements ServerCommandProperti
 		}
 		else if (!entity.isInWater()) throw new CommandException("command.air.notInWater", sender);
 		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 	
 	@Override
@@ -60,7 +62,7 @@ public class CommandAir extends StandardCommand implements ServerCommandProperti
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

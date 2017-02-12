@@ -6,10 +6,12 @@ import java.util.UUID;
 
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
+import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
+import com.mrnobody.morecommands.util.ChatChannel;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
-import com.mrnobody.morecommands.util.PlayerSettings;
 import com.mrnobody.morecommands.util.ReflectionHelper;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -21,6 +23,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.management.PlayerInteractionManager;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -47,16 +50,21 @@ public class IntegratedPlayerList extends net.minecraft.server.integrated.Integr
 		this.mcServer = server;
 	}
 	
-
+	@Override
+	public void sendMessage(ITextComponent message, boolean isSystemMessage) {
+		MoreCommands.getProxy().ensureChatChannelsLoaded();
+		ChatChannel.getMasterChannel().sendChatMessage(message, isSystemMessage ? (byte) 1 : (byte) 0);
+	}
+	
 	@Override
     public EntityPlayerMP createPlayerForUser(GameProfile profile)
     {
         UUID uuid = EntityPlayer.getUUID(profile);
         List<EntityPlayerMP> list = Lists.<EntityPlayerMP>newArrayList();
 
-        for (int i = 0; i < this.getPlayerList().size(); ++i)
+        for (int i = 0; i < this.getPlayers().size(); ++i)
         {
-            EntityPlayerMP entityplayermp = (EntityPlayerMP)this.getPlayerList().get(i);
+            EntityPlayerMP entityplayermp = (EntityPlayerMP)this.getPlayers().get(i);
 
             if (entityplayermp.getUniqueID().equals(uuid))
             {
@@ -73,7 +81,7 @@ public class IntegratedPlayerList extends net.minecraft.server.integrated.Integr
 
         for (EntityPlayerMP entityplayermp1 : list)
         {
-            entityplayermp1.connection.kickPlayerFromServer("You logged in from another location");
+            entityplayermp1.connection.disconnect("You logged in from another location");
         }
 
         PlayerInteractionManager playerinteractionmanager;
@@ -93,7 +101,7 @@ public class IntegratedPlayerList extends net.minecraft.server.integrated.Integr
     @Override
     public EntityPlayerMP recreatePlayerEntity(EntityPlayerMP playerIn, int dimension, boolean conqueredEnd)
     {
-    	World world = mcServer.worldServerForDimension(dimension);
+        World world = mcServer.worldServerForDimension(dimension);
         if (world == null)
         {
             dimension = 0;
@@ -104,9 +112,9 @@ public class IntegratedPlayerList extends net.minecraft.server.integrated.Integr
         }
 
         playerIn.getServerWorld().getEntityTracker().removePlayerFromTrackers(playerIn);
-        playerIn.getServerWorld().getEntityTracker().untrackEntity(playerIn);
+        playerIn.getServerWorld().getEntityTracker().untrack(playerIn);
         playerIn.getServerWorld().getPlayerChunkMap().removePlayer(playerIn);
-        this.getPlayerList().remove(playerIn);
+        this.getPlayers().remove(playerIn);
         this.mcServer.worldServerForDimension(playerIn.dimension).removeEntityDangerously(playerIn);
         BlockPos blockpos = playerIn.getBedLocation(dimension);
         boolean flag = playerIn.isSpawnForced(dimension);
@@ -159,8 +167,8 @@ public class IntegratedPlayerList extends net.minecraft.server.integrated.Integr
         {
             entityplayermp.setPosition(entityplayermp.posX, entityplayermp.posY + 1.0D, entityplayermp.posZ);
         }
-
-        entityplayermp.connection.sendPacket(new SPacketRespawn(entityplayermp.dimension, entityplayermp.worldObj.getDifficulty(), entityplayermp.worldObj.getWorldInfo().getTerrainType(), entityplayermp.interactionManager.getGameType()));
+        
+        entityplayermp.connection.sendPacket(new SPacketRespawn(entityplayermp.dimension, entityplayermp.world.getDifficulty(), entityplayermp.world.getWorldInfo().getTerrainType(), entityplayermp.interactionManager.getGameType()));
         BlockPos blockpos2 = worldserver.getSpawnPoint();
         entityplayermp.connection.setPlayerLocation(entityplayermp.posX, entityplayermp.posY, entityplayermp.posZ, entityplayermp.rotationYaw, entityplayermp.rotationPitch);
         entityplayermp.connection.sendPacket(new SPacketSpawnPosition(blockpos2));
@@ -168,8 +176,8 @@ public class IntegratedPlayerList extends net.minecraft.server.integrated.Integr
         this.updateTimeAndWeatherForPlayer(entityplayermp, worldserver);
         this.updatePermissionLevel(entityplayermp);
         worldserver.getPlayerChunkMap().addPlayer(entityplayermp);
-        worldserver.spawnEntityInWorld(entityplayermp);
-        this.getPlayerList().add(entityplayermp);
+        worldserver.spawnEntity(entityplayermp);
+        this.getPlayers().add(entityplayermp);
         ReflectionHelper.get(ObfuscatedField.PlayerList_uuidToPlayerMap, this.uuidToPlayerMap, this).put(entityplayermp.getUniqueID(), entityplayermp);
         entityplayermp.addSelfToInternalCraftingInventory();
         entityplayermp.setHealth(entityplayermp.getHealth());
@@ -179,18 +187,18 @@ public class IntegratedPlayerList extends net.minecraft.server.integrated.Integr
         	entityplayermp.inventory.copyInventory(playerIn.inventory);
         	((com.mrnobody.morecommands.patch.EntityPlayerMP) entityplayermp).setKeepInventory(true);
         }
-        
-        net.minecraftforge.fml.common.FMLCommonHandler.instance().firePlayerRespawnEvent(entityplayermp);
+
+        net.minecraftforge.fml.common.FMLCommonHandler.instance().firePlayerRespawnEvent(entityplayermp, conqueredEnd);
         return entityplayermp;
     }
     
-    //Simple copied from PlayerList
+    //Simply copied from PlayerList
     @SideOnly(Side.CLIENT)
     public void setGameType(GameType gameModeIn)
     {
         this.gameType = gameModeIn;
     }
-
+    
     private void setPlayerGameTypeBasedOnOther(EntityPlayerMP target, EntityPlayerMP source, World worldIn)
     {
         if (source != null)

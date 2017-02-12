@@ -7,12 +7,12 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -42,7 +42,7 @@ public class CommandConfusesuicide extends StandardCommand implements ServerComm
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		params = reparseParamsWithNBTData(params);
 		double radius = 10D;
 		
@@ -52,7 +52,7 @@ public class CommandConfusesuicide extends StandardCommand implements ServerComm
 			if (radius > RADIUS_MAX) throw new CommandException("command.confusesuicide.invalidRadius", sender);
 		}
 		
-		List<? extends EntityCreature> entities = getEntitiesInRadius(sender.getPosition(), sender.getWorld().getMinecraftWorld(), EntityCreature.class, radius * radius);
+		List<? extends EntityCreature> entities = getEntitiesInRadius(sender.getPosition(), sender.getWorld(), EntityCreature.class, radius * radius);
 		
 		Iterator<? extends EntityCreature> entityIterator = entities.iterator();
 		
@@ -63,6 +63,7 @@ public class CommandConfusesuicide extends StandardCommand implements ServerComm
 		}
         
 		sender.sendLangfileMessage("command.confusesuicide.confused", entities.size(), radius);
+		return null;
 	}
 	
 	private <T extends Entity> List<? extends T> getEntitiesInRadius(final BlockPos coord, World world, Class<T> class1, double radius) {
@@ -105,7 +106,7 @@ public class CommandConfusesuicide extends StandardCommand implements ServerComm
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

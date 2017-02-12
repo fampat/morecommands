@@ -4,7 +4,6 @@ import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import com.mrnobody.morecommands.command.MultipleCommands;
@@ -16,17 +15,15 @@ import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.event.Listeners.TwoEventListener;
 import com.mrnobody.morecommands.network.PacketHandlerServer;
-import com.mrnobody.morecommands.util.DummyCommand;
-import com.mrnobody.morecommands.util.GlobalSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
+import com.mrnobody.morecommands.settings.NBTSettingsManager;
+import com.mrnobody.morecommands.settings.SettingsManager;
+import com.mrnobody.morecommands.util.ChatChannel;
 import com.mrnobody.morecommands.util.LanguageManager;
 import com.mrnobody.morecommands.util.MoreCommandsUpdater;
-import com.mrnobody.morecommands.util.NBTSettingsManager;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
-import com.mrnobody.morecommands.util.PlayerSettings;
 import com.mrnobody.morecommands.util.Reference;
 import com.mrnobody.morecommands.util.ReflectionHelper;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.util.SettingsManager;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.ServerCommandManager;
@@ -63,7 +60,6 @@ public class CommonProxy {
 	
 	private ITextComponent updateText = null;
 	protected boolean playerNotified = false;
-	private String currentWorld = null;
 	
 	public CommonProxy() {
 		this.setPatcher();
@@ -81,41 +77,6 @@ public class CommonProxy {
 	 */
 	public boolean wasPlayerNotified() {
 		return this.playerNotified;
-	}
-	
-	/**
-	 * Fetches the current world's folder name and sends it to the player
-	 * 
-	 * @param player the player to which the world's folder name is to be sent
-	 * @see CommonProxy#setCurrentWorld(String)
-	 */
-	public void updateWorld(EntityPlayerMP player) {
-		if (!player.getServer().getFolderName().equals(this.currentWorld)) {
-			this.currentWorld = player.getServer().getFolderName();
-			
-			if (MoreCommands.isServerSide())
-				this.mod.getPacketDispatcher().sendS14ChangeWorld(player, currentWorld);
-		}
-	}
-	
-	/**
-	 * Sets the world name of the world that is currently running on the server.
-	 * <b>IMPORTANT:</b> "World name" means the name of the folder from which the world was loaded.
-	 * This is necessary to be able to distinguish between worlds which have the same name
-	 * but not the same folder so they are NOT the same worlds
-	 * 
-	 * @param world the world's folder name
-	 */
-	public void setCurrentWorld(String world) {
-		this.currentWorld = world;
-	}
-	
-	/**
-	 * @return The folder name of the current world
-	 * @see CommonProxy#setCurrentWorld(String)
-	 */
-	public String getCurrentWorld() {
-		return this.currentWorld;
 	}
 	
 	/**
@@ -137,7 +98,7 @@ public class CommonProxy {
 	 */
 	protected void init(FMLInitializationEvent event) {
 		this.patcher.applyModStatePatch(event);
-		if (GlobalSettings.searchUpdates) findMoreCommandsUpdates();
+		if (MoreCommandsConfig.searchUpdates) findMoreCommandsUpdates();
 	}
 
 	/**
@@ -152,6 +113,7 @@ public class CommonProxy {
 	 */
 	protected void serverStart(FMLServerAboutToStartEvent event) {
 		this.patcher.applyModStatePatch(event);
+		ensureChatChannelsLoaded();
 	}
 	
 	/**
@@ -166,7 +128,7 @@ public class CommonProxy {
 		}
 		catch (Exception ex) {this.mod.getLogger().warn("Failed to register Server Command", ex);}
 		
-		if (GlobalSettings.retryHandshake)
+		if (MoreCommandsConfig.retryHandshake)
 			PacketHandlerServer.startHandshakeRetryThread();
 	}
 	
@@ -175,7 +137,7 @@ public class CommonProxy {
 	 * On dedicated environments, this is executing server startup commands
 	 */
 	protected void serverStarted(FMLServerStartedEvent event) {
-		if (MoreCommands.isServerSide()) PacketHandlerServer.executeStartupCommands();
+		PacketHandlerServer.executeStartupCommands();
 	}
 	
 	/**
@@ -187,10 +149,10 @@ public class CommonProxy {
 	 * Called from the main mod class to handle the server stop
 	 */
 	protected void serverStop(FMLServerStoppedEvent event) {
-		if (GlobalSettings.retryHandshake)
+		if (MoreCommandsConfig.retryHandshake)
 			PacketHandlerServer.stopHandshakeRetryThread();
 		
-		GlobalSettings.writeSettings();
+		MoreCommandsConfig.writeConfig();
 		
 		for (EventHandler handler : EventHandler.getAllCreatedEventHandlers()) {
 			for (TwoEventListener listener : (Set<TwoEventListener>) handler.getDoubleListeners()) {
@@ -204,6 +166,16 @@ public class CommonProxy {
 		
 		AppliedPatches.setServerCommandManagerPatched(false);
 		AppliedPatches.setServerConfigManagerPatched(false);
+	}
+	
+	/**
+	 * Ensures that all chat channes have been loaded from disk. This ensures that {@link ChatChannel#getMasterChannel()}
+	 * is not null
+	 * @see ChatChannel
+	 */
+	public void ensureChatChannelsLoaded() {
+		if (!ChatChannel.channelsLoaded())
+			ChatChannel.loadChannelsFromSettings(new File(Reference.getModDir(), "chatChannels.json"));
 	}
 	
 	/**
@@ -239,9 +211,9 @@ public class CommonProxy {
 				CommonProxy.this.mod.getLogger().info(rawText);
 				CommonProxy.this.updateText = text;
 				
-				if (MoreCommands.isClientSide() && net.minecraft.client.Minecraft.getMinecraft().thePlayer != null) {
+				if (MoreCommands.isClientSide() && net.minecraft.client.Minecraft.getMinecraft().player != null) {
 					CommonProxy.this.playerNotified = true;
-					net.minecraft.client.Minecraft.getMinecraft().thePlayer.addChatMessage(text);
+					net.minecraft.client.Minecraft.getMinecraft().player.sendMessage(text);
 				}
 			}
 		}), "MoreCommands Update Thread").start();
@@ -279,8 +251,8 @@ public class CommonProxy {
 				if (cmd instanceof MultipleCommands) {
 					Constructor<? extends StandardCommand> ctr = cmdClass.getConstructor(int.class);
 					
-					for (int i = 0; i < ((MultipleCommands) cmd).getNames().length; i++)
-						if (this.mod.isCommandEnabled(((MultipleCommands) cmd).getNames()[i]))
+					for (int i = 0; i < ((MultipleCommands) cmd).getCommandNames().length; i++)
+						if (this.mod.isCommandEnabled(((MultipleCommands) cmd).getCommandNames()[i]))
 							commandManager.registerCommand(new ServerCommand(ServerCommand.upcast(ctr.newInstance(i))));
 				}
 				else if (this.mod.isCommandEnabled(cmd.getCommandName()))
@@ -317,36 +289,6 @@ public class CommonProxy {
 		return (FMLCommonHandler.instance().getMinecraftServerInstance().getServerHostname().length() > 0 ? 
 				FMLCommonHandler.instance().getMinecraftServerInstance().getServerHostname() : "*") + 
 				":" + FMLCommonHandler.instance().getMinecraftServerInstance().getServerPort();
-	}
-	
-	/**
-	 * Registers aliases that the player created to the command manager
-	 * 
-	 * @param player the player whose aliases shall be registered
-	 */
-	public void registerAliases(EntityPlayer player) {
-		if (player instanceof EntityPlayerMP) {
-			ServerPlayerSettings settings = player.getCapability(PlayerSettings.SETTINGS_CAP_SERVER, null);
-			if (settings != null) this.registerServerAliases(player.getServer(), settings);
-		}
-	}
-	
-	/**
-	 * Reads aliases for the given server player and registers them
-	 */
-	private void registerServerAliases(MinecraftServer server, ServerPlayerSettings settings) {
-		Map<String, String> aliases = settings.aliases;
-		net.minecraft.command.CommandHandler commandHandler = (net.minecraft.command.CommandHandler) server.getCommandManager();
-		String command;
-		
-		for (String alias : aliases.keySet()) {
-			command = aliases.get(alias).split(" ")[0];
-			
-			if (!command.equalsIgnoreCase(alias) && !commandHandler.getCommands().containsKey(alias)) {
-				DummyCommand cmd = new DummyCommand(alias, false);
-				commandHandler.getCommands().put(alias, cmd);
-			}
-		}
 	}
 	
 	/**

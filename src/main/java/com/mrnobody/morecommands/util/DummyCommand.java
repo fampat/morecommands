@@ -22,15 +22,15 @@ public final class DummyCommand implements ICommand {
 	private final boolean isClient;
 	
 	@Override public int compareTo(ICommand arg0) {return -1;}
-	public final String getCommandUsage(ICommandSender p_71518_1_) {return "";}
+	public final String getUsage(ICommandSender p_71518_1_) {return "";}
 	public final void execute(MinecraftServer server, ICommandSender sender, String[] msg) throws CommandException {throw new CommandNotFoundException();}
 	public final boolean checkPermission(MinecraftServer server, ICommandSender p_71519_1_) {return true;}
-	public final List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender p_71516_1_, String[] p_71516_2_, BlockPos pos) {return null;}
+	public final List<String> getTabCompletions(MinecraftServer server, ICommandSender p_71516_1_, String[] p_71516_2_, BlockPos pos) {return null;}
 	public final boolean isUsernameIndex(String[] names, int index) {return false;}
-	public final List<String> getCommandAliases() {return null;}
+	public final List<String> getAliases() {return null;}
 	
 	@Override
-	public String getCommandName() {
+	public String getName() {
 		return this.name;
 	}
 	

@@ -4,18 +4,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import com.mrnobody.morecommands.command.AbstractCommand;
-import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.util.GlobalSettings;
+import com.mrnobody.morecommands.settings.GlobalSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 import com.mrnobody.morecommands.util.LanguageManager;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.util.Variables;
 
+import net.minecraft.command.CommandException;
 import net.minecraft.command.CommandResultStats;
 import net.minecraft.command.EntitySelector;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
@@ -50,91 +55,104 @@ public class ServerCommandManager extends net.minecraft.command.ServerCommandMan
         }
         
     	try {
-    		String world = MoreCommands.getProxy().getCurrentWorld(), dim = sender.getEntityWorld().provider.getDimensionType().getName();
+    		String world = sender.getEntityWorld().getSaveHandler().getWorldDirectory().getName(), dim = sender.getEntityWorld().provider.getDimensionType().getName();
     		
     		if (AbstractCommand.isSenderOfEntityType(sender, EntityPlayerMP.class)) {
-    			ServerPlayerSettings settings = AbstractCommand.getPlayerSettings(AbstractCommand.getSenderAsEntity(sender, EntityPlayerMP.class));
-    			PlayerPatches playerInfo = AbstractCommand.getSenderAsEntity(sender, EntityPlayerMP.class).getCapability(PlayerPatches.PATCHES_CAPABILITY, null);
-    			Map<String, String> playerVars = playerInfo != null && playerInfo.clientModded() ? new HashMap<String, String>() : settings.variables; //client takes care of replacing player variables
+    			ServerPlayerSettings settings = AbstractCommand.getSenderAsEntity(sender, EntityPlayerMP.class).getCapability(PlayerSettings.SETTINGS_CAP_SERVER, null);
+    			Map<String, String> playerVars = settings == null ? new HashMap<String, String>() : settings.variables;
     			
-    			if (GlobalSettings.enableGlobalVars && GlobalSettings.enablePlayerVars)
-    				rawCommand = Variables.replaceVars(rawCommand, playerVars, GlobalSettings.getVariables(world, dim));
-    			else if (GlobalSettings.enablePlayerVars)
-    				rawCommand = Variables.replaceVars(rawCommand, playerVars);
-    			else if (GlobalSettings.enableGlobalVars)
-    				rawCommand = Variables.replaceVars(rawCommand, GlobalSettings.getVariables(world, dim));
+    			if (MoreCommandsConfig.enableGlobalVars && MoreCommandsConfig.enablePlayerVars)
+    				rawCommand = Variables.replaceVars(rawCommand, true, playerVars, GlobalSettings.getInstance().variables.get(ImmutablePair.of(world, dim)));
+    			else if (MoreCommandsConfig.enablePlayerVars)
+    				rawCommand = Variables.replaceVars(rawCommand, true, playerVars);
+    			else if (MoreCommandsConfig.enableGlobalVars)
+    				rawCommand = Variables.replaceVars(rawCommand, true, GlobalSettings.getInstance().variables.get(ImmutablePair.of(world, dim)));
     		}
-    		else if (GlobalSettings.enableGlobalVars) 
-    			rawCommand = Variables.replaceVars(rawCommand, GlobalSettings.getVariables(world, dim));
+    		else if (MoreCommandsConfig.enableGlobalVars) 
+    			rawCommand = Variables.replaceVars(rawCommand, true, GlobalSettings.getInstance().variables.get(ImmutablePair.of(world, dim)));
     	}
         catch (Variables.VariablesCouldNotBeResolvedException vcnbre) {
-            TextComponentString text = new TextComponentString(LanguageManager.translate(MoreCommands.INSTANCE.getCurrentLang(sender), "command.var.cantBeResolved", vcnbre.getVariables().toString()));
-            text.getStyle().setColor(TextFormatting.RED); sender.addChatMessage(text);
-            rawCommand = vcnbre.getNewString();
+        	rawCommand = vcnbre.getNewString();
+        }
+    	
+        String[] astring = rawCommand.split(" ");
+        String s = astring[0];
+        astring = dropFirstString(astring);
+        ICommand icommand = (ICommand)this.getCommands().get(s);
+        int i = 0;
+
+        try
+        {
+            int j = this.getUsernameIndex(icommand, astring);
+
+            if (icommand == null)
+            {
+                TextComponentTranslation textcomponenttranslation1 = new TextComponentTranslation("commands.generic.notFound", new Object[0]);
+                textcomponenttranslation1.getStyle().setColor(TextFormatting.RED);
+                sender.sendMessage(textcomponenttranslation1);
+            }
+            else if (icommand.checkPermission(this.getServer(), sender))
+            {
+                net.minecraftforge.event.CommandEvent event = new net.minecraftforge.event.CommandEvent(icommand, sender, astring);
+                if (net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event))
+                {
+                    if (event.getException() != null)
+                    {
+                        com.google.common.base.Throwables.propagateIfPossible(event.getException());
+                    }
+                    return 1;
+                }
+                if (event.getParameters() != null) astring = event.getParameters();
+
+                if (j > -1)
+                {
+                    List<Entity> list = EntitySelector.<Entity>matchEntities(sender, astring[j], Entity.class);
+                    String s1 = astring[j];
+                    sender.setCommandStat(CommandResultStats.Type.AFFECTED_ENTITIES, list.size());
+
+                    if (list.isEmpty())
+                    {
+                        throw new PlayerNotFoundException("commands.generic.selector.notFound", new Object[] {astring[j]});
+                    }
+
+                    for (Entity entity : list)
+                    {
+                        astring[j] = entity.getCachedUniqueIdString();
+
+                        if (this.tryExecute(sender, astring, icommand, rawCommand))
+                        {
+                            ++i;
+                        }
+                    }
+
+                    astring[j] = s1;
+                }
+                else
+                {
+                    sender.setCommandStat(CommandResultStats.Type.AFFECTED_ENTITIES, 1);
+
+                    if (this.tryExecute(sender, astring, icommand, rawCommand))
+                    {
+                        ++i;
+                    }
+                }
+            }
+            else
+            {
+                TextComponentTranslation textcomponenttranslation2 = new TextComponentTranslation("commands.generic.permission", new Object[0]);
+                textcomponenttranslation2.getStyle().setColor(TextFormatting.RED);
+                sender.sendMessage(textcomponenttranslation2);
+            }
+        }
+        catch (CommandException commandexception)
+        {
+            TextComponentTranslation textcomponenttranslation = new TextComponentTranslation(commandexception.getMessage(), commandexception.getErrorObjects());
+            textcomponenttranslation.getStyle().setColor(TextFormatting.RED);
+            sender.sendMessage(textcomponenttranslation);
         }
 
-    	 String[] astring = rawCommand.split(" ");
-         String s = astring[0];
-         astring = dropFirstString(astring);
-         ICommand icommand = this.getCommands().get(s);
-         int i = this.getUsernameIndex(icommand, astring);
-         int j = 0;
-
-         if (icommand == null)
-         {
-             TextComponentTranslation textcomponenttranslation = new TextComponentTranslation("commands.generic.notFound", new Object[0]);
-             textcomponenttranslation.getStyle().setColor(TextFormatting.RED);
-             sender.addChatMessage(textcomponenttranslation);
-         }
-         else if (icommand.checkPermission(this.getServer(), sender))
-         {
-             net.minecraftforge.event.CommandEvent event = new net.minecraftforge.event.CommandEvent(icommand, sender, astring);
-             if (net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event))
-             {
-                 if (event.getException() != null)
-                 {
-                     com.google.common.base.Throwables.propagateIfPossible(event.getException());
-                 }
-                 return 1;
-             }
-
-             if (i > -1)
-             {
-                 List<Entity> list = EntitySelector.<Entity>matchEntities(sender, astring[i], Entity.class);
-                 String s1 = astring[i];
-                 sender.setCommandStat(CommandResultStats.Type.AFFECTED_ENTITIES, list.size());
-
-                 for (Entity entity : list)
-                 {
-                     astring[i] = entity.getUniqueID().toString();
-
-                     if (this.tryExecute(sender, astring, icommand, rawCommand))
-                     {
-                         ++j;
-                     }
-                 }
-
-                 astring[i] = s1;
-             }
-             else
-             {
-                 sender.setCommandStat(CommandResultStats.Type.AFFECTED_ENTITIES, 1);
-
-                 if (this.tryExecute(sender, astring, icommand, rawCommand))
-                 {
-                     ++j;
-                 }
-             }
-         }
-         else
-         {
-             TextComponentTranslation textcomponenttranslation1 = new TextComponentTranslation("commands.generic.permission", new Object[0]);
-             textcomponenttranslation1.getStyle().setColor(TextFormatting.RED);
-             sender.addChatMessage(textcomponenttranslation1);
-         }
-
-         sender.setCommandStat(CommandResultStats.Type.SUCCESS_COUNT, j);
-         return j;
+        sender.setCommandStat(CommandResultStats.Type.SUCCESS_COUNT, i);
+        return i;
     }
     
     private static String[] dropFirstString(String[] input)
@@ -144,7 +162,7 @@ public class ServerCommandManager extends net.minecraft.command.ServerCommandMan
         return astring1;
     }
     
-    private int getUsernameIndex(ICommand command, String[] args)
+    private int getUsernameIndex(ICommand command, String[] args) throws CommandException
     {
         if (command == null)
         {

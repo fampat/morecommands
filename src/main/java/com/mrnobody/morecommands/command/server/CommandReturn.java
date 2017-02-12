@@ -3,16 +3,16 @@ package com.mrnobody.morecommands.command.server;
 import java.text.DecimalFormat;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
+import com.mrnobody.morecommands.util.EntityUtils;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -49,7 +49,7 @@ public class CommandReturn extends StandardCommand implements ServerCommandPrope
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
 		BlockPos pos = settings.lastPos;
 		
@@ -59,9 +59,9 @@ public class CommandReturn extends StandardCommand implements ServerCommandPrope
 		if (pos == null) 
 			throw new CommandException("command.return.noLastPos", sender);
 		
-		Player player = new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
+		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 		BlockPos currentPos = player.getPosition();
-		player.setPosition(pos);
+		EntityUtils.setPosition(player, pos);
 		settings.lastPos = currentPos;
 		
 		DecimalFormat f = new DecimalFormat("#.##");
@@ -70,6 +70,8 @@ public class CommandReturn extends StandardCommand implements ServerCommandPrope
 				+ " X = " + f.format(settings.lastPos.getX())
 				+ "; Y = " + f.format(settings.lastPos.getY())
 				+ "; Z = " + f.format(settings.lastPos.getZ()));
+		
+		return null;
 	}
 	
 	@Override
@@ -83,7 +85,7 @@ public class CommandReturn extends StandardCommand implements ServerCommandPrope
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

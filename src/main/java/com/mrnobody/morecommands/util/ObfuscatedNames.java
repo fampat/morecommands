@@ -7,15 +7,19 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRailBase;
 import net.minecraft.block.BlockStem;
+import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.resources.SimpleReloadableResourceManager;
 import net.minecraft.command.ICommandManager;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.item.EntityMinecart;
 import net.minecraft.entity.passive.EntityHorse;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -26,6 +30,7 @@ import net.minecraft.server.management.PlayerList;
 import net.minecraft.stats.StatBase;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.Style;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.storage.WorldInfo;
@@ -85,17 +90,20 @@ public final class ObfuscatedNames {
 		public static final ObfuscatedField<ClientCommandHandler, ClientCommandHandler> ClientCommandHandler_instance;
 		public static final ObfuscatedField<NetHandlerPlayClient, WorldClient> NetHandlerPlayClient_clientWorldController;
 		public static final ObfuscatedField<SimpleReloadableResourceManager, List<?>> SimpleReloadableResourceManager_reloadListeners;
+		public static final ObfuscatedField<GuiChat, String> GuiChat_defaultInputFieldText;
 		
 		static {if (FMLCommonHandler.instance().getSide().isClient()) {
 			NetHandlerPlayClient_guiScreenServer = new ObfuscatedField<NetHandlerPlayClient, GuiScreen>("guiScreenServer", "field_147307_j", NetHandlerPlayClient.class, GuiScreen.class);
 			ClientCommandHandler_instance = new ObfuscatedField<ClientCommandHandler, ClientCommandHandler>("instance", "instance", ClientCommandHandler.class, ClientCommandHandler.class);
 			NetHandlerPlayClient_clientWorldController = new ObfuscatedField<NetHandlerPlayClient, WorldClient>("clientWorldController", "field_147300_g", NetHandlerPlayClient.class, WorldClient.class);
 			SimpleReloadableResourceManager_reloadListeners = new ObfuscatedField<SimpleReloadableResourceManager, List<?>>("reloadListeners", "field_110546_b", SimpleReloadableResourceManager.class, (Class<List<?>>) (Class<?>) List.class);
+			GuiChat_defaultInputFieldText = new ObfuscatedField<GuiChat, String>("defaultInputFieldText", "field_146409_v", GuiChat.class, String.class);
 		} else {
 			NetHandlerPlayClient_guiScreenServer = null;
 			ClientCommandHandler_instance = null;
 			NetHandlerPlayClient_clientWorldController = null;
 			SimpleReloadableResourceManager_reloadListeners = null;
+			GuiChat_defaultInputFieldText = null;
 		
 		}}
 		
@@ -142,6 +150,10 @@ public final class ObfuscatedNames {
 				<EntityMinecart, Float>("currentSpeedRail", "currentSpeedRail", EntityMinecart.class, float.class);
 		public static final ObfuscatedField<EntityPlayerMP, String> EntityPlayerMP_language = new ObfuscatedField
 				<EntityPlayerMP, String>("language", "field_71148_cg", EntityPlayerMP.class, String.class);
+		
+		//This field is generated dynamically via com.mrnbobody.morecommands.asm.transform.TransformStyle
+		public static final ObfuscatedField<Style, Style> Style_defaultStyle = new ObfuscatedField
+				<Style, Style>("defaultStyle", "defaultStyle", Style.class, Style.class);
 		public static final ObfuscatedField<Field, Integer> Field_modifiers = new ObfuscatedField
 				<Field, Integer>("modifiers", "modifiers", Field.class, int.class);
 		

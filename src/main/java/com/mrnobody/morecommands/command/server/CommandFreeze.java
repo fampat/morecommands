@@ -7,14 +7,15 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.util.EntityUtils;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -22,6 +23,7 @@ import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
@@ -81,26 +83,25 @@ public class CommandFreeze extends StandardCommand implements ServerCommandPrope
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		World world = sender.getWorld().getMinecraftWorld();
-		String entityType = "Mob";
+	public String execute(CommandSender sender, String[] params) throws CommandException {
+		World world = sender.getWorld();
+		Class<? extends Entity> cls = EntityLiving.class;
 		
 		if (params.length > 0) {
-			if (com.mrnobody.morecommands.wrapper.Entity.getEntityClass(params[0]) == null) {
-				try {entityType = EntityList.CLASS_TO_NAME.get(EntityList.ID_TO_CLASS.get(Integer.parseInt(params[0])));}
+			if (EntityUtils.getEntityClass(new ResourceLocation(params[0]), true) == null) {
+				try {cls = EntityUtils.getEntityClass(EntityUtils.getEntityName(Integer.parseInt(params[0])), false);}
 				catch (NumberFormatException e) {throw new CommandException("command.bring.unknownEntity", sender);}
 			}
-			else entityType = params[0];
+			else cls = EntityUtils.getEntityClass(new ResourceLocation(params[0]), true);
 		}
 		
-		if (entityType == null) throw new CommandException("command.freeze.unknownEntity", sender);
-		Class<?> cls = com.mrnobody.morecommands.wrapper.Entity.getEntityClass(entityType);
+		if (cls == null) throw new CommandException("command.freeze.unknownEntity", sender);
 		Class<? extends EntityLiving> entityClass;
 		
 		if (EntityLiving.class.isAssignableFrom(cls))
 			entityClass = cls.asSubclass(EntityLiving.class);
 		else 
-			throw new CommandException("command.freeze.invalidEntity", sender, entityType);
+			throw new CommandException("command.freeze.invalidEntity", sender, cls == EntityLiving.class ? "Mob" : EntityUtils.getEntry(cls).getName());
 		
 		if (!this.worldsToFreeze.containsKey(world)) 
 			this.worldsToFreeze.put(world, new ClassInheritanceSet<EntityLiving>());
@@ -108,12 +109,14 @@ public class CommandFreeze extends StandardCommand implements ServerCommandPrope
 		if (this.worldsToFreeze.get(world).contains(entityClass)) {
 			this.worldsToFreeze.get(world).remove(entityClass);
 			if (this.worldsToFreeze.get(world).isEmpty()) this.worldsToFreeze.remove(world);
-			sender.sendLangfileMessage("command.freeze.off", entityType);
+			sender.sendLangfileMessage("command.freeze.off", cls == EntityLiving.class ? "Mob" : EntityUtils.getEntry(cls).getName());
 		}
 		else {
 			this.worldsToFreeze.get(world).add(entityClass);
-			sender.sendLangfileMessage("command.freeze.on", entityType);
+			sender.sendLangfileMessage("command.freeze.on", cls == EntityLiving.class ? "Mob" : EntityUtils.getEntry(cls).getName());
 		}
+		
+		return null;
 	}
 	
 	private static class ClassInheritanceSet<T> extends HashSet<Class<? extends T>> {
@@ -168,7 +171,7 @@ public class CommandFreeze extends StandardCommand implements ServerCommandPrope
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

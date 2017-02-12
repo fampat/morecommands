@@ -5,19 +5,18 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 
 import net.minecraft.command.CommandNotFoundException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 
 @Command(
 	name = "macro",
@@ -38,7 +37,7 @@ public class CommandMacro extends StandardCommand implements ServerCommandProper
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
 		PlayerPatches playerInfo = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class).getCapability(PlayerPatches.PATCHES_CAPABILITY, null);
 		if (playerInfo != null && playerInfo.clientModded()) throw new CommandException(new CommandNotFoundException());
@@ -47,7 +46,7 @@ public class CommandMacro extends StandardCommand implements ServerCommandProper
 			if ((params[0].equalsIgnoreCase("delete") || params[0].equalsIgnoreCase("del") || params[0].equalsIgnoreCase("remove") || params[0].equalsIgnoreCase("rem")) && params.length > 1) {
 				if (!settings.macros.containsKey(params[1])) throw new CommandException("command.macro.notFound", sender, params[1]);
 				else {
-					settings.macros = settings.removeAndUpdate("macros", params[1], (Class<List<String>>) (Class<?>) List.class, true);
+					settings.macros.remove(params[1]);
 				}
 			}
 			else if ((params[0].equalsIgnoreCase("exec") || params[0].equalsIgnoreCase("execute")) && params.length > 1) {
@@ -66,13 +65,14 @@ public class CommandMacro extends StandardCommand implements ServerCommandProper
 					settings.macros.remove(params[1]);
 				}
 				
-				settings.macros = settings.putAndUpdate("macros", params[1],  Lists.newArrayList(rejoinParams(Arrays.copyOfRange(params, 2, params.length)).split(";")),
-						(Class<List<String>>) (Class<?>) List.class, true);
+				settings.macros.put(params[1], Lists.newArrayList(rejoinParams(Arrays.copyOfRange(params, 2, params.length)).split(";")));
 				sender.sendLangfileMessage("command.macro.createSuccess", params[1]);
 			}
 			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
 		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 
 	@Override
@@ -86,7 +86,7 @@ public class CommandMacro extends StandardCommand implements ServerCommandProper
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 

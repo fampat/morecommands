@@ -1,6 +1,7 @@
 package com.mrnobody.morecommands.patch;
 
 import com.mojang.authlib.GameProfile;
+import com.mrnobody.morecommands.command.AbstractCommand.ResultAcceptingCommandSender;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -18,8 +19,10 @@ import net.minecraft.server.management.PlayerInteractionManager;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.GameType;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.WorldSettings;
 
 /**
  * The patched class of {@link net.minecraft.entity.player.EntityPlayerMP} <br>
@@ -29,7 +32,7 @@ import net.minecraft.world.WorldServer;
  * @author MrNobody98
  *
  */
-public class EntityPlayerMP extends net.minecraft.entity.player.EntityPlayerMP {
+public class EntityPlayerMP extends net.minecraft.entity.player.EntityPlayerMP implements ResultAcceptingCommandSender {
 	private boolean instantkill = false;
 	private boolean criticalhit = false;
 	private boolean instantmine = false;
@@ -39,10 +42,58 @@ public class EntityPlayerMP extends net.minecraft.entity.player.EntityPlayerMP {
 	private boolean overrideOnLadder = false;
 	
 	private float gravity = 1F;
+
+	private String capturedCommandResult = null;
+	private StringBuilder capturedCommandMessages = new StringBuilder();
+	private boolean captureNextCommandResult = false;
 	
 	public EntityPlayerMP(MinecraftServer p_i45285_1_, WorldServer p_i45285_2_, GameProfile p_i45285_3_, PlayerInteractionManager p_i45285_4_) {
 		super(p_i45285_1_, p_i45285_2_, p_i45285_3_, p_i45285_4_);
 	}
+
+    /**
+     * This method should be invoked before this entity is passed to {@link net.minecraft.command.ICommandManager#executeCommand(net.minecraft.command.ICommandSender, String)}. 
+     * Invoking this method will make this entity capture the result of the command exection. Result either means the return value
+     * of the {@link com.mrnobody.morecommands.command.AbstractCommand#processCommand(com.mrnobody.morecommands.wrapper.CommandSender, String[])} method
+     * if the command is a subclass of this class or, if it is not, or if the return value is null, the chat messages sent via the
+     * {@link #addChatMessage(IChatComponent)} method. After command execution, the captured results must be reset via the
+     * {@link #getCapturedCommandResult()} method. This method also returns the result. 
+     */
+    public void setCaptureNextCommandResult() {
+    	this.captureNextCommandResult = true;
+    }
+    
+    @Override
+    public void sendMessage(ITextComponent message) {
+    	if (this.captureNextCommandResult) this.capturedCommandMessages.append(" " + message.getUnformattedText());
+    	super.sendMessage(message);
+    }
+    
+    @Override
+    public void setCommandResult(String commandName, String[] args, String result) {
+    	if (this.captureNextCommandResult && result != null) 
+    		this.capturedCommandResult = result;
+    }
+    
+    /**
+     * Disables capturing of command results and resets and returns them.
+     * 
+     * @return the captured result of the command execution (requires enabling capturing before command execution via
+     * 			{@link #setCaptureNextCommandResult()}. Will never be null
+     * @see #setCaptureNextCommandResult()
+     */
+    public String getCapturedCommandResult() {
+    	String result = null;
+    	
+    	if (this.capturedCommandResult != null) result = this.capturedCommandResult;
+    	else result = this.capturedCommandMessages.toString().trim();
+    	
+    	this.capturedCommandResult = null;
+    	this.capturedCommandMessages = new StringBuilder();
+    	this.captureNextCommandResult = false;
+    	
+    	return result;
+    }
 	
 	public boolean getCriticalHit() {
 		return this.criticalhit;
@@ -108,7 +159,7 @@ public class EntityPlayerMP extends net.minecraft.entity.player.EntityPlayerMP {
 	public boolean overrideOnLadder() {
 		return this.overrideOnLadder;
 	}
-	
+
 	@Override
 	public boolean isOnLadder() {
 		if (this.overrideOnLadder && this.isCollidedHorizontally) return true;
@@ -176,7 +227,7 @@ public class EntityPlayerMP extends net.minecraft.entity.player.EntityPlayerMP {
     public void onDeath(DamageSource cause)
     {
         if (net.minecraftforge.common.ForgeHooks.onLivingDeath(this, cause)) return;
-        boolean flag = this.worldObj.getGameRules().getBoolean("showDeathMessages");
+        boolean flag = this.world.getGameRules().getBoolean("showDeathMessages");
         this.connection.sendPacket(new SPacketCombatEvent(this.getCombatTracker(), SPacketCombatEvent.Event.ENTITY_DIED, flag));
 
         if (flag)
@@ -196,11 +247,11 @@ public class EntityPlayerMP extends net.minecraft.entity.player.EntityPlayerMP {
             }
             else
             {
-                this.mcServer.getPlayerList().sendChatMsg(this.getCombatTracker().getDeathMessage());
+                this.mcServer.getPlayerList().sendMessage(this.getCombatTracker().getDeathMessage());
             }
         }
 
-        if (!this.keepinventory && !this.worldObj.getGameRules().getBoolean("keepInventory") && !this.isSpectator())
+        if (!this.keepinventory && !this.world.getGameRules().getBoolean("keepInventory") && !this.isSpectator())
         {
             this.captureDrops = true;
             this.capturedDrops.clear();
@@ -213,12 +264,12 @@ public class EntityPlayerMP extends net.minecraft.entity.player.EntityPlayerMP {
             {
                 for (net.minecraft.entity.item.EntityItem item : this.capturedDrops)
                 {
-                    this.worldObj.spawnEntityInWorld(item);
+                    this.world.spawnEntity(item);
                 }
             }
         }
 
-        for (ScoreObjective scoreobjective : this.worldObj.getScoreboard().getObjectivesFromCriteria(IScoreCriteria.DEATH_COUNT))
+        for (ScoreObjective scoreobjective : this.world.getScoreboard().getObjectivesFromCriteria(IScoreCriteria.DEATH_COUNT))
         {
             Score score = this.getWorldScoreboard().getOrCreateScore(this.getName(), scoreobjective);
             score.incrementScore();
@@ -240,6 +291,8 @@ public class EntityPlayerMP extends net.minecraft.entity.player.EntityPlayerMP {
 
         this.addStat(StatList.DEATHS);
         this.takeStat(StatList.TIME_SINCE_DEATH);
+        this.extinguish();
+        this.setFlag(0, false);
         this.getCombatTracker().reset();
     }
 }

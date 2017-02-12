@@ -34,7 +34,7 @@ public class TransformForgeHooks extends NodeTransformer {
 	private static final ASMNames.Method CHANGE_SIZE_EVENT_INIT = ASMNames.Method.ItemStackChangeSizeEvent_init;
 	private static final ASMNames.Method POST = ASMNames.Method.EventHandler_post;
 	
-	private static final ASMNames.Field STACK_SIZE = ASMNames.Field.ItemStack_stackSize;
+	private static final ASMNames.Method func_190920_e = ASMNames.Method.ItemStack_func_190920_e;
 	private static final ASMNames.Field EVENTHANDLER_CHANGE_SIZE = ASMNames.Field.EventHandler_ITEMSTACK_CHANGE_SIZE;
 	private static final ASMNames.Field NEW_SIZE = ASMNames.Field.ItemStackChangeSizeEvent_newSize;
 	
@@ -62,15 +62,15 @@ public class TransformForgeHooks extends NodeTransformer {
 				for (ListIterator<AbstractInsnNode> iterator = method.instructions.iterator(); iterator.hasNext();) {
 					AbstractInsnNode insn = iterator.next();
 					
-					if (insn.getNext() instanceof VarInsnNode && insn.getNext().getNext() instanceof VarInsnNode && insn.getNext().getNext().getNext() instanceof FieldInsnNode) {
+					if (insn.getNext() instanceof VarInsnNode && insn.getNext().getNext() instanceof VarInsnNode && insn.getNext().getNext().getNext() instanceof MethodInsnNode) {
 						VarInsnNode next1 = (VarInsnNode) insn.getNext();
 						VarInsnNode next2 = (VarInsnNode) next1.getNext();
-						FieldInsnNode next3 = (FieldInsnNode) next2.getNext();
+						MethodInsnNode next3 = (MethodInsnNode) next2.getNext();
 						
 						if (next1.getOpcode() == Opcodes.ALOAD && next1.var == 0 && 
 							next2.getOpcode() == Opcodes.ILOAD && next2.var == 14 &&
-							next3.getOpcode() == Opcodes.PUTFIELD && next3.owner.equals(STACK_SIZE.getOwnerInternalName()) && 
-							next3.name.equals(STACK_SIZE.getEnvName()) && next3.desc.equals(STACK_SIZE.getDesc())) {
+							next3.getOpcode() == Opcodes.INVOKEVIRTUAL && next3.owner.equals(func_190920_e.getOwnerInternalName()) && 
+							next3.name.equals(func_190920_e.getEnvName()) && next3.desc.equals(func_190920_e.getDesc())) {
 							
 							int varIndex = method.maxLocals; method.maxLocals++;
 							InsnList postEvent = new InsnList();

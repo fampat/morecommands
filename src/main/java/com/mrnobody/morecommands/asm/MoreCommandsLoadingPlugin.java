@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import com.mrnobody.morecommands.asm.transform.TransformBlockRailBase;
 import com.mrnobody.morecommands.asm.transform.TransformForgeHooks;
 import com.mrnobody.morecommands.asm.transform.TransformItemStack;
+import com.mrnobody.morecommands.asm.transform.TransformStyle;
 import com.mrnobody.morecommands.util.Reference;
 
 import net.minecraft.launchwrapper.IClassTransformer;
@@ -21,7 +22,7 @@ import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
  * @author MrNobody98
  */
 @IFMLLoadingPlugin.SortingIndex(1001)
-@IFMLLoadingPlugin.MCVersion("1.10.2")
+@IFMLLoadingPlugin.MCVersion("1.11.2")
 @IFMLLoadingPlugin.DependsOn("forge")
 @IFMLLoadingPlugin.TransformerExclusions({"com.mrnobody.morecommands.asm."})
 public class MoreCommandsLoadingPlugin implements IFMLLoadingPlugin {
@@ -59,7 +60,8 @@ public class MoreCommandsLoadingPlugin implements IFMLLoadingPlugin {
 		return new String[] {
 				TransformBlockRailBase.class.getName(),
 				TransformForgeHooks.class.getName(),
-				TransformItemStack.class.getName()
+				TransformItemStack.class.getName(),
+				TransformStyle.class.getName()
 		};
 	}
 

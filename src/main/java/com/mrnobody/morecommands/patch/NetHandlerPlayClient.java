@@ -22,9 +22,9 @@ import net.minecraft.world.WorldSettings;
 /**
  * The patched class of {@link net.minecraft.client.network.NetHandlerPlayClient} <br>
  * This class sets the {@link Minecraft#playerController} field, which again is responsible <br>
- * for setting the client player ({@link Minecraft#thePlayer}), which is the actual target
- * I want to modify. <br> By patching this class I can substitute the {@link Minecraft#playerController}
- * field and use my own patched {@link EntityClientPlayerMP}.
+ * for setting the client player ({@link Minecraft#player}), which is the actual target
+ * to be modified. <br> By patching this class, the {@link Minecraft#playerController} field is 
+ * substituted and a patched version of {@link EntityClientPlayerMP} will be used.
  * 
  * @author MrNobody98
  *
@@ -48,11 +48,11 @@ public class NetHandlerPlayClient extends net.minecraft.client.network.NetHandle
         ReflectionHelper.set(ObfuscatedField.NetHandlerPlayClient_clientWorldController, this.clientWorldController, this, new WorldClient(this, new WorldSettings(0L, packetIn.getGameType(), false, packetIn.isHardcoreMode(), packetIn.getWorldType()), net.minecraftforge.fml.common.network.handshake.NetworkDispatcher.get(getNetworkManager()).getOverrideDimension(packetIn), packetIn.getDifficulty(), this.mc.mcProfiler));
         this.mc.gameSettings.difficulty = packetIn.getDifficulty();
         this.mc.loadWorld(ReflectionHelper.get(ObfuscatedField.NetHandlerPlayClient_clientWorldController, this.clientWorldController, this));
-        this.mc.thePlayer.dimension = packetIn.getDimension();
+        this.mc.player.dimension = packetIn.getDimension();
         this.mc.displayGuiScreen(new GuiDownloadTerrain(this));
-        this.mc.thePlayer.setEntityId(packetIn.getPlayerId());
+        this.mc.player.setEntityId(packetIn.getPlayerId());
         this.currentServerMaxPlayers = packetIn.getMaxPlayers();
-        this.mc.thePlayer.setReducedDebug(packetIn.isReducedDebugInfo());
+        this.mc.player.setReducedDebug(packetIn.isReducedDebugInfo());
         this.mc.playerController.setGameType(packetIn.getGameType());
         this.mc.gameSettings.sendSettingsToServer();
         this.getNetworkManager().sendPacket(new CPacketCustomPayload("MC|Brand", (new PacketBuffer(Unpooled.buffer())).writeString(ClientBrandRetriever.getClientModName())));

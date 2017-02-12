@@ -9,9 +9,10 @@ import java.util.Map;
 import java.util.Set;
 
 import com.mrnobody.morecommands.command.ClientCommand;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.core.AppliedPatches;
+import com.mrnobody.morecommands.core.ClientProxy;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.DamageItemEvent;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.ItemStackChangeSizeEvent;
@@ -19,16 +20,18 @@ import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.network.PacketDispatcher.BlockUpdateType;
 import com.mrnobody.morecommands.patch.EntityPlayerSP;
 import com.mrnobody.morecommands.patch.PlayerControllerMP;
-import com.mrnobody.morecommands.util.ClientPlayerSettings;
-import com.mrnobody.morecommands.util.ClientPlayerSettings.XrayInfo;
-import com.mrnobody.morecommands.util.GlobalSettings;
-import com.mrnobody.morecommands.util.PlayerSettings;
+import com.mrnobody.morecommands.settings.ClientPlayerSettings;
+import com.mrnobody.morecommands.settings.ClientPlayerSettings.XrayInfo;
+import com.mrnobody.morecommands.settings.GlobalSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.util.EntityCamera;
 import com.mrnobody.morecommands.util.Reference;
 import com.mrnobody.morecommands.util.Xray;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.EntityCamera;
-import com.mrnobody.morecommands.wrapper.World;
 
+import gnu.trove.map.TIntObjectMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.procedure.TIntObjectProcedure;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
@@ -42,6 +45,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.World;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -55,6 +59,10 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class PacketHandlerClient {
 	/** These commands are those that get removed when the server has MoreCommands installed to execute the server side versions of them */
 	private static final List<ClientCommand<?>> removedCmds = new ArrayList<ClientCommand<?>>();
+	/** These commands are currently processed server side and waited for a response */
+	private static final TIntObjectMap<PendingRemoteCommand> pendingRemoteCommands = new TIntObjectHashMap<PendingRemoteCommand>();
+	/** A counter for pending remote commands */
+	private static int pendingRemoteCommandsID = 0;
 	
 	private EntityPlayerSP freecamOriginalPlayer;
 	private boolean prevIsFlying;
@@ -104,16 +112,14 @@ public class PacketHandlerClient {
 	/**
 	 * Runs a thread waiting for a handshake from the server <br>
 	 * to execute startup commands. If it isn't received after a <br>
-	 * certain time, they are still executed
-	 * 
-	 * @param socketAddress the server's socket address
+	 * certain time, they are executed nevertheless
 	 */
-	public static void runStartupThread(final String socketAddress) {
-		final int timeout = GlobalSettings.startupTimeout < 0 ? 10000 : GlobalSettings.startupTimeout > 10 ? 10000 : GlobalSettings.startupTimeout * 1000;
+	public static void runStartupCommandsThread() {
+		final int timeout = MoreCommandsConfig.startupTimeout < 0 ? 10000 : MoreCommandsConfig.startupTimeout > 10 ? 10000 : MoreCommandsConfig.startupTimeout * 1000;
 		
 		new Thread(new Runnable() {
 			@Override
-			public void run() {
+			public void run() {	
 				long t = System.currentTimeMillis() + timeout;
 				boolean added = false;
 				
@@ -122,31 +128,19 @@ public class PacketHandlerClient {
 					if (AppliedPatches.handshakeFinished()) break;
 				}
 				
-				if (Minecraft.getMinecraft().thePlayer == null) return;
+				if (Minecraft.getMinecraft().player == null) return;
 				notifyPlayerAboutUpdate();
 				
-				//Execute commands specified in the startup_multiplayer.cfg
-				for (String command : MoreCommands.INSTANCE.getStartupCommandsMultiplayer(socketAddress)) {
-					if (ClientCommandHandler.instance.executeCommand(Minecraft.getMinecraft().thePlayer, command) == 0)
-						Minecraft.getMinecraft().thePlayer.sendChatMessage(command.startsWith("/") ? command : "/" + command);
+				try {Thread.sleep(MoreCommandsConfig.startupDelay * 1000);}
+				catch (InterruptedException ex) {}
+				
+				for (String command : ClientPlayerSettings.getInstance(Minecraft.getMinecraft().player).startupCommands) {
+					if (ClientCommandHandler.instance.executeCommand(Minecraft.getMinecraft().player, command) == 0)
+						Minecraft.getMinecraft().player.sendChatMessage(command.startsWith("/") ? command : "/" + command);
 					MoreCommands.INSTANCE.getLogger().info("Executed startup command '" + command + "'");
 				}
 			}
-		}, "MoreCommands Startup Commands Thread").start();
-	}
-	
-	/**
-	 * Executes the startup commands that shall be executed on server startup.
-	 * This method is invoked only for the integrated server, not for dedicated servers.
-	 */
-	public static void executeStartupCommands() {
-		notifyPlayerAboutUpdate();
-		
-		for (String command : MoreCommands.INSTANCE.getStartupCommands()) {
-			if (ClientCommandHandler.instance.executeCommand(Minecraft.getMinecraft().thePlayer, command) == 0)
-				Minecraft.getMinecraft().thePlayer.sendChatMessage(command.startsWith("/") ? command : "/" + command);
-			MoreCommands.INSTANCE.getLogger().info("Executed startup command '" + command + "'");
-		}
+		}, "MoreCommands Startup Commands Thread (Client)").start();
 	}
 	
 	/**
@@ -154,7 +148,42 @@ public class PacketHandlerClient {
 	 */
 	private static void notifyPlayerAboutUpdate() {
 		if (MoreCommands.getProxy().getUpdateText() != null && !MoreCommands.getProxy().wasPlayerNotified())
-			Minecraft.getMinecraft().thePlayer.addChatMessage(MoreCommands.getProxy().getUpdateText());
+			Minecraft.getMinecraft().player.sendMessage(MoreCommands.getProxy().getUpdateText());
+	}
+
+	/**
+	 * Sends a command to the server to be executed. The result of the command execution (the text printed to the chat)
+	 * will be accessible via a callback. Note that if the server takes longer than {@link GlobalSettings#remoteCommandsTimeout}
+	 * to respond, the callback will never be invoked.
+	 * 
+	 * @param command the command
+	 * @param callback the result callback
+	 */
+	public static void addPendingRemoteCommand(String command, CommandResultCallback callback) {
+		synchronized (pendingRemoteCommands) {
+			int id = pendingRemoteCommandsID++;
+			pendingRemoteCommands.put(id, new PendingRemoteCommand(System.currentTimeMillis(), callback));
+			MoreCommands.INSTANCE.getPacketDispatcher().sendC02ExecuteRemoteCommand(id, command);
+		}
+	}
+	
+	/**
+	 * Removes the pending remotely executed commands for which a result hasn't been sent since
+	 * {@link GlobalSettings#remoteCommandsTimeout} milliseconds
+	 */
+	public static void removeOldPendingRemoteCommands() {
+		if (Minecraft.getMinecraft().world == null) return;
+		final long currentTime = System.currentTimeMillis();
+		
+		synchronized (pendingRemoteCommands) {
+			pendingRemoteCommands.retainEntries(new TIntObjectProcedure<PendingRemoteCommand>() {
+				@Override
+				public boolean execute(int a, PendingRemoteCommand b) {
+					if (currentTime - b.startTime > MoreCommandsConfig.remoteCommandsTimeout) return false;
+					return true;
+				}
+			});
+		}
 	}
 	
 	/**
@@ -188,7 +217,7 @@ public class PacketHandlerClient {
 		//Let the server know that the mod is installed client side
 		MoreCommands.INSTANCE.getLogger().info("Sending client handshake");
 		MoreCommands.INSTANCE.getPacketDispatcher().sendC00Handshake(
-				Minecraft.getMinecraft().thePlayer instanceof EntityPlayerSP,
+				Minecraft.getMinecraft().player instanceof EntityPlayerSP,
 				Minecraft.getMinecraft().renderGlobal instanceof com.mrnobody.morecommands.patch.RenderGlobal);
 	}
 	
@@ -198,7 +227,6 @@ public class PacketHandlerClient {
 	public void handshakeFinished() {
 		AppliedPatches.setHandshakeFinished(true);
 		MoreCommands.INSTANCE.getLogger().info("Handshake finished");
-		if (MoreCommands.getServerType() == ServerType.INTEGRATED) PacketHandlerClient.executeStartupCommands();
 	}
 	
 	/**
@@ -206,8 +234,8 @@ public class PacketHandlerClient {
 	 * @param climb whether to enable or disable climb mode
 	 */
 	public void handleClimb(boolean climb) {
-		if (Minecraft.getMinecraft().thePlayer instanceof EntityPlayerSP) {
-			((EntityPlayerSP) Minecraft.getMinecraft().thePlayer).setOverrideOnLadder(climb);
+		if (Minecraft.getMinecraft().player instanceof EntityPlayerSP) {
+			((EntityPlayerSP) Minecraft.getMinecraft().player).setOverrideOnLadder(climb);
 		}
 	}
 	
@@ -224,8 +252,8 @@ public class PacketHandlerClient {
 			this.freecamOriginalPlayer.setFreeCam(false);
 			this.freecamOriginalPlayer = null;
 		}
-		else if (Minecraft.getMinecraft().thePlayer instanceof EntityPlayerSP) {
-			this.freecamOriginalPlayer = (EntityPlayerSP) Minecraft.getMinecraft().thePlayer;
+		else if (Minecraft.getMinecraft().player instanceof EntityPlayerSP) {
+			this.freecamOriginalPlayer = (EntityPlayerSP) Minecraft.getMinecraft().player;
 			this.prevAllowFlying = this.freecamOriginalPlayer.capabilities.allowFlying;
 			this.prevIsFlying = this.freecamOriginalPlayer.capabilities.isFlying;
 			this.freecamOriginalPlayer.capabilities.allowFlying = true;
@@ -239,7 +267,7 @@ public class PacketHandlerClient {
             this.freecamOriginalPlayer.motionY = 0;
             this.freecamOriginalPlayer.motionZ = 0;
             this.freecamOriginalPlayer.setFreeCam(true);
-            Minecraft.getMinecraft().setRenderViewEntity(new EntityCamera(Minecraft.getMinecraft(), Minecraft.getMinecraft().theWorld, this.freecamOriginalPlayer.getHandler(), this.freecamOriginalPlayer.getWriter(), this.freecamOriginalPlayer.movementInput));
+            Minecraft.getMinecraft().setRenderViewEntity(new EntityCamera(Minecraft.getMinecraft(), Minecraft.getMinecraft().world, this.freecamOriginalPlayer.getHandler(), this.freecamOriginalPlayer.getWriter(), this.freecamOriginalPlayer.movementInput));
             Minecraft.getMinecraft().getRenderViewEntity().setPositionAndRotation(this.freecamOriginalPlayer.posX, this.freecamOriginalPlayer.posY, this.freecamOriginalPlayer.posZ, this.freecamOriginalPlayer.rotationYaw, this.freecamOriginalPlayer.rotationPitch);
 		}
 	}
@@ -254,9 +282,9 @@ public class PacketHandlerClient {
 			this.freezecamOriginalPlayer.setFreezeCamera(false);
 			this.freezecamOriginalPlayer = null;
 		}
-		else if (Minecraft.getMinecraft().thePlayer instanceof EntityPlayerSP) {
-			this.freezecamOriginalPlayer = (EntityPlayerSP) Minecraft.getMinecraft().thePlayer;
-			EntityCamera camera = new EntityCamera(Minecraft.getMinecraft(), Minecraft.getMinecraft().theWorld, this.freezecamOriginalPlayer.getHandler(), this.freezecamOriginalPlayer.getWriter(), this.freezecamOriginalPlayer.movementInput);
+		else if (Minecraft.getMinecraft().player instanceof EntityPlayerSP) {
+			this.freezecamOriginalPlayer = (EntityPlayerSP) Minecraft.getMinecraft().player;
+			EntityCamera camera = new EntityCamera(Minecraft.getMinecraft(), Minecraft.getMinecraft().world, this.freezecamOriginalPlayer.getHandler(), this.freezecamOriginalPlayer.getWriter(), this.freezecamOriginalPlayer.movementInput);
 			camera.setPositionAndRotation(this.freezecamOriginalPlayer.posX, this.freezecamOriginalPlayer.posY, this.freezecamOriginalPlayer.posZ, this.freezecamOriginalPlayer.rotationYaw, this.freezecamOriginalPlayer.rotationPitch);
 			camera.setFreezeCamera(0, 0, 0, this.freezecamOriginalPlayer.rotationYaw, this.freezecamOriginalPlayer.rotationPitch);
 			this.freezecamOriginalPlayer.setFreezeCamYawAndPitch(this.freezecamOriginalPlayer.rotationYaw, this.freezecamOriginalPlayer.rotationPitch);
@@ -287,7 +315,7 @@ public class PacketHandlerClient {
 	 * @param setting the setting name to load/save
 	 */
 	public void handleXray(boolean load, String setting) {
-		ClientPlayerSettings settings = Minecraft.getMinecraft().thePlayer.getCapability(PlayerSettings.SETTINGS_CAP_CLIENT, null);
+		ClientPlayerSettings settings = Minecraft.getMinecraft().player.getCapability(PlayerSettings.SETTINGS_CAP_CLIENT, null);
 		if (settings == null) return;
 		
 		if (load) {
@@ -301,9 +329,9 @@ public class PacketHandlerClient {
 					Xray.getXray().changeBlockSettings(entry.getKey(), true, new Color(entry.getValue()));
 				
 				Xray.getXray().changeXraySettings(radius);
-				(new CommandSender(Minecraft.getMinecraft().thePlayer)).sendLangfileMessage("command.xray.loaded", setting);
+				(new CommandSender(Minecraft.getMinecraft().player)).sendLangfileMessage("command.xray.loaded", setting);
 			}
-			else (new CommandSender(Minecraft.getMinecraft().thePlayer)).sendLangfileMessage("command.xray.notFound", TextFormatting.RED, setting);
+			else (new CommandSender(Minecraft.getMinecraft().player)).sendLangfileMessage("command.xray.notFound", TextFormatting.RED, setting);
 		}
 		else {
 			Map<Block, Integer> colors = new HashMap<Block, Integer>();
@@ -316,7 +344,7 @@ public class PacketHandlerClient {
 			}
 			
 			settings.xray.put(setting, new XrayInfo(Xray.getXray().getRadius(), colors));
-			(new CommandSender(Minecraft.getMinecraft().thePlayer)).sendLangfileMessage("command.xray.saved", setting);
+			(new CommandSender(Minecraft.getMinecraft().player)).sendLangfileMessage("command.xray.saved", setting);
 		}
 	}
 
@@ -325,32 +353,32 @@ public class PacketHandlerClient {
 	 * @param allowNoclip whether to enable or disable noclip
 	 */
 	public void handleNoclip(boolean allowNoclip) {
-		if (!(Minecraft.getMinecraft().thePlayer instanceof EntityPlayerSP)) return;
-		Minecraft.getMinecraft().thePlayer.noClip = allowNoclip;
-		((EntityPlayerSP) Minecraft.getMinecraft().thePlayer).setOverrideNoclip(allowNoclip);
+		if (!(Minecraft.getMinecraft().player instanceof EntityPlayerSP)) return;
+		Minecraft.getMinecraft().player.noClip = allowNoclip;
+		((EntityPlayerSP) Minecraft.getMinecraft().player).setOverrideNoclip(allowNoclip);
 	}
 	
 	/**
 	 * Lightens the world or reverses world lighting
 	 */
 	public void handleLight() {
-		World clientWorld = new World(Minecraft.getMinecraft().thePlayer.worldObj);
+		World clientWorld = Minecraft.getMinecraft().player.world;
 			
-		if(clientWorld.getMinecraftWorld().hashCode() != this.lightenedWorld) {
+		if (clientWorld.hashCode() != this.lightenedWorld) {
 			this.isEnlightened = false;
 		}
 			
 		if (!this.isEnlightened) {
-			float[] lightBrightnessTable = clientWorld.getMinecraftWorld().provider.getLightBrightnessTable();
+			float[] lightBrightnessTable = clientWorld.provider.getLightBrightnessTable();
 			
 			for (int i = 0; i < lightBrightnessTable.length; i++) {
 				lightBrightnessTable[i] = 1.0F;
 			}
 				
-			this.lightenedWorld = clientWorld.getMinecraftWorld().hashCode();
+			this.lightenedWorld = clientWorld.hashCode();
 		}
 		else {
-			clientWorld.getMinecraftWorld().provider.registerWorld(clientWorld.getMinecraftWorld());
+			clientWorld.provider.setWorld(clientWorld);
 		}
 		this.isEnlightened = !this.isEnlightened;
 	}
@@ -370,8 +398,8 @@ public class PacketHandlerClient {
 	 * @param gravity the jump height
 	 */
 	public void setGravity(float gravity) {
-		if (Minecraft.getMinecraft().thePlayer instanceof EntityPlayerSP) {
-			((EntityPlayerSP) Minecraft.getMinecraft().thePlayer).setGravity(gravity);
+		if (Minecraft.getMinecraft().player instanceof EntityPlayerSP) {
+			((EntityPlayerSP) Minecraft.getMinecraft().player).setGravity(gravity);
 		}
 	}
 
@@ -380,7 +408,7 @@ public class PacketHandlerClient {
 	 * @param stepheight the step height
 	 */
 	public void setStepheight(float stepheight) {
-		Minecraft.getMinecraft().thePlayer.stepHeight = stepheight;
+		Minecraft.getMinecraft().player.stepHeight = stepheight;
 	}
 	
 	/**
@@ -388,8 +416,8 @@ public class PacketHandlerClient {
 	 * @param whether to enable or disable fluid movement handling
 	 */
 	public void setFluidMovement(boolean fluidmovement) {
-		if (Minecraft.getMinecraft().thePlayer instanceof EntityPlayerSP) {
-			((EntityPlayerSP) Minecraft.getMinecraft().thePlayer).setFluidMovement(fluidmovement);
+		if (Minecraft.getMinecraft().player instanceof EntityPlayerSP) {
+			((EntityPlayerSP) Minecraft.getMinecraft().player).setFluidMovement(fluidmovement);
 		}
 	}
 	
@@ -430,11 +458,12 @@ public class PacketHandlerClient {
 	}
 	
 	/**
-	 * Stores the server's world name on the client
+	 * Stores the remote (server) world name on the client
+	 * 
 	 * @param worldName the server world's name
 	 */
-	public void changeWorld(String worldName) {
-		MoreCommands.getProxy().setCurrentWorld(worldName);
+	public void handleRemoteWorldName(String worldName) {
+		((ClientProxy) MoreCommands.getProxy()).setRemoteWorldName(worldName);
 	}
 	
 	/**
@@ -446,6 +475,24 @@ public class PacketHandlerClient {
 	public void updateBlock(Block block, BlockUpdateType type, int value) {
 		type.update(block, value);
 	}
+
+	/**
+	 * handles the result of a remote command execution
+	 * 
+	 * @param executionID the id of the executed command
+	 * @param result the result of the execution
+	 */
+	public void handleRemoteCommandResult(int executionID, String result) {
+		PendingRemoteCommand pendingCommand = null;
+		
+		synchronized (pendingRemoteCommands) {
+			pendingCommand = pendingRemoteCommands.get(executionID);
+			pendingRemoteCommands.remove(executionID);
+		}
+		
+		if (pendingCommand != null)
+			pendingCommand.callback.setCommandResult(result);
+	}
 	
 	/**
 	 * This is basically a copy of net.minecraft.item.ItemCompass$1. This
@@ -456,57 +503,91 @@ public class PacketHandlerClient {
 	 * @author MrNobody98
 	 */
 	private final class CompassAngleProperty implements IItemPropertyGetter {
-		@SideOnly(Side.CLIENT) private double field_185095_a;
-		@SideOnly(Side.CLIENT) private double field_185096_b;
-		@SideOnly(Side.CLIENT) private long field_185097_c;
-		
-		@SideOnly(Side.CLIENT)
-		public float apply(ItemStack stack, net.minecraft.world.World worldIn, EntityLivingBase entityIn) {
-			if (entityIn == null && !stack.isOnItemFrame()) return 0.0F;
-			else {
-				boolean flag = entityIn != null;
-				Entity entity = (Entity)(flag ? entityIn : stack.getItemFrame());
-				if (worldIn == null) worldIn = entity.worldObj;
-				double d0;
-				
-				if (worldIn.provider.isSurfaceWorld()) {
-					double d1 = flag ? (double)entity.rotationYaw : this.func_185094_a((EntityItemFrame) entity);
-					d1 = d1 % 360.0D;
-					double d2 = this.func_185092_a(worldIn, entity);
-					d0 = Math.PI - ((d1 - 90.0D) * 0.01745329238474369D - d2);
-				}
-				else d0 = Math.random() * (Math.PI * 2D);
-				
-				if (flag) d0 = this.func_185093_a(worldIn, d0);
-				float f = (float)(d0 / (Math.PI * 2D));
-				return MathHelper.positiveModulo(f, 1.0F);
-			}
+        @SideOnly(Side.CLIENT) double rotation;
+        @SideOnly(Side.CLIENT) double rota;
+        @SideOnly(Side.CLIENT) long lastUpdateTick;
+        
+        @SideOnly(Side.CLIENT)
+		public float apply(ItemStack stack, World worldIn, EntityLivingBase entityIn) {
+        	 if (entityIn == null && !stack.isOnItemFrame()) return 0.0F;
+             else {
+                 boolean flag = entityIn != null;
+                 Entity entity = (Entity)(flag ? entityIn : stack.getItemFrame());
+
+                 if (worldIn == null) worldIn = entity.world;
+                 double d0;
+
+                 if (worldIn.provider.isSurfaceWorld()) {
+                	 double d1 = flag ? (double)entity.rotationYaw : this.getFrameRotation((EntityItemFrame)entity);
+                     d1 = MathHelper.positiveModulo(d1 / 360.0D, 1.0D);
+                     double d2 = this.getSpawnToAngle(worldIn, entity) / (Math.PI * 2D);
+                     d0 = 0.5D - (d1 - 0.25D - d2);
+                 }
+                 else  d0 = Math.random();
+
+                 if (flag)
+                	 d0 = this.wobble(worldIn, d0);
+                 
+                 return MathHelper.positiveModulo((float)d0, 1.0F);
+             }
 		}
+        
+        @SideOnly(Side.CLIENT)
+        private double wobble(World worldIn, double p_185093_2_) {
+            if (worldIn.getTotalWorldTime() != this.lastUpdateTick) {
+                this.lastUpdateTick = worldIn.getTotalWorldTime();
+                double d0 = p_185093_2_ - this.rotation;
+                d0 = MathHelper.positiveModulo(d0 + 0.5D, 1.0D) - 0.5D;
+                this.rota += d0 * 0.1D;
+                this.rota *= 0.8D;
+                this.rotation = MathHelper.positiveModulo(this.rotation + this.rota, 1.0D);
+            }
+
+            return this.rotation;
+        }
 		
-		@SideOnly(Side.CLIENT)
-		private double func_185093_a(net.minecraft.world.World p_185093_1_, double p_185093_2_) {
-			if (p_185093_1_.getTotalWorldTime() != this.field_185097_c) {
-				this.field_185097_c = p_185093_1_.getTotalWorldTime();
-				double d0 = p_185093_2_ - this.field_185095_a;
-				d0 = d0 % (Math.PI * 2D);
-				d0 = MathHelper.clamp_double(d0, -1.0D, 1.0D);
-				this.field_185096_b += d0 * 0.1D;
-				this.field_185096_b *= 0.8D;
-				this.field_185095_a += this.field_185096_b;
-			}
-			
-			return this.field_185095_a;
-		}
-		
-		@SideOnly(Side.CLIENT)
-		private double func_185094_a(EntityItemFrame p_185094_1_) {
-			return (double) MathHelper.clampAngle(180 + p_185094_1_.facingDirection.getHorizontalIndex() * 90);
-		}
-		
-		@SideOnly(Side.CLIENT)
-		private double func_185092_a(net.minecraft.world.World p_185092_1_, Entity p_185092_2_) {
-			BlockPos blockpos = PacketHandlerClient.this.compassTarget == null ? p_185092_1_.getSpawnPoint() : PacketHandlerClient.this.compassTarget;
-			return Math.atan2((double)blockpos.getZ() - p_185092_2_.posZ, (double)blockpos.getX() - p_185092_2_.posX);
-		}
+        @SideOnly(Side.CLIENT)
+        private double getFrameRotation(EntityItemFrame p_185094_1_) {
+        	return (double)MathHelper.clampAngle(180 + p_185094_1_.facingDirection.getHorizontalIndex() * 90);
+        }
+        
+        @SideOnly(Side.CLIENT)
+        private double getSpawnToAngle(World p_185092_1_, Entity p_185092_2_) {
+            BlockPos blockpos = PacketHandlerClient.this.compassTarget == null ? p_185092_1_.getSpawnPoint() : PacketHandlerClient.this.compassTarget;
+            return Math.atan2((double)blockpos.getZ() - p_185092_2_.posZ, (double)blockpos.getX() - p_185092_2_.posX);
+        }
 	};
+	
+
+	/**
+	 * A container class for pending remote command executions
+	 * 
+	 * @author MrNobody98
+	 */
+	private static class PendingRemoteCommand {
+		private long startTime; //when the command was sent to the server
+		private CommandResultCallback callback; //the corresponding result callback
+		
+		/**
+		 * @param startTime the start time (when the command was sent to the server)
+		 * @param callback the corresponding result callback
+		 */
+		public PendingRemoteCommand(long startTime, CommandResultCallback callback) {
+			this.startTime = startTime; this.callback = callback;
+		}
+	}
+	
+	/**
+	 * A callback for the result of a remote command execution
+	 * 
+	 * @author MrNobody98
+	 */
+	public static interface CommandResultCallback {
+		/**
+		 * Sets the result of the remote command execution
+		 * 
+		 * @param result the result
+		 */
+		void setCommandResult(String result);
+	}
 }

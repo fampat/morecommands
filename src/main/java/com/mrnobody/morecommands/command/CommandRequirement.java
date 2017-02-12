@@ -6,7 +6,7 @@ import com.mrnobody.morecommands.patch.ClientCommandManager;
 import com.mrnobody.morecommands.patch.EntityPlayerMP;
 import com.mrnobody.morecommands.patch.EntityPlayerSP;
 import com.mrnobody.morecommands.patch.RenderGlobal;
-import com.mrnobody.morecommands.util.GlobalSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommandSender;
@@ -33,7 +33,7 @@ public enum CommandRequirement {
 	 */
 	PATCH_ENTITYPLAYERSP("command.generic.clientPlayerNotPatched") {
 		@Override public boolean isSatisfied(ICommandSender sender, PlayerPatches playerPatches, Side side) {
-			return side.isServer() ? playerPatches.clientPlayerPatched() : Minecraft.getMinecraft().thePlayer instanceof EntityPlayerSP;
+			return side.isServer() ? playerPatches.clientPlayerPatched() : Minecraft.getMinecraft().player instanceof EntityPlayerSP;
 		}
 	},
 	PATCH_RENDERGLOBAL("command.generic.renderGlobalNotPatched") {
@@ -89,7 +89,7 @@ public enum CommandRequirement {
 	 */
 	OTHER_SIDE_MUST_BE_MODDED("command.generic.clientsDontHaveToBeModded", "command.generic.serverDoesntHaveToBeModded") {
 		@Override public boolean isSatisfied(ICommandSender sender, PlayerPatches playerPatches, Side side) {
-			return side.isClient() ? GlobalSettings.serverMustHaveMod : GlobalSettings.clientMustHaveMod;
+			return side.isClient() ? MoreCommandsConfig.serverMustHaveMod : MoreCommandsConfig.clientMustHaveMod;
 		}
 	};
 	

@@ -2,15 +2,12 @@ package com.mrnobody.morecommands.patch;
 
 import static net.minecraft.util.text.TextFormatting.RED;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.util.ClientPlayerSettings;
+import com.mrnobody.morecommands.command.AbstractCommand;
+import com.mrnobody.morecommands.core.AppliedPatches;
+import com.mrnobody.morecommands.settings.ClientPlayerSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
+import com.mrnobody.morecommands.settings.PlayerSettings;
 import com.mrnobody.morecommands.util.DummyCommand;
-import com.mrnobody.morecommands.util.GlobalSettings;
-import com.mrnobody.morecommands.util.LanguageManager;
-import com.mrnobody.morecommands.util.PlayerSettings;
 import com.mrnobody.morecommands.util.Variables;
 
 import net.minecraft.client.Minecraft;
@@ -18,7 +15,6 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.client.ClientCommandHandler;
@@ -56,17 +52,15 @@ public class ClientCommandManager extends ClientCommandHandler {
             message = message.substring(1);
         }
         
-        Set<String> unresolvedVars = new HashSet<String>();
+		if (MoreCommandsConfig.enablePlayerVars && sender == Minecraft.getMinecraft().player) {
+			ClientPlayerSettings settings = Minecraft.getMinecraft().player.getCapability(PlayerSettings.SETTINGS_CAP_CLIENT, null);
+			
+			if (settings != null) {
+				try {message = Variables.replaceVars(message, getCommands().containsKey(message.split(" ")[0]) ? true : !AppliedPatches.serverModded(), settings.variables);}
+				catch (Variables.VariablesCouldNotBeResolvedException e) {message = e.getNewString();}
+			}
+		}
         
-        if (GlobalSettings.enablePlayerVars) {
-        	ClientPlayerSettings settings = Minecraft.getMinecraft().thePlayer.getCapability(PlayerSettings.SETTINGS_CAP_CLIENT, null);
-        	
-        	if (settings != null) {
-            	try {message = Variables.replaceVars(message, settings.variables);}
-            	catch (Variables.VariablesCouldNotBeResolvedException e) {unresolvedVars = e.getVariables(); message = e.getNewString();}
-        	}
-        }
-
         String[] temp = message.split(" ");
         String[] args = new String[temp.length - 1];
         String commandName = temp[0];
@@ -77,12 +71,7 @@ public class ClientCommandManager extends ClientCommandHandler {
         {
             if (icommand == null)
             {
-            	Minecraft.getMinecraft().thePlayer.sendChatMessage(slash ? "/" + message : message); return 1;
-            }
-            
-            if (!unresolvedVars.isEmpty()) {
-            	TextComponentString text = new TextComponentString(LanguageManager.translate(MoreCommands.INSTANCE.getCurrentLang(sender), "command.var.cantBeResolved", unresolvedVars.toString()));
-            	text.getStyle().setColor(RED); sender.addChatMessage(text);
+            	return 0;
             }
             
             if (icommand.checkPermission(this.getServer(), sender)) {
@@ -94,27 +83,27 @@ public class ClientCommandManager extends ClientCommandHandler {
                         throw event.getException();
                     }
                     if (icommand instanceof DummyCommand) return 1;
-                    else {Minecraft.getMinecraft().thePlayer.sendChatMessage("/" + message); return 1;}
+                    else return 0;
                 }
 
                 this.tryExecute(sender, args, icommand, message);
                 return 1;
             }
             else {
-                sender.addChatMessage(format(RED, "commands.generic.permission"));
+                sender.sendMessage(format(RED, "commands.generic.permission"));
             }
         }
         catch (WrongUsageException wue)
         {
-            sender.addChatMessage(format(RED, "commands.generic.usage", format(RED, wue.getMessage(), wue.getErrorObjects())));
+            sender.sendMessage(format(RED, "commands.generic.usage", format(RED, wue.getMessage(), wue.getErrorObjects())));
         }
         catch (CommandException ce)
         {
-            sender.addChatMessage(format(RED, ce.getMessage(), ce.getErrorObjects()));
+            sender.sendMessage(format(RED, ce.getMessage(), ce.getErrorObjects()));
         }
         catch (Throwable t)
         {
-            sender.addChatMessage(format(RED, "commands.generic.exception"));
+            sender.sendMessage(format(RED, "commands.generic.exception"));
             t.printStackTrace();
         }
 

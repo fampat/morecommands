@@ -13,7 +13,9 @@ import java.util.Random;
 import java.util.UUID;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
@@ -21,8 +23,6 @@ import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedMethod;
 import com.mrnobody.morecommands.util.ReflectionHelper;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -66,35 +66,35 @@ public class CommandWorld extends StandardCommand implements ServerCommandProper
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 0) {
 			if (params[0].equalsIgnoreCase("seed")) {
 				if (params.length > 2 && params[1].equalsIgnoreCase("set")) {
 					try {
 						long seed = Long.parseLong(params[2]);
-						NBTTagCompound data = sender.getWorld().getMinecraftWorld().getWorldInfo().cloneNBTCompound(null);
+						NBTTagCompound data = sender.getWorld().getWorldInfo().cloneNBTCompound(null);
 						data.setLong("RandomSeed", seed);
-						ReflectionHelper.set(ObfuscatedField.World_worldInfo, this.worldInfo, sender.getWorld().getMinecraftWorld(), new WorldInfo(data));
+						ReflectionHelper.set(ObfuscatedField.World_worldInfo, this.worldInfo, sender.getWorld(), new WorldInfo(data));
 						sender.sendLangfileMessage("command.world.setseed", String.valueOf(seed));
 					}
 					catch (Exception ex) {throw new CommandException("command.world.NAN", sender);}
 				}
 				else {
-					long seed = sender.getWorld().getMinecraftWorld().getSeed();
+					long seed = sender.getWorld().getSeed();
 					sender.sendLangfileMessage("command.world.currentseed", String.valueOf(seed));
 				}
-				return;
+				return null;
 			}
 			else if (params[0].equalsIgnoreCase("name")) {
 				if (params.length > 2 && params[1].equalsIgnoreCase("set")) {
-					sender.getWorld().getMinecraftWorld().getWorldInfo().setWorldName(params[2]);
+					sender.getWorld().getWorldInfo().setWorldName(params[2]);
 					sender.sendLangfileMessage("command.world.setname", String.valueOf(params[2]));
 				}
 				else {
-					String name = sender.getWorld().getMinecraftWorld().getWorldInfo().getWorldName();
+					String name = sender.getWorld().getWorldInfo().getWorldName();
 					sender.sendLangfileMessage("command.world.currentname", name);
 				}
-				return;
+				return null;
 			}
 			
 			if (!MoreCommands.isServerSide())
@@ -141,7 +141,7 @@ public class CommandWorld extends StandardCommand implements ServerCommandProper
 			}
 			else if (params[0].equalsIgnoreCase("exit")) {
 				if (isSenderOfEntityType(sender.getMinecraftISender(), EntityPlayerMP.class))
-						getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class).connection.kickPlayerFromServer("World exited");
+						getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class).connection.disconnect("World exited");
 				else throw new CommandException("command.generic.notServer", sender);
 			}
 			else if (params[0].equalsIgnoreCase("new") && params.length > 1) {
@@ -190,6 +190,8 @@ public class CommandWorld extends StandardCommand implements ServerCommandProper
 			}
 			else throw new CommandException("command.world.invalidArg", sender);
 		}
+		
+		return null;
 	}
 	
 	private void loadWorld(DedicatedServer server, AnvilSaveConverter saveLoader, String world, long seed, WorldType type, String genSettings) {
@@ -199,7 +201,7 @@ public class CommandWorld extends StandardCommand implements ServerCommandProper
 				this.loadWorlds.invoke(server, world, world, seed, type == null ? WorldType.DEFAULT : type, genSettings);
 				server.setFolderName(world);
 				
-				for (EntityPlayerMP player : server.getPlayerList().getPlayerList()) {
+				for (EntityPlayerMP player : server.getPlayerList().getPlayers()) {
 					transferPlayer(server, player);
 				}
 			}
@@ -271,7 +273,7 @@ public class CommandWorld extends StandardCommand implements ServerCommandProper
         }
 
         player.setWorld(playerWorld);
-        player.interactionManager.setWorld((WorldServer)player.worldObj);
+        player.interactionManager.setWorld((WorldServer)player.world);
         
         WorldServer worldserver = server.worldServerForDimension(player.dimension);
         WorldInfo worldinfo = worldserver.getWorldInfo();
@@ -350,7 +352,7 @@ public class CommandWorld extends StandardCommand implements ServerCommandProper
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	
