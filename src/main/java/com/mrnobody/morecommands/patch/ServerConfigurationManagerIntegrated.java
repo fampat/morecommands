@@ -7,8 +7,9 @@ import java.util.UUID;
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.util.PlayerSettings;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
+import com.mrnobody.morecommands.util.ChatChannel;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -20,6 +21,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.management.ItemInWorldManager;
 import net.minecraft.util.BlockPos;
+import net.minecraft.util.IChatComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldSettings;
@@ -42,6 +44,12 @@ public class ServerConfigurationManagerIntegrated extends net.minecraft.server.i
 		this.mcServer = server;
 	}
 	
+	@Override
+	public void sendChatMsgImpl(IChatComponent message, boolean isSystemMessage) {
+		MoreCommands.getProxy().ensureChatChannelsLoaded();
+		ChatChannel.getMasterChannel().sendChatMessage(message, isSystemMessage ? (byte) 1 : (byte) 0);
+	}
+
     public EntityPlayerMP createPlayerForUser(GameProfile profile)
     {
         UUID uuid = EntityPlayer.getUUID(profile);
@@ -79,7 +87,7 @@ public class ServerConfigurationManagerIntegrated extends net.minecraft.server.i
 
         return new com.mrnobody.morecommands.patch.EntityPlayerMP(this.mcServer, this.mcServer.worldServerForDimension(0), profile, (ItemInWorldManager)object);
     }
-	
+    
     @Override
     public EntityPlayerMP recreatePlayerEntity(EntityPlayerMP playerIn, int dimension, boolean conqueredEnd)
     {

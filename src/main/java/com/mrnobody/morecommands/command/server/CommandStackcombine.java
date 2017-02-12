@@ -1,12 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -24,11 +24,11 @@ public class CommandStackcombine extends StandardCommand implements ServerComman
 		return "stackcombine";
 	}
     
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.stackcombine.syntax";
 	}
     
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 		
 		for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
@@ -53,6 +53,8 @@ public class CommandStackcombine extends StandardCommand implements ServerComman
             	}
             }
 		}
+		
+		return null;
 	}
     
 	@Override
@@ -66,7 +68,7 @@ public class CommandStackcombine extends StandardCommand implements ServerComman
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 	

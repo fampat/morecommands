@@ -1,12 +1,13 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.util.WorldUtils;
 
 import net.minecraft.command.ICommandSender;
 
@@ -26,17 +27,18 @@ public class CommandHardcore extends StandardCommand implements ServerCommandPro
     }
 
 	@Override
-    public String getUsage()
+    public String getCommandUsage()
     {
         return "command.hardcore.syntax";
     }
     
 	@Override
-    public void execute(CommandSender sender, String[] params) throws CommandException {
-		try {sender.getWorld().setHardcore(parseTrueFalse(params, 0, sender.getWorld().isHardcore()));}
+    public String execute(CommandSender sender, String[] params) throws CommandException {
+		try {WorldUtils.setHardcore(sender.getWorld(), parseTrueFalse(params, 0, !WorldUtils.isHardcore(sender.getWorld())));}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.hardcore.failure", sender);}
 		
-		sender.sendLangfileMessage(sender.getWorld().isHardcore() ? "command.hardcore.on" : "command.hardcore.off");  
+		sender.sendLangfileMessage(WorldUtils.isHardcore(sender.getWorld()) ? "command.hardcore.on" : "command.hardcore.off");
+		return null;
     }
 	
 	@Override
@@ -50,7 +52,7 @@ public class CommandHardcore extends StandardCommand implements ServerCommandPro
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

@@ -4,13 +4,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.TargetSelector;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -39,12 +39,12 @@ public class CommandDestroy extends StandardCommand implements ServerCommandProp
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.destroy.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		params = reparseParamsWithNBTData(params);
 		boolean isTarget = params.length > 0 && isTargetSelector(params[0]);
 		int startIndex = isTarget ? 1 : 0; int clearMode, slot = -1; 
@@ -70,7 +70,7 @@ public class CommandDestroy extends StandardCommand implements ServerCommandProp
 				}
 				
 				if (params.length > startIndex + 2) {
-					NBTBase base = getNBTFromParam(params[startIndex + 2], sender.getMinecraftISender());
+					NBTBase base = getNBTFromParam(params[startIndex + 2]);
 					if (base == null || !(base instanceof NBTTagCompound)) throw new CommandException("command.destroy.invalidNBT", sender);
 					nbt = (NBTTagCompound) base;
 				}
@@ -136,6 +136,8 @@ public class CommandDestroy extends StandardCommand implements ServerCommandProp
 				});
 			}
 		}
+		
+		return null;
 	}
 	
 	@Override
@@ -149,7 +151,7 @@ public class CommandDestroy extends StandardCommand implements ServerCommandProp
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 	

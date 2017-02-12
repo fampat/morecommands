@@ -1,15 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.EntityCreature;
@@ -51,18 +51,19 @@ public class CommandKillattacker extends StandardCommand implements ServerComman
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.killattacker.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params)throws CommandException {
+	public String execute(CommandSender sender, String[] params)throws CommandException {
 		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
     	
-		try {settings.killattacker = parseTrueFalse(params, 0, settings.killattacker);}
+		try {settings.killattacker = parseTrueFalse(params, 0, !settings.killattacker);}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.killattacker.failure", sender);}
 		
 		sender.sendLangfileMessage(settings.killattacker ? "command.killattacker.on" : "command.killattacker.off");
+		return null;
 	}
 	
 	@Override
@@ -76,7 +77,7 @@ public class CommandKillattacker extends StandardCommand implements ServerComman
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

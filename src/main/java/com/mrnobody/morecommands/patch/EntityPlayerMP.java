@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import com.mojang.authlib.GameProfile;
+import com.mrnobody.morecommands.command.AbstractCommand.ResultAcceptingCommandSender;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -21,6 +22,7 @@ import net.minecraft.server.management.ItemInWorldManager;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldSettings.GameType;
@@ -34,7 +36,7 @@ import net.minecraftforge.common.ForgeHooks;
  * @author MrNobody98
  *
  */
-public class EntityPlayerMP extends net.minecraft.entity.player.EntityPlayerMP {
+public class EntityPlayerMP extends net.minecraft.entity.player.EntityPlayerMP implements ResultAcceptingCommandSender {
 	private boolean instantkill = false;
 	private boolean criticalhit = false;
 	private boolean instantmine = false;
@@ -44,10 +46,58 @@ public class EntityPlayerMP extends net.minecraft.entity.player.EntityPlayerMP {
 	private boolean overrideOnLadder = false;
 	
 	private double gravity = 1.0D;
+
+	private String capturedCommandResult = null;
+	private StringBuilder capturedCommandMessages = new StringBuilder();
+	private boolean captureNextCommandResult = false;
 	
 	public EntityPlayerMP(MinecraftServer p_i45285_1_, WorldServer p_i45285_2_, GameProfile p_i45285_3_, ItemInWorldManager p_i45285_4_) {
 		super(p_i45285_1_, p_i45285_2_, p_i45285_3_, p_i45285_4_);
 	}
+	
+    /**
+     * This method should be invoked before this entity is passed to {@link net.minecraft.command.ICommandManager#executeCommand(net.minecraft.command.ICommandSender, String)}. 
+     * Invoking this method will make this entity capture the result of the command exection. Result either means the return value
+     * of the {@link com.mrnobody.morecommands.command.AbstractCommand#processCommand(com.mrnobody.morecommands.wrapper.CommandSender, String[])} method
+     * if the command is a subclass of this class or, if it is not, or if the return value is null, the chat messages sent via the
+     * {@link #addChatMessage(IChatComponent)} method. After command execution, the captured results must be reset via the
+     * {@link #getCapturedCommandResult()} method. This method also returns the result. 
+     */
+    public void setCaptureNextCommandResult() {
+    	this.captureNextCommandResult = true;
+    }
+    
+    @Override
+    public void addChatMessage(IChatComponent message) {
+    	if (this.captureNextCommandResult) this.capturedCommandMessages.append(" " + message.getUnformattedText());
+    	super.addChatMessage(message);
+    }
+    
+    @Override
+    public void setCommandResult(String commandName, String[] args, String result) {
+    	if (this.captureNextCommandResult && result != null) 
+    		this.capturedCommandResult = result;
+    }
+    
+    /**
+     * Disables capturing of command results and resets and returns them.
+     * 
+     * @return the captured result of the command execution (requires enabling capturing before command execution via
+     * 			{@link #setCaptureNextCommandResult()}. Will never be null
+     * @see #setCaptureNextCommandResult()
+     */
+    public String getCapturedCommandResult() {
+    	String result = null;
+    	
+    	if (this.capturedCommandResult != null) result = this.capturedCommandResult;
+    	else result = this.capturedCommandMessages.toString().trim();
+    	
+    	this.capturedCommandResult = null;
+    	this.capturedCommandMessages = new StringBuilder();
+    	this.captureNextCommandResult = false;
+    	
+    	return result;
+    }
 	
 	public boolean getCriticalHit() {
 		return this.criticalhit;
@@ -113,7 +163,7 @@ public class EntityPlayerMP extends net.minecraft.entity.player.EntityPlayerMP {
 	public boolean overrideOnLadder() {
 		return this.overrideOnLadder;
 	}
-	
+
 	@Override
 	public boolean isOnLadder() {
 		if (this.overrideOnLadder && this.isCollidedHorizontally) return true;

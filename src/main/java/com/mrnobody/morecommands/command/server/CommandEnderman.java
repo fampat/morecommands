@@ -5,15 +5,15 @@ import java.util.Iterator;
 import java.util.Map;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
-import com.mrnobody.morecommands.util.GlobalSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
 
 import net.minecraft.block.Block;
 import net.minecraft.command.ICommandSender;
@@ -29,6 +29,7 @@ import net.minecraftforge.event.entity.living.EnderTeleportEvent;
 		)
 public class CommandEnderman extends StandardCommand implements ServerCommandProperties, EventListener<EnderTeleportEvent> {
 	private final Map<Block, Boolean> carriables = new HashMap<Block, Boolean>();
+	private boolean endermanteleport = true, endermanpickup = true;
 	
 	public CommandEnderman() {
 		Iterator<Block> blocks = Block.blockRegistry.iterator();
@@ -43,7 +44,7 @@ public class CommandEnderman extends StandardCommand implements ServerCommandPro
 	
 	@Override
 	public void onEvent(EnderTeleportEvent event) {
-		if (!GlobalSettings.endermanteleport) event.setCanceled(true);
+		if (!this.endermanteleport) event.setCanceled(true);
 	}
 	
 	@Override
@@ -52,35 +53,37 @@ public class CommandEnderman extends StandardCommand implements ServerCommandPro
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.enderman.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length <= 0)
 			throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		
 		if (params[0].equalsIgnoreCase("pickup")) {
-			try {GlobalSettings.endermanpickup = parseTrueFalse(params, 1, GlobalSettings.endermanpickup);}
+			try {this.endermanpickup = parseTrueFalse(params, 1, !this.endermanpickup);}
 			catch (IllegalArgumentException ex) {throw new CommandException("command.enderman.failure", sender);}
 			
-			sender.sendLangfileMessage(GlobalSettings.endermanpickup ? "command.enderman.pickup.on" : "command.enderman.pickup.off");
+			sender.sendLangfileMessage(this.endermanpickup ? "command.enderman.pickup.on" : "command.enderman.pickup.off");
 	        
 			Iterator<Block> blocks = Block.blockRegistry.iterator();
 			
 			while (blocks.hasNext()) {
 				Block block = blocks.next();
-				boolean allowPickup = GlobalSettings.endermanpickup ? this.carriables.get(block) : false;
+				boolean allowPickup = this.endermanpickup ? this.carriables.get(block) : false;
 				EntityEnderman.setCarriable(block, allowPickup);
 			}
 		}
 		else if (params[0].equalsIgnoreCase("teleport")) {
-			try {GlobalSettings.endermanteleport = parseTrueFalse(params, 1, GlobalSettings.endermanteleport);}
+			try {this.endermanteleport = parseTrueFalse(params, 1, !this.endermanteleport);}
 			catch (IllegalArgumentException ex) {throw new CommandException("command.enderman.failure", sender);}
 			
-			sender.sendLangfileMessage(GlobalSettings.endermanteleport ? "command.enderman.teleport.on" : "command.enderman.teleport.off");
+			sender.sendLangfileMessage(this.endermanteleport ? "command.enderman.teleport.on" : "command.enderman.teleport.off");
 		}
+		
+		return null;
 	}
 	
 	@Override
@@ -94,7 +97,7 @@ public class CommandEnderman extends StandardCommand implements ServerCommandPro
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

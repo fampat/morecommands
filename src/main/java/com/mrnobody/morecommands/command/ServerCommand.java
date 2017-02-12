@@ -1,12 +1,17 @@
 package com.mrnobody.morecommands.command;
 
+import org.apache.commons.lang3.tuple.MutablePair;
+
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.util.GlobalSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
 import com.mrnobody.morecommands.util.LanguageManager;
 
+import gnu.trove.map.TObjectIntMap;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
 import net.minecraftforge.fml.relauncher.Side;
 
 /**
@@ -32,7 +37,8 @@ public final class ServerCommand<T extends StandardCommand & ServerCommandProper
 	}
 	
 	private final ServerCommandProperties delegate;
-	private int permissionLevel;
+	private int basePermLevel;
+	private TObjectIntMap<String> actionPermLevels = null;
 	
 	public ServerCommand(T delegate) {
 		super(delegate);
@@ -44,36 +50,42 @@ public final class ServerCommand<T extends StandardCommand & ServerCommandProper
 	 * Refreshes the permission level required to be able to use this command
 	 */
 	public final void refreshPermissionLevel() {
-		Integer level = GlobalSettings.permissionMapping.get(this.getCommandName());
-		this.permissionLevel = level == null ? this.getDefaultPermissionLevel() : level;
-	}
-	
-	/**
-	 * Sets the permission level required to use this command
-	 * 
-	 * @param level the permission level
-	 */
-	public final void setPermissionLevel(int level) {
-		this.permissionLevel = level;
+		MutablePair<Integer, TObjectIntMap<String>> level = MoreCommandsConfig.permissionMapping.get(this.getCommandName());
+		
+		this.basePermLevel = level == null ? -1 : level.getLeft();
+		this.actionPermLevels = level == null ? null : level.getRight();
 	}
 	
 	@Override
 	public int getRequiredPermissionLevel() {
-		return this.permissionLevel;
+		return this.basePermLevel < 0 ? getDefaultPermissionLevel(null) : this.basePermLevel;
+	}
+	
+	@Override
+	public int getRequiredPermissionLevel(String[] args) {
+		int level = args.length == 0 || this.actionPermLevels == null || !this.actionPermLevels.containsKey(args[0]) ? 
+					this.basePermLevel : this.actionPermLevels.get(args[0]);
+		
+		if (level < 0) return getDefaultPermissionLevel(args);
+		else return level;
 	}
     
     @Override
-    public boolean checkRequirements(ICommandSender sender, String[] params, Side side) {
+    public IChatComponent checkRequirements(ICommandSender sender, String[] params, Side side) {
     	String lang = MoreCommands.INSTANCE.getCurrentLang(sender);
+
+    	if (!checkPermLevel(sender, params))
+    		return new ChatComponentTranslation("commands.generic.permission").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED));
     	
-    	if (!this.canSenderUse(this.getCommandName(), sender, params)) {
-        	ChatComponentText text = new ChatComponentText(LanguageManager.translate(lang, "command.generic.cantUse"));
-        	text.getChatStyle().setColor(EnumChatFormatting.RED);
-        	sender.addChatMessage(text);
-        	return false;
-    	}
+    	if (!this.canSenderUse(this.getCommandName(), sender, params))
+        	return makeChatMsg(LanguageManager.translate(lang, "command.generic.cantUse"));
     	
     	return super.checkRequirements(sender, params, side);
+    }
+    
+    private boolean checkPermLevel(ICommandSender sender, String[] params) {
+		if (this.getRequiredPermissionLevel(params) == 0) return true;
+		else return sender.canCommandSenderUseCommand(this.getRequiredPermissionLevel(params), this.getCommandName());
     }
     
 	@Override

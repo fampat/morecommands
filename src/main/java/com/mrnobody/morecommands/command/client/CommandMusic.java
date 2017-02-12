@@ -4,15 +4,15 @@ import java.lang.reflect.Field;
 
 import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
 import com.mrnobody.morecommands.util.ReflectionHelper;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.MusicTicker;
@@ -50,12 +50,12 @@ public class CommandMusic extends StandardCommand implements ClientCommandProper
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.music.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 0) {
 			if (params[0].equalsIgnoreCase("play")) {
 				if (!this.stopSound)
@@ -104,6 +104,8 @@ public class CommandMusic extends StandardCommand implements ClientCommandProper
 			}
 			else throw new CommandException("command.music.invalidUsage", sender);
 		}
+		
+		return null;
 	}
 
 	@Override
@@ -122,7 +124,7 @@ public class CommandMusic extends StandardCommand implements ClientCommandProper
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 }

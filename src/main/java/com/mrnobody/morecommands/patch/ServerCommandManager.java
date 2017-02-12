@@ -5,12 +5,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import com.mrnobody.morecommands.command.AbstractCommand;
-import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.util.GlobalSettings;
+import com.mrnobody.morecommands.settings.GlobalSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 import com.mrnobody.morecommands.util.LanguageManager;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.util.Variables;
 
 import net.minecraft.command.CommandResultStats;
@@ -50,29 +53,26 @@ public class ServerCommandManager extends net.minecraft.command.ServerCommandMan
         }
         
     	try {
-    		String world = MoreCommands.getProxy().getCurrentWorld(), dim = sender.getEntityWorld().provider.getDimensionName();
+    		String world = sender.getEntityWorld().getSaveHandler().getWorldDirectoryName(), dim = sender.getEntityWorld().provider.getDimensionName();
     		
     		if (AbstractCommand.isSenderOfEntityType(sender, EntityPlayerMP.class)) {
-    			ServerPlayerSettings settings = AbstractCommand.getPlayerSettings(AbstractCommand.getSenderAsEntity(sender, EntityPlayerMP.class));
-    			PlayerPatches playerInfo = MoreCommands.INSTANCE.getEntityProperties(PlayerPatches.class, PlayerPatches.PLAYERPATCHES_IDENTIFIER, AbstractCommand.getSenderAsEntity(sender, EntityPlayerMP.class));
-    			Map<String, String> playerVars = playerInfo != null && playerInfo.clientModded() ? new HashMap<String, String>() : settings.variables; //client takes care of replacing player variables
+    			ServerPlayerSettings settings = MoreCommands.getEntityProperties(ServerPlayerSettings.class, PlayerSettings.MORECOMMANDS_IDENTIFIER, AbstractCommand.getSenderAsEntity(sender, EntityPlayerMP.class));
+    			Map<String, String> playerVars = settings == null ? new HashMap<String, String>() : settings.variables;
     			
-    			if (GlobalSettings.enableGlobalVars && GlobalSettings.enablePlayerVars)
-    				rawCommand = Variables.replaceVars(rawCommand, playerVars, GlobalSettings.getVariables(world, dim));
-    			else if (GlobalSettings.enablePlayerVars)
-    				rawCommand = Variables.replaceVars(rawCommand, playerVars);
-    			else if (GlobalSettings.enableGlobalVars)
-    				rawCommand = Variables.replaceVars(rawCommand, GlobalSettings.getVariables(world, dim));
+    			if (MoreCommandsConfig.enableGlobalVars && MoreCommandsConfig.enablePlayerVars)
+    				rawCommand = Variables.replaceVars(rawCommand, true, playerVars, GlobalSettings.getInstance().variables.get(ImmutablePair.of(world, dim)));
+    			else if (MoreCommandsConfig.enablePlayerVars)
+    				rawCommand = Variables.replaceVars(rawCommand, true, playerVars);
+    			else if (MoreCommandsConfig.enableGlobalVars)
+    				rawCommand = Variables.replaceVars(rawCommand, true, GlobalSettings.getInstance().variables.get(ImmutablePair.of(world, dim)));
     		}
-    		else if (GlobalSettings.enableGlobalVars) 
-    			rawCommand = Variables.replaceVars(rawCommand, GlobalSettings.getVariables(world, dim));
+    		else if (MoreCommandsConfig.enableGlobalVars) 
+    			rawCommand = Variables.replaceVars(rawCommand, true, GlobalSettings.getInstance().variables.get(ImmutablePair.of(world, dim)));
     	}
         catch (Variables.VariablesCouldNotBeResolvedException vcnbre) {
-            ChatComponentText text = new ChatComponentText(LanguageManager.translate(MoreCommands.INSTANCE.getCurrentLang(sender), "command.var.cantBeResolved", vcnbre.getVariables().toString()));
-            text.getChatStyle().setColor(EnumChatFormatting.RED); sender.addChatMessage(text);
-            rawCommand = vcnbre.getNewString();
+        	rawCommand = vcnbre.getNewString();
         }
-
+    	
     	String[] astring = rawCommand.split(" ");
         String s1 = astring[0];
         astring = dropFirstString(astring);

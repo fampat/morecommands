@@ -1,4 +1,4 @@
-package com.mrnobody.morecommands.util;
+package com.mrnobody.morecommands.settings;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,25 +7,26 @@ import java.io.IOException;
 import java.util.Properties;
 
 /**
- * A custom settings class extending {@link Properties}
+ * A wrapper class for {@link Properties}
+ * This is mainly for convenience reasons
  * 
  * @author MrNobody98
  *
  */
-public class Settings extends Properties {
-	private File settings;
+public class Config extends Properties {
+	private File file;
 	
-	public Settings() {
+	public Config() {
 		super();
 	}
    
-	public Settings(File f) {
+	public Config(File f) {
 		this(f, true);
 	}
 
-	public Settings(File f, boolean load) {
+	public Config(File f, boolean load) {
 		super();
-		this.settings = f;
+		this.file = f;
 		if (load) load(f);
 	}
    
@@ -150,7 +151,7 @@ public class Settings extends Properties {
 	 * Saves the settings file with a header
 	 */
 	public boolean save(String header) {
-		return this.save(this.settings, header);
+		return this.save(this.file, header);
 	}
 
 	/**
@@ -185,7 +186,7 @@ public class Settings extends Properties {
 	 * @return whether the settings were loaded successully
 	 */
 	public boolean load() {
-		return this.load(this.settings);
+		return this.load(this.file);
 	}
 
 	/**
@@ -213,14 +214,14 @@ public class Settings extends Properties {
 	 * @return The settings file
 	 */
 	public File getFile() {
-		return this.settings;
+		return this.file;
 	}
 
 	/**
 	 * Sets the settings file
 	 */
 	public void setFile(File settings) {
-		this.settings = settings;
+		this.file = settings;
 	}
 
 	/**
@@ -232,6 +233,6 @@ public class Settings extends Properties {
 
 	@Override
 	public Object clone() {
-		return new Settings(this.settings);
+		return new Config(this.file);
 	}
 }

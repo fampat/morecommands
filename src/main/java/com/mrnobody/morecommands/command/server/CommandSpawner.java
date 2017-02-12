@@ -1,17 +1,17 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Entity;
-import com.mrnobody.morecommands.wrapper.EntityLivingBase;
+import com.mrnobody.morecommands.util.EntityUtils;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntityMobSpawner;
 import net.minecraft.util.BlockPos;
@@ -30,24 +30,24 @@ public class CommandSpawner extends StandardCommand implements ServerCommandProp
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.spawner.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params)throws CommandException {
+	public String execute(CommandSender sender, String[] params)throws CommandException {
 		BlockPos trace;
 		
 		if (params.length > 3)
 			trace = getCoordFromParams(sender.getMinecraftISender(), params, 1);
 		else
-			trace = new EntityLivingBase(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.EntityLivingBase.class)).traceBlock(128D);
+			trace = EntityUtils.traceBlock(getSenderAsEntity(sender.getMinecraftISender(), EntityLivingBase.class), 128D);
 
 		if (trace != null && params.length > 0) {
 			if (sender.getWorld().getTileEntity(trace) instanceof TileEntityMobSpawner) {
 				TileEntityMobSpawner spawner = (TileEntityMobSpawner) sender.getWorld().getTileEntity(trace);
 				
-				if (Entity.getEntityClass(params[0]) == null) {
+				if (EntityUtils.getEntityClass(params[0], true) == null) {
 					try {
 						params[0] = EntityList.getStringFromID(Integer.parseInt(params[0]));
 						if (params[0] == null) throw new CommandException("command.spawner.unknownEntityID", sender);
@@ -62,6 +62,8 @@ public class CommandSpawner extends StandardCommand implements ServerCommandProp
 			else throw new CommandException("command.spawner.notASpawner", sender);
 		}
 		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 
 	@Override
@@ -75,7 +77,7 @@ public class CommandSpawner extends StandardCommand implements ServerCommandProp
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 

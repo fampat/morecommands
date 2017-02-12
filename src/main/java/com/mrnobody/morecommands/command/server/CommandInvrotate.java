@@ -1,12 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -25,12 +25,12 @@ public class CommandInvrotate extends StandardCommand implements ServerCommandPr
         return "invrotate";
     }
     
-    public String getUsage()
+    public String getCommandUsage()
     {
         return "command.invrotate.syntax";
     }
     
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		int items = 9;
 		boolean leftToRight = true;
 		
@@ -64,7 +64,7 @@ public class CommandInvrotate extends StandardCommand implements ServerCommandPr
 		}
 
 		getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class).inventory.mainInventory = sorted;
-		main = null;
+		return null;
 	}
     
 	@Override
@@ -78,7 +78,7 @@ public class CommandInvrotate extends StandardCommand implements ServerCommandPr
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 	

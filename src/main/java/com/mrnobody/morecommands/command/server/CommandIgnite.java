@@ -1,15 +1,17 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Entity;
+import com.mrnobody.morecommands.util.EntityUtils;
+import com.mrnobody.morecommands.util.WorldUtils;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
 
@@ -27,24 +29,26 @@ public class CommandIgnite extends StandardCommand implements ServerCommandPrope
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.ignite.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		BlockPos ignite;
 		
 		if (params.length > 2)
 			ignite = getCoordFromParams(sender.getMinecraftISender(), params, 0);
 		else
-			ignite = new Entity(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.Entity.class)).traceBlock(128D);
+			ignite = EntityUtils.traceBlock(getSenderAsEntity(sender.getMinecraftISender(), Entity.class), 128D);
 		
 		if (ignite != null) {
 			BlockPos fire = new BlockPos(ignite.getX(), ignite.getY() + 1, ignite.getZ());
-			if (sender.getWorld().isAirBlock(fire)) sender.getWorld().setBlock(fire, Blocks.fire);
+			if (sender.getWorld().isAirBlock(fire)) WorldUtils.setBlock(sender.getWorld(), fire, Blocks.fire);
 		}
 		else throw new CommandException("command.ignite.notInSight", sender);
+		
+		return null;
 	}
 	
 	@Override
@@ -58,7 +62,7 @@ public class CommandIgnite extends StandardCommand implements ServerCommandPrope
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

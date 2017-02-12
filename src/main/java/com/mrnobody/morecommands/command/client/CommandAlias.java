@@ -4,16 +4,16 @@ import java.util.Arrays;
 
 import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.MultipleCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
-import com.mrnobody.morecommands.util.ClientPlayerSettings;
+import com.mrnobody.morecommands.settings.ClientPlayerSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
 import com.mrnobody.morecommands.util.DummyCommand;
-import com.mrnobody.morecommands.util.GlobalSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -43,7 +43,7 @@ public class CommandAlias extends MultipleCommands implements ClientCommandPrope
 		if (event.command instanceof DummyCommand && ((DummyCommand) event.command).isClient()) {
 			String command = null;
 			
-			if (GlobalSettings.enablePlayerAliases && isSenderOfEntityType(event.sender, EntityPlayerSP.class))
+			if (MoreCommandsConfig.enablePlayerAliases && isSenderOfEntityType(event.sender, EntityPlayerSP.class))
 				command = getPlayerSettings(getSenderAsEntity(event.sender, EntityPlayerSP.class)).aliases.get(event.command.getCommandName());
 			
 			if (command != null) executeCommand(command + " " + rejoinParams(event.parameters), true);
@@ -61,21 +61,21 @@ public class CommandAlias extends MultipleCommands implements ClientCommandPrope
 	}
 
 	@Override
-	public String[] getNames() {
+	public String[] getCommandNames() {
 		return new String[] {"alias", "unalias"};
 	}
 
 	@Override
-	public String[] getUsages() {
+	public String[] getCommandUsages() {
 		return new String[] {"command.alias.syntax", "command.unalias.syntax"};
 	}
 
 	@Override
-	public void execute(String commandName, CommandSender sender, String[] params) throws CommandException {
+	public String execute(String commandName, CommandSender sender, String[] params) throws CommandException {
 		boolean remove = commandName.startsWith("unalias");
 		ClientPlayerSettings settings = null;
 		
-		if (!GlobalSettings.enablePlayerAliases)
+		if (!MoreCommandsConfig.enablePlayerAliases)
 			throw new CommandException("command.alias.aliasesDisabled", sender);
 		
 		if (!isSenderOfEntityType(sender.getMinecraftISender(), EntityPlayerSP.class)) 
@@ -89,7 +89,7 @@ public class CommandAlias extends MultipleCommands implements ClientCommandPrope
 				ICommand command = (ICommand) ClientCommandHandler.instance.getCommands().get(alias);
 				
 				if (command != null && command instanceof DummyCommand && settings.aliases.containsKey(alias)) {
-					settings.aliases = settings.removeAndUpdate("aliases", alias, String.class, true);
+					settings.aliases.remove(alias);
 					sender.sendLangfileMessage("command.unalias.success");
 				}
 				else throw new CommandException("command.unalias.notFound", sender);
@@ -110,13 +110,15 @@ public class CommandAlias extends MultipleCommands implements ClientCommandPrope
 					else if (!(ClientCommandHandler.instance.getCommands().get(alias) instanceof DummyCommand))
 						throw new CommandException("command.alias.overwrite", sender);
 					
-					settings.aliases = settings.putAndUpdate("aliases", alias, command + parameters, String.class, true);
+					settings.aliases.put(alias, command + parameters);
 					sender.sendLangfileMessage("command.alias.success");
 				}
 				else throw new CommandException("command.alias.infiniteRecursion", sender);
 			}
 			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
+		
+		return null;
 	}
 	
 	@Override
@@ -135,7 +137,7 @@ public class CommandAlias extends MultipleCommands implements ClientCommandPrope
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 }

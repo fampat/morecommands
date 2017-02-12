@@ -343,7 +343,7 @@ public final class TargetSelector {
 				final List<NBTBase> disallowedNbt = Lists.<NBTBase>newArrayList();
 				
 				for (String nbt : nbtData) {
-					if (nbt == null) continue; NBTBase tag = AbstractCommand.getNBTFromParam(nbt.startsWith("!") ? nbt.substring(1) : nbt, sender);
+					if (nbt == null) continue; NBTBase tag = AbstractCommand.getNBTFromParam(nbt.startsWith("!") ? nbt.substring(1) : nbt);
 					if (tag == null) continue;
 					
 					if (nbt.startsWith("!")) disallowedNbt.add(tag);
@@ -575,7 +575,7 @@ public final class TargetSelector {
         	getEntityNamePredicates(argumentMap, predicateBuilder);
         	getEntityRadiusPredicates(argumentMap, coordinate, predicateBuilder);
         	getEntityLookPredicates(argumentMap, predicateBuilder);
-        	getEntityNBTPredicates(argumentMap, sender, predicateBuilder);
+        	getEntityNBTPredicates(argumentMap, predicateBuilder);
 			
 			while (worlds.hasNext()) {
                 World world = worlds.next();
@@ -878,10 +878,9 @@ public final class TargetSelector {
 		 * Creates predicates which accept only entities which have certain nbt data
 		 * 
 		 * @param argumentMap the argument map
-		 * @param sender the command sender
 		 * @param predicateBuilder the list builder to add the predicates to
 		 */
-		private static void getEntityNBTPredicates(ListMultimap<String, String> argumentMap, ICommandSender sender, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
+		private static void getEntityNBTPredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
 			final boolean equalLists = argumentMap.containsKey("nbtm") && argumentMap.get("nbtm").get(0).equalsIgnoreCase("EQUAL");
 			List<String> nbtData = argumentMap.get("nbt");
 	        
@@ -890,7 +889,7 @@ public final class TargetSelector {
 				final List<NBTBase> disallowedNbt = Lists.<NBTBase>newArrayList();
 				
 				for (String nbt : nbtData) {
-					if (nbt == null) continue; NBTBase tag = AbstractCommand.getNBTFromParam(nbt.startsWith("!") ? nbt.substring(1) : nbt, sender);
+					if (nbt == null) continue; NBTBase tag = AbstractCommand.getNBTFromParam(nbt.startsWith("!") ? nbt.substring(1) : nbt);
 					if (tag == null) continue;
 					
 					if (nbt.startsWith("!")) disallowedNbt.add(tag);

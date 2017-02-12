@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +22,7 @@ import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.client.event.sound.PlaySoundEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.CommandEvent;
+import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.EnderTeleportEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
@@ -52,7 +54,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
  */
 public class EventHandler<T extends Event> {
 	public static final ForgeEventHandler<LivingAttackEvent>           ATTACK = new ForgeEventHandler<LivingAttackEvent>(MinecraftForge.EVENT_BUS, LivingAttackEvent.class, false);
-	public static final ForgeEventHandler<TickEvent>                   TICK = new ForgeEventHandler<TickEvent>(FMLCommonHandler.instance().bus(), TickEvent.class, false);
+	public static final ForgeEventHandler<TickEvent>                   TICK = new ForgeEventHandler<TickEvent>(MinecraftForge.EVENT_BUS, TickEvent.class, false);
 	public static final ForgeEventHandler<LivingSetAttackTargetEvent>  SET_TARGET = new ForgeEventHandler<LivingSetAttackTargetEvent>(MinecraftForge.EVENT_BUS, LivingSetAttackTargetEvent.class, false);
 	public static final ForgeEventHandler<PlaceEvent>                  PLACE = new ForgeEventHandler<PlaceEvent>(MinecraftForge.EVENT_BUS, PlaceEvent.class, false);
 	public static final ForgeEventHandler<BreakSpeed>                  BREAKSPEED = new ForgeEventHandler<BreakSpeed>(MinecraftForge.EVENT_BUS, BreakSpeed.class, false);
@@ -61,7 +63,7 @@ public class EventHandler<T extends Event> {
 	public static final ForgeEventHandler<ExplosionEvent>              EXPLOSION = new ForgeEventHandler<ExplosionEvent>(MinecraftForge.EVENT_BUS, ExplosionEvent.class, false);
 	public static final ForgeEventHandler<LivingFallEvent>             FALL = new ForgeEventHandler<LivingFallEvent>(MinecraftForge.EVENT_BUS, LivingFallEvent.class, false);
 	public static final ForgeEventHandler<PlayerDestroyItemEvent>      ITEM_DESTROY = new ForgeEventHandler<PlayerDestroyItemEvent>(MinecraftForge.EVENT_BUS, PlayerDestroyItemEvent.class, false);
-	public static final ForgeEventHandler<KeyInputEvent>               KEYINPUT = new ForgeEventHandler<KeyInputEvent>(FMLCommonHandler.instance().bus(), KeyInputEvent.class, true);
+	public static final ForgeEventHandler<KeyInputEvent>               KEYINPUT = new ForgeEventHandler<KeyInputEvent>(MinecraftForge.EVENT_BUS, KeyInputEvent.class, true);
 	public static final ForgeEventHandler<AttackEntityEvent>           PLAYER_ATTACK = new ForgeEventHandler<AttackEntityEvent>(MinecraftForge.EVENT_BUS, AttackEntityEvent.class, false);
 	public static final ForgeEventHandler<RenderWorldLastEvent>        RENDERWORLD = new ForgeEventHandler<RenderWorldLastEvent>(MinecraftForge.EVENT_BUS, RenderWorldLastEvent.class, true);
 	public static final ForgeEventHandler<PlaySoundEvent>              SOUND = new ForgeEventHandler<PlaySoundEvent>(MinecraftForge.EVENT_BUS, PlaySoundEvent.class, true);
@@ -71,6 +73,7 @@ public class EventHandler<T extends Event> {
 	public static final ForgeEventHandler<LivingDeathEvent>            DEATH = new ForgeEventHandler<LivingDeathEvent>(MinecraftForge.EVENT_BUS, LivingDeathEvent.class, false);
 	public static final ForgeEventHandler<EnderTeleportEvent>          ENDER_TELEPORT = new ForgeEventHandler<EnderTeleportEvent>(MinecraftForge.EVENT_BUS, EnderTeleportEvent.class, false);
 	public static final ForgeEventHandler<PlayerOpenContainerEvent>    OPEN_CONTAINER = new ForgeEventHandler<PlayerOpenContainerEvent>(MinecraftForge.EVENT_BUS, PlayerOpenContainerEvent.class, false);
+	public static final ForgeEventHandler<ServerChatEvent>             SERVER_CHAT = new ForgeEventHandler<ServerChatEvent>(MinecraftForge.EVENT_BUS, ServerChatEvent.class, false);
 	
 	public static final EventHandler<ItemStackChangeSizeEvent> ITEMSTACK_CHANGE_SIZE = new EventHandler<ItemStackChangeSizeEvent>(ItemStackChangeSizeEvent.class, false);
 	public static final EventHandler<DamageItemEvent>          DAMAGE_ITEM = new EventHandler<DamageItemEvent>(DamageItemEvent.class, false);
@@ -181,7 +184,7 @@ public class EventHandler<T extends Event> {
 	}
 	
 	private Map<TwoEventListener<? extends Event, ? extends Event>, EventListener<T>> doubleListeners = new HashMap<TwoEventListener<? extends Event, ? extends Event>, EventListener<T>>();
-	private Set<EventListener<T>> listeners = Collections.synchronizedSet(new HashSet<EventListener<T>>());
+	private List<EventListener<T>> listeners = Collections.synchronizedList(new LinkedList<EventListener<T>>());
 	private Class<T> eventClass;
 	private boolean clientOnly;
 	
@@ -227,6 +230,17 @@ public class EventHandler<T extends Event> {
 	 */
 	public final void register(EventListener<T> listener) {
 		if (!this.listeners.contains(listener)) this.listeners.add(listener);
+	}
+	
+	/**
+	 * Registers a listener to the handler. The "first" parameter specifies whether this listener
+	 * should be the first one to be handled
+	 */
+	public final void register(EventListener<T> listener, boolean first) {
+		if (this.listeners.contains(listener)) return;
+		
+		if (first) this.listeners.add(0, listener);
+		else this.listeners.add(listener);
 	}
 	
 	/**
@@ -397,5 +411,25 @@ public class EventHandler<T extends Event> {
 			}
 			return false;
 		}
+	}
+	
+	/**
+	 * Directly registers a method to an {@link EventBus} using the private {@link EventBus#register(Object)} method
+	 * This is useful e.g. for generic methods because their event class can't properly be determined because of type erasure
+	 * 
+	 * @param bus the event bus
+	 * @param eventClass the event class
+	 * @param target the event listener
+	 * @param method the listening method
+	 * @param mod the mod container
+	 * @return whether the listener was successfully registered
+	 */
+	public static <T extends Event> boolean registerMethodToEventBus(EventBus bus, Class<T> eventClass, Object target, Method method, ModContainer mod) {
+		if (!method.isAnnotationPresent(SubscribeEvent.class)) return false;
+		
+		try {ForgeEventHandler.register.invoke(bus, eventClass, target, method, mod);}
+		catch (Exception ex) {ex.printStackTrace(); return false;}
+		
+		return true;
 	}
 }

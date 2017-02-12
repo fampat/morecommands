@@ -1,13 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Entity;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -29,12 +28,12 @@ public class CommandMelt extends StandardCommand implements ServerCommandPropert
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.melt.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params)throws CommandException {
+	public String execute(CommandSender sender, String[] params)throws CommandException {
 		boolean all = false;
 		if (params.length > 0 && params[0].equalsIgnoreCase("all")) all = true;
 		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
@@ -42,7 +41,7 @@ public class CommandMelt extends StandardCommand implements ServerCommandPropert
 		int smelt = 0;
 		
 		if (!all) {
-			if (player.getCurrentEquippedItem() == null) return;
+			if (player.getCurrentEquippedItem() == null) return null;
 			result = FurnaceRecipes.instance().getSmeltingResult(player.getCurrentEquippedItem());
 			if (result != null) player.setCurrentItemOrArmor(0, new ItemStack(result.getItem(),
 								player.getCurrentEquippedItem().stackSize, result.getItemDamage()));
@@ -58,6 +57,7 @@ public class CommandMelt extends StandardCommand implements ServerCommandPropert
 		}
 		
 		sender.sendLangfileMessage("command.melt.molten", smelt);
+		return null;
 	}
 	
 	@Override
@@ -71,7 +71,7 @@ public class CommandMelt extends StandardCommand implements ServerCommandPropert
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

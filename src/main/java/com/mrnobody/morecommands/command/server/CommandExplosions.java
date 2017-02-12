@@ -1,15 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
-import com.mrnobody.morecommands.util.GlobalSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraftforge.event.world.ExplosionEvent;
@@ -22,13 +22,15 @@ import net.minecraftforge.event.world.ExplosionEvent;
 		videoURL = "command.explosions.videoURL"
 		)
 public class CommandExplosions extends StandardCommand implements ServerCommandProperties, EventListener<ExplosionEvent> {
+	private boolean explosions = true;
+	
 	public CommandExplosions() {
 		EventHandler.EXPLOSION.register(this);
 	}
 
 	@Override
 	public void onEvent(ExplosionEvent event) {
-		if (!GlobalSettings.explosions) event.setCanceled(true);
+		if (!this.explosions) event.setCanceled(true);
 	}
 	
 	@Override
@@ -37,16 +39,17 @@ public class CommandExplosions extends StandardCommand implements ServerCommandP
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.explosions.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params)throws CommandException {
-		try {GlobalSettings.explosions = parseTrueFalse(params, 0, GlobalSettings.explosions);}
+	public String execute(CommandSender sender, String[] params)throws CommandException {
+		try {this.explosions = parseTrueFalse(params, 0, !this.explosions);}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.explosions.failure", sender);}
 		
-		sender.sendLangfileMessage(GlobalSettings.explosions ? "command.explosions.on" : "command.explosions.off");
+		sender.sendLangfileMessage(this.explosions ? "command.explosions.on" : "command.explosions.off");
+		return null;
 	}
 	
 	@Override
@@ -60,7 +63,7 @@ public class CommandExplosions extends StandardCommand implements ServerCommandP
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

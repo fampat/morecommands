@@ -2,11 +2,11 @@ package com.mrnobody.morecommands.command.client;
 
 import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.client.Minecraft;
 
@@ -24,16 +24,17 @@ public class CommandClouds extends StandardCommand implements ClientCommandPrope
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.clouds.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		try {Minecraft.getMinecraft().gameSettings.clouds = parseTrueFalse(params, 0, Minecraft.getMinecraft().gameSettings.clouds != 0) ? 2 : 0;}
+	public String execute(CommandSender sender, String[] params) throws CommandException {
+		try {Minecraft.getMinecraft().gameSettings.clouds = parseTrueFalse(params, 0, Minecraft.getMinecraft().gameSettings.clouds == 0) ? 2 : 0;}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.clouds.failure", sender);}
 		
 		sender.sendLangfileMessage(Minecraft.getMinecraft().gameSettings.clouds != 0 ? "command.clouds.on" : "command.clouds.off");
+		return null;
 	}
 	
 	@Override
@@ -52,7 +53,7 @@ public class CommandClouds extends StandardCommand implements ClientCommandPrope
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 }

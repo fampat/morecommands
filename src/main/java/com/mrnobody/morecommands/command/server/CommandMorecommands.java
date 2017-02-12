@@ -4,18 +4,20 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.Reference;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.event.ClickEvent;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
 
 @Command(
 		name = "morecommands",
@@ -32,34 +34,40 @@ public class CommandMorecommands extends StandardCommand implements ServerComman
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.morecommands.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		DateFormat df = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 		
-		ChatComponentText textModid = new ChatComponentText("MODID:             "); textModid.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.DARK_AQUA));
-		ChatComponentText modid = new ChatComponentText(Reference.MODID); modid.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY));
+		IChatComponent textModid = new ChatComponentText("MODID:             ").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.DARK_AQUA));
+		IChatComponent modid = new ChatComponentText(Reference.MODID).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GREEN));
 		
-		ChatComponentText textVersion = new ChatComponentText("VERSION:          "); textVersion.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.DARK_AQUA));
-		ChatComponentText version = new ChatComponentText(Reference.VERSION); version.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY));
+		IChatComponent textVersion = new ChatComponentText("VERSION:          ").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.DARK_AQUA));
+		IChatComponent version = new ChatComponentText(Reference.VERSION).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GREEN));
 	
-		ChatComponentText textName = new ChatComponentText("NAME:              "); textName.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.DARK_AQUA));
-		ChatComponentText name = new ChatComponentText(Reference.NAME); name.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY));
+		IChatComponent textName = new ChatComponentText("NAME:              ").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.DARK_AQUA));
+		IChatComponent name = new ChatComponentText(Reference.NAME).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GREEN));
 	
-		ChatComponentText textModDir = new ChatComponentText("MOD_DIR:          "); textModDir.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.DARK_AQUA));
-		ChatComponentText modDir = new ChatComponentText(Reference.getModDir().getPath()); modDir.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY));
+		IChatComponent textModDir = new ChatComponentText("MOD_DIR:          ").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.DARK_AQUA));
+		IChatComponent modDir = new ChatComponentText(Reference.getModDir().getPath()).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GREEN));
 	
-		ChatComponentText textBuildDate = new ChatComponentText("BUILD_DATE:     "); textBuildDate.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.DARK_AQUA));
-		ChatComponentText builDate = new ChatComponentText(df.format(Reference.BUILD)); builDate.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY));
-	
+		IChatComponent textBuildDate = new ChatComponentText("BUILD_DATE:     ").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.DARK_AQUA));
+		IChatComponent builDate = new ChatComponentText(df.format(Reference.BUILD)).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GREEN));
+
+		IChatComponent textWebsite = new ChatComponentText("WEBSITE         ").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.DARK_AQUA));
+		IChatComponent website = new ChatComponentText(Reference.WEBSITE).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GREEN).setUnderlined(true).setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Reference.WEBSITE)));
+		
 		sender.sendChatComponent(textModid.appendSibling(modid));
 		sender.sendChatComponent(textVersion.appendSibling(version));
 		sender.sendChatComponent(textName.appendSibling(name));
 		sender.sendChatComponent(textModDir.appendSibling(modDir));
 		sender.sendChatComponent(textBuildDate.appendSibling(builDate));
+		sender.sendChatComponent(textWebsite.appendSibling(website));
+		
+		return null;
 	}
 	
 	@Override
@@ -73,7 +81,7 @@ public class CommandMorecommands extends StandardCommand implements ServerComman
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 	

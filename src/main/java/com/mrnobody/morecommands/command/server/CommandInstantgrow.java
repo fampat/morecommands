@@ -4,18 +4,18 @@ import java.lang.reflect.Field;
 import java.util.Random;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
 import com.mrnobody.morecommands.util.ReflectionHelper;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.World;
+import com.mrnobody.morecommands.util.WorldUtils;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockCactus;
@@ -28,6 +28,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.world.World;
 import net.minecraftforge.event.world.BlockEvent.PlaceEvent;
 
 @Command(
@@ -47,7 +48,7 @@ public class CommandInstantgrow extends StandardCommand implements ServerCommand
 	@Override
 	public void onEvent(PlaceEvent event) {
 		if (event.player instanceof EntityPlayerMP && getPlayerSettings((EntityPlayerMP) event.player).instantgrow) 
-			this.growPlant(new World(event.world), event.pos.getX(), event.pos.getY(), event.pos.getZ(), new Random());
+			this.growPlant(event.world, event.pos.getX(), event.pos.getY(), event.pos.getZ(), new Random());
 	}
 	
 	@Override
@@ -56,28 +57,29 @@ public class CommandInstantgrow extends StandardCommand implements ServerCommand
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.instantgrow.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
     	
-		try {settings.instantgrow = parseTrueFalse(params, 0, settings.instantgrow);}
+		try {settings.instantgrow = parseTrueFalse(params, 0, !settings.instantgrow);}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.instantgrow.failure", sender);}
 		
 		sender.sendLangfileMessage(settings.instantgrow ? "command.instantgrow.on" : "command.instantgrow.off");
+		return null;
 	}
 	
 	private void growPlant(World world, int x, int y, int z, Random rand) {
-		Block block = world.getBlock(x, y, z);
+		Block block = WorldUtils.getBlock(world, x, y, z);
 		
 		if (block instanceof BlockSapling) {
-			((BlockSapling) block).grow(world.getMinecraftWorld(), rand, new BlockPos(x, y, z), ((BlockSapling) block).getStateFromMeta(8));
+			((BlockSapling) block).grow(world, rand, new BlockPos(x, y, z), ((BlockSapling) block).getStateFromMeta(8));
 		}
 		else if (block instanceof BlockCrops) {
-			((BlockCrops) block).grow(world.getMinecraftWorld(), rand, new BlockPos(x, y, z), ((BlockCrops) block).getStateFromMeta(7));
+			((BlockCrops) block).grow(world, rand, new BlockPos(x, y, z), ((BlockCrops) block).getStateFromMeta(7));
 		}
 		else if (block instanceof BlockCactus || block instanceof BlockReed) {
 			int length = 1;
@@ -85,27 +87,27 @@ public class CommandInstantgrow extends StandardCommand implements ServerCommand
 			while (true) {
 				int blen = length;
 				
-				if (world.getBlock(x, y + length, z) == block) length++;
-				if (world.getBlock(x, y - length, z) == block) length++;
+				if (WorldUtils.getBlock(world, x, y + length, z) == block) length++;
+				if (WorldUtils.getBlock(world, x, y - length, z) == block) length++;
 				
 				if (blen == length) break;
 			}
 			
 			if (length < 3) {
 				for (int i = 0; i <= 3 - length; i++) {
-					world.setBlock(new BlockPos(x, y + i, z), block);
+					WorldUtils.setBlock(world, new BlockPos(x, y + i, z), block);
 				}
 			}
 		}
 		else if (block instanceof BlockStem) {
-			world.setBlockMeta(new BlockPos(x, y, z), 7);
+			WorldUtils.setBlockMeta(world, new BlockPos(x, y, z), 7);
 			Block stemBlock = ReflectionHelper.get(ObfuscatedField.BlockStem_crop, field_149877_a, (BlockStem) block);
 			
 			if (stemBlock != null) {
-				if (world.getBlock(x - 1, y, z) == stemBlock) return;
-                if (world.getBlock(x + 1, y, z) == stemBlock) return;
-                if (world.getBlock(x, y, z - 1) == stemBlock) return;
-                if (world.getBlock(x, y, z + 1) == stemBlock) return;
+				if (WorldUtils.getBlock(world, x - 1, y, z) == stemBlock) return;
+                if (WorldUtils.getBlock(world, x + 1, y, z) == stemBlock) return;
+                if (WorldUtils.getBlock(world, x, y, z - 1) == stemBlock) return;
+                if (WorldUtils.getBlock(world, x, y, z + 1) == stemBlock) return;
 
                 int i = rand.nextInt(4);
                 int j = x;
@@ -116,11 +118,11 @@ public class CommandInstantgrow extends StandardCommand implements ServerCommand
                 if (i == 2) k = z - 1;
                 if (i == 3) ++k;
 
-                Block b = world.getBlock(j, y - 1, k);
+                Block b = WorldUtils.getBlock(world, j, y - 1, k);
 
-                if (world.getMinecraftWorld().isAirBlock(new BlockPos(j, y, k)) && (b.canSustainPlant(world.getMinecraftWorld(), new BlockPos(j, y - 1, k), EnumFacing.UP, (BlockStem) block) || b == Blocks.dirt || b == Blocks.grass))
+                if (world.isAirBlock(new BlockPos(j, y, k)) && (b.canSustainPlant(world, new BlockPos(j, y - 1, k), EnumFacing.UP, (BlockStem) block) || b == Blocks.dirt || b == Blocks.grass))
                 {
-                    world.setBlock(new BlockPos(j, y, k), stemBlock);
+                	WorldUtils.setBlock(world, new BlockPos(j, y, k), stemBlock);
                 }
 			}
 		}
@@ -137,7 +139,7 @@ public class CommandInstantgrow extends StandardCommand implements ServerCommand
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

@@ -1,15 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -43,18 +43,19 @@ public class CommandScuba extends StandardCommand implements ServerCommandProper
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.scuba.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
     	
-		try {settings.scuba = parseTrueFalse(params, 0, settings.scuba);}
+		try {settings.scuba = parseTrueFalse(params, 0, !settings.scuba);}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.scuba.failure", sender);}
 		
 		sender.sendLangfileMessage(settings.scuba ? "command.scuba.on" : "command.scuba.off");
+		return null;
 	}
 	
 	@Override
@@ -68,7 +69,7 @@ public class CommandScuba extends StandardCommand implements ServerCommandProper
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	
