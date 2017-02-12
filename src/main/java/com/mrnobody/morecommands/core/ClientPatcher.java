@@ -3,14 +3,16 @@ package com.mrnobody.morecommands.core;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.google.common.collect.Maps;
 import com.mrnobody.morecommands.network.PacketHandlerClient;
+import com.mrnobody.morecommands.patch.ChatGuis;
 import com.mrnobody.morecommands.patch.ClientCommandManager;
 import com.mrnobody.morecommands.patch.ServerConfigurationManagerIntegrated;
-import com.mrnobody.morecommands.util.ClientPlayerSettings;
-import com.mrnobody.morecommands.util.GlobalSettings;
+import com.mrnobody.morecommands.settings.ClientPlayerSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.settings.SettingsProperty;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
-import com.mrnobody.morecommands.util.PlayerSettings;
 import com.mrnobody.morecommands.util.ReflectionHelper;
 
 import cpw.mods.fml.client.FMLClientHandler;
@@ -22,12 +24,15 @@ import cpw.mods.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
+import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.GuiSleepMP;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
@@ -38,6 +43,9 @@ import net.minecraftforge.event.world.WorldEvent;
  *
  */
 public class ClientPatcher extends CommonPatcher {
+	private boolean clientNetHandlerPatchApplied = false;
+	private long ticksExisted = 0;
+	
 	@Override
 	public void applyModStatePatch(FMLStateEvent stateEvent) {
 		super.applyModStatePatch(stateEvent);
@@ -74,14 +82,15 @@ public class ClientPatcher extends CommonPatcher {
 		 return false;
 	}
 	
-	private boolean clientNetHandlerPatchApplied = false;
-	
 	/**
-	 * Called every client tick to pass the right time to apply the following patch: 
-	 * {@link net.minecraft.client.network.NetHandlerPlayClient}
+	 * Invoked every client tick to pass the right time to apply the following patch: 
+	 * {@link net.minecraft.client.network.NetHandlerPlayClient}<br>
+	 * Also executes {@link PacketHandlerClient#removeOldPendingRemoteCommands()} every 10 ticks
 	 */
 	@SubscribeEvent
 	public void tick(ClientTickEvent event) {
+		if (this.ticksExisted % 10 == 0) PacketHandlerClient.removeOldPendingRemoteCommands();
+		
 		if (!this.clientNetHandlerPatchApplied && FMLClientHandler.instance().getClientPlayHandler() != null && !(FMLClientHandler.instance().getClientPlayHandler() instanceof com.mrnobody.morecommands.patch.NetHandlerPlayClient)) {
 			NetHandlerPlayClient clientPlayHandler = (NetHandlerPlayClient) FMLClientHandler.instance().getClientPlayHandler();
 			
@@ -95,7 +104,7 @@ public class ClientPatcher extends CommonPatcher {
 					guiScreen = (GuiScreen) guiScreenField.get(clientPlayHandler);
 				}
 				catch (IllegalAccessException e) {error = true;}
-						
+				
 				if (!error) {
 					NetworkManager manager = clientPlayHandler.getNetworkManager();
 					FMLClientHandler.instance().setPlayClient(new com.mrnobody.morecommands.patch.NetHandlerPlayClient(Minecraft.getMinecraft(), guiScreen, manager));
@@ -104,6 +113,8 @@ public class ClientPatcher extends CommonPatcher {
 				}
 			}
 		}
+		
+		this.ticksExisted++;
 	}
 	
 	/**
@@ -114,12 +125,13 @@ public class ClientPatcher extends CommonPatcher {
 	public void updateSettings(EntityJoinWorldEvent event) {
 		if (event.world.isRemote && event.entity instanceof EntityClientPlayerMP) {
 	    	ClientPlayerSettings settings = MoreCommands.getEntityProperties(ClientPlayerSettings.class, PlayerSettings.MORECOMMANDS_IDENTIFIER, (EntityClientPlayerMP) event.entity);
+	    	
 	    	if (settings == null) {
 	    		settings = ClientPlayerSettings.getInstance((EntityClientPlayerMP) event.entity);
 	    		event.entity.registerExtendedProperties(PlayerSettings.MORECOMMANDS_IDENTIFIER, settings);
 	    	}
 			
-			settings.updateSettings(MoreCommands.getProxy().getCurrentServerNetAddress(), MoreCommands.getProxy().getCurrentWorld(), event.world.provider.getDimensionName());
+			settings.updateSettingsProperties(SettingsProperty.getPropertyMap((EntityClientPlayerMP) event.entity));
 		}
 	}
 	
@@ -131,36 +143,50 @@ public class ClientPatcher extends CommonPatcher {
 	public void updateSettings(WorldEvent.Unload event) {
 		if (event.world == Minecraft.getMinecraft().theWorld) {
 	    	ClientPlayerSettings settings = MoreCommands.getEntityProperties(ClientPlayerSettings.class, PlayerSettings.MORECOMMANDS_IDENTIFIER, Minecraft.getMinecraft().thePlayer);
+	    	
 	    	if (settings == null) {
 	    		settings = ClientPlayerSettings.getInstance(Minecraft.getMinecraft().thePlayer);
 	    		Minecraft.getMinecraft().thePlayer.registerExtendedProperties(PlayerSettings.MORECOMMANDS_IDENTIFIER, settings);
 	    	}
 			
-			settings.updateSettings(null, null, null);
+			settings.resetSettingsProperties(Maps.<SettingsProperty, String>newEnumMap(SettingsProperty.class));
 		}
 	}
 	
 	/**
-	 * Invoked when the player joins a server. Starts the startup commands execution thread if
-	 * the server is not the integrated server.
+	 * Invoked when a GUI is opened. Used to replace the chat gui with a modified version of it.
 	 */
 	@SubscribeEvent
-	public void playerConnect(ClientConnectedToServerEvent event) {
-		if (MoreCommands.getServerType() != ServerType.INTEGRATED)
-			PacketHandlerClient.runStartupThread(event.manager.getSocketAddress().toString());
+	public void openGui(GuiOpenEvent event) {
+		if (event.gui instanceof GuiChat) {
+			String prefilledText = ReflectionHelper.get(ObfuscatedField.GuiChat_defaultInputFieldText, (GuiChat) event.gui);
+			
+			if (event.gui instanceof GuiSleepMP) event.gui = new ChatGuis.GuiSleepMP();
+			else event.gui = prefilledText == null ? new ChatGuis.GuiChat() : new ChatGuis.GuiChat(prefilledText);
+		}
+	}
+	
+	/**
+	 * Invoked when the player joins a server. Starts the startup commands execution thread.
+	 */
+	@SubscribeEvent
+	public void serverConnect(ClientConnectedToServerEvent event) {
+		PacketHandlerClient.runStartupCommandsThread();
 	}
 	
 	/**
 	 * Does cleanup stuff on disconnect from a server
 	 */
 	@SubscribeEvent
-	public void playerDisconnect(ClientDisconnectionFromServerEvent event) {
+	public void serverDisconnect(ClientDisconnectionFromServerEvent event) {
 		AppliedPatches.setServerModded(false);
 		AppliedPatches.setHandshakeFinished(false);
 		PacketHandlerClient.reregisterAndClearRemovedCmds();
+		
 		this.clientNetHandlerPatchApplied = false;
 		MoreCommands.getProxy().playerNotified = false;
-		GlobalSettings.enablePlayerAliases = GlobalSettings.enablePlayerAliasesOriginal;
-		GlobalSettings.enablePlayerVars = GlobalSettings.enablePlayerVarsOriginal;
+		
+		MoreCommandsConfig.enablePlayerAliases = MoreCommandsConfig.enablePlayerAliasesOriginal;
+		MoreCommandsConfig.enablePlayerVars = MoreCommandsConfig.enablePlayerVarsOriginal;
 	}
 }

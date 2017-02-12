@@ -11,9 +11,10 @@ import java.util.Set;
 import com.mrnobody.morecommands.asm.transform.TransformTextureCompass;
 import com.mrnobody.morecommands.asm.transform.TransformTextureCompass.CompassTargetCallBack;
 import com.mrnobody.morecommands.command.ClientCommand;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.core.AppliedPatches;
+import com.mrnobody.morecommands.core.ClientProxy;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.DamageItemEvent;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.ItemStackChangeSizeEvent;
@@ -21,25 +22,24 @@ import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.network.PacketDispatcher.BlockUpdateType;
 import com.mrnobody.morecommands.patch.EntityClientPlayerMP;
 import com.mrnobody.morecommands.patch.PlayerControllerMP;
-import com.mrnobody.morecommands.util.ClientPlayerSettings;
-import com.mrnobody.morecommands.util.ClientPlayerSettings.XrayInfo;
-import com.mrnobody.morecommands.util.GlobalSettings;
-import com.mrnobody.morecommands.util.PlayerSettings;
+import com.mrnobody.morecommands.settings.ClientPlayerSettings;
+import com.mrnobody.morecommands.settings.ClientPlayerSettings.XrayInfo;
+import com.mrnobody.morecommands.settings.GlobalSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.util.EntityCamera;
 import com.mrnobody.morecommands.util.Reference;
 import com.mrnobody.morecommands.util.Xray;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.EntityCamera;
-import com.mrnobody.morecommands.wrapper.World;
 
+import gnu.trove.map.TIntObjectMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.procedure.TIntObjectProcedure;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.IChatComponent;
+import net.minecraft.world.World;
 import net.minecraftforge.client.ClientCommandHandler;
 
 /**
@@ -49,8 +49,12 @@ import net.minecraftforge.client.ClientCommandHandler;
  *
  */
 public class PacketHandlerClient {
-	/** These commands are those that get removed when the server has MoreCommands installed to execute the server side versions of them */
+	/** These commands will be removed when the server has MoreCommands installed to execute the server side versions of them */
 	private static final List<ClientCommand<?>> removedCmds = new ArrayList<ClientCommand<?>>();
+	/** These commands are currently processed server side and waited for a response */
+	private static final TIntObjectMap<PendingRemoteCommand> pendingRemoteCommands = new TIntObjectHashMap<PendingRemoteCommand>();
+	/** A counter for pending remote commands */
+	private static int pendingRemoteCommandsID = 0;
 	
 	private EntityClientPlayerMP freecamOriginalPlayer;
 	private boolean prevIsFlying;
@@ -64,7 +68,7 @@ public class PacketHandlerClient {
 	private boolean isEnlightened = false;
 	private int lightenedWorld = 0;
 	
-	private final EventListener<ItemStackChangeSizeEvent> onStackSizeChangeListener = new EventListener<ItemStackChangeSizeEvent>() {
+	private static final EventListener<ItemStackChangeSizeEvent> onStackSizeChangeListener = new EventListener<ItemStackChangeSizeEvent>() {
 		@Override
 		public void onEvent(ItemStackChangeSizeEvent event) {
 			if (event.entityPlayer instanceof net.minecraft.client.entity.EntityClientPlayerMP) {
@@ -74,7 +78,7 @@ public class PacketHandlerClient {
 	};
 	
 	private static final Set<Item> disableDamage = new HashSet<Item>();
-	private final EventListener<DamageItemEvent> onItemDamageListener = new EventListener<DamageItemEvent>() {
+	private static final EventListener<DamageItemEvent> onItemDamageListener = new EventListener<DamageItemEvent>() {
 		@Override
 		public void onEvent(DamageItemEvent event) {
 			if (event.entity instanceof net.minecraft.client.entity.EntityClientPlayerMP && disableDamage.contains(event.stack.getItem()))
@@ -86,7 +90,7 @@ public class PacketHandlerClient {
 	
 	private final CompassTargetCallBack compassTargetCallback = new CompassTargetCallBack() {
 		@Override
-		public ChunkCoordinates getTarget(net.minecraft.world.World world) {
+		public ChunkCoordinates getTarget(World world) {
 			if (PacketHandlerClient.this.compassTarget == null) return world.getSpawnPoint();
 			else return PacketHandlerClient.this.compassTarget;
 		}
@@ -108,12 +112,10 @@ public class PacketHandlerClient {
 	/**
 	 * Runs a thread waiting for a handshake from the server <br>
 	 * to execute startup commands. If it isn't received after a <br>
-	 * certain time, they are still executed
-	 * 
-	 * @param socketAddress the server socket address
+	 * certain time, they are executed nevertheless
 	 */
-	public static void runStartupThread(final String socketAddress) {
-		final int timeout = GlobalSettings.startupTimeout < 0 ? 10000 : GlobalSettings.startupTimeout > 10 ? 10000 : GlobalSettings.startupTimeout * 1000;
+	public static void runStartupCommandsThread() {
+		final int timeout = MoreCommandsConfig.startupTimeout < 0 ? 10000 : MoreCommandsConfig.startupTimeout > 10 ? 10000 : MoreCommandsConfig.startupTimeout * 1000;
 		
 		new Thread(new Runnable() {
 			@Override
@@ -129,28 +131,16 @@ public class PacketHandlerClient {
 				if (Minecraft.getMinecraft().thePlayer == null) return;
 				notifyPlayerAboutUpdate();
 				
-				//Execute commands specified in the startup_multiplayer.cfg
-				for (String command : MoreCommands.INSTANCE.getStartupCommandsMultiplayer(socketAddress)) {
+				try {Thread.sleep(MoreCommandsConfig.startupDelay * 1000);}
+				catch (InterruptedException ex) {}
+				
+				for (String command : ClientPlayerSettings.getInstance(Minecraft.getMinecraft().thePlayer).startupCommands) {
 					if (ClientCommandHandler.instance.executeCommand(Minecraft.getMinecraft().thePlayer, command) == 0)
 						Minecraft.getMinecraft().thePlayer.sendChatMessage(command.startsWith("/") ? command : "/" + command);
 					MoreCommands.INSTANCE.getLogger().info("Executed startup command '" + command + "'");
 				}
 			}
-		}, "MoreCommands Startup Commands Thread").start();
-	}
-	
-	/**
-	 * Executes the startup commands that shall be executed on server startup.
-	 * This method is invoked only for the integrated server, not for dedicated servers.
-	 */
-	public static void executeStartupCommands() {
-		notifyPlayerAboutUpdate();
-		
-		for (String command : MoreCommands.INSTANCE.getStartupCommands()) {
-			if (ClientCommandHandler.instance.executeCommand(Minecraft.getMinecraft().thePlayer, command) == 0)
-				Minecraft.getMinecraft().thePlayer.sendChatMessage(command.startsWith("/") ? command : "/" + command);
-			MoreCommands.INSTANCE.getLogger().info("Executed startup command '" + command + "'");
-		}
+		}, "MoreCommands Startup Commands Thread (Client)").start();
 	}
 	
 	/**
@@ -162,8 +152,44 @@ public class PacketHandlerClient {
 	}
 	
 	/**
+	 * Sends a command to the server to be executed. The result of the command execution (the text printed to the chat)
+	 * will be accessible via a callback. Note that if the server takes longer than {@link GlobalSettings#remoteCommandsTimeout}
+	 * to respond, the callback will never be invoked.
+	 * 
+	 * @param command the command
+	 * @param callback the result callback
+	 */
+	public static void addPendingRemoteCommand(String command, CommandResultCallback callback) {
+		synchronized (pendingRemoteCommands) {
+			int id = pendingRemoteCommandsID++;
+			pendingRemoteCommands.put(id, new PendingRemoteCommand(System.currentTimeMillis(), callback));
+			MoreCommands.INSTANCE.getPacketDispatcher().sendC02ExecuteRemoteCommand(id, command);
+		}
+	}
+	
+	/**
+	 * Removes the pending remotely executed commands for which a result hasn't been sent since
+	 * {@link GlobalSettings#remoteCommandsTimeout} milliseconds
+	 */
+	public static void removeOldPendingRemoteCommands() {
+		if (Minecraft.getMinecraft().theWorld == null) return;
+		final long currentTime = System.currentTimeMillis();
+		
+		synchronized (pendingRemoteCommands) {
+			pendingRemoteCommands.retainEntries(new TIntObjectProcedure<PendingRemoteCommand>() {
+				@Override
+				public boolean execute(int a, PendingRemoteCommand b) {
+					if (currentTime - b.startTime > MoreCommandsConfig.remoteCommandsTimeout) return false;
+					return true;
+				}
+			});
+		}
+	}
+	
+	/**
 	 * Is called if the client receives a handshake packet
-	 * @param version the server's MorCommands version
+	 * 
+	 * @param version the server's MoreCommands version
 	 */
 	public void handshake(String version) {
 		if (!Reference.VERSION.equals(version)) {
@@ -173,7 +199,6 @@ public class PacketHandlerClient {
 		
 		AppliedPatches.setServerModded(true);
 		
-		//Remove commands, which shall be removed if the server side version shall be used
 		List<String> remove = new ArrayList<String>();
 		for (Object command : ClientCommandHandler.instance.getCommands().keySet()) {
 			if (ClientCommandHandler.instance.getCommands().get((String) command) instanceof ClientCommand<?>) {
@@ -189,7 +214,6 @@ public class PacketHandlerClient {
 			MoreCommands.INSTANCE.getLogger().info("Unregistered following client commands because server side versions are used:\n" + remove);
 		}
 		
-		//Let the server know that the mod is installed client side
 		MoreCommands.INSTANCE.getLogger().info("Sending client handshake");
 		MoreCommands.INSTANCE.getPacketDispatcher().sendC00Handshake(Minecraft.getMinecraft().thePlayer instanceof EntityClientPlayerMP);
 	}
@@ -200,11 +224,11 @@ public class PacketHandlerClient {
 	public void handshakeFinished() {
 		AppliedPatches.setHandshakeFinished(true);
 		MoreCommands.INSTANCE.getLogger().info("Handshake finished");
-		if (MoreCommands.getServerType() == ServerType.INTEGRATED) PacketHandlerClient.executeStartupCommands();
 	}
 	
 	/**
 	 * Enables/Disables climbing on every wall
+	 * 
 	 * @param climb whether to enable or disable climb mode
 	 */
 	public void handleClimb(boolean climb) {
@@ -283,6 +307,7 @@ public class PacketHandlerClient {
 	
 	/**
 	 * Enables/Disables xray and sets the radius
+	 * 
 	 * @param xrayEnabled whether to enable or disable xray
 	 * @param blockRadius the xray block radius
 	 */
@@ -292,6 +317,7 @@ public class PacketHandlerClient {
 	
 	/**
 	 * loads/saves an xray setting
+	 * 
 	 * @param load true to load a setting, false to save a setting
 	 * @param setting the setting name to load/save
 	 */
@@ -331,6 +357,7 @@ public class PacketHandlerClient {
 
 	/**
 	 * Enables/Disables noclip
+	 * 
 	 * @param allowNoclip whether to enable or disable noclip
 	 */
 	public void handleNoclip(boolean allowNoclip) {
@@ -341,29 +368,30 @@ public class PacketHandlerClient {
 	 * Lightens the world or reverses world lighting
 	 */
 	public void handleLight() {
-		World clientWorld = new World(Minecraft.getMinecraft().thePlayer.worldObj);
-			
-		if(clientWorld.getMinecraftWorld().hashCode() != this.lightenedWorld) {
+		World clientWorld = Minecraft.getMinecraft().thePlayer.worldObj;
+		
+		if(clientWorld.hashCode() != this.lightenedWorld) {
 			this.isEnlightened = false;
 		}
 			
 		if (!this.isEnlightened) {
-			float[] lightBrightnessTable = clientWorld.getMinecraftWorld().provider.lightBrightnessTable;
+			float[] lightBrightnessTable = clientWorld.provider.lightBrightnessTable;
 			
 			for (int i = 0; i < lightBrightnessTable.length; i++) {
 				lightBrightnessTable[i] = 1.0F;
 			}
 				
-			this.lightenedWorld = clientWorld.getMinecraftWorld().hashCode();
+			this.lightenedWorld = clientWorld.hashCode();
 		}
 		else {
-			clientWorld.getMinecraftWorld().provider.registerWorld(clientWorld.getMinecraftWorld());
+			clientWorld.provider.registerWorld(clientWorld);
 		}
 		this.isEnlightened = !this.isEnlightened;
 	}
 
 	/**
 	 * Sets the block reach distance
+	 * 
 	 * @param reachDistance the reach distance
 	 */
 	public void handleReach(float reachDistance) {
@@ -374,6 +402,7 @@ public class PacketHandlerClient {
 
 	/**
 	 * sets the jump height
+	 * 
 	 * @param gravity the jump height
 	 */
 	public void setGravity(double gravity) {
@@ -384,6 +413,7 @@ public class PacketHandlerClient {
 
 	/**
 	 * sets the step height
+	 * 
 	 * @param stepheight the step height
 	 */
 	public void setStepheight(float stepheight) {
@@ -392,6 +422,7 @@ public class PacketHandlerClient {
 	
 	/**
 	 * Disables or enables fluid movement
+	 * 
 	 * @param whether to enable or disable fluid movement handling
 	 */
 	public void setFluidMovement(boolean fluidmovement) {
@@ -402,6 +433,7 @@ public class PacketHandlerClient {
 	
 	/**
 	 * Disables or enables infiniteitems
+	 * 
 	 * @param infiniteitems to enable or disable infinite items
 	 */
 	public void setInfiniteitems(boolean infiniteitems) {
@@ -413,6 +445,7 @@ public class PacketHandlerClient {
 	
 	/**
 	 * Disables or enables item damage
+	 * 
 	 * @param itemdamage whether to enable or disable item damage
 	 */
 	public void setItemDamage(Item item, boolean itemdamage) {
@@ -422,6 +455,7 @@ public class PacketHandlerClient {
 	
 	/**
 	 * sets the compass target
+	 * 
 	 * @param x the x coordinate of the target
 	 * @param z the z coordinate of the target
 	 */
@@ -437,20 +471,72 @@ public class PacketHandlerClient {
 	}
 	
 	/**
-	 * Stores the server's world name on the client
+	 * Stores the remote (server) world name on the client
+	 * 
 	 * @param worldName the server world's name
 	 */
-	public void changeWorld(String worldName) {
-		MoreCommands.getProxy().setCurrentWorld(worldName);
+	public void handleRemoteWorldName(String worldName) {
+		((ClientProxy) MoreCommands.getProxy()).setRemoteWorldName(worldName);
 	}
 	
 	/**
 	 * Updates a block property
+	 * 
 	 * @param block the block of which the property should be updated
 	 * @param type the property type to update
 	 * @param value the new value
 	 */
 	public void updateBlock(Block block, BlockUpdateType type, int value) {
 		type.update(block, value);
+	}
+	
+	/**
+	 * handles the result of a remote command execution
+	 * 
+	 * @param executionID the id of the executed command
+	 * @param result the result of the execution
+	 */
+	public void handleRemoteCommandResult(int executionID, String result) {
+		PendingRemoteCommand pendingCommand = null;
+		
+		synchronized (pendingRemoteCommands) {
+			pendingCommand = pendingRemoteCommands.get(executionID);
+			pendingRemoteCommands.remove(executionID);
+		}
+		
+		if (pendingCommand != null)
+			pendingCommand.callback.setCommandResult(result);
+	}
+	
+	/**
+	 * A container class for pending remote command executions
+	 * 
+	 * @author MrNobody98
+	 */
+	private static class PendingRemoteCommand {
+		private long startTime; //when the command was sent to the server
+		private CommandResultCallback callback; //the corresponding result callback
+		
+		/**
+		 * @param startTime the start time (when the command was sent to the server)
+		 * @param callback the corresponding result callback
+		 */
+		public PendingRemoteCommand(long startTime, CommandResultCallback callback) {
+			this.startTime = startTime; this.callback = callback;
+		}
+	}
+	
+	/**
+	 * A callback for the result of a remote command execution
+	 * 
+	 * @author MrNobody98
+	 */
+	public static interface CommandResultCallback {
+		/**
+		 * Sets the result of the remote command execution
+		 * 
+		 * @param result the result
+		 */
+		void setCommandResult(String result);
 	}
 }

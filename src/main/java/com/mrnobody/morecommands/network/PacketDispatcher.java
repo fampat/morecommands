@@ -1,9 +1,8 @@
 package com.mrnobody.morecommands.network;
 
 import com.google.common.base.Charsets;
-import com.mrnobody.morecommands.command.AbstractCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.util.GlobalSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
 import com.mrnobody.morecommands.util.Reference;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -28,7 +27,7 @@ import net.minecraft.network.NetHandlerPlayServer;
 public final class PacketDispatcher {
 	private static final byte C00HANDSHAKE            = 0x00;
 	private static final byte C01OUTPUT               = 0x01;
-	private static final byte C02WORLD                = 0x02;
+	private static final byte C02EXECREMOTECOMMAND    = 0x02;
 	private static final byte S00HANDSHAKE            = 0x03;
 	private static final byte S01HANDSHAKEFINISHED    = 0x04;
 	private static final byte S02CLIMB                = 0x05;
@@ -43,9 +42,10 @@ public final class PacketDispatcher {
 	private static final byte S11FLUIDMOVEMENT        = 0x0E;
 	private static final byte S12INFINITEITEMS        = 0x0F;
 	private static final byte S13COMPASSTARGET        = 0x10;
-	private static final byte S14CHANGEWORLD          = 0x11;
+	private static final byte S14REMOTEWORLD          = 0x11;
 	private static final byte S15UPDATEBLOCK          = 0x12;
 	private static final byte S16ITEMDAMAGE           = 0x13;
+	private static final byte S17REMOTECOMMANDRESULT  = 0x14;
 	
 	private static final byte XRAY_SHOWCONFIG       = 0;
 	private static final byte XRAY_CHANGESETTINGS   = 1;
@@ -128,7 +128,7 @@ public final class PacketDispatcher {
 		switch (id) {
 			case C00HANDSHAKE:            processC00Handshake(payload, player); break;
 			case C01OUTPUT:               processC01Output(payload, player); break;
-			case C02WORLD:                processC02World(payload, player);
+			case C02EXECREMOTECOMMAND:    processC02ExecuteRemoteCommand(payload, player); break;
 			default:                      break;
 		}
 	}
@@ -158,9 +158,10 @@ public final class PacketDispatcher {
 			case S11FLUIDMOVEMENT:        processS11FluidMovement(payload); break;
 			case S12INFINITEITEMS:        processS12Infiniteitems(payload); break;
 			case S13COMPASSTARGET:        processS13CompassTarget(payload); break;
-			case S14CHANGEWORLD:          processS14ChangeWorld(payload); break;
+			case S14REMOTEWORLD:          processS14RemoteWorld(payload); break;
 			case S15UPDATEBLOCK:          processS15UpdateBlock(payload); break;
 			case S16ITEMDAMAGE:           processS16ItemDamage(payload); break;
+			case S17REMOTECOMMANDRESULT:  processS17RemoteCommandResult(payload); break;
 			default:                      break;
 		}
 	}
@@ -184,11 +185,14 @@ public final class PacketDispatcher {
 	}
 	
 	/**
-	 * Processes a packet that retrieves world information which is not available client side
+	 * Processes a C03ExecuteRemoteCommand message.
+	 * @see PacketHandlerServer#handleExecuteRemoteCommand(EntityPlayerMP, int, String)
 	 */
-	private void processC02World(ByteBuf payload, EntityPlayerMP player) {
-		String params = readString(payload);
-		this.packetHandlerServer.handleWorld(player, params.split(" "));
+	private void processC02ExecuteRemoteCommand(ByteBuf payload, EntityPlayerMP player) {
+		int executionID = payload.readInt();
+		String command = readString(payload);
+		
+		this.packetHandlerServer.handleExecuteRemoteCommand(player, executionID, command);
 	}
 	
 	/**
@@ -196,8 +200,8 @@ public final class PacketDispatcher {
 	 */
 	private void processS00Handshake(ByteBuf payload) {
 		String version = readString(payload);
-		GlobalSettings.enablePlayerAliases = payload.readBoolean();
-		GlobalSettings.enablePlayerVars = payload.readBoolean();
+		MoreCommandsConfig.enablePlayerAliases = payload.readBoolean();
+		MoreCommandsConfig.enablePlayerVars = payload.readBoolean();
 		
 		this.packetHandlerClient.handshake(version);
 	}
@@ -334,12 +338,12 @@ public final class PacketDispatcher {
 	}
 	
 	/**
-	 * Processes a S14ChangeWorld packet.
-	 * @see PacketHandlerClient#changeWorld(String)
+	 * Processes a S14RemoteWorld packet.
+	 * @see PacketHandlerClient#handleRemoteWorldName(String)
 	 */
-	private void processS14ChangeWorld(ByteBuf payload) {
+	private void processS14RemoteWorld(ByteBuf payload) {
 		String worldName = readString(payload);
-		this.packetHandlerClient.changeWorld(worldName);
+		this.packetHandlerClient.handleRemoteWorldName(worldName);
 	}
 	
 	/**
@@ -363,6 +367,17 @@ public final class PacketDispatcher {
 		boolean itemdamage = payload.readBoolean();
 		
 		this.packetHandlerClient.setItemDamage(Item.getItemById(item), itemdamage);
+	}
+	
+	/**
+	 * Processes a S17RemoteCommandResult packet.
+	 * @see PacketHandlerClient#handleRemoteCommandResult(int, String)
+	 */
+	private void processS17RemoteCommandResult(ByteBuf payload) {
+		int executionID = payload.readInt();
+		String result = readString(payload);
+		
+		this.packetHandlerClient.handleRemoteCommandResult(executionID, result);
 	}
 	
 	/**
@@ -392,14 +407,17 @@ public final class PacketDispatcher {
 	}
 	
 	/**
-	 * Sends a packet to retrieve or set world information
-	 * @param output whether to enable/disable chat output
+	 * Sends a packet to the server to execute a command and capture its output to send it back
+	 * @param executionID an id to identify to which command the output belongs to
+	 * @param command the command
 	 */
-	public void sendC02World(String[] params) {
+	public void sendC02ExecuteRemoteCommand(int executionID, String command) {
 	    ByteBuf payload = Unpooled.buffer();
-	    writeID(payload, C02WORLD);
+	    writeID(payload, C02EXECREMOTECOMMAND);
 	    
-	    writeString(AbstractCommand.rejoinParams(params), payload);
+	    payload.writeInt(executionID);
+	    writeString(command, payload);
+	    
 		this.channel.sendToServer(new FMLProxyPacket(payload, Reference.CHANNEL));
 	}
 	
@@ -412,8 +430,8 @@ public final class PacketDispatcher {
 	    writeID(payload, S00HANDSHAKE);
 	    
 	    writeString(Reference.VERSION, payload);
-	    payload.writeBoolean(GlobalSettings.enablePlayerAliases);
-	    payload.writeBoolean(GlobalSettings.enablePlayerVars);
+	    payload.writeBoolean(MoreCommandsConfig.enablePlayerAliases);
+	    payload.writeBoolean(MoreCommandsConfig.enablePlayerVars);
 	    
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
@@ -623,13 +641,13 @@ public final class PacketDispatcher {
 	}
 	
 	/**
-	 * Sends a packet informing the client about the server world's name
+	 * Sends a packet informing the client about the name of a player's world
 	 * @param player the player who receives the packet
 	 * @param world the player's world name
 	 */
-	public void sendS14ChangeWorld(EntityPlayerMP player, String world) {
+	public void sendS14RemoteWorld(EntityPlayerMP player, String world) {
 	    ByteBuf payload = Unpooled.buffer();
-	    writeID(payload, S14CHANGEWORLD);
+	    writeID(payload, S14REMOTEWORLD);
 	    
 	    writeString(world, payload);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
@@ -669,6 +687,22 @@ public final class PacketDispatcher {
 	}
 	
 	/**
+	 * Sends a packet with the captured content as response to a C03ExecuteRemoteCommand packet
+	 * @param player the player who receives the packet
+	 * @param executionID the id to identify the command
+	 * @param result the captured result
+	 */
+	public void sendS17RemoteCommandResult(EntityPlayerMP player, int executionID, String result) {
+	    ByteBuf payload = Unpooled.buffer();
+	    writeID(payload, S17REMOTECOMMANDRESULT);
+	    
+	    payload.writeInt(executionID);
+	    writeString(result, payload);
+	    
+		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
+	}
+	
+	/**
 	 * writes a byte to the buffer which represents the packet id
 	 * 
 	 * @param buffer the buffer
@@ -696,6 +730,7 @@ public final class PacketDispatcher {
 	 */
 	private static String readString(ByteBuf buffer) {
 		int length = buffer.readInt();
+		if (length < 0) return null;
 		byte[] string = buffer.readBytes(length).array();
 		return new String(string, Charsets.UTF_8);
 	}
@@ -707,6 +742,7 @@ public final class PacketDispatcher {
 	 * @param buffer the buffer
 	 */
 	private static void writeString(String string, ByteBuf buffer) {
+		if (string == null) {buffer.writeInt(-1); return;}
 		byte[] bytes = string.getBytes(Charsets.UTF_8);
 		buffer.writeInt(bytes.length);
 		buffer.writeBytes(bytes);

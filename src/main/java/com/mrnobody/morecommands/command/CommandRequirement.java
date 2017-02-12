@@ -5,7 +5,7 @@ import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
 import com.mrnobody.morecommands.patch.ClientCommandManager;
 import com.mrnobody.morecommands.patch.EntityClientPlayerMP;
 import com.mrnobody.morecommands.patch.EntityPlayerMP;
-import com.mrnobody.morecommands.util.GlobalSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
 
 import cpw.mods.fml.relauncher.Side;
 import net.minecraft.client.Minecraft;
@@ -83,7 +83,7 @@ public enum CommandRequirement {
 	 */
 	OTHER_SIDE_MUST_BE_MODDED("command.generic.clientsDontHaveToBeModded", "command.generic.serverDoesntHaveToBeModded") {
 		@Override public boolean isSatisfied(ICommandSender sender, PlayerPatches playerPatches, Side side) {
-			return side.isClient() ? GlobalSettings.serverMustHaveMod : GlobalSettings.clientMustHaveMod;
+			return side.isClient() ? MoreCommandsConfig.serverMustHaveMod : MoreCommandsConfig.clientMustHaveMod;
 		}
 	};
 	

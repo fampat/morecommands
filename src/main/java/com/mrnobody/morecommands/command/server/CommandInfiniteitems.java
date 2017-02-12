@@ -1,7 +1,9 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
@@ -9,9 +11,7 @@ import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.ItemStackChangeSizeEvent;
 import com.mrnobody.morecommands.event.Listeners.TwoEventListener;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -56,20 +56,21 @@ public class CommandInfiniteitems extends StandardCommand implements ServerComma
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.infiniteitems.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 		ServerPlayerSettings settings = getPlayerSettings(player);
     	
-		try {settings.infiniteitems = parseTrueFalse(params, 0, settings.infiniteitems);}
+		try {settings.infiniteitems = parseTrueFalse(params, 0, !settings.infiniteitems);}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.infiniteitems.failure", sender);}
 		
 		sender.sendLangfileMessage(settings.infiniteitems ? "command.infiniteitems.on" : "command.infiniteitems.off");
 		MoreCommands.INSTANCE.getPacketDispatcher().sendS12Infiniteitems(player, settings.infiniteitems);
+		return null;
 	}
 	
 	@Override
@@ -83,7 +84,7 @@ public class CommandInfiniteitems extends StandardCommand implements ServerComma
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

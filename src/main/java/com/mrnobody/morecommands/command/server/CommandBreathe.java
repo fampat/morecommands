@@ -1,12 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -27,12 +27,12 @@ public class CommandBreathe extends StandardCommand implements ServerCommandProp
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.breathe.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		Entity entity = getSenderAsEntity(sender.getMinecraftISender(), Entity.class);
 		int air = 0;
 		
@@ -40,10 +40,12 @@ public class CommandBreathe extends StandardCommand implements ServerCommandProp
 			try {air = Integer.parseInt(params[0]);}
 			catch (NumberFormatException e) {throw new CommandException("command.breathe.noNumber", sender);}
 		}
-		else air = this.AIR_MAX;
+		else air = AIR_MAX;
 		
-		if (entity.isInWater()) {entity.setAir(entity.getAir() + air > this.AIR_MAX ? this.AIR_MAX : entity.getAir() + air);}
+		if (entity.isInWater()) {entity.setAir(entity.getAir() + air > AIR_MAX ? AIR_MAX : entity.getAir() + air);}
 		else throw new CommandException("command.breathe.notInWater", sender);
+		
+		return null;
 	}
 	
 	@Override
@@ -57,7 +59,7 @@ public class CommandBreathe extends StandardCommand implements ServerCommandProp
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

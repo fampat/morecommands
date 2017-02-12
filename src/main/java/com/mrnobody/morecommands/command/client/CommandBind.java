@@ -10,14 +10,14 @@ import org.lwjgl.input.Keyboard;
 import com.google.common.collect.Sets;
 import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.MultipleCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
-import com.mrnobody.morecommands.util.ClientPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.settings.ClientPlayerSettings;
 
 import cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent;
 import net.minecraft.client.Minecraft;
@@ -38,7 +38,7 @@ public class CommandBind extends MultipleCommands implements ClientCommandProper
 	}
 
 	@Override
-	public String[] getUsages() {
+	public String[] getCommandUsages() {
 		return new String[] {"command.bind.syntax", "command.bind.id.syntax", "command.unbind.syntax", "command.unbind.id.syntax"};
 	}
 	
@@ -56,8 +56,10 @@ public class CommandBind extends MultipleCommands implements ClientCommandProper
 		if (!Keyboard.isKeyDown(Keyboard.getEventKey()) || Minecraft.getMinecraft().thePlayer == null) return;
 		ClientPlayerSettings settings = getPlayerSettings(Minecraft.getMinecraft().thePlayer);
 		
-		if (settings.bindings.containsKey(org.lwjgl.input.Keyboard.getEventKey()))
-			executeCommand(settings.bindings.get(Keyboard.getEventKey()));
+		if (settings.bindings.containsKey(Keyboard.getKeyName(Keyboard.getEventKey())))
+			executeCommand(settings.bindings.get(Keyboard.getKeyName(Keyboard.getEventKey())));
+		else if (settings.bindings.containsKey(Integer.toString(Keyboard.getEventKey())))
+			executeCommand(settings.bindings.get(Integer.toString(Keyboard.getEventKey())));
 	}
 	
     private void executeCommand(String command) {
@@ -67,7 +69,7 @@ public class CommandBind extends MultipleCommands implements ClientCommandProper
 	}
     
 	@Override
-	public void execute(String commandName, CommandSender sender, String[] params) throws CommandException {
+	public String execute(String commandName, CommandSender sender, String[] params) throws CommandException {
 		boolean byId = commandName.endsWith("id");
 		boolean unbind = commandName.startsWith("unbind");
 		
@@ -82,15 +84,15 @@ public class CommandBind extends MultipleCommands implements ClientCommandProper
 		catch (NumberFormatException nfe) {throw new CommandException("command.generic.NaN", sender, "KEYID");}
 		
 		if (unbind) {
-			if (key != Keyboard.KEY_NONE && settings.bindings.containsKey(key)) {
-				removeOrPutAndUpdateBinding(settings, key, null);
+			if (key != Keyboard.KEY_NONE && settings.bindings.containsKey(Keyboard.getKeyName(key))) {
+				settings.bindings.remove(Keyboard.getKeyName(key));
 				sender.sendLangfileMessage("command.unbind.success");
 			}
 			else if (params[0].equalsIgnoreCase("all")) {
-				removeOrPutAndUpdateBinding(settings, -1, null);
+				settings.bindings.clear();
 				sender.sendLangfileMessage("command.unbind.success");
 			}
-			else if (!settings.bindings.containsKey(key))
+			else if (!settings.bindings.containsKey(Keyboard.getKeyName(key)))
 				throw new CommandException("command.unbind.bindingNotFound", sender);
 		}
 		else {
@@ -101,30 +103,13 @@ public class CommandBind extends MultipleCommands implements ClientCommandProper
 				command = rejoinParams(Arrays.copyOfRange(params, 1, params.length));
 			
 			if (key != Keyboard.KEY_NONE) {
-				removeOrPutAndUpdateBinding(settings, key, command);
+				settings.bindings.put(Keyboard.getKeyName(key), command);
 				sender.sendLangfileMessage("command.bind.success");
 			}
 			else throw new CommandException("command.bind.invalidKey", sender);
 		}
-	}
-	
-	private void removeOrPutAndUpdateBinding(ClientPlayerSettings settings, int key, String value) {
-		Map<String, String> bindings;
 		
-		if (key == -1) {
-			Set<String> keys = Sets.newHashSetWithExpectedSize(settings.bindings.size());
-			for (int key2 : settings.bindings.keySet()) keys.add(Keyboard.getKeyName(key2));
-			bindings = settings.removeAndUpdate("bindings", keys, String.class, true, true);
-		}
-		else if (value == null) bindings = settings.removeAndUpdate("bindings", Keyboard.getKeyName(key), String.class, true);
-		else bindings = settings.putAndUpdate("bindings", Keyboard.getKeyName(key), value, String.class, true);
-		
-		settings.bindings = new HashMap<Integer, String>(bindings.size());
-		
-		for (Map.Entry<String, String> entry : bindings.entrySet()) {
-			key = Keyboard.getKeyIndex(entry.getKey());
-			if (key != Keyboard.KEY_NONE) settings.bindings.put(key, entry.getValue());
-		}
+		return null;
 	}
 	
 	@Override
@@ -143,7 +128,7 @@ public class CommandBind extends MultipleCommands implements ClientCommandProper
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 }

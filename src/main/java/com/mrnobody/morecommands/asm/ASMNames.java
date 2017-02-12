@@ -46,7 +46,8 @@ public final class ASMNames {
 		ChunkCoordinates("net.minecraft.util.ChunkCoordinates"),
 		TransformTextureCompass("com.mrnobody.morecommands.asm.transform.TransformTextureCompass"),
 		EntityLivingBase("net.minecraft.entity.EntityLivingBase"),
-		DamageItemEvent("com.mrnobody.morecommands.event.DamageItemEvent")
+		DamageItemEvent("com.mrnobody.morecommands.event.DamageItemEvent"),
+		ChatStyle("net.minecraft.util.ChatStyle")
 		;
 		
 		private final String name, internalName, descriptor;
@@ -88,6 +89,7 @@ public final class ASMNames {
 	 * @author MrNobody98
 	 */
 	public static enum Method {
+		Object_init(Type.Object, "<init>", "<init>", "V"),
 		ItemStack_tryPlaceItemIntoWorld(Type.ItemStack, "tryPlaceItemIntoWorld", "func_77943_a", "Z", Type.EntityPlayer.getDesc(), Type.World.getDesc(), "IIIIFFF"),
 		ItemStack_getItem(Type.ItemStack, "getItem", "func_77973_b", Type.Item.getDesc()),
 		Item_onItemUse(Type.Item, "onItemUse", "func_77648_a", "Z", Type.ItemStack.getDesc(), Type.EntityPlayer.getDesc(), Type.World.getDesc(), "IIIIFFF"),
@@ -107,7 +109,8 @@ public final class ASMNames {
 		World_getSpawnPoint(Type.World, "getSpawnPoint", "func_72861_E", Type.ChunkCoordinates.getDesc()),
 		TransformTextureCompass_getCompassTarget(Type.TransformTextureCompass, "getCompassTarget", "getCompassTarget", Type.ChunkCoordinates.getDesc(), Type.World.getDesc()),
 		ItemStack_damageItem(Type.ItemStack, "damageItem", "func_77972_a", "V", "I", Type.EntityLivingBase.getDesc()),
-		DamageItemEvent_init(Type.DamageItemEvent, "<init>", "<init>", "V", Type.EntityLivingBase.getDesc(), "I", Type.ItemStack.getDesc())
+		DamageItemEvent_init(Type.DamageItemEvent, "<init>", "<init>", "V", Type.EntityLivingBase.getDesc(), "I", Type.ItemStack.getDesc()),
+		ChatStyle_init(Type.ChatStyle, "<init>", "<init>", "V")
 		;
 		
 		private final String deobfName, obfName, descriptor;
@@ -186,7 +189,8 @@ public final class ASMNames {
 		EventHandler_DAMAGE_ITEM(Type.EventHandler, "DAMAGE_ITEM", "DAMAGE_ITEM", Type.EventHandler.getDesc()),
 		ItemStackChangeSizeEvent_newSize(Type.ItemStackChangeSizeEvent, "newSize", "newSize", "I"),
 		Item_itemRegistry(Type.Item, "itemRegistry", "field_150901_e", Type.RegistryNamespaced.getDesc()),
-		DamageItemEvent_damage(Type.DamageItemEvent, "damage", "damage", "I")
+		DamageItemEvent_damage(Type.DamageItemEvent, "damage", "damage", "I"),
+		ChatStyle_parentStyle(Type.ChatStyle, "parentStyle", "field_150249_a", Type.ChatStyle.getDesc())
 		;
 		
 		private final String deobfName, obfName, descriptor;

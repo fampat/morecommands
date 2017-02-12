@@ -3,14 +3,14 @@ package com.mrnobody.morecommands.command.server;
 import java.util.List;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.util.Coordinate;
 import com.mrnobody.morecommands.util.TargetSelector;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -36,14 +36,14 @@ public class CommandCleardrops extends StandardCommand implements ServerCommandP
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.cleardrops.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		Coordinate pos = sender.getPosition();
-		World world = sender.getWorld().getMinecraftWorld();
+		World world = sender.getWorld();
 		int radius = 128;
 		Item item = null;
 		int meta = -1;
@@ -66,7 +66,7 @@ public class CommandCleardrops extends StandardCommand implements ServerCommandP
 		
 		if (params.length > 3) {
 			params = reparseParamsWithNBTData(params);
-			nbt = getNBTFromParam(params[3], sender.getMinecraftISender());
+			nbt = getNBTFromParam(params[3]);
 			if (params.length > 4) equalLists = isEqualLists(params[4]);
 		}
 		
@@ -93,6 +93,7 @@ public class CommandCleardrops extends StandardCommand implements ServerCommandP
 		}
 		
 		sender.sendLangfileMessage("command.cleardrops.removed", removedDrops);
+		return null;
 	}
 	
 	@Override
@@ -106,7 +107,7 @@ public class CommandCleardrops extends StandardCommand implements ServerCommandP
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

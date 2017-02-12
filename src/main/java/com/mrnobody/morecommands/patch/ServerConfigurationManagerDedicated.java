@@ -2,19 +2,26 @@ package com.mrnobody.morecommands.patch;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+import com.google.common.collect.ForwardingList;
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
+import com.mrnobody.morecommands.command.AbstractCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.util.PlayerSettings;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
+import com.mrnobody.morecommands.util.ChatChannel;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.network.play.server.S02PacketChat;
 import net.minecraft.network.play.server.S05PacketSpawnPosition;
 import net.minecraft.network.play.server.S07PacketRespawn;
 import net.minecraft.network.play.server.S1DPacketEntityEffect;
@@ -25,6 +32,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.management.ItemInWorldManager;
 import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.util.IChatComponent;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -33,7 +41,8 @@ import net.minecraft.world.demo.DemoWorldManager;
 
 /**
  * The patched class of {@link net.minecraft.server.dedicated.DedicatedPlayerList} <br>
- * Patching this class is needed to use my own patched {@link EntityPlayerMP} class.
+ * Patching this class is needed to use a patched {@link EntityPlayerMP} class and to
+ * be able to use {@link ChatChannel}s
  * The patch is also needed to make the keepinventory command working.
  * 
  * @author MrNobody98
@@ -46,6 +55,12 @@ public class ServerConfigurationManagerDedicated extends net.minecraft.server.de
 	public ServerConfigurationManagerDedicated(DedicatedServer server) {
 		super(server);
 		this.mcServer = server;
+	}
+	
+	@Override
+	public void sendChatMsgImpl(IChatComponent message, boolean isChat) {
+		MoreCommands.getProxy().ensureChatChannelsLoaded();
+		ChatChannel.getMasterChannel().sendChatMessage(message, isChat);
 	}
 	
 	@Override

@@ -1,15 +1,16 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.EntityLivingBase;
+import com.mrnobody.morecommands.util.EntityUtils;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.EntityLivingBase;
 
 @Command(
 		name = "heal",
@@ -27,22 +28,24 @@ public class CommandHeal extends StandardCommand implements ServerCommandPropert
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.heal.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params)throws CommandException {
-		EntityLivingBase entity = new EntityLivingBase(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.EntityLivingBase.class));
+	public String execute(CommandSender sender, String[] params)throws CommandException {
+		EntityLivingBase entity = getSenderAsEntity(sender.getMinecraftISender(), EntityLivingBase.class);
 		
 		if (params.length > 0) {
-			try {entity.heal(Float.parseFloat(params[0])); sender.sendLangfileMessage("command.heal.success");}
+			try {EntityUtils.heal(entity, Float.parseFloat(params[0])); sender.sendLangfileMessage("command.heal.success");}
 			catch (NumberFormatException e) {throw new CommandException("command.heal.NAN", sender);}
 		}
 		else {
-			entity.heal(MAX_HEALTH - entity.getHealth());
+			EntityUtils.heal(entity, MAX_HEALTH - entity.getHealth());
 			sender.sendLangfileMessage("command.heal.success");
 		}
+		
+		return null;
 	}
 	
 	@Override
@@ -56,12 +59,12 @@ public class CommandHeal extends StandardCommand implements ServerCommandPropert
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	
 	@Override
 	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
-		return isSenderOfEntityType(sender, net.minecraft.entity.EntityLivingBase.class);
+		return isSenderOfEntityType(sender, EntityLivingBase.class);
 	}
 }

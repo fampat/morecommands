@@ -1,17 +1,18 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.util.Coordinate;
+import com.mrnobody.morecommands.util.EntityUtils;
+import com.mrnobody.morecommands.util.WorldUtils;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -40,41 +41,42 @@ public class CommandNoclip extends StandardCommand implements ServerCommandPrope
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.noclip.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 		
 		if (!player.capabilities.isFlying && !player.noClip)
 			throw new CommandException("command.noclip.mustBeFlying", sender);
 		
-		try {player.noClip = parseTrueFalse(params, 0, player.noClip);}
+		try {player.noClip = parseTrueFalse(params, 0, !player.noClip);}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.noclip.failure", sender);}
 		
 		sender.sendLangfileMessage(player.noClip ? "command.noclip.enabled" : "command.noclip.disabled");
     	
 		if(player.noClip == false)
-			ascendPlayer(new Player(player));
+			ascendPlayer(player);
 		
 		MoreCommands.INSTANCE.getPacketDispatcher().sendS06Noclip(player, player.noClip);
+		return null;
 	}
 
-	private static boolean ascendPlayer(Player player) {
-		Coordinate playerPos = player.getPosition();
-		if(player.getWorld().isClearBelow(playerPos) && playerPos.getY() > 0) {
+	private static boolean ascendPlayer(EntityPlayerMP player) {
+		Coordinate playerPos = EntityUtils.getPosition(player);
+		if (WorldUtils.isClearBelow(player.worldObj, playerPos) && playerPos.getY() > 0) {
 			return false;
 		}
 		double y = playerPos.getY() - 1; // in case player was standing on ground
 		while (y < 260) {
-			if(player.getWorld().isClear(new Coordinate(playerPos.getX(), y++, playerPos.getZ()))) {
+			if (WorldUtils.isClear(player.worldObj, new Coordinate(playerPos.getX(), y++, playerPos.getZ()))) {
 				final double newY;
 				if (playerPos.getY() > 0) newY = y - 1;
 				else newY = y;
 				Coordinate newPos = new Coordinate(playerPos.getX() + 0.5F, newY, playerPos.getZ() + 0.5F);
-				player.setPosition(newPos);
+				EntityUtils.setPosition(player, newPos);
 				break;
 			}
 		}
@@ -92,7 +94,7 @@ public class CommandNoclip extends StandardCommand implements ServerCommandPrope
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

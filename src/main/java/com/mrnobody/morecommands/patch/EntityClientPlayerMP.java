@@ -1,12 +1,14 @@
 package com.mrnobody.morecommands.patch;
 
-import com.mrnobody.morecommands.wrapper.EntityCamera;
+import com.mrnobody.morecommands.command.AbstractCommand.ResultAcceptingCommandSender;
+import com.mrnobody.morecommands.util.EntityCamera;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.potion.Potion;
 import net.minecraft.stats.StatFileWriter;
 import net.minecraft.stats.StatList;
+import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.Session;
 import net.minecraft.world.World;
@@ -20,7 +22,7 @@ import net.minecraftforge.common.ForgeHooks;
  * @author MrNobody98
  *
  */
-public class EntityClientPlayerMP extends net.minecraft.client.entity.EntityClientPlayerMP {
+public class EntityClientPlayerMP extends net.minecraft.client.entity.EntityClientPlayerMP implements ResultAcceptingCommandSender {
 	private boolean overrideOnLadder = false;
 	private boolean freezeCam = false;
 	private boolean freeCam = false;
@@ -34,10 +36,72 @@ public class EntityClientPlayerMP extends net.minecraft.client.entity.EntityClie
 	private NetHandlerPlayClient handler;
 	private StatFileWriter writer;
 	
+	private String capturedCommandResult = null, cmdSentToServer = null;
+	private StringBuilder capturedCommandMessages = new StringBuilder();
+	private boolean captureNextCommandResult = false;
+	
     public EntityClientPlayerMP(Minecraft minecraft, World world, Session session, NetHandlerPlayClient netClientHandler, StatFileWriter statFileWriter) {
         super(minecraft, world, session, netClientHandler, statFileWriter);
         this.handler = netClientHandler;
         this.writer = statFileWriter;
+    }
+    
+    /**
+     * This method should be invoked before this entity is passed to {@link net.minecraft.command.ICommandManager#executeCommand(net.minecraft.command.ICommandSender, String)}. 
+     * Invoking this method will make this entity capture the result of the command execution. Result either means the return value
+     * of the {@link com.mrnobody.morecommands.command.AbstractCommand#execute(com.mrnobody.morecommands.command.CommandSender, String[])} method
+     * if the command is a subclass of this class or, if it is not, or if the return value is null, the chat messages sent via the
+     * {@link #addChatMessage(IChatComponent)} method. After command execution, the captured results must be reset via the
+     * {@link #getCapturedCommandResult()} method. This method also returns the result. 
+     */
+    public void setCaptureNextCommandResult() {
+    	this.captureNextCommandResult = true;
+    }
+    
+    @Override
+    public void addChatMessage(IChatComponent message) {
+    	if (this.captureNextCommandResult) this.capturedCommandMessages.append(" " + message.getUnformattedText());
+    	super.addChatMessage(message);
+    }
+    
+    @Override
+    public void setCommandResult(String commandName, String[] args, String result) {
+    	if (this.captureNextCommandResult && result != null) 
+    		this.capturedCommandResult = result;
+    }
+    
+    /**
+     * Disables capturing of command results and resets and returns them.
+     * 
+     * @return the captured result of the command execution (requires enabling capturing before command execution via
+     * 			{@link #setCaptureNextCommandResult()}. Will never be null
+     * @see #setCaptureNextCommandResult()
+     */
+    public String getCapturedCommandResult() {
+    	String result = null;
+    	
+    	if (this.capturedCommandResult != null) result = this.capturedCommandResult;
+    	else result = this.capturedCommandMessages.toString().trim();
+    	
+    	this.capturedCommandResult = this.cmdSentToServer = null;
+    	this.capturedCommandMessages = new StringBuilder();
+    	this.captureNextCommandResult = false;
+    	
+    	return result;
+    }
+    
+    @Override
+    public void sendChatMessage(String message) {
+    	if (this.captureNextCommandResult && message.startsWith("/")) this.cmdSentToServer = message;
+    	else super.sendChatMessage(message);
+    }
+    
+    /**
+     * @return the last command that should have been sent to the server via {@link #sendChatMessage(String)}
+     * (if command result capturing is enabled via {@link #setCaptureNextCommandResult()}
+     */
+    public String getCmdSentToServer() {
+    	return this.cmdSentToServer;
     }
     
 	public void setFluidMovement(boolean fluidmovement) {

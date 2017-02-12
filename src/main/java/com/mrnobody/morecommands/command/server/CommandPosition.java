@@ -3,12 +3,12 @@ package com.mrnobody.morecommands.command.server;
 import java.text.DecimalFormat;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 
@@ -27,18 +27,20 @@ public class CommandPosition extends StandardCommand implements ServerCommandPro
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.position.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		DecimalFormat f = new DecimalFormat("#.##");
 		
 		sender.sendStringMessage("Your current position is:"
 				+ " X = " + f.format(sender.getPosition().getX())
 				+ "; Y = " + f.format(sender.getPosition().getY())
 				+ "; Z = " + f.format(sender.getPosition().getZ()));
+		
+		return "x=" + sender.getPosition().getBlockX() + ",y=" + sender.getPosition().getBlockY() + ",z=" + sender.getPosition().getBlockZ();
 	}
 
 	@Override
@@ -52,7 +54,7 @@ public class CommandPosition extends StandardCommand implements ServerCommandPro
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 	

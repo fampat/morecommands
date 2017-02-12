@@ -4,16 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.EntityLivingBase;
+import com.mrnobody.morecommands.util.EntityUtils;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityPainting;
 import net.minecraft.entity.item.EntityPainting.EnumArt;
 
@@ -32,23 +33,23 @@ public class CommandCyclepainting extends StandardCommand implements ServerComma
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.cyclepainting.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		EntityLivingBase entity = new EntityLivingBase(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.EntityLivingBase.class));
+	public String execute(CommandSender sender, String[] params) throws CommandException {
+		EntityLivingBase entity = getSenderAsEntity(sender.getMinecraftISender(), EntityLivingBase.class);
 		
-		boolean sneaking = entity.getMinecraftEntity().isSneaking();
-		Entity hit = entity.traceEntity(128.0D);
+		boolean sneaking = entity.isSneaking();
+		Entity hit = EntityUtils.traceEntity(entity, 128D);
 		
 		if (!(hit instanceof EntityPainting) || hit.isDead)
 			throw new CommandException("command.cyclepainting.noPainting", sender);
 		
 		EntityPainting picture = (EntityPainting) hit;
 		EntityPainting newPicture = new EntityPainting(picture.worldObj, picture.field_146063_b, picture.field_146064_c, picture.field_146062_d, picture.hangingDirection);
-				
+		
 		EnumArt oldArt = picture.art;
 		int current = 0;
 				
@@ -62,16 +63,18 @@ public class CommandCyclepainting extends StandardCommand implements ServerComma
 		        
 		if (arts.size() <= 1) {
 			newPicture.art = oldArt;
-			entity.getMinecraftEntity().worldObj.removeEntity(picture);
-			entity.getMinecraftEntity().worldObj.spawnEntityInWorld(newPicture);
+			entity.worldObj.removeEntity(picture);
+			entity.worldObj.spawnEntityInWorld(newPicture);
 			throw new CommandException("command.cyclepainting.noMoreArts", sender);
 		}
 		        
 		int newArt = sneaking ? (current == 0 ? arts.size() - 1 : current - 1) : (current == arts.size() - 1 ? 0 : current + 1);
 
 		newPicture.art = arts.get(newArt);
-		entity.getMinecraftEntity().worldObj.removeEntity(picture);
-		entity.getMinecraftEntity().worldObj.spawnEntityInWorld(newPicture);
+		entity.worldObj.removeEntity(picture);
+		entity.worldObj.spawnEntityInWorld(newPicture);
+		
+		return null;
 	}
 	
 	@Override
@@ -85,12 +88,12 @@ public class CommandCyclepainting extends StandardCommand implements ServerComma
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 	
 	@Override
 	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
-		return isSenderOfEntityType(sender, net.minecraft.entity.EntityLivingBase.class);
+		return isSenderOfEntityType(sender, EntityLivingBase.class);
 	}
 }

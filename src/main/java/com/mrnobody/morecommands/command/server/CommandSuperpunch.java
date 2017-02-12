@@ -1,15 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -58,12 +58,12 @@ public class CommandSuperpunch extends StandardCommand implements ServerCommandP
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.superpunch.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
         	
         if (params.length > 0) {
@@ -82,6 +82,8 @@ public class CommandSuperpunch extends StandardCommand implements ServerCommandP
         	}
         }
         else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 
 	@Override
@@ -95,7 +97,7 @@ public class CommandSuperpunch extends StandardCommand implements ServerCommandP
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

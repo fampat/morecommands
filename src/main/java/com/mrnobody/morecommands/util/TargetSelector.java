@@ -34,7 +34,6 @@ import com.google.common.collect.Sets;
 import com.mrnobody.morecommands.command.AbstractCommand;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedMethod;
-import com.mrnobody.morecommands.wrapper.Coordinate;
 
 import net.minecraft.block.Block;
 import net.minecraft.command.ICommandSender;
@@ -85,7 +84,7 @@ public final class TargetSelector {
 	private TargetSelector() {}
 	
 	/** This matches the at-tokens introduced for command blocks, including their arguments, if any. */
-	private static final Pattern tokenPattern = Pattern.compile("^^@([pareb])(?:\\[([\\w=,!-]*)\\])?$");
+	private static final Pattern tokenPattern = Pattern.compile("^@([pareb])(?:\\[([\\w=,!-]*)\\])?$");
 	/** This matches things like "-1,,4", and is used for getting x,y,z,range from the token's argument list. */
 	private static final Pattern intListPattern = Pattern.compile("\\G([-!]?[\\w-]*)(?:$|,)");
 	/** This matches things like "rm=4,c=2" and is used for handling named token arguments. */
@@ -338,7 +337,7 @@ public final class TargetSelector {
 				final List<NBTBase> disallowedNbt = Lists.<NBTBase>newArrayList();
 				
 				for (String nbt : nbtData) {
-					if (nbt == null) continue; NBTBase tag = AbstractCommand.getNBTFromParam(nbt.startsWith("!") ? nbt.substring(1) : nbt, sender);
+					if (nbt == null) continue; NBTBase tag = AbstractCommand.getNBTFromParam(nbt.startsWith("!") ? nbt.substring(1) : nbt);
 					if (tag == null) continue;
 					
 					if (nbt.startsWith("!")) disallowedNbt.add(tag);
@@ -570,7 +569,7 @@ public final class TargetSelector {
         	getEntityNamePredicates(argumentMap, predicateBuilder);
         	getEntityRadiusPredicates(argumentMap, coordinate, predicateBuilder);
         	getEntityLookPredicates(argumentMap, predicateBuilder);
-        	getEntityNBTPredicates(argumentMap, sender, predicateBuilder);
+        	getEntityNBTPredicates(argumentMap, predicateBuilder);
 			
 			while (worlds.hasNext()) {
                 World world = worlds.next();
@@ -873,10 +872,9 @@ public final class TargetSelector {
 		 * Creates predicates which accept only entities which have certain nbt data
 		 * 
 		 * @param argumentMap the argument map
-		 * @param sender the command sender
 		 * @param predicateBuilder the list builder to add the predicates to
 		 */
-		private static void getEntityNBTPredicates(ListMultimap<String, String> argumentMap, ICommandSender sender, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
+		private static void getEntityNBTPredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
 			final boolean equalLists = argumentMap.containsKey("nbtm") && argumentMap.get("nbtm").get(0).equalsIgnoreCase("EQUAL");
 			List<String> nbtData = argumentMap.get("nbt");
 	        
@@ -885,7 +883,7 @@ public final class TargetSelector {
 				final List<NBTBase> disallowedNbt = Lists.<NBTBase>newArrayList();
 				
 				for (String nbt : nbtData) {
-					if (nbt == null) continue; NBTBase tag = AbstractCommand.getNBTFromParam(nbt.startsWith("!") ? nbt.substring(1) : nbt, sender);
+					if (nbt == null) continue; NBTBase tag = AbstractCommand.getNBTFromParam(nbt.startsWith("!") ? nbt.substring(1) : nbt);
 					if (tag == null) continue;
 					
 					if (nbt.startsWith("!")) disallowedNbt.add(tag);

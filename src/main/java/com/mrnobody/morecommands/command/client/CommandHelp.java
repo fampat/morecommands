@@ -5,11 +5,11 @@ import java.util.Arrays;
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.ClientCommandHandler;
@@ -28,17 +28,15 @@ public class CommandHelp extends StandardCommand implements ClientCommandPropert
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.helpSideClient.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		if (!ClientCommand.clientCommandsEnabled) {
-			String args = "";
-			for (String param : params) args += " " + param;
-			Minecraft.getMinecraft().thePlayer.sendChatMessage("/help" + args);
-			return;
+			Minecraft.getMinecraft().thePlayer.sendChatMessage("/help " + rejoinParams(params));
+			return null;
 		}
 		
 		if (params.length > 0) {
@@ -50,6 +48,8 @@ public class CommandHelp extends StandardCommand implements ClientCommandPropert
 			else throw new CommandException("command.helpSideClient.info", sender);
 		}
 		else throw new CommandException("command.helpSideClient.info", sender);
+		
+		return null;
 	}
 	
 	@Override
@@ -68,7 +68,7 @@ public class CommandHelp extends StandardCommand implements ClientCommandPropert
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 }

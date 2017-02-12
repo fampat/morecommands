@@ -1,24 +1,40 @@
 package com.mrnobody.morecommands.patch;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.settings.GlobalSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
+import com.mrnobody.morecommands.util.Coordinate;
+import com.mrnobody.morecommands.util.EntityUtils;
+import com.mrnobody.morecommands.util.LanguageManager;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
 import com.mrnobody.morecommands.util.ReflectionHelper;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.util.Variables;
+import com.mrnobody.morecommands.util.WorldUtils;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.client.C01PacketChatMessage;
 import net.minecraft.network.play.client.C03PacketPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.WorldServer;
 
 /**
  * The patched class of {@link net.minecraft.network.NetHandlerPlayServer} <br>
  * It controls incoming packets from the client. The patch is needed to allow <br>
- * noclipping
+ * noclipping and to replace variables in the chat.
  * 
  * @author MrNobody98
  *
@@ -30,6 +46,7 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
 	private static final Field FIELD_LASTPOSX = ReflectionHelper.getField(ObfuscatedField.NetHandlerPlayServer_lastPosZ);
 	private static final Field FIELD_HASMOVED = ReflectionHelper.getField(ObfuscatedField.NetHandlerPlayServer_hasMoved);
     
+	private static final Logger logger = LogManager.getLogger(net.minecraft.network.NetHandlerPlayServer.class);
 	private MinecraftServer mcServer;
 	private boolean enabled;
 
@@ -37,6 +54,41 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
         super(par1, par2, par3);
         this.mcServer = par1;
         this.enabled = FIELD_HASMOVED != null && FIELD_LASTPOSX != null && FIELD_LASTPOSY != null && FIELD_LASTPOSZ != null;
+    }
+    
+    @Override
+    public void processChatMessage(C01PacketChatMessage p_147354_1_) {
+    	String message = p_147354_1_.func_149439_c();
+    	
+    	ServerPlayerSettings settings = MoreCommands.getEntityProperties(ServerPlayerSettings.class, PlayerSettings.MORECOMMANDS_IDENTIFIER, this.playerEntity);
+		Map<String, String> playerVars = settings == null ? new HashMap<String, String>() : settings.variables;
+		boolean replaceIgnored;
+		
+		if (message.length() > 1 && message.charAt(0) == '%') {
+			int end = message.indexOf('%', 1);
+			String val = end > 0 ? playerVars.get(message.substring(1, end)) : null;
+			
+			replaceIgnored = val == null || !val.startsWith("/") ||
+							(message.length() - 1 != end && message.charAt(end + 1) != ' ') ||
+							!MinecraftServer.getServer().getCommandManager().getCommands().containsKey(val.substring(1));
+		}
+		else replaceIgnored = !message.startsWith("/") || !MinecraftServer.getServer().getCommandManager().getCommands().containsKey(message.substring(1).split(" ")[0]);
+		
+    	try {
+    		String world = this.playerEntity.getEntityWorld().getSaveHandler().getWorldDirectoryName(), dim = this.playerEntity.getEntityWorld().provider.getDimensionName();
+    		
+			if (MoreCommandsConfig.enableGlobalVars && MoreCommandsConfig.enablePlayerVars)
+				message = Variables.replaceVars(message, replaceIgnored, playerVars, GlobalSettings.getInstance().variables.get(ImmutablePair.of(world, dim)));
+			else if (MoreCommandsConfig.enablePlayerVars)
+				message = Variables.replaceVars(message, replaceIgnored, playerVars);
+			else if (MoreCommandsConfig.enableGlobalVars)
+				message = Variables.replaceVars(message, replaceIgnored, GlobalSettings.getInstance().variables.get(ImmutablePair.of(world, dim)));
+    	}
+        catch (Variables.VariablesCouldNotBeResolvedException vcnbre) {
+            message = vcnbre.getNewString();
+        }
+    	
+    	super.processChatMessage(new C01PacketChatMessage(message));
     }
 
     @Override
@@ -55,23 +107,23 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
 			MoreCommands.INSTANCE.getPacketDispatcher().sendS06Noclip(player, false);
 			
 			(new CommandSender(player)).sendLangfileMessage("command.noclip.autodisable");
-			ascendPlayer(new Player(player));
+			ascendPlayer(player);
 		}
 	}
 
-	private static boolean ascendPlayer(Player player) {
-		Coordinate playerPos = player.getPosition();
-		if(player.getWorld().isClearBelow(playerPos) && playerPos.getY() > 0) {
+	private static boolean ascendPlayer(EntityPlayerMP player) {
+		Coordinate playerPos = EntityUtils.getPosition(player);
+		if(WorldUtils.isClearBelow(player.worldObj, playerPos) && playerPos.getY() > 0) {
 			return false;
 		}
 		double y = playerPos.getY() - 1; // in case player was standing on ground
 		while (y < 260) {
-			if(player.getWorld().isClear(new Coordinate(playerPos.getX(), y++, playerPos.getZ()))) {
+			if(WorldUtils.isClear(player.worldObj, new Coordinate(playerPos.getX(), y++, playerPos.getZ()))) {
 				final double newY;
 				if (playerPos.getY() > 0) newY = y - 1;
 				else newY = y;
 				Coordinate newPos = new Coordinate(playerPos.getX() + 0.5F, newY, playerPos.getZ() + 0.5F);
-				player.setPosition(newPos);
+				EntityUtils.setPosition(player, newPos);
 				break;
 			}
 		}
@@ -105,7 +157,7 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
                     }
                     if ((packet.func_149466_j()) && (packet.func_149467_d() == -999.0D) && (packet.func_149471_f() == -999.0D)) {
                         if ((Math.abs(packet.func_149464_c()) > 1.0D) || (Math.abs(packet.func_149472_e()) > 1.0D)) {
-                            System.err.println(this.playerEntity.getCommandSenderName() + " was caught trying to crash the server with an invalid position.");
+                            logger.warn(this.playerEntity.getCommandSenderName() + " was caught trying to crash the server with an invalid position.");
                             kickPlayerFromServer("Nope!");
                             return;
                         }

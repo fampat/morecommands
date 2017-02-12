@@ -1,13 +1,13 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.util.EntityUtils;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFlowerPot;
@@ -20,7 +20,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeHooks;
 
 @Command(
 		name = "pick",
@@ -36,14 +35,14 @@ public class CommandPick extends StandardCommand implements ServerCommandPropert
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.pick.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
-		MovingObjectPosition pick = player.rayTrace(128.0D, 0.0D, 1.0F);
+	public String execute(CommandSender sender, String[] params) throws CommandException {
+		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
+		MovingObjectPosition pick = EntityUtils.rayTrace(player, 128D, 0D, 1F);
 		int amount = 1;
 		
 		if (params.length > 0) {
@@ -52,10 +51,12 @@ public class CommandPick extends StandardCommand implements ServerCommandPropert
 		}
 		
 		if (pick != null) {
-			if (!this.onPickBlock(pick, player.getMinecraftPlayer(), player.getMinecraftPlayer().worldObj, amount))
+			if (!this.onPickBlock(pick, player, player.worldObj, amount))
 				throw new CommandException("command.pick.cantgive", sender);
 		}
 		else throw new CommandException("command.pick.notInSight", sender);
+		
+		return null;
 	}
 	
 	@Override
@@ -69,7 +70,7 @@ public class CommandPick extends StandardCommand implements ServerCommandPropert
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

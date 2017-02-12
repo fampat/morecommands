@@ -1,9 +1,11 @@
-package com.mrnobody.morecommands.wrapper;
+package com.mrnobody.morecommands.command;
 
+import com.mrnobody.morecommands.command.AbstractCommand.ResultAcceptingCommandSender;
 import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
+import com.mrnobody.morecommands.util.Coordinate;
 import com.mrnobody.morecommands.util.LanguageManager;
-import com.mrnobody.morecommands.util.PlayerSettings;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -14,6 +16,7 @@ import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
+import net.minecraft.world.World;
 
 /**
  * A wrapper for the {@link ICommandSender} interface
@@ -26,7 +29,7 @@ public final class CommandSender {
 	 * 
 	 * @author MrNobody98
 	 */
-	public static class EntityCommandSenderWrapper implements ICommandSender {
+	public static class EntityCommandSenderWrapper implements ResultAcceptingCommandSender {
 		private final Entity entity;
 		private final ICommandSender sender;
 		private ChunkCoordinates pos;
@@ -51,7 +54,7 @@ public final class CommandSender {
 		
 		@Override
 		public IChatComponent func_145748_c_() {
-			return new ChatComponentText(this.getCommandSenderName());
+			return this.entity instanceof ICommandSender ? ((ICommandSender) this.entity).func_145748_c_() : new ChatComponentText(this.getCommandSenderName());
 		}
 
 		@Override
@@ -78,6 +81,12 @@ public final class CommandSender {
 		public Entity getEntity() {
 			return this.entity;
 		}
+
+		@Override
+		public void setCommandResult(String commandName, String[] args, String result) {
+			if (this.sender instanceof ResultAcceptingCommandSender)
+				((ResultAcceptingCommandSender) this.sender).setCommandResult(commandName, args, result);
+		}
 	}
 	
 	/** Whether to allow chat output by any of {@link CommandSender}s sendXXXMessage methods */
@@ -96,19 +105,19 @@ public final class CommandSender {
 	}
 	
 	/**
-	 * Constructs a new {@link CommandSender} with a {@link Player}
+	 * Constructs a new {@link CommandSender} with a {@link EntityPlayerMP}
 	 * 
-	 * @param player the {@link Player}
+	 * @param player the {@link EntityPlayerMP}
 	 */
-	public CommandSender(Player player) {
-		this(player.getMinecraftPlayer());
+	public CommandSender(EntityPlayerMP player) {
+		this.sender = player;
 	}
 	
 	/**
 	 * @return the command sender's name
 	 */
 	public String getSenderName() {
-		return sender.getCommandSenderName();
+		return this.sender.getCommandSenderName();
 	}
 	
 	/**
@@ -119,7 +128,7 @@ public final class CommandSender {
 	 * @return whether this sender can use the given command
 	 */
 	public boolean canUseCommand(int permLevel, String command) {
-		return sender.canCommandSenderUseCommand(permLevel, command);
+		return this.sender.canCommandSenderUseCommand(permLevel, command);
 	}
 	
 	/**
@@ -128,11 +137,11 @@ public final class CommandSender {
 	 * @param component the {@link IChatComponent} to send
 	 */
 	public void sendChatComponent(IChatComponent component) {
-		if (!(sender instanceof EntityPlayerMP)) {if (CommandSender.output) sender.addChatMessage(component);}
+		if (!(this.sender instanceof EntityPlayerMP)) {if (CommandSender.output) this.sender.addChatMessage(component);}
 		else if (CommandSender.output) {
 			ServerPlayerSettings settings = MoreCommands.getEntityProperties(ServerPlayerSettings.class, PlayerSettings.MORECOMMANDS_IDENTIFIER, (EntityPlayerMP) sender);
-			if (settings == null) sender.addChatMessage(component);
-			else if (settings.output) sender.addChatMessage(component);
+			if (settings == null) this.sender.addChatMessage(component);
+			else if (settings.output) this.sender.addChatMessage(component);
 		}
 	}
 	
@@ -222,6 +231,6 @@ public final class CommandSender {
 	 * @return the command sender's world
 	 */
 	public World getWorld() {
-		return new World(this.sender.getEntityWorld());
+		return this.sender.getEntityWorld();
 	}
 }

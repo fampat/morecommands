@@ -3,15 +3,15 @@ package com.mrnobody.morecommands.command.server;
 import java.lang.reflect.Method;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedMethod;
+import com.mrnobody.morecommands.util.Coordinate;
 import com.mrnobody.morecommands.util.ReflectionHelper;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -36,12 +36,12 @@ public class CommandSpawnportal extends StandardCommand implements ServerCommand
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.spawnportal.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		Entity entity = getSenderAsEntity(sender.getMinecraftISender(), Entity.class);
 		
 		if (params.length > 0) {
@@ -63,6 +63,8 @@ public class CommandSpawnportal extends StandardCommand implements ServerCommand
 			else throw new CommandException("command.spawnportal.unknownPortal", sender);
 		}
 		else throw new CommandException("command.spawnportal.noArgs", sender);
+		
+		return null;
 	}
 	
 	@Override
@@ -76,7 +78,7 @@ public class CommandSpawnportal extends StandardCommand implements ServerCommand
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

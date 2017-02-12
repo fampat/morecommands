@@ -10,12 +10,12 @@ import com.mrnobody.morecommands.command.MultipleCommands;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
-import com.mrnobody.morecommands.util.ClientPlayerSettings;
+import com.mrnobody.morecommands.settings.ClientPlayerSettings;
+import com.mrnobody.morecommands.settings.JsonSettingsManager;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.settings.SettingsManager;
 import com.mrnobody.morecommands.util.DummyCommand;
-import com.mrnobody.morecommands.util.JsonSettingsManager;
-import com.mrnobody.morecommands.util.PlayerSettings;
 import com.mrnobody.morecommands.util.Reference;
-import com.mrnobody.morecommands.util.SettingsManager;
 
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
@@ -38,6 +38,7 @@ import net.minecraftforge.client.ClientCommandHandler;
  */
 public class ClientProxy extends CommonProxy {
 	private SettingsManager settingsManager;
+	private String remoteWorldName;
 	
 	public ClientProxy() {
 		super();
@@ -58,7 +59,7 @@ public class ClientProxy extends CommonProxy {
 	@Override
 	protected void postInit(FMLPostInitializationEvent event) {
 		super.postInit(event);
-		this.settingsManager = new JsonSettingsManager(new File(Reference.getModDir(), "settings_client.json"));
+		this.settingsManager = new JsonSettingsManager(new File(Reference.getModDir(), "settings_client.json"), true);
 		
 		try {
 			this.registerClientCommands();
@@ -120,7 +121,31 @@ public class ClientProxy extends CommonProxy {
 			}
 		}
 	}
-
+	
+	/**
+	 * Sets the world name of the world that is currently running on the server.
+	 * <b>IMPORTANT:</b> "World name" means the name of the folder from which the world was loaded.
+	 * This is necessary to be able to distinguish between worlds which have the same name
+	 * but not the same folder so they are NOT the same worlds
+	 * 
+	 * @param world the world's folder name
+	 */
+	public void setRemoteWorldName(String name) {
+		this.remoteWorldName = name;
+	}
+	
+	/**
+	 * Gets the name of the world running on the server. Since Minecraft does not
+	 * send this information to the client the server is required to have MoreCommands
+	 * installed in order to receive this information. The default name if the world
+	 * name ist not received from the server is "MpServer"
+	 * 
+	 * @return the name of the world running on the server
+	 */
+	public String getRemoteWorldName() {
+		return this.remoteWorldName == null ? "MpServer" : this.remoteWorldName;
+	}
+	
 	@Override
 	public ServerType getRunningServerType() {
 		if (Minecraft.getMinecraft().isSingleplayer()) return ServerType.INTEGRATED;
@@ -135,33 +160,6 @@ public class ClientProxy extends CommonProxy {
 	@Override
 	public String getCurrentServerNetAddress() {
 		return Minecraft.getMinecraft().func_147104_D() != null ? Minecraft.getMinecraft().func_147104_D().serverIP : "singleplayer";
-	}
-	
-	@Override
-	public void registerAliases(EntityPlayer player) {
-		if (player instanceof EntityClientPlayerMP) {
-			ClientPlayerSettings settings = MoreCommands.getEntityProperties(ClientPlayerSettings.class, PlayerSettings.MORECOMMANDS_IDENTIFIER, player);
-			if (settings != null) this.registerAliases(settings);
-		}
-		else super.registerAliases(player);
-	}
-	
-	/**
-	 * Reads aliases for the client player and registers them
-	 */
-	private void registerAliases(ClientPlayerSettings settings) {
-		Map<String, String> aliases = settings.aliases;
-		net.minecraft.command.CommandHandler commandHandler = ClientCommandHandler.instance;
-		String command;
-		
-		for (String alias : aliases.keySet()) {
-			command = aliases.get(alias).split(" ")[0];
-			
-			if (!command.equalsIgnoreCase(alias) && commandHandler.getCommands().get(alias) == null) {
-				DummyCommand cmd = new DummyCommand(alias, true);
-				commandHandler.getCommands().put(alias, cmd);
-			}
-		}
 	}
 	
 	@Override

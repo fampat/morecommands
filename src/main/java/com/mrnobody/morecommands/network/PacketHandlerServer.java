@@ -12,15 +12,17 @@ import java.util.concurrent.TimeUnit;
 import com.mrnobody.morecommands.command.AbstractCommand;
 import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.util.GlobalSettings;
+import com.mrnobody.morecommands.settings.GlobalSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 import com.mrnobody.morecommands.util.LanguageManager;
-import com.mrnobody.morecommands.util.PlayerSettings;
 import com.mrnobody.morecommands.util.Reference;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.EnumChatFormatting;
 
 /**
  * This class handles all incoming packets from the clients
@@ -66,8 +68,8 @@ public class PacketHandlerServer {
 	 */
 	public static void addPlayerToRetries(EntityPlayerMP player) {
 		handshakeRetries.put(player, new HandshakeRetry(
-				GlobalSettings.handshakeTimeout < 0 ? 3 : GlobalSettings.handshakeTimeout > 10 ? 10 : GlobalSettings.handshakeTimeout,
-				GlobalSettings.handshakeRetries < 0 ? 3 : GlobalSettings.handshakeRetries > 10 ? 10 : GlobalSettings.handshakeRetries));
+				MoreCommandsConfig.handshakeTimeout < 0 ? 3 : MoreCommandsConfig.handshakeTimeout > 10 ? 10 : MoreCommandsConfig.handshakeTimeout,
+				MoreCommandsConfig.handshakeRetries < 0 ? 3 : MoreCommandsConfig.handshakeRetries > 10 ? 10 : MoreCommandsConfig.handshakeRetries));
 	}
 	
 	/**
@@ -78,9 +80,8 @@ public class PacketHandlerServer {
 			@Override
 			public void run() {
 				Thread.currentThread().setName("MoreCommand Handshake Retry Thread");
-				
 				List<EntityPlayerMP> removeRetries = new ArrayList<EntityPlayerMP>();
-
+				
 				for (Map.Entry<EntityPlayerMP, HandshakeRetry> retry : handshakeRetries.entrySet()) {
 					if (retry.getValue().retries == 0) {
 						removeRetries.add(retry.getKey());
@@ -89,6 +90,7 @@ public class PacketHandlerServer {
 					else if (retry.getValue().remainingTime == 0) {
 						MoreCommands.INSTANCE.getLogger().info("Retrying handshake for player '" + retry.getKey().getCommandSenderName() + "'");
 						MoreCommands.INSTANCE.getPacketDispatcher().sendS00Handshake(retry.getKey());
+						MoreCommands.INSTANCE.getPacketDispatcher().sendS14RemoteWorld(retry.getKey(), retry.getKey().worldObj.getSaveHandler().getWorldDirectoryName());
 						retry.getValue().retries--; retry.getValue().remainingTime = retry.getValue().timeout;
 					}
 					else retry.getValue().remainingTime--;
@@ -112,13 +114,20 @@ public class PacketHandlerServer {
 	
 	/**
 	 * Executes the startup commands that are intended to be executed on the server's startup.
-	 * This method is only invoked on dedicated servers
 	 */
 	public static void executeStartupCommands() {
-		for (String command : MoreCommands.INSTANCE.getStartupCommands()) {
-			MinecraftServer.getServer().getCommandManager().executeCommand(MinecraftServer.getServer(), command);
-			MoreCommands.INSTANCE.getLogger().info("Executed startup command '" + command + "'");
-		}
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {Thread.sleep(MoreCommandsConfig.startupDelay * 1000);}
+				catch (InterruptedException ex) {}
+				
+				for (String command : MoreCommandsConfig.startupCommands) {
+					MinecraftServer.getServer().getCommandManager().executeCommand(MinecraftServer.getServer(), command);
+					MoreCommands.INSTANCE.getLogger().info("Executed startup command '" + command + "'");
+				}
+			}
+		}, "MoreCommands Startup Commands Thread (Server)").start();
 	}
 	
 	/**
@@ -154,17 +163,26 @@ public class PacketHandlerServer {
 			if (settings != null) settings.output = output;
 		}
 	}
-
 	
 	/**
-	 * Called if the client wants to know or modify world information (not available client side)
+	 * Executes a command and sends the result (the chat messages) back to the client
+	 * 
 	 * @param player the player
-	 * @param output whether to enable or disable chat output
+	 * @param executionID the id to identify the command on the client
+	 * @param command the command
 	 */
-	public void handleWorld(EntityPlayerMP player, String[] params) {
-		if (MinecraftServer.getServer().getCommandManager().getCommands().get("world") instanceof AbstractCommand)
-			MinecraftServer.getServer().getCommandManager().executeCommand(player, "world " + AbstractCommand.rejoinParams(params));
-		else
-			player.addChatMessage(new ChatComponentText(LanguageManager.translate(MoreCommands.INSTANCE.getCurrentLang(player), "command.world.notFound")));
+	public void handleExecuteRemoteCommand(EntityPlayerMP player, int executionID, String command) {
+		if (!AbstractCommand.isSenderOfEntityType(player, com.mrnobody.morecommands.patch.EntityPlayerMP.class)) {
+			String result = LanguageManager.translate(MoreCommands.INSTANCE.getCurrentLang(player), "command.generic.serverPlayerNotPatched");
+			ChatComponentText text = new ChatComponentText(result); text.getChatStyle().setColor(EnumChatFormatting.RED);
+			player.addChatMessage(text); MoreCommands.INSTANCE.getPacketDispatcher().sendS17RemoteCommandResult(player, executionID, result);
+			return;
+		}
+		
+		com.mrnobody.morecommands.patch.EntityPlayerMP patchedPlayer = AbstractCommand.getSenderAsEntity(player, com.mrnobody.morecommands.patch.EntityPlayerMP.class);
+		patchedPlayer.setCaptureNextCommandResult();
+		
+		MinecraftServer.getServer().getCommandManager().executeCommand(patchedPlayer, command);
+		MoreCommands.INSTANCE.getPacketDispatcher().sendS17RemoteCommandResult(player, executionID, patchedPlayer.getCapturedCommandResult());
 	}
 }

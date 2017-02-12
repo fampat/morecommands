@@ -13,10 +13,13 @@ import net.minecraft.block.BlockRailBase;
 import net.minecraft.block.BlockStem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.MusicTicker;
+import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.command.ICommandManager;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.boss.EntityDragon;
 import net.minecraft.entity.item.EntityMinecart;
 import net.minecraft.entity.passive.EntityHorse;
@@ -29,8 +32,11 @@ import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.stats.StatBase;
 import net.minecraft.stats.StatList;
+import net.minecraft.util.ChatStyle;
 import net.minecraft.util.FoodStats;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
+import net.minecraft.world.storage.WorldInfo;
 import net.minecraftforge.client.ClientCommandHandler;
 
 /**
@@ -87,6 +93,7 @@ public final class ObfuscatedNames {
 		public static final ObfuscatedField<NetHandlerPlayClient, GuiScreen> NetHandlerPlayClient_guiScreenServer;
 		public static final ObfuscatedField<ClientCommandHandler, ClientCommandHandler> ClientCommandHandler_instance;
 		public static final ObfuscatedField<NetHandlerPlayClient, WorldClient> NetHandlerPlayClient_clientWorldController;
+		public static final ObfuscatedField<GuiChat, String> GuiChat_defaultInputFieldText;
 		
 		static {if (FMLCommonHandler.instance().getSide().isClient()) {
 			Minecraft_mcMusicTicker = new ObfuscatedField<Minecraft, MusicTicker>("mcMusicTicker", "field_147126_aw", Minecraft.class, MusicTicker.class);
@@ -94,13 +101,14 @@ public final class ObfuscatedNames {
 			NetHandlerPlayClient_guiScreenServer = new ObfuscatedField<NetHandlerPlayClient, GuiScreen>("guiScreenServer", "field_147307_j", NetHandlerPlayClient.class, GuiScreen.class);
 			ClientCommandHandler_instance = new ObfuscatedField<ClientCommandHandler, ClientCommandHandler>("instance", "instance", ClientCommandHandler.class, ClientCommandHandler.class);
 			NetHandlerPlayClient_clientWorldController = new ObfuscatedField<NetHandlerPlayClient, WorldClient>("clientWorldController", "field_147300_g", NetHandlerPlayClient.class, WorldClient.class);
+			GuiChat_defaultInputFieldText = new ObfuscatedField<GuiChat, String>("defaultInputFieldText", "field_146409_v", GuiChat.class, String.class);
 		} else {
 			Minecraft_mcMusicTicker = null;
 			MusicTicker_field_147676_d = null;
 			NetHandlerPlayClient_guiScreenServer = null;
 			ClientCommandHandler_instance = null;
 			NetHandlerPlayClient_clientWorldController = null;
-		
+			GuiChat_defaultInputFieldText = null;
 		}}
 		
 		public static final ObfuscatedField<NetHandlerPlayServer, Double> NetHandlerPlayServer_lastPosX = new ObfuscatedField
@@ -131,6 +139,24 @@ public final class ObfuscatedNames {
 				<NBTTagList, List<NBTBase>>("tagList", "field_74747_a", NBTTagList.class, (Class<List<NBTBase>>) (Class<?>) List.class);
 		public static final ObfuscatedField<EntityHorse, AnimalChest> EntityHorse_horseChest = new ObfuscatedField
 				<EntityHorse, AnimalChest>("horseChest", "field_110296_bG", EntityHorse.class, AnimalChest.class);
+		
+		public static final ObfuscatedField<World, WorldInfo> World_worldInfo = new ObfuscatedField
+				<World, WorldInfo>("worldInfo", "field_72986_A", World.class, WorldInfo.class);
+		
+		public static final ObfuscatedField<EntityList, Map<String, Class<? extends Entity>>> EntityList_stringToClassMapping = new ObfuscatedField
+				<EntityList, Map<String, Class<? extends Entity>>>("stringToClassMapping", "field_75625_b", EntityList.class, (Class<Map<String, Class<? extends Entity>>>) (Class<?>) Map.class);
+		public static final ObfuscatedField<EntityList, Map<Class<? extends Entity>, String>> EntityList_classToStringMapping = new ObfuscatedField
+				<EntityList, Map<Class<? extends Entity>, String>>("classToStringMapping", "field_75626_c", EntityList.class, (Class<Map<Class<? extends Entity>, String>>) (Class<?>) Map.class);
+		public static final ObfuscatedField<EntityList, Map<Integer, Class<? extends Entity>>> EntityList_IDtoClassMapping = new ObfuscatedField
+				<EntityList, Map<Integer, Class<? extends Entity>>>("IDtoClassMapping", "field_75623_d", EntityList.class, (Class<Map<Integer, Class<? extends Entity>>>) (Class<?>) Map.class);
+		public static final ObfuscatedField<EntityList, Map<Class<? extends Entity>, Integer>> EntityList_classToIDMapping = new ObfuscatedField
+				<EntityList, Map<Class<? extends Entity>, Integer>>("classToIDMapping", "field_75624_e", EntityList.class, (Class<Map<Class<? extends Entity>, Integer>>) (Class<?>) Map.class);
+		public static final ObfuscatedField<EntityList, Map<String, Integer>> EntityList_stringToIDMapping = new ObfuscatedField
+				<EntityList, Map<String, Integer>>("stringToIDMapping", "field_75622_f", EntityList.class, (Class<Map<String, Integer>>) (Class<?>) Map.class);
+		
+		//This field is generated dynamically via com.mrnbobody.morecommands.asm.transform.TransformChatStyle
+		public static final ObfuscatedField<ChatStyle, ChatStyle> ChatStyle_defaultChatStyle = new ObfuscatedField
+				<ChatStyle, ChatStyle>("defaultChatStyle", "defaultChatStyle", ChatStyle.class, ChatStyle.class);
 		public static final ObfuscatedField<Field, Integer> Field_modifiers = new ObfuscatedField
 				<Field, Integer>("modifiers", "modifiers", Field.class, int.class);
 		

@@ -11,15 +11,15 @@ import java.util.Iterator;
 import java.util.Random;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedMethod;
 import com.mrnobody.morecommands.util.ReflectionHelper;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -57,39 +57,45 @@ public class CommandWorld extends StandardCommand implements ServerCommandProper
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.world.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 0) {
 			if (params[0].equalsIgnoreCase("seed")) {
 				if (params.length > 2 && params[1].equalsIgnoreCase("set")) {
 					try {
 						long seed = Long.parseLong(params[2]);
-						NBTTagCompound data = sender.getWorld().getMinecraftWorld().getWorldInfo().getNBTTagCompound();
+						NBTTagCompound data = sender.getWorld().getWorldInfo().getNBTTagCompound();
 						data.setLong("RandomSeed", seed);
 						sender.sendLangfileMessage("command.world.setseed", String.valueOf(seed));
 					}
 					catch (Exception ex) {throw new CommandException("command.world.NAN", sender);}
+					
+					return null;
 				}
 				else {
-					long seed = sender.getWorld().getMinecraftWorld().getSeed();
+					long seed = sender.getWorld().getSeed();
 					sender.sendLangfileMessage("command.world.currentseed", String.valueOf(seed));
+					
+					return String.valueOf(seed);
 				}
-				return;
 			}
 			else if (params[0].equalsIgnoreCase("name")) {
 				if (params.length > 2 && params[1].equalsIgnoreCase("set")) {
-					sender.getWorld().getMinecraftWorld().getWorldInfo().setWorldName(params[2]);
+					sender.getWorld().getWorldInfo().setWorldName(params[2]);
 					sender.sendLangfileMessage("command.world.setname", String.valueOf(params[2]));
+					
+					return null;
 				}
 				else {
-					String name = sender.getWorld().getMinecraftWorld().getWorldInfo().getWorldName();
+					String name = sender.getWorld().getWorldInfo().getWorldName();
 					sender.sendLangfileMessage("command.world.currentname", name);
+					
+					return name;
 				}
-				return;
 			}
 			
 			if (!MoreCommands.isServerSide())
@@ -137,7 +143,7 @@ public class CommandWorld extends StandardCommand implements ServerCommandProper
 			else if (params[0].equalsIgnoreCase("exit")) {
 				if (isSenderOfEntityType(sender.getMinecraftISender(), EntityPlayerMP.class))
 						getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class).playerNetServerHandler.kickPlayerFromServer("World exited");
-				else throw new CommandException("command.generic.notServer", sender);
+				else throw new CommandException("command.world.invalidSender", sender);
 			}
 			else if (params[0].equalsIgnoreCase("new") && params.length > 1) {
 				long seed = 0;
@@ -185,6 +191,8 @@ public class CommandWorld extends StandardCommand implements ServerCommandProper
 			}
 			else throw new CommandException("command.world.invalidArg", sender);
 		}
+		
+		return null;
 	}
 	
 	private void loadWorld(DedicatedServer server, AnvilSaveConverter saveLoader, String world, long seed, WorldType type, String genSettings) {
@@ -310,7 +318,7 @@ public class CommandWorld extends StandardCommand implements ServerCommandProper
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

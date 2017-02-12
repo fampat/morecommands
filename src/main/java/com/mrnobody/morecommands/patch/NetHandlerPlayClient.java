@@ -22,8 +22,8 @@ import net.minecraft.world.WorldSettings;
  * The patched class of {@link net.minecraft.client.network.NetHandlerPlayClient} <br>
  * This class sets the {@link Minecraft#playerController} field, which again is responsible <br>
  * for setting the client player ({@link Minecraft#thePlayer}), which is the actual target
- * I want to modify. <br> By patching this class I can substitute the {@link Minecraft#playerController}
- * field and use my own patched {@link EntityClientPlayerMP}.
+ * to be modified. <br> By patching this class, the {@link Minecraft#playerController} field is 
+ * substituted and a patched version of {@link EntityClientPlayerMP} will be used.
  * 
  * @author MrNobody98
  *

@@ -1,8 +1,5 @@
 package com.mrnobody.morecommands.command;
 
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-
 /**
  * The base class for a command having multiple names. Such a command can
  * provide different functionalities which are still similar. Each name
@@ -32,18 +29,18 @@ public abstract class MultipleCommands extends StandardCommand {
 	 * 		  of this command. The name which will be used is determined by
 	 * 		  <b>{@link MultipleCommands#getCommandNames()}[typeIndex]</b>
 	 * @throws ArrayIndexOutOfBoundsException if typeIndex >= <b>{@link MultipleCommands#getCommandNames()}.length</b>
-	 * 			or typeIndex >= <b>{@link MultipleCommands#getUsages()}.length</b>
+	 * 			or typeIndex >= <b>{@link MultipleCommands#getCommandUsages()}.length</b>
 	 * @throws NegativeArraySizeException if typeIndex < 0
 	 */
 	public MultipleCommands(int typeIndex) {
 		this.typeIndex = typeIndex;
 		this.commandName = this.getCommandNames()[this.typeIndex];
-		this.commandUsage = this.getUsages()[this.typeIndex];
+		this.commandUsage = this.getCommandUsages()[this.typeIndex];
 	}
 	
 	/**
 	 * The index of {@link MultipleCommands#getCommandNames()} and
-	 * {@link MultipleCommands#getUsages()} that is used to determine
+	 * {@link MultipleCommands#getCommandUsages()} that is used to determine
 	 * the name of this command
 	 * 
 	 * @return
@@ -58,14 +55,14 @@ public abstract class MultipleCommands extends StandardCommand {
 	}
 
 	@Override
-	public final String getUsage() {
+	public final String getCommandUsage() {
 		return this.commandUsage;
 	}
 
 	@Override
-	public final void execute(CommandSender sender, String[] params) throws CommandException {
+	public final String execute(CommandSender sender, String[] params) throws CommandException {
 		if (this.commandName == null || this.commandUsage == null) throw new CommandException("command.generic.multiple.null", sender);
-		else this.execute(this.commandName, sender, params);
+		else return this.execute(this.commandName, sender, params);
 	}
 	
 	/**
@@ -76,7 +73,7 @@ public abstract class MultipleCommands extends StandardCommand {
 	/**
 	 * @return The usages of this command. The array size must be equal to the size of {@link MultipleCommands#getCommandNames()}
 	 */
-	public abstract String[] getUsages();
+	public abstract String[] getCommandUsages();
 	
 	/**
 	 * Executes this command using the functionality corresponding to the given name
@@ -85,6 +82,8 @@ public abstract class MultipleCommands extends StandardCommand {
 	 * @param sender the command sender
 	 * @param params the command parameters
 	 * @throws CommandException if the command can't be processed for some reason
+	 * @return A string representing the result of the command, this is not intended to be used for chat
+	 *         but e.g. as the content of a variable (see the "/var grab" command). May be null.
 	 */
-	public abstract void execute(String command, CommandSender sender, String[] params) throws CommandException;
+	public abstract String execute(String command, CommandSender sender, String[] params) throws CommandException;
 }

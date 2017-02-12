@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.mrnobody.morecommands.asm.transform.TransformBlockRailBase;
+import com.mrnobody.morecommands.asm.transform.TransformChatStyle;
 import com.mrnobody.morecommands.asm.transform.TransformForgeHooks;
 import com.mrnobody.morecommands.asm.transform.TransformItemStack;
 import com.mrnobody.morecommands.asm.transform.TransformTextureCompass;
@@ -16,7 +17,7 @@ import net.minecraft.launchwrapper.IClassTransformer;
 
 /**
  * The {@link IFMLLoadingPlugin} that provides {@link IClassTransformer}s<br>
- * which transform minecraft classes so that functionality that MoreCommands needs for some<br>
+ * which transform minecraft classes so that functionality which MoreCommands needs for some<br>
  * commands is added. Additionally determines whether we are in a deobfuscated environment
  * 
  * @author MrNobody98
@@ -61,7 +62,8 @@ public class MoreCommandsLoadingPlugin implements IFMLLoadingPlugin {
 				TransformBlockRailBase.class.getName(),
 				TransformForgeHooks.class.getName(),
 				TransformItemStack.class.getName(),
-				TransformTextureCompass.class.getName()
+				TransformTextureCompass.class.getName(),
+				TransformChatStyle.class.getName()
 		};
 	}
 

@@ -11,6 +11,8 @@ import com.google.common.collect.ImmutableMap;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.event.Listeners.TwoEventListener;
+import com.mrnobody.morecommands.settings.GlobalSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
 
 import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.common.registry.GameData;
@@ -79,7 +81,7 @@ public final class Xray implements Runnable, TwoEventListener<TickEvent, RenderW
 	}
 	
 	/** The delay between xray updates */
-	private static final int DELAY = GlobalSettings.xrayUPS <= 0 ? 1000 : GlobalSettings.xrayUPS > 10 ? 100 : 1000 / GlobalSettings.xrayUPS;
+	private static final int DELAY = MoreCommandsConfig.xrayUPS <= 0 ? 1000 : MoreCommandsConfig.xrayUPS > 10 ? 100 : 1000 / MoreCommandsConfig.xrayUPS;
 	/** The default radius in which blocks should be highlighted */
 	private static final int DEFAULT_RADIUS = 32;
 	
@@ -94,7 +96,7 @@ public final class Xray implements Runnable, TwoEventListener<TickEvent, RenderW
 	private final Minecraft mc = Minecraft.getMinecraft();
 	/** A map that contains the settings for each block */
 	private final ImmutableMap<Block, BlockSettings> blockSettings;
-	/** The block for which should be highlighted/which are to b rendered */
+	/** The blocks which should be highlighted/which are to be rendered */
 	private final List<BlockPosition> renderBlocks = new ArrayList<BlockPosition>();
 	
 	/** The configuration gui */
@@ -194,12 +196,11 @@ public final class Xray implements Runnable, TwoEventListener<TickEvent, RenderW
 						for (int x = px - radius; x < px + radius; x++) {
 							for (int z = pz - radius; z < pz + radius; z++) {
 								Block block = this.mc.theWorld.getBlock(x, y, z);
+								BlockSettings settings = this.blockSettings.get(block);
 								
-								for (BlockSettings settings : this.blockSettings.values()){
-									if (settings.draw && settings.block == block) {
-										temp.add(new BlockPosition(x, y, z, settings.color));
-										break;
-									}
+								if (settings != null && settings.draw) {
+									temp.add(new BlockPosition(x, y, z, settings.color));
+									break;
 								}
 							}
 						}

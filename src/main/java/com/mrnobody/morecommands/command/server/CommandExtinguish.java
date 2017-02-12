@@ -1,18 +1,18 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.Entity;
-import com.mrnobody.morecommands.wrapper.World;
+import com.mrnobody.morecommands.util.Coordinate;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
+import net.minecraft.world.World;
 
 @Command(
 		name = "extinguish",
@@ -29,18 +29,18 @@ public class CommandExtinguish extends StandardCommand implements ServerCommandP
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.extinguish.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Entity entity = !isSenderOfEntityType(sender.getMinecraftISender(), net.minecraft.entity.Entity.class) ? null : 
-		new Entity(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.Entity.class));
+	public String execute(CommandSender sender, String[] params) throws CommandException {
+		Entity entity = !isSenderOfEntityType(sender.getMinecraftISender(), Entity.class) ? null : 
+		getSenderAsEntity(sender.getMinecraftISender(), Entity.class);
 		
 		if (params.length > 0) {
 			if (params[0].equalsIgnoreCase("me")) {
-				if (entity != null) entity.getMinecraftEntity().extinguish();
+				if (entity != null) entity.extinguish();
 			}
 			else if (params[0].equalsIgnoreCase("all")) {
 				int radius = 16;
@@ -51,7 +51,7 @@ public class CommandExtinguish extends StandardCommand implements ServerCommandP
 				}
 				
 				this.extinguish(sender.getWorld(), sender.getPosition(), radius);
-				if (entity != null) entity.getMinecraftEntity().extinguish();
+				if (entity != null) entity.extinguish();
 				sender.sendLangfileMessage("command.extinguish.extinguished");
 			}
 			else {
@@ -66,9 +66,11 @@ public class CommandExtinguish extends StandardCommand implements ServerCommandP
 		}
 		else {
 			this.extinguish(sender.getWorld(), sender.getPosition(), 16);
-			if (entity != null) entity.getMinecraftEntity().extinguish();
+			if (entity != null) entity.extinguish();
 			sender.sendLangfileMessage("command.extinguish.extinguished");
 		}
+		
+		return null;
 	}
 	
 	private void extinguish(World world, Coordinate coord, int radius) {
@@ -105,12 +107,12 @@ public class CommandExtinguish extends StandardCommand implements ServerCommandP
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	
 	@Override
 	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
-		return params.length > 0 ? params[0].equalsIgnoreCase("me") ? isSenderOfEntityType(sender, net.minecraft.entity.Entity.class) : true : true;
+		return params.length > 0 ? params[0].equalsIgnoreCase("me") ? isSenderOfEntityType(sender, Entity.class) : true : true;
 	}
 }

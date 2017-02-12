@@ -1,16 +1,18 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.EntityLivingBase;
+import com.mrnobody.morecommands.util.Coordinate;
+import com.mrnobody.morecommands.util.EntityUtils;
+import com.mrnobody.morecommands.util.WorldUtils;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.EntityLivingBase;
 
 @Command(
 		name = "explode",
@@ -27,15 +29,15 @@ public class CommandExplode extends StandardCommand implements ServerCommandProp
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.explode.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		EntityLivingBase entity = new EntityLivingBase(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.EntityLivingBase.class));
+	public String execute(CommandSender sender, String[] params) throws CommandException {
+		EntityLivingBase entity = getSenderAsEntity(sender.getMinecraftISender(), EntityLivingBase.class);
 		int size = 4;
-		Coordinate spawn = entity.traceBlock(128.0D);
+		Coordinate spawn = EntityUtils.traceBlock(entity, 128D);
 		boolean success = spawn != null;
 		double x = 0.0D, y = 0.0D, z = 0.0D;
 		if (spawn != null) {
@@ -60,10 +62,12 @@ public class CommandExplode extends StandardCommand implements ServerCommandProp
 		}
 		
 		if (success) {
-			entity.getWorld().createExplosion(entity.getMinecraftEntity(), new Coordinate(x, y, z), size);
+			WorldUtils.createExplosion(entity.worldObj, entity, new Coordinate(x, y, z), size);
 			sender.sendLangfileMessage("command.explode.booooom");
 		}
 		else throw new CommandException("command.explode.notInSight", sender);
+		
+		return null;
 	}
 	
 	@Override
@@ -77,12 +81,12 @@ public class CommandExplode extends StandardCommand implements ServerCommandProp
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	
 	@Override
 	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
-		return isSenderOfEntityType(sender, net.minecraft.entity.EntityLivingBase.class);
+		return isSenderOfEntityType(sender, EntityLivingBase.class);
 	}
 }

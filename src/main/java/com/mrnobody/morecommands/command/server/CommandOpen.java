@@ -4,16 +4,17 @@ import java.util.Map;
 
 import com.google.common.collect.MapMaker;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.util.Coordinate;
+import com.mrnobody.morecommands.util.EntityUtils;
+import com.mrnobody.morecommands.util.WorldUtils;
 
 import cpw.mods.fml.common.eventhandler.Event.Result;
 import net.minecraft.block.Block;
@@ -54,7 +55,7 @@ public class CommandOpen extends StandardCommand implements ServerCommandPropert
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.open.syntax";
 	}
 	
@@ -69,9 +70,9 @@ public class CommandOpen extends StandardCommand implements ServerCommandPropert
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
-		Entity entity = new Player(player).traceEntity(128D);
+		Entity entity = EntityUtils.traceEntity(player, 128D);
 		
 		if (params.length == 0 && entity instanceof EntityHorse && ((EntityHorse) entity).isChested()) {
 			((EntityHorse) entity).openGUI(player);
@@ -86,14 +87,14 @@ public class CommandOpen extends StandardCommand implements ServerCommandPropert
 			if (params.length == 0 || params.length > 2) {
 				Coordinate trace; 
 				
-				try {trace = params.length > 2 ? getCoordFromParams(sender.getMinecraftISender(), params, 0) : new Player(player).traceBlock(128D);}
+				try {trace = params.length > 2 ? getCoordFromParams(sender.getMinecraftISender(), params, 0) : EntityUtils.traceBlock(player, 128D);}
 				catch (NumberFormatException nfe) {throw new CommandException("command.open.NAN", sender);}
 				
 				if (trace == null)
 					throw new CommandException("command.open.noBlock", sender);
 				
-				TileEntity te = sender.getWorld().getTileEntity(trace);
-				Block block = sender.getWorld().getBlock(trace);
+				TileEntity te = WorldUtils.getTileEntity(sender.getWorld(), trace);
+				Block block = WorldUtils.getBlock(sender.getWorld(), trace);
 				
 				if (block == Blocks.anvil)
 					player.displayGUIAnvil(trace.getBlockX(), trace.getBlockY(), trace.getBlockZ());
@@ -132,6 +133,8 @@ public class CommandOpen extends StandardCommand implements ServerCommandPropert
 			}
 			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
+		
+		return null;
 	}
 
 	@Override
@@ -145,7 +148,7 @@ public class CommandOpen extends StandardCommand implements ServerCommandPropert
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 

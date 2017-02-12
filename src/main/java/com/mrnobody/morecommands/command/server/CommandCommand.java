@@ -4,12 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
@@ -33,13 +33,13 @@ public class CommandCommand extends StandardCommand implements ServerCommandProp
     }
 
 	@Override
-    public String getUsage()
+    public String getCommandUsage()
     {
         return "command.command.syntax";
     }
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 1) {
 			if (params[0].equalsIgnoreCase("enable")) {
 				ICommand enable = this.disabledCommands.get(params[1]);
@@ -66,6 +66,8 @@ public class CommandCommand extends StandardCommand implements ServerCommandProp
 			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
 		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 
 	@Override
@@ -79,7 +81,7 @@ public class CommandCommand extends StandardCommand implements ServerCommandProp
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 

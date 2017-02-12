@@ -1,15 +1,16 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.EntityLivingBase;
+import com.mrnobody.morecommands.util.EntityUtils;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.EntityLivingBase;
 
 @Command(
 		name = "health",
@@ -28,24 +29,26 @@ public class CommandHealth extends StandardCommand implements ServerCommandPrope
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.health.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		EntityLivingBase entity = new EntityLivingBase(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.EntityLivingBase.class));
+	public String execute(CommandSender sender, String[] params) throws CommandException {
+		EntityLivingBase entity = getSenderAsEntity(sender.getMinecraftISender(), EntityLivingBase.class);
 		
 		if (params.length > 0) {
-			try {entity.setHealth(Float.parseFloat(params[0])); sender.sendLangfileMessage("command.health.success");}
+			try {EntityUtils.setHealth(entity, Float.parseFloat(params[0])); sender.sendLangfileMessage("command.health.success");}
 			catch (NumberFormatException e) {
-				if (params[0].equalsIgnoreCase("min")) {entity.setHealth(MIN_HEALTH); sender.sendLangfileMessage("command.health.success");}
-				else if (params[0].equalsIgnoreCase("max")) {entity.setHealth(MAX_HEALTH); sender.sendLangfileMessage("command.health.success");}
-				else if (params[0].equalsIgnoreCase("get")) {sender.sendLangfileMessage("command.health.get", entity.getHealth());}
+				if (params[0].equalsIgnoreCase("min")) {EntityUtils.setHealth(entity, MIN_HEALTH); sender.sendLangfileMessage("command.health.success");}
+				else if (params[0].equalsIgnoreCase("max")) {EntityUtils.setHealth(entity, MAX_HEALTH); sender.sendLangfileMessage("command.health.success");}
+				else if (params[0].equalsIgnoreCase("get")) {sender.sendLangfileMessage("command.health.get", EntityUtils.getHealth(entity));}
 				else throw new CommandException("command.health.invalidParam", sender);
 			}
 		}
 		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 	
 	@Override
@@ -59,12 +62,12 @@ public class CommandHealth extends StandardCommand implements ServerCommandPrope
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	
 	@Override
 	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
-		return isSenderOfEntityType(sender, net.minecraft.entity.EntityLivingBase.class);
+		return isSenderOfEntityType(sender, EntityLivingBase.class);
 	}
 }

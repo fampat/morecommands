@@ -7,11 +7,11 @@ import java.util.Set;
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommand;
 import net.minecraftforge.client.ClientCommandHandler;
@@ -34,13 +34,13 @@ public class CommandClientcommands extends StandardCommand implements ClientComm
     }
 
 	@Override
-    public String getUsage()
+    public String getCommandUsage()
     {
         return "command.clientcommands.syntax";
     }
     
 	@Override
-    public void execute(CommandSender sender, String[] params) throws CommandException {
+    public String execute(CommandSender sender, String[] params) throws CommandException {
         if (params.length > 0) {
         	if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
         		|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
@@ -55,6 +55,8 @@ public class CommandClientcommands extends StandardCommand implements ClientComm
         	else throw new CommandException("command.clientcommands.failure", sender);
         }
         else throw new CommandException("command.clientcommands.failure", sender);
+        
+        return null;
     }
 	
 	private void enableClientCommands() {
@@ -95,7 +97,7 @@ public class CommandClientcommands extends StandardCommand implements ClientComm
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 }

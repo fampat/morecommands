@@ -3,14 +3,15 @@ package com.mrnobody.morecommands.command.server;
 import java.util.Arrays;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Coordinate;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.util.Coordinate;
+import com.mrnobody.morecommands.util.EntityUtils;
+import com.mrnobody.morecommands.util.WorldUtils;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -34,14 +35,14 @@ public class CommandSign extends StandardCommand implements ServerCommandPropert
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.sign.syntax";
 	}
 	
 	@Override
-	public void execute(CommandSender sender, String[] params)throws CommandException {
-		Player player = new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
-		MovingObjectPosition hit = player.rayTraceBlock(128.0D, 1.0F);
+	public String execute(CommandSender sender, String[] params)throws CommandException {
+		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
+		MovingObjectPosition hit = EntityUtils.rayTraceBlock(player, 128D, 1F);
 		
 		if (hit != null && params.length > 1) {
 			Coordinate trace = new Coordinate(hit.blockX, hit.blockY, hit.blockZ);
@@ -52,8 +53,8 @@ public class CommandSign extends StandardCommand implements ServerCommandPropert
 			for (int i = 0; i < newLines.length && i < lines.length; i++)
 				newLines[i] = isNBTParam(lines[i]) ? lines[i].substring(1, lines[i].length() - 1) : lines[i];
 			
-			if (params[0].equalsIgnoreCase("edit") && player.getWorld().getTileEntity(trace) instanceof TileEntitySign) {
-				TileEntitySign sign = (TileEntitySign) player.getWorld().getTileEntity(trace);
+			if (params[0].equalsIgnoreCase("edit") && WorldUtils.getTileEntity(player.worldObj, trace) instanceof TileEntitySign) {
+				TileEntitySign sign = (TileEntitySign) WorldUtils.getTileEntity(player.worldObj, trace);
 				
 				sign.signText[0] = newLines[0];
 				sign.signText[1] = newLines[1];
@@ -73,13 +74,13 @@ public class CommandSign extends StandardCommand implements ServerCommandPropert
 				else if (hit.sideHit == 2) hit.blockZ -= 1;
 				
 				if (hit.sideHit == 1) {
-					int i1 = MathHelper.floor_double((double) ((player.getYaw() + 180.0F) * 16.0F / 360.0F) + 0.5D) & 15;
-					player.getWorld().getMinecraftWorld().setBlock(hit.blockX, hit.blockY, hit.blockZ, Blocks.standing_sign, i1, 3);
+					int i1 = MathHelper.floor_double((double) ((player.rotationYaw + 180.0F) * 16.0F / 360.0F) + 0.5D) & 15;
+					player.worldObj.setBlock(hit.blockX, hit.blockY, hit.blockZ, Blocks.standing_sign, i1, 3);
 				}
-                else player.getWorld().getMinecraftWorld().setBlock(hit.blockX, hit.blockY, hit.blockZ, Blocks.wall_sign, hit.sideHit, 3);
+                else player.worldObj.setBlock(hit.blockX, hit.blockY, hit.blockZ, Blocks.wall_sign, hit.sideHit, 3);
 				
-				if (player.getWorld().getTileEntity(hit.blockX, hit.blockY, hit.blockZ) instanceof TileEntitySign) {
-					TileEntitySign sign = (TileEntitySign) player.getWorld().getTileEntity(hit.blockX, hit.blockY, hit.blockZ);
+				if (player.worldObj.getTileEntity(hit.blockX, hit.blockY, hit.blockZ) instanceof TileEntitySign) {
+					TileEntitySign sign = (TileEntitySign) player.worldObj.getTileEntity(hit.blockX, hit.blockY, hit.blockZ);
 					
 					sign.signText[0] = newLines[0];
 					sign.signText[1] = newLines[1];
@@ -92,6 +93,8 @@ public class CommandSign extends StandardCommand implements ServerCommandPropert
 			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
 		else throw new CommandException("command.sign.noBlockInSight", sender);
+		
+		return null;
 	}
 
 	@Override
@@ -105,7 +108,7 @@ public class CommandSign extends StandardCommand implements ServerCommandPropert
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 

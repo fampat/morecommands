@@ -1,4 +1,4 @@
-package com.mrnobody.morecommands.util;
+package com.mrnobody.morecommands.settings;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,67 +26,9 @@ import com.mrnobody.morecommands.core.MoreCommands;
  * This {@link SettingsManager} implementation reads and writes settings
  * from files using the JSON format.
  * 
- * The (de)serialization process is implemented by {@link SettingsSerializable}.
- * Because {@link SettingsSerializable} works with {@link AbstractElement}s, the
- * {@link JsonElement}s read from the settings file will be converted to
- * {@link AbstractElement}s.<br><br>
- * 
- * A {@link JsonElement} corresponds to an {@link AbstractElement}.<br>
- * A {@link JsonObject} corresponds to a {@link ObjectElement}.<br>
- * A {@link JsonArray} corresponds to a {@link ListElement}.<br>
- * A {@link JsonPrimitive} corresponds to a {@link StringElement} if it contains a String
- * else if it contains a Number, it corresponds to a {@link NumericElement}.
- * 
  * @author MrNobody98
  */
 public class JsonSettingsManager extends SettingsManager {
-	/**
-	 * Converts a {@link JsonElement} into an {@link AbstractElement}
-	 * 
-	 * @param element the {@link JsonElement} to convert
-	 * @return the converted {@link AbstractElement}
-	 */
-	public static AbstractElement toAbstractElement(JsonElement element) {
-		if (element.isJsonArray()) {
-			ListElement e = new ListElement();
-			for (JsonElement elem : element.getAsJsonArray()) e.add(toAbstractElement(elem));
-			return e;
-		}
-		else if (element.isJsonObject()) {
-			ObjectElement e = new ObjectElement();
-			for (Map.Entry<String, JsonElement> entry : element.getAsJsonObject().entrySet()) e.add(entry.getKey(), toAbstractElement(entry.getValue()));
-			return e;
-		}
-		else if (element.isJsonPrimitive()) {
-			if (element.getAsJsonPrimitive().isString()) return new StringElement(element.getAsString());
-			else if (element.getAsJsonPrimitive().isNumber()) return new NumericElement(element.getAsNumber());
-			else return null;
-		}
-		else return null;
-	}
-	
-	/**
-	 * Converts a {@link AbstractElement} into an {@link JsonElement}
-	 * 
-	 * @param element the {@link AbstractElement} to convert
-	 * @return the converted {@link JsonElement}
-	 */
-	public static JsonElement toJsonElement(AbstractElement element) {
-		if (element.isList()) {
-			JsonArray e = new JsonArray();
-			for (AbstractElement elem : element.asList()) e.add(toJsonElement(elem));
-			return e;
-		}
-		else if (element.isObject()) {
-			JsonObject e = new JsonObject();
-			for (Map.Entry<String, AbstractElement> entry : element.asObject().entrySet()) e.add(entry.getKey(), toJsonElement(entry.getValue()));
-			return e;
-		}
-		else if (element.isNumeric()) return new JsonPrimitive(element.asNumericElement().asNumber());
-		else if (element.isString()) return new JsonPrimitive(element.asStringElement().asString());
-		else return JsonNull.INSTANCE;
-	}
-	
 	private boolean failed = false, loaded = false;
 	private SetMultimap<String, Setting<?>> settings = HashMultimap.create();
 	private final File file;
@@ -95,7 +37,6 @@ public class JsonSettingsManager extends SettingsManager {
 	 * Constructs a new JsonSettingsManager
 	 * 
 	 * @param file the file from which settings are read and to which settings are written. Must be in JSON format
-	 * @param load whether to read the settings immediately
 	 */
 	public JsonSettingsManager(File file) {
 		this(file, false);
@@ -105,21 +46,21 @@ public class JsonSettingsManager extends SettingsManager {
 	 * Constructs a new JsonSettingsManager
 	 * 
 	 * @param file the file from which settings are read and to which settings are written. Must be in JSON format
-	 * @param load whether to read the settings immediately
+	 * @param isClient whether this is a client side settings manager
 	 */
-	public JsonSettingsManager(File file, boolean load) {
-		this(file, load, true);
+	public JsonSettingsManager(File file, boolean isClient) {
+		this(file, isClient, false);
 	}
 	
 	/**
 	 * Constructs a new JsonSettingsManager
 	 * 
 	 * @param file the file from which settings are read and to which settings are written. Must be in JSON format
+	 * @param isClient whether this is a client side settings manager
 	 * @param load whether to read the settings immediately
-	 * @param useServer whether to read and write server dependencies of settings (See {@link Setting} for more details)
 	 */
-	public JsonSettingsManager(File file, boolean load, boolean useServer) {
-		super(useServer);
+	public JsonSettingsManager(File file, boolean isClient, boolean load) {
+		super(isClient);
 		this.file = file;
 		if (load) loadSettings();
 	}
@@ -128,24 +69,24 @@ public class JsonSettingsManager extends SettingsManager {
 	 * Constructs a new JsonSettingsManager
 	 * 
 	 * @param file the file from which settings are read and to which settings are written. Must be in JSON format
+	 * @param isClient whether this is a client side settings manager
+	 * @param defaultSerializer the default (de)serializer used if a {@link Setting} occurs for which 
+	 *        a {@link SettingsSerializer} has not been registered
 	 * @param load whether to read the settings immediately
-	 * @param defaultSerializable the default (de)serializer used if a {@link Setting} occurs for which 
-	 *        a {@link Serializable} has not been registered
-	 * @param useServer whether to read and write server dependencies of settings (See {@link Setting} for more details)
 	 */
-	public JsonSettingsManager(File file, boolean load, Serializable<Object> defaultSerializable, boolean useServer) {
-		super(defaultSerializable, useServer);
+	public JsonSettingsManager(File file, boolean isClient, SettingsSerializer<Object> defaultSerializer, boolean load) {
+		super(defaultSerializer, isClient);
 		this.file = file;
 		if (load) loadSettings();
 	}
 	
 	@Override
-	public SetMultimap<String, Setting<?>> getSettings() {
+	protected SetMultimap<String, Setting<?>> getSettings() {
 		return this.settings;
 	}
 
 	@Override
-	public void setSettings(SetMultimap<String, Setting<?>> settings) {
+	protected void setSettings(SetMultimap<String, Setting<?>> settings) {
 		this.settings = settings;
 	}
 	
@@ -160,7 +101,7 @@ public class JsonSettingsManager extends SettingsManager {
 			
 			JsonParser p = new JsonParser();
 			JsonElement root = p.parse(reader = new JsonReader(new InputStreamReader(new FileInputStream(this.file))));
-			this.deserializeSettings(toAbstractElement(root));
+			this.deserializeSettings(root);
 		}
 		catch (IOException ex) {MoreCommands.INSTANCE.getLogger().info("Error reading command config"); this.failed = true;}
 		catch (JsonIOException ex) {MoreCommands.INSTANCE.getLogger().info("Error reading command config"); this.failed = true;}
@@ -178,7 +119,7 @@ public class JsonSettingsManager extends SettingsManager {
 			return;
 		}
 		
-		String out = new GsonBuilder().setPrettyPrinting().create().toJson(toJsonElement(this.serializeSettings()));
+		String out = new GsonBuilder().setPrettyPrinting().create().toJson(this.serializeSettings());
 		OutputStreamWriter w = null;
 		
 		try {

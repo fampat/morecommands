@@ -3,15 +3,17 @@ package com.mrnobody.morecommands.patch;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.mrnobody.morecommands.command.AbstractCommand;
-import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.util.GlobalSettings;
+import com.mrnobody.morecommands.settings.GlobalSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 import com.mrnobody.morecommands.util.LanguageManager;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
 import com.mrnobody.morecommands.util.Variables;
 
 import net.minecraft.command.CommandException;
@@ -30,10 +32,7 @@ import net.minecraftforge.event.CommandEvent;
 
 /**
  * The patched class of {@link net.minecraft.command.ServerCommandManager} <br>
- * Patching this class is needed to use commands e.g. with a command block <br>
- * The vanilla command manager passes e.g. the command block as command sender,
- * this modified version will use players selected by a target selector.
- * Another aspect why this patch is needed is to use variables.
+ * This is mainly to replace variables in the command string.
  * 
  * @author MrNobody98
  *
@@ -57,29 +56,26 @@ public class ServerCommandManager extends net.minecraft.command.ServerCommandMan
         }
         
     	try {
-    		String world = MoreCommands.getProxy().getCurrentWorld(), dim = p_71556_1_.getEntityWorld().provider.getDimensionName();
+    		String world = p_71556_1_.getEntityWorld().getSaveHandler().getWorldDirectoryName(), dim = p_71556_1_.getEntityWorld().provider.getDimensionName();
     		
     		if (AbstractCommand.isSenderOfEntityType(p_71556_1_, EntityPlayerMP.class)) {
-    			ServerPlayerSettings settings = AbstractCommand.getPlayerSettings(AbstractCommand.getSenderAsEntity(p_71556_1_, EntityPlayerMP.class));
-    			PlayerPatches playerInfo = MoreCommands.INSTANCE.getEntityProperties(PlayerPatches.class, PlayerPatches.PLAYERPATCHES_IDENTIFIER, AbstractCommand.getSenderAsEntity(p_71556_1_, EntityPlayerMP.class));
-    			Map<String, String> playerVars = playerInfo != null && playerInfo.clientModded() ? new HashMap<String, String>() : settings.variables; //client takes care of replacing player variables
+    			ServerPlayerSettings settings = MoreCommands.getEntityProperties(ServerPlayerSettings.class, PlayerSettings.MORECOMMANDS_IDENTIFIER, AbstractCommand.getSenderAsEntity(p_71556_1_, EntityPlayerMP.class));
+    			Map<String, String> playerVars = settings == null ? new HashMap<String, String>() : settings.variables;
     			
-    			if (GlobalSettings.enableGlobalVars && GlobalSettings.enablePlayerVars)
-    				p_71556_2_ = Variables.replaceVars(p_71556_2_, playerVars, GlobalSettings.getVariables(world, dim));
-    			else if (GlobalSettings.enablePlayerVars)
-    				p_71556_2_ = Variables.replaceVars(p_71556_2_, playerVars);
-    			else if (GlobalSettings.enableGlobalVars)
-    				p_71556_2_ = Variables.replaceVars(p_71556_2_, GlobalSettings.getVariables(world, dim));
+    			if (MoreCommandsConfig.enableGlobalVars && MoreCommandsConfig.enablePlayerVars)
+    				p_71556_2_ = Variables.replaceVars(p_71556_2_, true, playerVars, GlobalSettings.getInstance().variables.get(ImmutablePair.of(world, dim)));
+    			else if (MoreCommandsConfig.enablePlayerVars)
+    				p_71556_2_ = Variables.replaceVars(p_71556_2_, true, playerVars);
+    			else if (MoreCommandsConfig.enableGlobalVars)
+    				p_71556_2_ = Variables.replaceVars(p_71556_2_, true, GlobalSettings.getInstance().variables.get(ImmutablePair.of(world, dim)));
     		}
-    		else if (GlobalSettings.enableGlobalVars) 
-    			p_71556_2_ = Variables.replaceVars(p_71556_2_, GlobalSettings.getVariables(world, dim));
+    		else if (MoreCommandsConfig.enableGlobalVars) 
+    			p_71556_2_ = Variables.replaceVars(p_71556_2_, true, GlobalSettings.getInstance().variables.get(ImmutablePair.of(world, dim)));
     	}
         catch (Variables.VariablesCouldNotBeResolvedException vcnbre) {
-            ChatComponentText text = new ChatComponentText(LanguageManager.translate(MoreCommands.INSTANCE.getCurrentLang(p_71556_1_), "command.var.cantBeResolved", vcnbre.getVariables().toString()));
-            text.getChatStyle().setColor(EnumChatFormatting.RED); p_71556_1_.addChatMessage(text);
-            p_71556_2_ = vcnbre.getNewString();
+        	p_71556_2_ = vcnbre.getNewString();
         }
-
+    	
         String[] astring = p_71556_2_.split(" ");
         String s1 = astring[0];
         astring = dropFirstString(astring);
@@ -96,7 +92,7 @@ public class ServerCommandManager extends net.minecraft.command.ServerCommandMan
         	}
         	
             if (icommand.canCommandSenderUseCommand(p_71556_1_))
-            {
+            {	
                 CommandEvent event = new CommandEvent(icommand, p_71556_1_, astring);
                 if (MinecraftForge.EVENT_BUS.post(event))
                 {

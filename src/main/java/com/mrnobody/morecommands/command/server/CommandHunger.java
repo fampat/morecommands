@@ -1,20 +1,16 @@
 package com.mrnobody.morecommands.command.server;
 
-import java.lang.reflect.Field;
-
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
-import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
-import com.mrnobody.morecommands.util.ReflectionHelper;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
+import com.mrnobody.morecommands.util.EntityUtils;
 
 import cpw.mods.fml.common.gameevent.TickEvent;
 import net.minecraft.command.ICommandSender;
@@ -28,20 +24,18 @@ import net.minecraft.entity.player.EntityPlayerMP;
 		videoURL = "command.hunger.videoURL"
 		)
 public class CommandHunger extends StandardCommand implements ServerCommandProperties, EventListener<TickEvent> {
-	private final Field foodLevel = ReflectionHelper.getField(ObfuscatedField.FoodStats_foodLevel);
-	
 	public CommandHunger() {
 		EventHandler.TICK.register(this);
 	}
 
 	@Override
 	public void onEvent(TickEvent ev) {
-		if (this.foodLevel != null && ev instanceof TickEvent.PlayerTickEvent) {
+		if (ev instanceof TickEvent.PlayerTickEvent) {
 			TickEvent.PlayerTickEvent event = (TickEvent.PlayerTickEvent) ev;
 			
 			if (event.player instanceof EntityPlayerMP && event.phase == TickEvent.Phase.END) {
 				ServerPlayerSettings settings = getPlayerSettings((EntityPlayerMP) event.player);
-				if (!settings.hunger) ReflectionHelper.set(ObfuscatedField.FoodStats_foodLevel, event.player.getFoodStats(), 20);
+				if (!settings.hunger) EntityUtils.setHunger((EntityPlayerMP) event.player, 20);
 			}
 		}
 	}
@@ -52,14 +46,14 @@ public class CommandHunger extends StandardCommand implements ServerCommandPrope
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.hunger.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Player player = new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
-		ServerPlayerSettings settings = getPlayerSettings(player.getMinecraftPlayer());
+	public String execute(CommandSender sender, String[] params) throws CommandException {
+		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
+		ServerPlayerSettings settings = getPlayerSettings(player);
 		int foodLevel;
 		
 		if (params.length > 0) {
@@ -67,30 +61,29 @@ public class CommandHunger extends StandardCommand implements ServerCommandPrope
 			catch (NumberFormatException e) {
 				if (params[0].equalsIgnoreCase("min")) {foodLevel = 0;}
 				else if (params[0].equalsIgnoreCase("max")) {foodLevel = 20;}
-				else if (params[0].equalsIgnoreCase("get")) {sender.sendLangfileMessage("command.hunger.get", player.getHunger()); return;}
+				else if (params[0].equalsIgnoreCase("get")) {sender.sendLangfileMessage("command.hunger.get", EntityUtils.getHunger(player)); return null;}
 				else if (params[0].equalsIgnoreCase("enable") || params[0].equalsIgnoreCase("1")
 						|| params[0].equalsIgnoreCase("on") || params[0].equalsIgnoreCase("true")) {
 						settings.hunger = true;
-						sender.sendLangfileMessage("command.hunger.on"); return;
+						sender.sendLangfileMessage("command.hunger.on"); return null;
 				}
 				else if (params[0].equalsIgnoreCase("disable") || params[0].equalsIgnoreCase("0")
 						|| params[0].equalsIgnoreCase("off") || params[0].equalsIgnoreCase("false")) {
 						settings.hunger = false;
-						sender.sendLangfileMessage("command.hunger.off"); return;
+						sender.sendLangfileMessage("command.hunger.off"); return null;
 				}
 				else throw new CommandException("command.hunger.invalidParam", sender);
 			}
 			
-			if (this.foodLevel != null) {
-				ReflectionHelper.set(ObfuscatedField.FoodStats_foodLevel, player.getMinecraftPlayer().getFoodStats(), foodLevel < 0 ? 0 : foodLevel > 20 ? 20 : foodLevel);
-				sender.sendLangfileMessage("command.hunger.success");
-			}
-			else throw new CommandException("command.hunger.error", sender);
+			EntityUtils.setHunger(player, foodLevel < 0 ? 0 : foodLevel > 20 ? 20 : foodLevel);
+			sender.sendLangfileMessage("command.hunger.success");
 		}
         else {
         	settings.hunger = !settings.hunger;
         	sender.sendLangfileMessage(settings.hunger ? "command.hunger.on" : "command.hunger.off");
         }
+		
+		return null;
 	}
 	
 	@Override
@@ -104,7 +97,7 @@ public class CommandHunger extends StandardCommand implements ServerCommandPrope
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

@@ -1,4 +1,4 @@
-package com.mrnobody.morecommands.util;
+package com.mrnobody.morecommands.settings;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,8 +12,13 @@ import java.util.UUID;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
+import com.mrnobody.morecommands.util.ReflectionHelper;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -37,21 +42,21 @@ import net.minecraft.server.MinecraftServer;
  * This {@link SettingsManager} implementation reads and writes settings
  * from files using the NBT format.
  * 
- * The (de)serialization process is implemented by {@link SettingsSerializable}.
- * Because {@link SettingsSerializable} works with {@link AbstractElement}s, the
+ * The (de)serialization process is implemented by {@link RootSettingsSerializer}.
+ * Because {@link RootSettingsSerializer} works with {@link JsonElement}s, the
  * {@link NBTBase}s read from the settings file will be converted to
- * {@link AbstractElement}s.<br><br>
+ * {@link JsonElement}s.<br><br>
  * 
- * A {@link NBTBase} corresponds to an {@link AbstractElement}.<br>
- * A {@link NBTTagCompound} corresponds to a {@link ObjectElement}.<br>
- * A {@link NBTTagString} corresponds to a {@link StringElement}.<br>
- * A {@link NBTPrimitive} corresponds to a {@link NumericElement}.<br>
- * {@link NBTTagList}, {@link NBTTagIntArray} and {@link NBTTagByteArray} correspond to a {@link ListElement}.<br>
+ * A {@link NBTBase} corresponds to an {@link JsonElement}.<br>
+ * A {@link NBTTagCompound} corresponds to a {@link JsonObject}.<br>
+ * A {@link NBTTagString} corresponds to a {@link JsonPrimitive}.<br>
+ * A {@link NBTPrimitive} corresponds to a {@link JsonPrimitive}.<br>
+ * {@link NBTTagList}, {@link NBTTagIntArray} and {@link NBTTagByteArray} correspond to a {@link JsonArray}.<br>
  * 
  * @author MrNobody98
  */
 public class NBTSettingsManager extends SettingsManager {
-	/** The field of the list list in which the tags in a {@link NBTTagList} are stored */
+	/** The field of the list in which the tags in a {@link NBTTagList} are stored */
     private static final Field list = ReflectionHelper.getField(ObfuscatedField.NBTTagList_tagList);
     
     /**
@@ -72,69 +77,72 @@ public class NBTSettingsManager extends SettingsManager {
     }
     
 	/**
-	 * Converts a {@link NBTBase} into an {@link AbstractElement}
+	 * Converts a {@link NBTBase} into a {@link JsonElement}
 	 * 
 	 * @param element the {@link NBTBase} to convert
-	 * @return the converted {@link AbstractElement}
+	 * @return the converted {@link JsonElement}
 	 */
-    public static AbstractElement toAbstractElement(NBTBase element) {
-		if (element instanceof NBTTagByte) return new NumericElement(((NBTTagByte) element).func_150290_f());
-		else if (element instanceof NBTTagShort) return new NumericElement(((NBTTagShort) element).func_150289_e());
-		else if (element instanceof NBTTagInt) return new NumericElement(((NBTTagInt) element).func_150287_d());
-		else if (element instanceof NBTTagLong) return new NumericElement(((NBTTagLong) element).func_150291_c());
-		else if (element instanceof NBTTagFloat) return new NumericElement(((NBTTagFloat) element).func_150288_h());
-		else if (element instanceof NBTTagDouble) return new NumericElement(((NBTTagDouble) element).func_150286_g());
-		else if (element instanceof NBTTagString) return new StringElement(((NBTTagString) element).func_150285_a_());
+    public static JsonElement toJsonElement(NBTBase element) {
+		if (element instanceof NBTTagByte) return new JsonPrimitive(((NBTTagByte) element).func_150290_f());
+		else if (element instanceof NBTTagShort) return new JsonPrimitive(((NBTTagShort) element).func_150289_e());
+		else if (element instanceof NBTTagInt) return new JsonPrimitive(((NBTTagInt) element).func_150287_d());
+		else if (element instanceof NBTTagLong) return new JsonPrimitive(((NBTTagLong) element).func_150291_c());
+		else if (element instanceof NBTTagFloat) return new JsonPrimitive(((NBTTagFloat) element).func_150288_h());
+		else if (element instanceof NBTTagDouble) return new JsonPrimitive(((NBTTagDouble) element).func_150286_g());
+		else if (element instanceof NBTTagString) return new JsonPrimitive(((NBTTagString) element).func_150285_a_());
 		else if (element instanceof NBTTagByteArray) {
-			ListElement e = new ListElement();
-			for (byte b : ((NBTTagByteArray) element).func_150292_c()) e.add(new NumericElement(b));
+			JsonArray e = new JsonArray();
+			for (byte b : ((NBTTagByteArray) element).func_150292_c()) e.add(new JsonPrimitive(b));
 			return e;
 		}
 		else if (element instanceof NBTTagIntArray) {
-			ListElement e = new ListElement();
-			for (int i : ((NBTTagIntArray) element).func_150302_c()) e.add(new NumericElement(i));
+			JsonArray e = new JsonArray();
+			for (int i : ((NBTTagIntArray) element).func_150302_c()) e.add(new JsonPrimitive(i));
 			return e;
 		}
 		else if (element instanceof NBTTagList) {
-			ListElement e = new ListElement();
-			for (int i = 0; i < ((NBTTagList) element).tagCount(); i++) e.add(toAbstractElement(getTag((NBTTagList) element, i)));
+			JsonArray e = new JsonArray();
+			for (int i = 0; i < ((NBTTagList) element).tagCount(); i++) e.add(toJsonElement(getTag((NBTTagList) element, i)));
 			return e;
 		}
 		else if (element instanceof NBTTagCompound) {
-			ObjectElement e = new ObjectElement();
-			for (String key : (Set<String>) ((NBTTagCompound) element).func_150296_c()) e.add(key, toAbstractElement(((NBTTagCompound) element).getTag(key)));
+			JsonObject e = new JsonObject();
+			for (String key : (Set<String>) ((NBTTagCompound) element).func_150296_c()) e.add(key, toJsonElement(((NBTTagCompound) element).getTag(key)));
 			return e;
 		}
 		else return null;
 	}
 	
 	/**
-	 * Converts a {@link AbstractElement} into an {@link NBTBase}
+	 * Converts a {@link JsonElement} into an {@link NBTBase}
 	 * 
-	 * @param element the {@link AbstractElement} to convert
+	 * @param element the {@link JsonElement} to convert
 	 * @return the converted {@link NBTBase}
 	 */
-	public static NBTBase toNBTElement(AbstractElement element) {
-		if (element.isList()) {
+	public static NBTBase toNBTElement(JsonElement element) {
+		if (element.isJsonArray()) {
 			NBTTagList list = new NBTTagList();
-			for (AbstractElement elem : element.asList()) list.appendTag(toNBTElement(elem));
+			for (JsonElement elem : element.getAsJsonArray()) list.appendTag(toNBTElement(elem));
 			return list;
 		}
-		else if (element.isObject()) {
+		else if (element.isJsonObject()) {
 			NBTTagCompound compound = new NBTTagCompound();
-			for (Map.Entry<String, AbstractElement> entry : element.asObject().entrySet()) compound.setTag(entry.getKey(), toNBTElement(entry.getValue()));
+			for (Map.Entry<String, JsonElement> entry : element.getAsJsonObject().entrySet()) compound.setTag(entry.getKey(), toNBTElement(entry.getValue()));
 			return compound;
 		}
-		else if (element.isNumeric()) {
-			if (element.asNumericElement().asNumber() instanceof Byte) return new NBTTagByte(element.asNumericElement().asNumber().byteValue());
-			else if (element.asNumericElement().asNumber() instanceof Short) return new NBTTagShort(element.asNumericElement().asNumber().shortValue());
-			else if (element.asNumericElement().asNumber() instanceof Integer) return new NBTTagInt(element.asNumericElement().asNumber().intValue());
-			else if (element.asNumericElement().asNumber() instanceof Long) return new NBTTagLong(element.asNumericElement().asNumber().longValue());
-			else if (element.asNumericElement().asNumber() instanceof Float) return new NBTTagFloat(element.asNumericElement().asNumber().floatValue());
-			else if (element.asNumericElement().asNumber() instanceof Double) return new NBTTagDouble(element.asNumericElement().asNumber().doubleValue());
-			else return new NBTTagDouble(element.asNumericElement().asNumber().doubleValue());
+		else if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isNumber()) {
+			Number num = element.getAsJsonPrimitive().getAsNumber();
+			
+			if (num instanceof Byte) return new NBTTagByte(num.byteValue());
+			else if (num instanceof Short) return new NBTTagShort(num.shortValue());
+			else if (num instanceof Integer) return new NBTTagInt(num.intValue());
+			else if (num instanceof Long) return new NBTTagLong(num.longValue());
+			else if (num instanceof Float) return new NBTTagFloat(num.floatValue());
+			else if (num instanceof Double) return new NBTTagDouble(num.doubleValue());
+			else return new NBTTagDouble(num.doubleValue());
 		}
-		else if (element.isString()) return new NBTTagString(element.asStringElement().asString());
+		else if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isString()) 
+			return new NBTTagString(element.getAsJsonPrimitive().getAsString());
 		else return null;
 	}
     
@@ -155,21 +163,21 @@ public class NBTSettingsManager extends SettingsManager {
 	 * Constructs a new NBTSettingsManager
 	 * 
 	 * @param file the file from which settings are read and to which settings are written. Must be in NBT format
-	 * @param load whether to read the settings immediately
+	 * @param isClient whether this is a client side settings manager
 	 */
-	public NBTSettingsManager(File file, boolean load) {
-		this(file, load, true);
+	public NBTSettingsManager(File file, boolean isClient) {
+		this(file, isClient, false);
 	}
 	
 	/**
 	 * Constructs a new NBTSettingsManager
 	 * 
 	 * @param file the file from which settings are read and to which settings are written. Must be in NBT format
+	 * @param isClient whether this is a client side settings manager
 	 * @param load whether to read the settings immediately
-	 * @param useServer whether to read and write server dependencies of settings (See {@link Setting} for more details)
 	 */
-	public NBTSettingsManager(File file, boolean load, boolean useServer) {
-		super(useServer);
+	public NBTSettingsManager(File file, boolean isClient, boolean load) {
+		super(isClient);
 		this.file = file;
 		if (load) loadSettings();
 	}
@@ -178,13 +186,13 @@ public class NBTSettingsManager extends SettingsManager {
 	 * Constructs a new NBTSettingsManager
 	 * 
 	 * @param file the file from which settings are read and to which settings are written. Must be in NBT format
+	 * @param isClient whether this is a client side settings manager
+	 * @param defaultSerializer the default (de)serializer used if a {@link Setting} occurs for which 
+	 *        a {@link SettingsSerializer} has not been registered
 	 * @param load whether to read the settings immediately
-	 * @param defaultSerializable the default (de)serializer used if a {@link Setting} occurs for which 
-	 *        a {@link Serializable} has not been registered
-	 * @param useServer whether to read and write server dependencies of settings (See {@link Setting} for more details)
 	 */
-	public NBTSettingsManager(File file, boolean load, Serializable<Object> defaultSerializer, boolean useServer) {
-		super(defaultSerializer, useServer);
+	public NBTSettingsManager(File file, boolean isClient, SettingsSerializer<Object> defaultSerializer, boolean load) {
+		super(defaultSerializer, isClient);
 		this.file = file;
 		if (load) loadSettings();
 	}
@@ -202,12 +210,12 @@ public class NBTSettingsManager extends SettingsManager {
 	}
 	
 	@Override
-	public SetMultimap<String, Setting<?>> getSettings() {
+	protected SetMultimap<String, Setting<?>> getSettings() {
 		return this.settings;
 	}
 
 	@Override
-	public void setSettings(SetMultimap<String, Setting<?>> settings) {
+	protected void setSettings(SetMultimap<String, Setting<?>> settings) {
 		this.settings = settings;
 	}
 	
@@ -221,7 +229,7 @@ public class NBTSettingsManager extends SettingsManager {
 			if (!this.file.exists() || !this.file.isFile()) return;
 			fis = new FileInputStream(this.file);
 			NBTTagCompound data = CompressedStreamTools.readCompressed(fis);
-			this.deserializeSettings(toAbstractElement(data));
+			this.deserializeSettings(toJsonElement(data));
 		}
 		catch (IOException ex) {
 			UUID uuid = null; try {uuid = UUID.fromString(this.file.getName().split("\\.")[0]);} catch (IllegalArgumentException e) {}

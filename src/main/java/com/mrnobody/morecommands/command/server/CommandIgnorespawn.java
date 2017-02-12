@@ -1,20 +1,29 @@
 package com.mrnobody.morecommands.command.server;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.util.EntityUtils;
+import com.mrnobody.morecommands.util.TargetSelector;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 
 @Command(
@@ -25,53 +34,73 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 		videoURL="command.ignorespawn.videoURL"
 		)
 public class CommandIgnorespawn extends StandardCommand implements ServerCommandProperties, EventListener<EntityJoinWorldEvent> {
-	private List<Class<? extends net.minecraft.entity.Entity>> ignoreSpawn = new ArrayList<Class<? extends net.minecraft.entity.Entity>>();
-  
+	private static final Map<Class<? extends Entity>, List<Predicate<Entity>>> ignoredEntities = Maps.newHashMap();
+	
 	public CommandIgnorespawn() {
 		EventHandler.ENTITYJOIN.register(this);
 	}
-  
+	
 	@Override
 	public void onEvent(EntityJoinWorldEvent event) {
-		if (this.ignoreSpawn.contains(event.entity.getClass()))
+		if (isEntityIgnored(event.entity))
 			event.setCanceled(true);
 	}
-  
+	
 	@Override
 	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
 		return true;
 	}
-  
+	
 	@Override
 	public String getCommandName() {
 		return "ignorespawn";
 	}
-  
+	
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.ignorespawn.syntax";
 	}
-  
+	
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 0) {
-			Class<? extends net.minecraft.entity.Entity> entityClass = (Class<? extends net.minecraft.entity.Entity>) com.mrnobody.morecommands.wrapper.Entity.getEntityClass(params[0]);
-      
+			params = params.length > 1 ? reparseParamsWithNBTData(params) : params;
+			
+			Class<? extends Entity> entityClass = (Class<? extends Entity>) EntityUtils.getEntityClass(params[0], true);
+			NBTTagCompound tag = null; boolean equalLists = false;
+			
 			if (entityClass == null) {
-				try {entityClass = (Class<? extends net.minecraft.entity.Entity>) EntityList.IDtoClassMapping.get(Integer.valueOf(Integer.parseInt(params[0])));}
+				try {entityClass = (Class<? extends Entity>) EntityList.IDtoClassMapping.get(Integer.valueOf(Integer.parseInt(params[0])));}
 				catch (NumberFormatException nfe) {throw new CommandException("command.ignorespawn.unknownEntity", sender);}
 			}
+
+			if (params.length > 1) {
+				NBTBase nbt = getNBTFromParam(params[1]);
+				if (!(nbt instanceof NBTTagCompound)) throw new CommandException("command.ignorespawn.invalidNBT", sender);
+				
+				tag = (NBTTagCompound) nbt;
+				equalLists = params.length > 2 && isEqualLists(params[2]);
+			}
 			
-			if (this.ignoreSpawn.contains(entityClass)) {
-				this.ignoreSpawn.remove(entityClass);
-				sender.sendLangfileMessage("command.ignorespawn.removed");
+			Predicate<Entity> predicate = new NBTPredicate(tag, equalLists);
+			List<Predicate<Entity>> predicates = ignoredEntities.get(entityClass);
+			
+			if (predicates == null)
+				ignoredEntities.put(entityClass, predicates = Lists.newArrayList());
+			
+			if (!predicates.contains(predicate)) {
+				predicates.add(predicate);
+				sender.sendLangfileMessage("command.ignorespawn.added");
 			}
 			else {
-				this.ignoreSpawn.add(entityClass);
-				sender.sendLangfileMessage("command.ignorespawn.added");
+				predicates.remove(predicate);
+				if (predicates.isEmpty()) ignoredEntities.remove(predicates);
+				sender.sendLangfileMessage("command.ignorespawn.removed");
 			}
 		}
 		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
   
 	@Override
@@ -85,7 +114,51 @@ public class CommandIgnorespawn extends StandardCommand implements ServerCommand
 	}
   
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
+	}
+	
+	private static final boolean isEntityIgnored(Entity entity) {
+		List<Predicate<Entity>> predicates = ignoredEntities.get(entity.getClass());
+		
+		if (predicates != null)
+			return Predicates.or(predicates).apply(entity);
+		else
+			return false;
+	}
+	
+	private static class NBTPredicate implements Predicate<Entity> {
+		private NBTTagCompound tag;
+		private boolean equalLists;
+		
+		public NBTPredicate(NBTTagCompound tag, boolean equalLists) {
+			this.tag = tag;
+			this.equalLists = equalLists;
+		}
+		
+		@Override
+		public boolean apply(Entity entity) {
+			if (this.tag == null) 
+				return true;
+			
+			NBTTagCompound container = new NBTTagCompound();
+			entity.writeToNBT(container);
+			
+			return TargetSelector.nbtContains(container, this.tag, !this.equalLists);
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == this) return true;
+			else if (!(o instanceof NBTPredicate)) return false;
+			
+			NBTPredicate that = (NBTPredicate) o;
+			return that.tag == null ? this.tag == null : that.tag.equals(this.tag);
+		}
+		
+		@Override
+		public int hashCode() {
+			return this.tag == null ? 0 : this.tag.hashCode();
+		}
 	}
 }
