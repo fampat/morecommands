@@ -1,13 +1,14 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.util.EntityUtils;
+import com.mrnobody.morecommands.util.WorldUtils;
 
 import net.minecraft.block.Block;
 import net.minecraft.command.ICommandSender;
@@ -28,27 +29,27 @@ import net.minecraft.util.BlockPos;
 		)
 public class CommandChest extends StandardCommand implements ServerCommandProperties {
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "chest";
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.chest.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params)throws CommandException {
+	public String execute(CommandSender sender, String[] params)throws CommandException {
 		if (params.length < 1)
-			throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+			throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		
-		Player player = new Player(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
-		BlockPos coord = player.traceBlock(128.0D);
+		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
+		BlockPos coord = EntityUtils.traceBlock(player, 128.0D);
 		
 		if (coord == null)
 			throw new CommandException("command.chest.noBlockInSight", sender);
 		
-		Block block = player.getWorld().getBlock(coord);
+		Block block = WorldUtils.getBlock(player.worldObj, coord);
 		
         int x1 = coord.getX();
         int y1 = coord.getY();
@@ -59,15 +60,15 @@ public class CommandChest extends StandardCommand implements ServerCommandProper
 		
 		if (params[0].equalsIgnoreCase("drop")) {
             y1 += 1; y2 += 1;
-            player.getWorld().setBlock(new BlockPos(x1, y1, z1), Blocks.chest);
-            player.getWorld().setBlock(new BlockPos(x2, y2, z2), Blocks.chest);
+            WorldUtils.setBlock(player.worldObj, new BlockPos(x1, y1, z1), Blocks.chest);
+            WorldUtils.setBlock(player.worldObj, new BlockPos(x2, y2, z2), Blocks.chest);
 		}
 		else if (params[0].equalsIgnoreCase("fill") || params[0].equalsIgnoreCase("get") || params[0].equalsIgnoreCase("swap") || params[0].equalsIgnoreCase("clear")) {
-			if (player.getWorld().getBlock(coord) == Blocks.chest) {
-				if (player.getWorld().getBlock(x2, y2, z2) == Blocks.chest);
-				else if (player.getWorld().getBlock(x1 - 1, y1, z1) == Blocks.chest) x2 = x1 - 1;
-				else if (player.getWorld().getBlock(x1, y1, z1 + 1) == Blocks.chest) {x2 = x1; z2 = z1 + 1;}
-				else if (player.getWorld().getBlock(x1, y1, z1 - 1) == Blocks.chest) {x2 = x1; z2 = z1 - 1;}
+			if (WorldUtils.getBlock(player.worldObj, coord) == Blocks.chest) {
+				if (WorldUtils.getBlock(player.worldObj, x2, y2, z2) == Blocks.chest);
+				else if (WorldUtils.getBlock(player.worldObj, x1 - 1, y1, z1) == Blocks.chest) x2 = x1 - 1;
+				else if (WorldUtils.getBlock(player.worldObj, x1, y1, z1 + 1) == Blocks.chest) {x2 = x1; z2 = z1 + 1;}
+				else if (WorldUtils.getBlock(player.worldObj, x1, y1, z1 - 1) == Blocks.chest) {x2 = x1; z2 = z1 - 1;}
 				else y2 = -1;
 			}
 			else throw new CommandException("command.chest.noChest", sender);
@@ -75,28 +76,30 @@ public class CommandChest extends StandardCommand implements ServerCommandProper
 		
 		IInventory chest = null;
 		
-		if (y2 > -1) chest = new InventoryLargeChest("Large chest", (TileEntityChest) player.getWorld().getMinecraftWorld().getTileEntity(new BlockPos(x1, y1, z1)), 
-							(TileEntityChest) player.getWorld().getMinecraftWorld().getTileEntity(new BlockPos(x2, y2, z2)));
-		else chest = (TileEntityChest) player.getWorld().getMinecraftWorld().getTileEntity(new BlockPos(x1, y1, z1));
+		if (y2 > -1) chest = new InventoryLargeChest("Large chest", (TileEntityChest) WorldUtils.getTileEntity(player.worldObj, new BlockPos(x1, y1, z1)), 
+							(TileEntityChest) WorldUtils.getTileEntity(player.worldObj, new BlockPos(x2, y2, z2)));
+		else chest = (TileEntityChest) WorldUtils.getTileEntity(player.worldObj, new BlockPos(x1, y1, z1));
 		
 		if (params[0].equalsIgnoreCase("drop") || params[0].equalsIgnoreCase("fill")) {
-			this.transferInventory(player.getMinecraftPlayer().inventory, chest);
+			this.transferInventory(player.inventory, chest);
 		}
 		else if (params[0].equalsIgnoreCase("get")) {
-			this.transferInventory(chest, player.getMinecraftPlayer().inventory);
+			this.transferInventory(chest, player.inventory);
 		}
 		else if (params[0].equalsIgnoreCase("clear")) {
 			this.transferInventory(chest, null);
 		}
 		else if (params[0].equalsIgnoreCase("swap")) {
-            InventoryPlayer p = new InventoryPlayer(player.getMinecraftPlayer());
+            InventoryPlayer p = new InventoryPlayer(player);
             for (int i = 0; i < p.getSizeInventory(); i++) {
-               p.setInventorySlotContents(i, player.getMinecraftPlayer().inventory.getStackInSlot(i));
-               player.getMinecraftPlayer().inventory.setInventorySlotContents(i, null);
+               p.setInventorySlotContents(i, player.inventory.getStackInSlot(i));
+               player.inventory.setInventorySlotContents(i, null);
             }
-            this.transferInventory(chest, player.getMinecraftPlayer().inventory);
+            this.transferInventory(chest, player.inventory);
             this.transferInventory(p, chest);
 		}
+		
+		return null;
 	}
 
 	private void transferInventory(IInventory from, IInventory to) {
@@ -136,7 +139,7 @@ public class CommandChest extends StandardCommand implements ServerCommandProper
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

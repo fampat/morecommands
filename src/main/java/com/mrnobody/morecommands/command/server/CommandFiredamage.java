@@ -1,15 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -37,23 +37,24 @@ public class CommandFiredamage extends StandardCommand implements ServerCommandP
 	}
 	
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "firedamage";
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.firedamage.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
     	
-		try {settings.firedamage = parseTrueFalse(params, 0, settings.firedamage);}
+		try {settings.firedamage = parseTrueFalse(params, 0, !settings.firedamage);}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.firedamage.failure", sender);}
 		
 		sender.sendLangfileMessage(settings.firedamage  ? "command.firedamage.on" : "command.firedamage.off");
+		return null;
 	}
 	
 	@Override
@@ -67,7 +68,7 @@ public class CommandFiredamage extends StandardCommand implements ServerCommandP
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

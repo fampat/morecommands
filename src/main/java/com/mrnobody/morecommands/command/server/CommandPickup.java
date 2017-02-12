@@ -1,15 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -29,12 +29,12 @@ public class CommandPickup extends StandardCommand implements ServerCommandPrope
 	}
 
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "pickup";
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.pickup.syntax";
 	}
 	
@@ -47,7 +47,7 @@ public class CommandPickup extends StandardCommand implements ServerCommandPrope
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
     	
 		if (params.length > 0) {
@@ -65,7 +65,9 @@ public class CommandPickup extends StandardCommand implements ServerCommandPrope
 				sender.sendLangfileMessage("command.pickup.added");
 			}
 		}
-		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 
 	@Override
@@ -79,7 +81,7 @@ public class CommandPickup extends StandardCommand implements ServerCommandPrope
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 

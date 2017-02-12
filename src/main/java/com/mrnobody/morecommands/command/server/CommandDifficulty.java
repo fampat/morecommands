@@ -1,12 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
@@ -22,17 +22,17 @@ import net.minecraft.world.EnumDifficulty;
 public class CommandDifficulty extends StandardCommand implements ServerCommandProperties {
 
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "difficulty";
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.difficulty.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 0) {
 			MinecraftServer server = MinecraftServer.getServer();
 			EnumDifficulty diff;
@@ -44,7 +44,7 @@ public class CommandDifficulty extends StandardCommand implements ServerCommandP
 			else throw new CommandException("command.difficulty.invalidDifficulty", sender, params[0]);
 			
 			server.setDifficultyForAllWorlds(diff);
-			sender.getWorld().getMinecraftWorld().getWorldInfo().setDifficulty(diff);
+			sender.getWorld().getWorldInfo().setDifficulty(diff);
 			String difficulty = "";
 			
 			switch(diff) {
@@ -56,7 +56,9 @@ public class CommandDifficulty extends StandardCommand implements ServerCommandP
 			
 			sender.sendLangfileMessage("command.difficulty.setto", difficulty);
 		}
-		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 	
 	@Override
@@ -70,7 +72,7 @@ public class CommandDifficulty extends StandardCommand implements ServerCommandP
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

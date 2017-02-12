@@ -5,14 +5,14 @@ import java.util.Iterator;
 import java.util.Map;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.network.PacketDispatcher.BlockUpdateType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.block.Block;
 import net.minecraft.command.ICommandSender;
@@ -43,17 +43,17 @@ public class CommandBlocklight extends StandardCommand implements ServerCommandP
 	}
   
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "blocklight";
 	}
   
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.blocklight.syntax";
 	}
   
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 2) {
 			Block block = getBlock(params[1]);
 			BlockUpdateType update;
@@ -96,7 +96,9 @@ public class CommandBlocklight extends StandardCommand implements ServerCommandP
 			}
 			else throw new CommandException("command.blocklight.notFound", sender);
 		}
-		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
   
 	@Override
@@ -110,7 +112,7 @@ public class CommandBlocklight extends StandardCommand implements ServerCommandP
 	}
   
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 }

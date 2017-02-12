@@ -1,15 +1,16 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.TwoEventListener;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
+import com.mrnobody.morecommands.util.EntityUtils;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -33,12 +34,12 @@ public class CommandNoattack extends StandardCommand implements ServerCommandPro
 	}
 
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "noattack";
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.noattack.syntax";
 	}
 	
@@ -64,11 +65,11 @@ public class CommandNoattack extends StandardCommand implements ServerCommandPro
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
     	
 		if (params.length > 0) {
-			Class<? extends Entity> entityClass = (Class<? extends Entity>) com.mrnobody.morecommands.wrapper.Entity.getEntityClass(params[0]);
+			Class<? extends Entity> entityClass = (Class<? extends Entity>) EntityUtils.getEntityClass(params[0], true);
 				
 			if (entityClass == null) {
 				try {entityClass = (Class<? extends Entity>) EntityList.idToClassMapping.get(Integer.parseInt(params[0]));}
@@ -87,7 +88,9 @@ public class CommandNoattack extends StandardCommand implements ServerCommandPro
 				sender.sendLangfileMessage("command.noattack.added");
 			}
 		}
-		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 
 	@Override
@@ -101,7 +104,7 @@ public class CommandNoattack extends StandardCommand implements ServerCommandPro
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 

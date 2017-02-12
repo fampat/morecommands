@@ -3,8 +3,12 @@ package com.mrnobody.morecommands.command.server;
 import java.util.Arrays;
 import java.util.Map;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.MultipleCommands;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
@@ -12,11 +16,10 @@ import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
+import com.mrnobody.morecommands.settings.GlobalSettings;
+import com.mrnobody.morecommands.settings.MoreCommandsConfig;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 import com.mrnobody.morecommands.util.DummyCommand;
-import com.mrnobody.morecommands.util.GlobalSettings;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.CommandNotFoundException;
 import net.minecraft.command.ICommand;
@@ -53,13 +56,13 @@ public class CommandAlias extends MultipleCommands implements ServerCommandPrope
 				command = playerInfo != null && playerInfo.clientModded() ? null :
 				getPlayerSettings(getSenderAsEntity(event.sender, EntityPlayerMP.class)).aliases.get(event.command.getName());
 				
-				if (command == null && GlobalSettings.enableGlobalAliases)
-					command = GlobalSettings.getAliases(MoreCommands.getProxy().getCurrentWorld(), event.sender.getEntityWorld().provider.getDimensionName()).get(event.command.getName());
-				else if (!GlobalSettings.enablePlayerAliases)
+				if (command == null && MoreCommandsConfig.enableGlobalAliases)
+					command = GlobalSettings.getInstance().aliases.get(ImmutablePair.of(event.sender.getEntityWorld().getSaveHandler().getWorldDirectoryName(), event.sender.getEntityWorld().provider.getDimensionName())).get(event.command.getName());
+				else if (!MoreCommandsConfig.enablePlayerAliases)
 					command = null;
 			}
-			else if (GlobalSettings.enableGlobalAliases)
-				command = GlobalSettings.getAliases(MoreCommands.getProxy().getCurrentWorld(), event.sender.getEntityWorld().provider.getDimensionName()).get(event.command.getName());
+			else if (MoreCommandsConfig.enableGlobalAliases)
+				command = GlobalSettings.getInstance().aliases.get(ImmutablePair.of(event.sender.getEntityWorld().getSaveHandler().getWorldDirectoryName(), event.sender.getEntityWorld().provider.getDimensionName())).get(event.command.getName());
 			
 			if (command != null) {
 				event.exception = null;
@@ -76,17 +79,17 @@ public class CommandAlias extends MultipleCommands implements ServerCommandPrope
 	}
 	
 	@Override
-	public String[] getNames() {
+	public String[] getCommandNames() {
 		return new String[] {"alias", "alias_global", "unalias", "unalias_global"};
 	}
 
 	@Override
-	public String[] getUsages() {
+	public String[] getCommandUsages() {
 		return new String[] {"command.alias.syntax", "command.alias.global.syntax", "command.unalias.syntax", "command.unalias.global.syntax"};
 	}
 
 	@Override
-	public void execute(String commandName, CommandSender sender, String[] params) throws CommandException {
+	public String execute(String commandName, CommandSender sender, String[] params) throws CommandException {
 		boolean global = commandName.endsWith("global"), remove = commandName.startsWith("unalias");
 		ServerPlayerSettings settings = global ? null : getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
 		ServerCommandManager commandManager = (ServerCommandManager) MinecraftServer.getServer().getCommandManager();
@@ -96,13 +99,13 @@ public class CommandAlias extends MultipleCommands implements ServerCommandPrope
 			if (playerInfo != null && playerInfo.clientModded()) throw new CommandException(new CommandNotFoundException());
 		}
 		
-		if (global && !GlobalSettings.enableGlobalAliases)
+		if (global && !MoreCommandsConfig.enableGlobalAliases)
 			throw new CommandException("command.alias.global.aliasesDisabled", sender);
-		else if (!global && !GlobalSettings.enablePlayerAliases)
+		else if (!global && !MoreCommandsConfig.enablePlayerAliases)
 			throw new CommandException("command.alias.aliasesDisabled", sender);
 		
-		String world = MoreCommands.getProxy().getCurrentWorld(), dim = sender.getMinecraftISender().getEntityWorld().provider.getDimensionName();
-		Map<String, String> aliases = global ? GlobalSettings.getAliases(world, dim) : settings.aliases;
+		String world = sender.getWorld().getSaveHandler().getWorldDirectoryName(), dim = sender.getWorld().provider.getDimensionName();
+		Map<String, String> aliases = global ? GlobalSettings.getInstance().aliases.get(ImmutablePair.of(world, dim)) : settings.aliases;
 		
 		if (remove) {
 			if (params.length > 0) {
@@ -110,13 +113,12 @@ public class CommandAlias extends MultipleCommands implements ServerCommandPrope
 				ICommand command = (ICommand) commandManager.getCommands().get(alias);
 				
 				if (command != null && command instanceof DummyCommand && aliases.containsKey(alias)) {
-					if (!global) settings.aliases = settings.removeAndUpdate("aliases", alias, String.class, true);
-					else GlobalSettings.removeAlias(world, dim, alias);
+					aliases.remove(alias);
 					sender.sendLangfileMessage("command.unalias.success");
 				}
 				else throw new CommandException("command.unalias.notFound", sender);
 			}
-			else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
 		else {
 			if (params.length > 1) {
@@ -132,18 +134,15 @@ public class CommandAlias extends MultipleCommands implements ServerCommandPrope
 					else if (!(commandManager.getCommands().get(alias) instanceof DummyCommand))
 						throw new CommandException("command.alias.overwrite", sender);
 					
-					if (!global) settings.aliases = settings.putAndUpdate("aliases", alias, command + parameters, String.class, true);
-					else {
-						GlobalSettings.removeAlias(world, dim, alias); 
-						GlobalSettings.putAlias(GlobalSettings.getSaveProp("aliases").getLeft() ? world : null, 
-						GlobalSettings.getSaveProp("aliases").getRight() ? dim : null, alias, command + parameters);
-					}
+					aliases.put(alias, command + parameters);
 					sender.sendLangfileMessage("command.alias.success");
 				}
 				else throw new CommandException("command.alias.infiniteRecursion", sender);
 			}
-			else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
+		
+		return null;
 	}
 	
 	@Override
@@ -157,7 +156,7 @@ public class CommandAlias extends MultipleCommands implements ServerCommandPrope
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 	

@@ -1,14 +1,14 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -23,17 +23,17 @@ import net.minecraft.entity.player.EntityPlayerMP;
 public class CommandXray extends StandardCommand implements ServerCommandProperties {
 
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "xray";
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.xray.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 		ServerPlayerSettings settings = getPlayerSettings(player);
 		
@@ -42,7 +42,7 @@ public class CommandXray extends StandardCommand implements ServerCommandPropert
 				MoreCommands.INSTANCE.getPacketDispatcher().sendS05Xray(player);
 			else if (params[0].equalsIgnoreCase("radius") && params.length > 1) {
 				try {settings.xrayBlockRadius = Integer.parseInt(params[1]);}
-				catch (NumberFormatException nfe) {throw new CommandException("command.generic.invalidUsage", sender, this.getName());}
+				catch (NumberFormatException nfe) {throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());}
 				
 				settings.xrayBlockRadius = settings.xrayBlockRadius > 100 ? 100 : settings.xrayBlockRadius < 0 ? 0 : settings.xrayBlockRadius;
 				MoreCommands.INSTANCE.getPacketDispatcher().sendS05Xray(player, settings.xrayEnabled, settings.xrayBlockRadius);
@@ -61,13 +61,15 @@ public class CommandXray extends StandardCommand implements ServerCommandPropert
 				MoreCommands.INSTANCE.getPacketDispatcher().sendS05Xray(player, true, params[1]);
 			else if (params[0].equalsIgnoreCase("save") && params.length > 1)
 				MoreCommands.INSTANCE.getPacketDispatcher().sendS05Xray(player, false, params[1]);
-			else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
 		else {
 			settings.xrayEnabled = !settings.xrayEnabled;
 			MoreCommands.INSTANCE.getPacketDispatcher().sendS05Xray(player, settings.xrayEnabled, settings.xrayBlockRadius);
 			sender.sendLangfileMessage(settings.xrayEnabled ? "command.xray.enabled" : "command.xray.disabled");
 		}
+		
+		return null;
 	}
 	
 	@Override
@@ -81,7 +83,7 @@ public class CommandXray extends StandardCommand implements ServerCommandPropert
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

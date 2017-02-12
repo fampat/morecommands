@@ -3,16 +3,17 @@ package com.mrnobody.morecommands.command.server;
 import java.text.DecimalFormat;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Entity;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
+import com.mrnobody.morecommands.util.EntityUtils;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
@@ -27,24 +28,24 @@ import net.minecraft.util.MathHelper;
 		)
 public class CommandTeleport extends StandardCommand implements ServerCommandProperties {
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "teleport";
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.teleport.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = isSenderOfEntityType(sender.getMinecraftISender(), EntityPlayerMP.class) ? getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class)) : null;
-		Entity entity = new Entity(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.Entity.class));
+		Entity entity = getSenderAsEntity(sender.getMinecraftISender(), Entity.class);
 		
 		if (params.length > 2) {
 			try {
 				BlockPos coord = getCoordFromParams(sender.getMinecraftISender(), params, 0);
-				float pitch = entity.getPitch(), yaw = entity.getYaw();
+				float pitch = entity.rotationPitch, yaw = entity.rotationYaw;
 				
 				if (params.length > 3)
 					yaw = params[3].equals("~") ? yaw : MathHelper.wrapAngleTo180_float(Float.parseFloat(params[3]));
@@ -58,10 +59,10 @@ public class CommandTeleport extends StandardCommand implements ServerCommandPro
 				if (settings != null) 
 					settings.lastTeleport = settings.lastPos = entity.getPosition();
 				
-				if (entity.getMinecraftEntity() instanceof EntityPlayerMP)
-					((EntityPlayerMP) entity.getMinecraftEntity()).playerNetServerHandler.setPlayerLocation(coord.getX(), coord.getY(), coord.getZ(), yaw, pitch);
+				if (entity instanceof EntityPlayerMP)
+					((EntityPlayerMP) entity).playerNetServerHandler.setPlayerLocation(coord.getX(), coord.getY(), coord.getZ(), yaw, pitch);
 				else
-					entity.getMinecraftEntity().setLocationAndAngles(coord.getX(), coord.getY(), coord.getZ(), yaw, pitch);
+					entity.setLocationAndAngles(coord.getX(), coord.getY(), coord.getZ(), yaw, pitch);
 				
 				DecimalFormat f = new DecimalFormat("#.##");
 				
@@ -75,11 +76,13 @@ public class CommandTeleport extends StandardCommand implements ServerCommandPro
 		else if (params.length > 0) {
 			EntityPlayerMP teleportTo = MinecraftServer.getServer().getConfigurationManager().getPlayerByUsername(params[0]);
 			if (teleportTo == null) throw new CommandException("command.teleport.playerNotFound", sender);
-			entity.setPosition(new BlockPos(teleportTo.posX, teleportTo.posY + 0.5D, teleportTo.posZ));
+			EntityUtils.setPosition(entity, new BlockPos(teleportTo.posX, teleportTo.posY + 0.5D, teleportTo.posZ));
 			
 			sender.sendStringMessage("Successfully teleported to Player '" + params[0] + "'");
 		}
 		else throw new CommandException("command.teleport.invalidParams", sender);
+		
+		return null;
 	}
 	
 	@Override
@@ -93,7 +96,7 @@ public class CommandTeleport extends StandardCommand implements ServerCommandPro
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

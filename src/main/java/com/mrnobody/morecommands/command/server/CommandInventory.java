@@ -1,13 +1,13 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -22,17 +22,17 @@ import net.minecraft.nbt.NBTTagList;
 		)
 public class CommandInventory extends StandardCommand implements ServerCommandProperties {
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "inventory";
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.inventory.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 1) {
 			ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
 			if (settings == null) {throw new CommandException("command.inventory.noSettingsFound", sender);}
@@ -41,7 +41,7 @@ public class CommandInventory extends StandardCommand implements ServerCommandPr
 				NBTTagList inventory = settings.inventories.get(params[1]);
 				if (inventory == null) throw new CommandException("command.inventory.notFound", sender, params[1]);
 				
-				settings.inventories = settings.removeAndUpdate("inventories", params[1], NBTTagList.class, true);
+				settings.inventories.remove(params[1]);
 				sender.sendLangfileMessage("command.inventory.removeSuccess", params[1]);
 			}
 			else if (params[0].equalsIgnoreCase("load")) {
@@ -55,12 +55,14 @@ public class CommandInventory extends StandardCommand implements ServerCommandPr
 				NBTTagList inventory = new NBTTagList();
 				getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class).inventory.writeToNBT(inventory);
 				
-				settings.inventories = settings.putAndUpdate("inventories", params[1], inventory, NBTTagList.class, true);
+				settings.inventories.put(params[1], inventory);
 				sender.sendLangfileMessage("command.inventory.saveSuccess", params[1]);
 			}
-			else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
-		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 
 	@Override
@@ -74,7 +76,7 @@ public class CommandInventory extends StandardCommand implements ServerCommandPr
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 	

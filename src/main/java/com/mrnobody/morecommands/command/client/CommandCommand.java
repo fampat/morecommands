@@ -5,12 +5,12 @@ import java.util.Map;
 
 import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.AppliedPatches;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommand;
@@ -27,17 +27,17 @@ public class CommandCommand extends StandardCommand implements ClientCommandProp
 	private Map<String, ICommand> disabledCommands = new HashMap<String, ICommand>();
 	
 	@Override
-    public String getName() {
+    public String getCommandName() {
         return "command";
     }
 
 	@Override
-    public String getUsage() {
+    public String getCommandUsage() {
         return "command.command.syntax";
     }
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		if (params.length > 1) {
 			if (params[0].equalsIgnoreCase("enable")) {
 				ICommand enable = this.disabledCommands.get(params[1]);
@@ -52,7 +52,7 @@ public class CommandCommand extends StandardCommand implements ClientCommandProp
 				else throw new CommandException("command.command.serverNotModded", sender);
 			}
 			else if (params[0].equalsIgnoreCase("disable")) {
-				if (params[1].equals(this.getName())) throw new CommandException("command.command.wantedToDisable", sender);
+				if (params[1].equals(this.getCommandName())) throw new CommandException("command.command.wantedToDisable", sender);
 				
 				ICommand disable = (ICommand) ClientCommandHandler.instance.getCommands().get(params[1]);
 				
@@ -65,9 +65,11 @@ public class CommandCommand extends StandardCommand implements ClientCommandProp
 				}
 				else throw new CommandException("command.command.serverNotModded", sender);
 			}
-			else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
-		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 	
 	@Override
@@ -86,7 +88,7 @@ public class CommandCommand extends StandardCommand implements ClientCommandProp
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 }

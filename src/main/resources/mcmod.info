@@ -3,7 +3,7 @@
   "modid": "mrnobody_morecommands",
   "name": "MoreCommands",
   "description": "Mod to extend Minecraft Commands",
-  "version": "2.7",
+  "version": "2.8",
   "mcversion": "${mcversion}",
   "url": "http://bit.ly/morecommands",
   "updateUrl": "",

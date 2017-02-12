@@ -3,16 +3,17 @@ package com.mrnobody.morecommands.command.server;
 import java.util.List;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.util.EntityUtils;
 import com.mrnobody.morecommands.util.TargetSelector;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Entity;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 
 @Command(
@@ -25,30 +26,30 @@ import net.minecraft.entity.EntityList;
 public class CommandKillall extends StandardCommand implements ServerCommandProperties {
 
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "killall";
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.killall.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		params = reparseParamsWithNBTData(params);
 		double radius = 128.0D;
 		String entityType = "mob";
 		
 		if (params.length > 0) {
 			if (isTargetSelector(params[0])) {
-				List<net.minecraft.entity.Entity> removedEntities = Entity.killEntities(TargetSelector.EntitySelector.matchEntites(sender.getMinecraftISender(), params[0], net.minecraft.entity.Entity.class));
+				List<Entity> removedEntities = EntityUtils.killEntities(TargetSelector.EntitySelector.matchEntites(sender.getMinecraftISender(), params[0], Entity.class));
 				sender.sendLangfileMessage("command.killall.killed", removedEntities.size());
 			}
 			else {
 				entityType = params[0];
 				
-				if (Entity.getEntityClass(entityType) == null) {
+				if (EntityUtils.getEntityClass(entityType, true) == null) {
 					try {entityType = EntityList.getStringFromID(Integer.parseInt(params[0]));}
 					catch (NumberFormatException e) {throw new CommandException("command.killall.unknownEntity", sender);}
 				}
@@ -60,12 +61,14 @@ public class CommandKillall extends StandardCommand implements ServerCommandProp
 				
 				if (radius <= 0 || radius > 256) throw new CommandException("command.killall.invalidRadius", sender);
 				else {
-					List<net.minecraft.entity.Entity> removedEntities = Entity.killEntities(entityType, sender.getPosition(), sender.getWorld(), radius);
+					List<net.minecraft.entity.Entity> removedEntities = EntityUtils.killEntities(entityType, true, sender.getPosition(), sender.getWorld(), radius);
 					sender.sendLangfileMessage("command.killall.killed", removedEntities.size());
 				}
 			}
 		}
-		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 	
 	@Override
@@ -79,7 +82,7 @@ public class CommandKillall extends StandardCommand implements ServerCommandProp
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

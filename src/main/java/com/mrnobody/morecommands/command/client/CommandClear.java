@@ -2,11 +2,11 @@ package com.mrnobody.morecommands.command.client;
 
 import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.client.Minecraft;
 
@@ -21,18 +21,18 @@ import net.minecraft.client.Minecraft;
 public class CommandClear extends StandardCommand implements ClientCommandProperties {
 
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "clear";
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.clear.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		Minecraft.getMinecraft().ingameGUI.getChatGUI().clearChatMessages();
+	public String execute(CommandSender sender, String[] params) throws CommandException {
+		Minecraft.getMinecraft().ingameGUI.getChatGUI().clearChatMessages(); return null;
 	}
 	
 	@Override
@@ -51,7 +51,7 @@ public class CommandClear extends StandardCommand implements ClientCommandProper
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 }

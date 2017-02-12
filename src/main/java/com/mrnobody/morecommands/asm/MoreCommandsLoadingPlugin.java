@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.mrnobody.morecommands.asm.transform.TransformBlockRailBase;
+import com.mrnobody.morecommands.asm.transform.TransformChatStyle;
 import com.mrnobody.morecommands.asm.transform.TransformForgeHooks;
 import com.mrnobody.morecommands.asm.transform.TransformItemStack;
 import com.mrnobody.morecommands.asm.transform.TransformTextureCompass;
@@ -61,7 +62,8 @@ public class MoreCommandsLoadingPlugin implements IFMLLoadingPlugin {
 				TransformBlockRailBase.class.getName(),
 				TransformForgeHooks.class.getName(),
 				TransformItemStack.class.getName(),
-				TransformTextureCompass.class.getName()
+				TransformTextureCompass.class.getName(),
+				TransformChatStyle.class.getName()
 		};
 	}
 

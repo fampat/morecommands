@@ -1,12 +1,12 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -22,23 +22,25 @@ import net.minecraft.util.DamageSource;
 		)
 public class CommandKill extends StandardCommand implements ServerCommandProperties {
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "kill";
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.kill.syntax";
 	}
 	
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		Entity entityToKill = getSenderAsEntity(sender.getMinecraftISender(), Entity.class);
 		
 		if (entityToKill instanceof EntityLivingBase)
 			((EntityLivingBase) entityToKill).attackEntityFrom(DamageSource.outOfWorld, Float.MAX_VALUE);
 		else
 			entityToKill.setDead();
+		
+		return null;
 	}
 	
 	@Override
@@ -52,7 +54,7 @@ public class CommandKill extends StandardCommand implements ServerCommandPropert
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

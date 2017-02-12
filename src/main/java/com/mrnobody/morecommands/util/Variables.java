@@ -60,11 +60,12 @@ public final class Variables {
 	 * 
 	 * @param string the string for which the variables should be replaced
 	 * @param ignoreUnresolvableVars whether to ignore variables that don't exist (the string won't be modified for those variables at all)
+	 * @param replaceIgnored whether to replace ignored variables (two percent signs, e.g. %%VAR%%) by one percent sign (-> %VAR%) or don't alter the string at all (-> %%VAR%%)
 	 * @param varMappings the variable mappings (name<->value maps that are used to look up variables)
 	 * @return the string with replaced variables
 	 * @throws VariablesCouldNotBeResolvedException if <i>ignoreUnresolvableVars</i> is false and a variable could not be resolved
 	 */
-	private static String replaceVars(String string, boolean ignoreUnresolvableVars, Map<String, String>... varMappings) throws VariablesCouldNotBeResolvedException {
+	private static String replaceVars(String string, boolean ignoreUnresolvableVars, boolean replaceIgnored, Map<String, String>... varMappings) throws VariablesCouldNotBeResolvedException {
 		if (!string.contains("%")) return string;
 		
 		StringBuilder varIdentifier = new StringBuilder("");
@@ -78,7 +79,7 @@ public final class Variables {
 					isReadingVarIdentifier = false;
 					String identifier = varIdentifier.toString();
 					
-					if (identifier.isEmpty()) newString.append("%");
+					if (identifier.isEmpty()) newString.append(replaceIgnored ? "%" : "%%");
 					else {
 						boolean found = false; String value;
 						
@@ -106,9 +107,9 @@ public final class Variables {
 		}
 		
 		if (!unresolvableVariables.isEmpty())
-			throw new VariablesCouldNotBeResolvedException(unresolvableVariables, newString.toString());
+			throw new VariablesCouldNotBeResolvedException(unresolvableVariables, newString.append(varIdentifier).toString());
 		
-		return newString.toString();
+		return newString.append(varIdentifier).toString();
 	}
 	
 	/**
@@ -118,11 +119,12 @@ public final class Variables {
 	 * 
 	 * @param nbt the {@link NBTTagCompound}
 	 * @param ignoreUnresolvableVars whether to ignore variables that don't exist (the string won't be modified for those variables at all)
+	 * @param replaceIgnored whether to replace ignored variables (two percent signs, e.g. %%VAR%%) by one percent sign (-> %VAR%) or don't alter the string at all (-> %%VAR%%)
 	 * @param varMappings the variable mappings (name<->value maps that are used to look up variables)
 	 * @return the compound tag with replaced string tags
 	 * @throws VariablesCouldNotBeResolvedException if <i>ignoreUnresolvableVars</i> is false and a variable could not be resolved
 	 */
-	private static void replaceVars(NBTTagCompound nbt, boolean ignoreUnresolvableVars, Map<String, String>... varMappings) throws VariablesCouldNotBeResolvedException {
+	private static void replaceVars(NBTTagCompound nbt, boolean ignoreUnresolvableVars, boolean replaceIgnored, Map<String, String>... varMappings) throws VariablesCouldNotBeResolvedException {
 		Set<String> unresolvableVariables = new HashSet<String>();
 		Map<String, String> temp = new HashMap<String, String>();
 		
@@ -167,28 +169,30 @@ public final class Variables {
 		if (!unresolvableVariables.isEmpty())
 			throw new VariablesCouldNotBeResolvedException(unresolvableVariables, "");
 	}
-	
+
 	/**
 	 * Replaces all the variables in a string
 	 * 
 	 * @param string the string for which the variables should be replaced
+	 * @param replaceIgnored whether to replace ignored variables (two percent signs, e.g. %%VAR%%) by one percent sign (-> %VAR%) or don't alter the string at all (-> %%VAR%%)
 	 * @param varMappings the variable mappings (name<->value maps that are used to look up variables)
 	 * @return the string with replaced variables
 	 * @throws VariablesCouldNotBeResolvedException a variable could not be resolved
 	 */
-	public static String replaceVars(String string, Map<String, String>... varMappings) throws VariablesCouldNotBeResolvedException {
-		return replaceVars(string, false, varMappings);
+	public static String replaceVars(String string, boolean replaceIgnored, Map<String, String>... varMappings) throws VariablesCouldNotBeResolvedException {
+		return replaceVars(string, false, replaceIgnored, varMappings);
 	}
 	
 	/**
 	 * Replaces all the variables in a string
 	 * 
 	 * @param string the string for which the variables should be replaced
+	 * @param replaceIgnored whether to replace ignored variables (two percent signs, e.g. %%VAR%%) by one percent sign (-> %VAR%) or don't alter the string at all (-> %%VAR%%)
 	 * @param varMappings the variable mappings (name<->value maps that are used to look up variables)
 	 * @return the string with replaced variables. If a variable could not replaced, the string is not modified for that variable
 	 */
-	public static String replaceVarsSafe(String string, Map<String, String>... varMappings) {
-		try {return replaceVars(string, true, varMappings);}
+	public static String replaceVarsSafe(String string, boolean replaceIgnored, Map<String, String>... varMappings) {
+		try {return replaceVars(string, true, replaceIgnored, varMappings);}
 		catch (VariablesCouldNotBeResolvedException vcnbr) {return null;} //will never be thrown
 	}
 	
@@ -196,23 +200,25 @@ public final class Variables {
 	 * Replaces all the variables of a string contained in {@link NBTTagString}s
 	 * 
 	 * @param nbt the compound tag which is searched for string tags
+	 * @param replaceIgnored whether to replace ignored variables (two percent signs, e.g. %%VAR%%) by one percent sign (-> %VAR%) or don't alter the string at all (-> %%VAR%%)
 	 * @param varMappings the variable mappings (name<->value maps that are used to look up variables)
 	 * @return the compound tag with replaced string tags
 	 * @throws VariablesCouldNotBeResolvedException a variable could not be resolved
 	 */
-	public static void replaceVars(NBTTagCompound nbt, Map<String, String>... varMappings) throws VariablesCouldNotBeResolvedException {
-		replaceVars(nbt, false, varMappings);
+	public static void replaceVars(NBTTagCompound nbt, boolean replaceIgnored, Map<String, String>... varMappings) throws VariablesCouldNotBeResolvedException {
+		replaceVars(nbt, false, replaceIgnored, varMappings);
 	}
 	
 	/**
 	 * Replaces all the variables of a string contained in {@link NBTTagString}s
 	 * 
 	 * @param nbt the compound tag which is searched for string tags
+	 * @param replaceIgnored whether to replace ignored variables (two percent signs, e.g. %%VAR%%) by one percent sign (-> %VAR%) or don't alter the string at all (-> %%VAR%%)
 	 * @param varMappings the variable mappings (name<->value maps that are used to look up variables)
 	 * @return the compound tag with replaced string tags. If a variable could not replaced, the string is not modified for that variable
 	 */
-	public static void replaceVarsSafe(NBTTagCompound nbt, Map<String, String>... varMappings) {
-		try {replaceVars(nbt, true, varMappings);}
+	public static void replaceVarsSafe(NBTTagCompound nbt, boolean replaceIgnored, Map<String, String>... varMappings) {
+		try {replaceVars(nbt, true, replaceIgnored, varMappings);}
 		catch (VariablesCouldNotBeResolvedException vcnbr) {} //will never be thrown
 	}
 }

@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.EnumChatFormatting;
@@ -26,12 +26,12 @@ public class CommandBiome extends StandardCommand implements ServerCommandProper
 	private static final int PAGE_MAX = 15;
 	
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "biome";
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.biome.syntax";
 	}
 	
@@ -42,8 +42,8 @@ public class CommandBiome extends StandardCommand implements ServerCommandProper
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		BiomeGenBase biome = sender.getWorld().getMinecraftWorld().getBiomeGenForCoords(sender.getPosition());
+	public String execute(CommandSender sender, String[] params) throws CommandException {
+		BiomeGenBase biome = sender.getWorld().getBiomeGenForCoords(sender.getPosition());
 		
 		if (params.length > 0) {
 			if (params[0].equalsIgnoreCase("info")) sender.sendLangfileMessage("command.biome.info", biome.biomeName, biome.biomeID);
@@ -57,7 +57,7 @@ public class CommandBiome extends StandardCommand implements ServerCommandProper
     					if (page < 0) page = 0;
     					else if (page * PAGE_MAX > biomeList.length) page = biomeList.length / PAGE_MAX;
     				}
-    				catch (NumberFormatException e) {throw new CommandException("command.generic.invalidUsage", sender, this.getName());}
+    				catch (NumberFormatException e) {throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());}
     			}
     			
     			final int stop = (page + 1) * PAGE_MAX;;
@@ -66,9 +66,11 @@ public class CommandBiome extends StandardCommand implements ServerCommandProper
     			
     			sender.sendLangfileMessage("command.biome.more", EnumChatFormatting.RED);
 			}
-			else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
-		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 	
 	@Override
@@ -82,7 +84,7 @@ public class CommandBiome extends StandardCommand implements ServerCommandProper
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 	

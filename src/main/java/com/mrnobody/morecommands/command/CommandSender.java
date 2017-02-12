@@ -1,9 +1,9 @@
-package com.mrnobody.morecommands.wrapper;
+package com.mrnobody.morecommands.command;
 
 import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 import com.mrnobody.morecommands.util.LanguageManager;
-import com.mrnobody.morecommands.util.PlayerSettings;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -12,6 +12,7 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
+import net.minecraft.world.World;
 
 /**
  * A wrapper for the {@link ICommandSender} interface
@@ -35,19 +36,10 @@ public final class CommandSender {
 	}
 	
 	/**
-	 * Constructs a new {@link CommandSender} with a {@link Player}
-	 * 
-	 * @param player the {@link Player}
-	 */
-	public CommandSender(Player player) {
-		this(player.getMinecraftPlayer());
-	}
-	
-	/**
 	 * @return the command sender's name
 	 */
 	public String getSenderName() {
-		return sender.getName();
+		return this.sender.getName();
 	}
 	
 	/**
@@ -58,7 +50,7 @@ public final class CommandSender {
 	 * @return whether this sender can use the given command
 	 */
 	public boolean canUseCommand(int permLevel, String command) {
-		return sender.canUseCommand(permLevel, command);
+		return this.sender.canUseCommand(permLevel, command);
 	}
 	
 	/**
@@ -67,11 +59,11 @@ public final class CommandSender {
 	 * @param component the {@link IChatComponent} to send
 	 */
 	public void sendChatComponent(IChatComponent component) {
-		if (!(sender instanceof EntityPlayerMP)) {if (CommandSender.output) sender.addChatMessage(component);}
+		if (!(this.sender instanceof EntityPlayerMP)) {if (CommandSender.output) this.sender.addChatMessage(component);}
 		else if (CommandSender.output) {
 			ServerPlayerSettings settings = MoreCommands.getEntityProperties(ServerPlayerSettings.class, PlayerSettings.MORECOMMANDS_IDENTIFIER, (EntityPlayerMP) sender);
-			if (settings == null) sender.addChatMessage(component);
-			else if (settings.output) sender.addChatMessage(component);
+			if (settings == null) this.sender.addChatMessage(component);
+			else if (settings.output) this.sender.addChatMessage(component);
 		}
 	}
 	
@@ -161,6 +153,6 @@ public final class CommandSender {
 	 * @return the command sender's world
 	 */
 	public World getWorld() {
-		return new World(this.sender.getEntityWorld());
+		return this.sender.getEntityWorld();
 	}
 }

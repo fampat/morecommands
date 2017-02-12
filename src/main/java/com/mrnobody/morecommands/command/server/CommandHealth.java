@@ -1,15 +1,15 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.EntityLivingBase;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.EntityLivingBase;
 
 @Command(
 		name = "health",
@@ -23,18 +23,18 @@ public class CommandHealth extends StandardCommand implements ServerCommandPrope
 	private static final float MAX_HEALTH = 20.0f;
 	
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "health";
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.health.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		EntityLivingBase entity = new EntityLivingBase(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.EntityLivingBase.class));
+	public String execute(CommandSender sender, String[] params) throws CommandException {
+		EntityLivingBase entity = getSenderAsEntity(sender.getMinecraftISender(), EntityLivingBase.class);
 		
 		if (params.length > 0) {
 			try {entity.setHealth(Float.parseFloat(params[0])); sender.sendLangfileMessage("command.health.success");}
@@ -45,7 +45,9 @@ public class CommandHealth extends StandardCommand implements ServerCommandPrope
 				else throw new CommandException("command.health.invalidParam", sender);
 			}
 		}
-		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 	
 	@Override
@@ -59,7 +61,7 @@ public class CommandHealth extends StandardCommand implements ServerCommandPrope
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

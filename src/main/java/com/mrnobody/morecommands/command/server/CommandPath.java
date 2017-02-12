@@ -1,17 +1,17 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
-import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Player;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
+import com.mrnobody.morecommands.util.EntityUtils;
+import com.mrnobody.morecommands.util.WorldUtils;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockAir;
@@ -19,6 +19,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.MathHelper;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 @Command(
@@ -32,17 +33,17 @@ public class CommandPath extends StandardCommand implements ServerCommandPropert
 	public CommandPath() {EventHandler.TICK.register(this);}
 
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "path";
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.path.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		EntityPlayerMP playerEntity = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 		
 		if (params.length > 0) {
@@ -78,7 +79,9 @@ public class CommandPath extends StandardCommand implements ServerCommandPropert
 		} else if (getPlayerSettings(playerEntity).pathData[0] > -1) {
 			sender.sendLangfileMessage("command.path.disabled");
 			getPlayerSettings(playerEntity).pathData[0] = -1;
-		} else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+		} else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}   
 		
 	@Override
@@ -88,15 +91,15 @@ public class CommandPath extends StandardCommand implements ServerCommandPropert
 			
 			if (event.player instanceof EntityPlayerMP) {
 				int[] plrData = getPlayerSettings((EntityPlayerMP) event.player).pathData;
-				this.makePath(new Player((EntityPlayerMP) event.player), plrData);
+				this.makePath((EntityPlayerMP) event.player, plrData);
 			}
 			else return;
 		}
 	}
 	
-	private void makePath(Player player, int[] data) {
+	private void makePath(EntityPlayerMP player, int[] data) {
 		if (data[0] > 0) {
-			BlockPos position = player.getPosition();
+			BlockPos position = EntityUtils.getPosition(player);
 			int x = MathHelper.floor_double(position.getX());
 			int y = MathHelper.floor_double(position.getY());
 			int z = MathHelper.floor_double(position.getZ());
@@ -107,9 +110,9 @@ public class CommandPath extends StandardCommand implements ServerCommandPropert
 					for (int j = -1; j < data[2]; j++) {
 						for (int k = start; k < data[2]; k++) {
 							if (j == -1) {
-								this.setBlock(player, x + i, y + j, z + k, data[0], data[1]);
+								this.setBlock(player.worldObj, x + i, y + j, z + k, data[0], data[1]);
 							} else {
-								this.setBlock(player, x + i, y + j, z + k, 0, 0);
+								this.setBlock(player.worldObj, x + i, y + j, z + k, 0, 0);
 							}
 						}
 					}
@@ -122,9 +125,9 @@ public class CommandPath extends StandardCommand implements ServerCommandPropert
 		}
 	}
 	
-	private void setBlock(Player player, int i, int j, int k, int id, int meta) {
-		if (meta > 0) player.getWorld().setBlockWithMeta(new BlockPos(i, j, k), Block.getBlockById(id), meta);
-		else player.getWorld().setBlock(new BlockPos(i, j, k), Block.getBlockById(id));
+	private void setBlock(World world, int i, int j, int k, int id, int meta) {
+		if (meta > 0) WorldUtils.setBlockWithMeta(world, new BlockPos(i, j, k), Block.getBlockById(id), meta);
+		else WorldUtils.setBlock(world, new BlockPos(i, j, k), Block.getBlockById(id));
 	}
 	
 	@Override
@@ -138,7 +141,7 @@ public class CommandPath extends StandardCommand implements ServerCommandPropert
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

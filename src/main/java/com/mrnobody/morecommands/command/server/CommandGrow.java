@@ -4,15 +4,15 @@ import java.lang.reflect.Field;
 import java.util.Random;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
 import com.mrnobody.morecommands.util.ReflectionHelper;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.World;
+import com.mrnobody.morecommands.util.WorldUtils;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockCactus;
@@ -24,6 +24,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.world.World;
 
 @Command(
 		name = "grow",
@@ -36,17 +37,17 @@ public class CommandGrow extends StandardCommand implements ServerCommandPropert
 	private final Field field_149877_a = ReflectionHelper.getField(ObfuscatedField.BlockStem_crop);
 	
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "grow";
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.grow.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		int radius = 16;
 		
 		if (params.length > 0) {
@@ -76,16 +77,17 @@ public class CommandGrow extends StandardCommand implements ServerCommandPropert
 		}
 		
 		sender.sendLangfileMessage("command.grow.grown");
+		return null;
 	}
 	
 	private void growPlant(World world, int x, int y, int z, Random rand) {
-		Block block = world.getBlock(x, y, z);
+		Block block = WorldUtils.getBlock(world, x, y, z);
 		
 		if (block instanceof BlockSapling) {
-			((BlockSapling) block).grow(world.getMinecraftWorld(), rand, new BlockPos(x, y, z), ((BlockSapling) block).getStateFromMeta(8));
+			((BlockSapling) block).grow(world, rand, new BlockPos(x, y, z), ((BlockSapling) block).getStateFromMeta(8));
 		}
 		else if (block instanceof BlockCrops) {
-			((BlockCrops) block).grow(world.getMinecraftWorld(), rand, new BlockPos(x, y, z), ((BlockCrops) block).getStateFromMeta(7));
+			((BlockCrops) block).grow(world, rand, new BlockPos(x, y, z), ((BlockCrops) block).getStateFromMeta(7));
 		}
 		else if (block instanceof BlockCactus || block instanceof BlockReed) {
 			int length = 1;
@@ -93,27 +95,27 @@ public class CommandGrow extends StandardCommand implements ServerCommandPropert
 			while (true) {
 				int blen = length;
 				
-				if (world.getBlock(x, y + length, z) == block) length++;
-				if (world.getBlock(x, y - length, z) == block) length++;
+				if (WorldUtils.getBlock(world, x, y + length, z) == block) length++;
+				if (WorldUtils.getBlock(world, x, y - length, z) == block) length++;
 				
 				if (blen == length) break;
 			}
 			
 			if (length < 3) {
 				for (int i = 0; i <= 3 - length; i++) {
-					world.setBlock(new BlockPos(x, y + i, z), block);
+					WorldUtils.setBlock(world, new BlockPos(x, y + i, z), block);
 				}
 			}
 		}
 		else if (block instanceof BlockStem) {
-			world.setBlockMeta(new BlockPos(x, y, z), 7);
+			WorldUtils.setBlockMeta(world, new BlockPos(x, y, z), 7);
 			Block stemBlock = ReflectionHelper.get(ObfuscatedField.BlockStem_crop, field_149877_a, (BlockStem) block);
 			
 			if (stemBlock != null) {
-				if (world.getBlock(x - 1, y, z) == stemBlock) return;
-                if (world.getBlock(x + 1, y, z) == stemBlock) return;
-                if (world.getBlock(x, y, z - 1) == stemBlock) return;
-                if (world.getBlock(x, y, z + 1) == stemBlock) return;
+				if (WorldUtils.getBlock(world, x - 1, y, z) == stemBlock) return;
+                if (WorldUtils.getBlock(world, x + 1, y, z) == stemBlock) return;
+                if (WorldUtils.getBlock(world, x, y, z - 1) == stemBlock) return;
+                if (WorldUtils.getBlock(world, x, y, z + 1) == stemBlock) return;
 
                 int i = rand.nextInt(4);
                 int j = x;
@@ -124,11 +126,11 @@ public class CommandGrow extends StandardCommand implements ServerCommandPropert
                 if (i == 2) k = z - 1;
                 if (i == 3) ++k;
 
-                Block b = world.getBlock(j, y - 1, k);
+                Block b = WorldUtils.getBlock(world, j, y - 1, k);
 
-                if (world.getMinecraftWorld().isAirBlock(new BlockPos(j, y, k)) && (b.canSustainPlant(world.getMinecraftWorld(), new BlockPos(j, y - 1, k), EnumFacing.UP, (BlockStem) block) || b == Blocks.dirt || b == Blocks.grass))
+                if (world.isAirBlock(new BlockPos(j, y, k)) && (b.canSustainPlant(world, new BlockPos(j, y - 1, k), EnumFacing.UP, (BlockStem) block) || b == Blocks.dirt || b == Blocks.grass))
                 {
-                    world.setBlock(new BlockPos(j, y, k), stemBlock);
+                	WorldUtils.setBlock(world, new BlockPos(j, y, k), stemBlock);
                 }
 			}
 		}
@@ -145,7 +147,7 @@ public class CommandGrow extends StandardCommand implements ServerCommandPropert
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

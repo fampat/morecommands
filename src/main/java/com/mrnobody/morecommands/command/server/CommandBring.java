@@ -3,16 +3,17 @@ package com.mrnobody.morecommands.command.server;
 import java.util.List;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.util.EntityUtils;
 import com.mrnobody.morecommands.util.TargetSelector;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Entity;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.Vec3;
@@ -27,20 +28,19 @@ import net.minecraft.util.Vec3;
 public class CommandBring extends StandardCommand implements ServerCommandProperties {
 
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "bring";
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.bring.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params)throws CommandException {
+	public String execute(CommandSender sender, String[] params)throws CommandException {
 		params = reparseParamsWithNBTData(params);
-		Entity entity = !isSenderOfEntityType(sender.getMinecraftISender(), net.minecraft.entity.Entity.class) ? null :
-				new Entity(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.Entity.class));
+		Entity entity = !isSenderOfEntityType(sender.getMinecraftISender(), Entity.class) ? null : getSenderAsEntity(sender.getMinecraftISender(), Entity.class);
 		double radius = 128.0D;
 		String entityType = null;
 		boolean isTarget = false;
@@ -51,7 +51,7 @@ public class CommandBring extends StandardCommand implements ServerCommandProper
 			if (params.length > 3) pos = getCoordFromParams(sender.getMinecraftISender(), params, 1);
 		}
 		else if (params.length > 0) {
-			if (Entity.getEntityClass(params[0]) == null) {
+			if (EntityUtils.getEntityClass(params[0], true) == null) {
 				try {entityType = EntityList.getStringFromID(Integer.parseInt(params[0]));}
 				catch (NumberFormatException e) {throw new CommandException("command.bring.unknownEntity", sender);}
 			}
@@ -72,35 +72,37 @@ public class CommandBring extends StandardCommand implements ServerCommandProper
 			if (pIndex != -1)
 				pos = getCoordFromParams(sender.getMinecraftISender(), params, pIndex);
 		}
-		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		
 		if (pos == null && entity != null) {
-			Vec3 vec3D = entity.getMinecraftEntity().getLook(1.0F);
+			Vec3 vec3D = entity.getLook(1.0F);
 			double d = 5.0D;
-			double offsetY = entity.getMinecraftEntity().posY + entity.getMinecraftEntity().getEyeHeight();
-			double d1 = entity.getMinecraftEntity().posX + vec3D.xCoord * d;
+			double offsetY = entity.posY + entity.getEyeHeight();
+			double d1 = entity.posX + vec3D.xCoord * d;
 			double d2 = offsetY  + vec3D.yCoord * d;
-			double d3 = entity.getMinecraftEntity().posZ + vec3D.zCoord * d;
+			double d3 = entity.posZ + vec3D.zCoord * d;
 			pos = new BlockPos(d1, d2 + 0.5D, d3);
 		}
 		
 		if (isTarget) {
-			List<? extends net.minecraft.entity.Entity> foundEntities = TargetSelector.EntitySelector.matchEntites(sender.getMinecraftISender(), params[0], net.minecraft.entity.Entity.class);
+			List<? extends Entity> foundEntities = TargetSelector.EntitySelector.matchEntites(sender.getMinecraftISender(), params[0], Entity.class);
 			
-			for (net.minecraft.entity.Entity foundEntity : foundEntities) {
-				if (entity != null && foundEntity == entity.getMinecraftEntity()) continue;
+			for (Entity foundEntity : foundEntities) {
+				if (entity != null && foundEntity == entity) continue;
 				foundEntity.setPosition(pos.getX(), pos.getY(), pos.getZ());
 			}
 		}
 		else if (radius > 0 && radius < 256) {
-			List<net.minecraft.entity.Entity> foundEntities = Entity.findEntities(entityType, sender.getPosition(), sender.getWorld(), radius);
+			List<Entity> foundEntities = EntityUtils.findEntities(entityType, true, sender.getPosition(), sender.getWorld(), radius);
 			
-			for (net.minecraft.entity.Entity foundEntity : foundEntities) {
-				if (entity != null && foundEntity == entity.getMinecraftEntity()) continue;
+			for (Entity foundEntity : foundEntities) {
+				if (entity != null && foundEntity == entity) continue;
 				foundEntity.setPosition(pos.getX(), pos.getY(), pos.getZ());
 			}
 		}
-		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 	
 	@Override
@@ -114,7 +116,7 @@ public class CommandBring extends StandardCommand implements ServerCommandProper
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

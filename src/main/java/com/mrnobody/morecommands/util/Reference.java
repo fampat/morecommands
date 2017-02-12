@@ -16,7 +16,7 @@ public final class Reference {
 	/** the mod id */
 	public static final String MODID = "mrnobody_morecommands";
 	/** the mod version */
-	public static final String VERSION = "2.7";
+	public static final String VERSION = "2.8";
 	/** the mod name */
 	public static final String NAME = "MoreCommands";
 	/** the mod network channel name */
@@ -24,7 +24,7 @@ public final class Reference {
 	/** The website URL */
 	public static final String WEBSITE = "http://bit.ly/morecommands";
 	/** The build date */
-    public static final Date BUILD = new Date(System.currentTimeMillis()); //gets replaced during build process
+	public static final Date BUILD = new Date(System.currentTimeMillis()); //gets replaced during build process
 	
     /** @return the mod configuration directory */
 	public static final File getModDir() {return Reference.INSTANCE.MOD_DIR;}

@@ -9,13 +9,13 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.MultipleCommands;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.TargetSelector;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -49,38 +49,38 @@ public class CommandNbt extends MultipleCommands implements ServerCommandPropert
 	}
 	
 	@Override
-	public String[] getNames() {
+	public String[] getCommandNames() {
 		return new String[] {"nbt_apply_inventory", "nbt_apply_block", "nbt_apply_entity", "nbt_test_inventory", "nbt_test_block", "nbt_test_entity"};
 	}
 
 	@Override
-	public String[] getUsages() {
-		String[] names = getNames();
+	public String[] getCommandUsages() {
+		String[] names = getCommandNames();
 		for (int i = 0; i < names.length; i++) 
 			names[i] = "command." + names[i].replace('_', '.') + ".syntax";
 		return names;
 	}
 	
 	@Override
-	public void execute(String name, CommandSender sender, String[] params) throws CommandException {
+	public String execute(String name, CommandSender sender, String[] params) throws CommandException {
 		params = reparseParamsWithNBTData(params);
 		final String action = name.split("_")[1], type = name.split("_")[2];
 		
 		if (params.length <= 0)
-			throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+			throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		
 		if (action.equalsIgnoreCase("apply")) {
 			if (type.equalsIgnoreCase("inventory")) {
-				Target target = new Target(this.getName(), sender.getMinecraftISender(), params, false);
+				Target target = new Target(this.getCommandName(), sender.getMinecraftISender(), params, false);
 				
 				if (target.isTarget) params = Arrays.copyOfRange(params, 1, params.length);
-				if (params.length <= 0) throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+				if (params.length <= 0) throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 				
 				int slot = TargetSelector.getSlotForShortcut(params[0]);
 				if (params[0].startsWith("slot.") && slot == -1) throw new CommandException("command.nbt.invalidSlot", sender, params[0]);
 				else params = Arrays.copyOfRange(params, 1, params.length);
 
-				if (params.length <= 0) throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+				if (params.length <= 0) throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 				ItemParam param = new ItemParam(sender.getMinecraftISender(), params);
 				
 				final ItemStack stack = param.item == null ? null : new ItemStack(param.item, param.amount, param.meta);
@@ -102,12 +102,12 @@ public class CommandNbt extends MultipleCommands implements ServerCommandPropert
 				}
 			}
 			else if (type.equalsIgnoreCase("block")) {
-				Target target = new Target(this.getName(), sender.getMinecraftISender(), params, true);
+				Target target = new Target(this.getCommandName(), sender.getMinecraftISender(), params, true);
 				
 				if (target.isBlockTarget) params = Arrays.copyOfRange(params, 1, params.length);
 				else params = Arrays.copyOfRange(params, 3, params.length);
 				
-				if (params.length <= 0) throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+				if (params.length <= 0) throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 				BlockParam param = new BlockParam(sender.getMinecraftISender(), params);
 				
 				ApplyBlockCallback callback = new ApplyBlockCallback(param.block, param.meta, param.oldBlockHandling, param.nbt, param.mergeOrEqualLists);
@@ -119,15 +119,15 @@ public class CommandNbt extends MultipleCommands implements ServerCommandPropert
 						TileEntity te = sender.getWorld().getTileEntity(target.coord);
 						if (te != null) callback.applyToTileEntity(te);
 					}
-					else callback.applyToCoordinate(sender.getWorld().getMinecraftWorld(), target.coord);
+					else callback.applyToCoordinate(sender.getWorld(), target.coord);
 				}
 			}
 			else if (type.equalsIgnoreCase("entity")) {
 				if (!isTargetSelector(params[0])) throw new CommandException("command.nbt.invalidTarget", sender);
-				if (params.length <= 1) throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+				if (params.length <= 1) throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 				
 				NBTTagCompound tag; boolean mergeLists = params.length > 2 && isMergeLists(params[2]);
-				NBTBase nbt = getNBTFromParam(params[1], sender.getMinecraftISender());
+				NBTBase nbt = getNBTFromParam(params[1]);
 				if (!(nbt instanceof NBTTagCompound)) throw new CommandException("command.nbt.noCompound", sender);
 				tag = (NBTTagCompound) nbt;
 				
@@ -144,13 +144,13 @@ public class CommandNbt extends MultipleCommands implements ServerCommandPropert
 					entity.readFromNBT(compound);
 				}
 			}
-			else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
 		else if (action.equalsIgnoreCase("test")) {
 			if (type.equalsIgnoreCase("inventory")) {
-				Target target = new Target(this.getName(), sender.getMinecraftISender(), params, false);
+				Target target = new Target(this.getCommandName(), sender.getMinecraftISender(), params, false);
 				if (target.isTarget) params = Arrays.copyOfRange(params, 1, params.length);
-				if (params.length <= 0) throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+				if (params.length <= 0) throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 				
 				int slot = TargetSelector.getSlotForShortcut(params[0]);
 				if (slot == -1) throw new CommandException("command.nbt.invalidSlot", sender, params[0]);
@@ -196,9 +196,11 @@ public class CommandNbt extends MultipleCommands implements ServerCommandPropert
 				int matchingEntites = TargetSelector.EntitySelector.matchEntites(sender.getMinecraftISender(), params[0], Entity.class).size();
 				checkBounds(sender, params, matchingEntites, 1);
 			}
-			else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
-		else throw new CommandException("command.generic.invalidUsage", sender, this.getName());
+		else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
+		
+		return null;
 	}
 	
 	private static void checkBounds(CommandSender sender, String[] params, int matched, int boundsIndex) throws CommandException {
@@ -359,7 +361,7 @@ public class CommandNbt extends MultipleCommands implements ServerCommandPropert
 		
 		public ItemParam(ICommandSender sender, String[] params) throws CommandException {
 			if (isNBTParam(params[0])) {
-				NBTBase nbt = getNBTFromParam(params[0], sender);
+				NBTBase nbt = getNBTFromParam(params[0]);
 				if (!(nbt instanceof NBTTagCompound)) throw new CommandException("command.nbt.noCompound", sender);
 				this.nbt = (NBTTagCompound) nbt;
 				this.mergeOrEqualLists = params.length > 1 && isMergeLists(params[1]);
@@ -382,7 +384,7 @@ public class CommandNbt extends MultipleCommands implements ServerCommandPropert
 				}
 				
 				if (params.length > 3) {
-					NBTBase nbt = getNBTFromParam(params[3], sender);
+					NBTBase nbt = getNBTFromParam(params[3]);
 					if (!(nbt instanceof NBTTagCompound)) throw new CommandException("command.nbt.noCompound", sender);
 					this.nbt = (NBTTagCompound) nbt;
 					this.mergeOrEqualLists = params.length > 4 && isMergeLists(params[4]);
@@ -399,7 +401,7 @@ public class CommandNbt extends MultipleCommands implements ServerCommandPropert
 		
 		public BlockParam(ICommandSender sender, String[] params) throws CommandException {
 			if (isNBTParam(params[0])) {
-				NBTBase nbt = getNBTFromParam(params[0], sender);
+				NBTBase nbt = getNBTFromParam(params[0]);
 				if (!(nbt instanceof NBTTagCompound)) throw new CommandException("command.nbt.noCompound", sender);
 				this.nbt = (NBTTagCompound) nbt;
 				this.mergeOrEqualLists = params.length > 1 && isMergeLists(params[1]);
@@ -419,7 +421,7 @@ public class CommandNbt extends MultipleCommands implements ServerCommandPropert
 					this.oldBlockHandling = params[2].equalsIgnoreCase("keep") ? 1 : params[2].equalsIgnoreCase("destroy") ? 2 : 0;
 				
 				if (params.length > 3) {
-					NBTBase nbt = getNBTFromParam(params[3], sender);
+					NBTBase nbt = getNBTFromParam(params[3]);
 					if (!(nbt instanceof NBTTagCompound)) throw new CommandException("command.nbt.noCompound", sender);
 					this.nbt = (NBTTagCompound) nbt;
 					this.mergeOrEqualLists = params.length > 4 && isMergeLists(params[4]);
@@ -441,7 +443,7 @@ public class CommandNbt extends MultipleCommands implements ServerCommandPropert
 				
 				if (matcher.matches()) this.boundsIndex = 1;
 				else if (isNBTParam(params[1])) {
-					NBTBase nbt = getNBTFromParam(params[1], sender);
+					NBTBase nbt = getNBTFromParam(params[1]);
 					if (!(nbt instanceof NBTTagCompound)) throw new CommandException("command.nbt.noCompound", sender);
 					this.tag = (NBTTagCompound) nbt;
 					
@@ -472,7 +474,7 @@ public class CommandNbt extends MultipleCommands implements ServerCommandPropert
 					else if (params.length > 3) this.boundsIndex = 3;
 					
 					if (this.boundsIndex == -1 && params.length > 4 && !matcher.reset(params[4]).matches()) {
-						NBTBase nbt = getNBTFromParam(params[4], sender);
+						NBTBase nbt = getNBTFromParam(params[4]);
 						if (!(nbt instanceof NBTTagCompound)) throw new CommandException("command.nbt.noCompound", sender);
 						this.tag = (NBTTagCompound) nbt;
 					}
@@ -500,7 +502,7 @@ public class CommandNbt extends MultipleCommands implements ServerCommandPropert
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

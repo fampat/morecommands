@@ -5,15 +5,16 @@ import java.util.Random;
 
 import com.google.common.collect.ImmutableList;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
-import com.mrnobody.morecommands.wrapper.Entity;
+import com.mrnobody.morecommands.util.EntityUtils;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityFireworkRocket;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
@@ -42,26 +43,26 @@ public class CommandFirework extends StandardCommand implements ServerCommandPro
 	private static final int MAX_DYE_TYPES = ItemDye.dyeColors.length;
 	
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "firework";
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.firework.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		Entity entity = params.length > 2 ? null : 
-			isSenderOfEntityType(sender.getMinecraftISender(), net.minecraft.entity.Entity.class) ? 
-			new Entity(getSenderAsEntity(sender.getMinecraftISender(), net.minecraft.entity.Entity.class)) : null;
+			isSenderOfEntityType(sender.getMinecraftISender(), Entity.class) ? 
+			getSenderAsEntity(sender.getMinecraftISender(), Entity.class) : null;
 		BlockPos spawn = null;
 		
 		if (params.length > 2)
 			spawn = getCoordFromParams(sender.getMinecraftISender(), params, 0);
 		else
-			spawn = entity == null ? sender.getPosition() : entity.traceBlock(128.0D);
+			spawn = entity == null ? sender.getPosition() : EntityUtils.traceBlock(entity, 128.0D);
 		
 		if (spawn == null) 
 			throw new CommandException("command.firework.notFound", sender);
@@ -118,11 +119,13 @@ public class CommandFirework extends StandardCommand implements ServerCommandPro
 				if (output.getItem() instanceof ItemFirework) {
 					ItemFirework firework = (ItemFirework) output.getItem();
 					
-					EntityFireworkRocket rocket = new EntityFireworkRocket(sender.getWorld().getMinecraftWorld(), spawn.getX(), spawn.getY(), spawn.getZ(), output);;
-					sender.getWorld().getMinecraftWorld().spawnEntityInWorld(rocket);
+					EntityFireworkRocket rocket = new EntityFireworkRocket(sender.getWorld(), spawn.getX(), spawn.getY(), spawn.getZ(), output);;
+					sender.getWorld().spawnEntityInWorld(rocket);
 				}
 			}
 		}
+		
+		return null;
 	}
 	
 	@Override
@@ -136,7 +139,7 @@ public class CommandFirework extends StandardCommand implements ServerCommandPro
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 2;
 	}
 	

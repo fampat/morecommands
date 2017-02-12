@@ -1,12 +1,13 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
+import com.mrnobody.morecommands.util.WorldUtils;
 
 import net.minecraft.command.ICommandSender;
 
@@ -22,22 +23,22 @@ public class CommandCheats extends StandardCommand implements ServerCommandPrope
 	public boolean canCommandSenderUse(ICommandSender sender) {return true;}
 	
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "cheats";
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.cheats.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
-		try {sender.getWorld().setCheats(parseTrueFalse(params, 0, sender.getWorld().isCheats()));}
+	public String execute(CommandSender sender, String[] params) throws CommandException {
+		try {WorldUtils.setCheats(sender.getWorld(), parseTrueFalse(params, 0, !WorldUtils.isCheats(sender.getWorld())));}
 		catch (IllegalArgumentException ex) {throw new CommandException("command.cheats.failure", sender);}
 		
-		sender.getWorld().setCheats(sender.getWorld().isCheats());
-		sender.sendLangfileMessage(sender.getWorld().isCheats() ? "command.cheats.on" : "command.cheats.off");
+		sender.sendLangfileMessage(WorldUtils.isCheats(sender.getWorld()) ? "command.cheats.on" : "command.cheats.off");
+		return null;
 	}
 	
 	@Override
@@ -51,7 +52,7 @@ public class CommandCheats extends StandardCommand implements ServerCommandPrope
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 	

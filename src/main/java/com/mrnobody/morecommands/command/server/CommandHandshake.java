@@ -1,14 +1,14 @@
 package com.mrnobody.morecommands.command.server;
 
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -22,17 +22,17 @@ import net.minecraft.entity.player.EntityPlayerMP;
 		)
 public class CommandHandshake extends StandardCommand implements ServerCommandProperties {
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "handshake";
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.handshake.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		PlayerPatches patches = MoreCommands.getEntityProperties(PlayerPatches.class, PlayerPatches.PLAYERPATCHES_IDENTIFIER, getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
 		
 		if (params.length > 0 && params[0].equalsIgnoreCase("status")) {
@@ -43,8 +43,11 @@ public class CommandHandshake extends StandardCommand implements ServerCommandPr
 			if (patches != null && patches.clientModded()) throw new CommandException("command.handshake.handshakeFinished", sender);
 			sender.sendLangfileMessage("command.handshake.sendingHandshake");
 			MoreCommands.INSTANCE.getPacketDispatcher().sendS00Handshake(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
+			MoreCommands.INSTANCE.getPacketDispatcher().sendS14RemoteWorld(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class), sender.getWorld().getSaveHandler().getWorldDirectoryName());
 		}
 		else throw new CommandException("command.handshake.invalidArgs", sender);
+		
+		return null;
 	}
 
 	@Override
@@ -58,7 +61,7 @@ public class CommandHandshake extends StandardCommand implements ServerCommandPr
 	}
 
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 	

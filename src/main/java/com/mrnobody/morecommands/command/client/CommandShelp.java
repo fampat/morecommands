@@ -2,11 +2,11 @@ package com.mrnobody.morecommands.command.client;
 
 import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.client.Minecraft;
 
@@ -19,20 +19,21 @@ import net.minecraft.client.Minecraft;
 		)
 public class CommandShelp extends StandardCommand implements ClientCommandProperties {
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "shelp";
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.shelp.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		String args = "";
 		for (String param : params) args += " " + param;
 		Minecraft.getMinecraft().thePlayer.sendChatMessage("/help" + args);
+		return null;
 	}
 	
 	@Override
@@ -51,7 +52,7 @@ public class CommandShelp extends StandardCommand implements ClientCommandProper
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 }

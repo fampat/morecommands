@@ -7,8 +7,9 @@ import java.util.UUID;
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.util.PlayerSettings;
-import com.mrnobody.morecommands.util.ServerPlayerSettings;
+import com.mrnobody.morecommands.settings.PlayerSettings;
+import com.mrnobody.morecommands.settings.ServerPlayerSettings;
+import com.mrnobody.morecommands.util.ChatChannel;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -20,6 +21,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.management.ItemInWorldManager;
 import net.minecraft.util.BlockPos;
+import net.minecraft.util.IChatComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldSettings;
@@ -40,6 +42,12 @@ public class ServerConfigurationManagerDedicated extends net.minecraft.server.de
 	public ServerConfigurationManagerDedicated(DedicatedServer server) {
 		super(server);
 		this.mcServer = server;
+	}
+	
+	@Override
+	public void sendChatMsgImpl(IChatComponent message, boolean isSystemMessage) {
+		MoreCommands.getProxy().ensureChatChannelsLoaded();
+		ChatChannel.getMasterChannel().sendChatMessage(message, isSystemMessage ? (byte) 1 : (byte) 0);
 	}
 	
     public EntityPlayerMP createPlayerForUser(GameProfile profile)

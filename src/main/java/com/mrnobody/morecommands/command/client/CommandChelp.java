@@ -8,14 +8,14 @@ import java.util.Map;
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.Command;
+import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
+import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.MultipleCommands;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.util.DummyCommand;
 import com.mrnobody.morecommands.util.LanguageManager;
-import com.mrnobody.morecommands.wrapper.CommandException;
-import com.mrnobody.morecommands.wrapper.CommandSender;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommand;
@@ -47,17 +47,17 @@ public class CommandChelp extends StandardCommand implements ClientCommandProper
 	private IChatComponent MESSAGE_INFO;
 	
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return "chelp";
 	}
 
 	@Override
-	public String getUsage() {
+	public String getCommandUsage() {
 		return "command.chelp.syntax";
 	}
 
 	@Override
-	public void execute(CommandSender sender, String[] params) throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		String langCode = Minecraft.getMinecraft().getLanguageManager().getCurrentLanguage().getLanguageCode();
 		this.resetMessages(langCode);
 		
@@ -127,6 +127,8 @@ public class CommandChelp extends StandardCommand implements ClientCommandProper
 				sender.sendChatComponent(this.MESSAGE_FOOTER);
 			}
 		}
+		
+		return null;
 	}
 	
 	private String[] getInfo(ClientCommand<?> cmd) {
@@ -174,7 +176,7 @@ public class CommandChelp extends StandardCommand implements ClientCommandProper
 	}
 	
 	@Override
-	public int getDefaultPermissionLevel() {
+	public int getDefaultPermissionLevel(String[] args) {
 		return 0;
 	}
 }
