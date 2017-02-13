@@ -445,8 +445,10 @@ public class ChatChannel {
 	public boolean isIndirectParent(ChatChannel channel) {
 		ChatChannel parent = this.parent;
 		
-		while (parent != null)
+		while (parent != null) {
 			if (parent.equals(channel)) return true;
+			parent = parent.parent;
+		}
 		
 		return false;
 	}
@@ -857,6 +859,10 @@ public class ChatChannel {
 			try {
 				JsonParser p = new JsonParser();
 				JsonElement root = p.parse(reader = new JsonReader(new InputStreamReader(new FileInputStream(settingsFile))));
+				
+				if (!root.isJsonArray())
+					throw new JsonSyntaxException("Chat Channels must be a Json Array");
+				
 				readChildren(root.getAsJsonArray(), masterChannel);
 			}
 			catch (IOException ex) {MoreCommands.INSTANCE.getLogger().info("Couldn't read chat channels due to the following exception: ", ex);}
