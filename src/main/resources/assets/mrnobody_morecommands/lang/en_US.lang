@@ -899,7 +899,7 @@ command.nbt.test.entity.syntax=/nbt_test_entity <TARGET> [equal] [BOUNDS]
 command.nbt.test.entity.videoURL=youtu.be/opVMnXz2ndQ
 
 command.nbt.noBounds=You don't have specified any bounds for the test
-command.nbt.matched=Test was successful
+command.nbt.matched=Test was successful (Found %d matchings)
 command.nbt.noMatch=Test failed
 command.nbt.noMeta=The specified item doesn't have subtypes
 command.nbt.invalidTarget=Invalid Target
