@@ -173,7 +173,7 @@ public class CommandNbt extends MultipleCommands implements ServerCommandPropert
 				if (param.boundsIndex == -1)
 					throw new CommandException("command.nbt.noBounds", sender);
 				else
-					checkBounds(sender, params, matchingStacks, param.boundsIndex);
+					return Integer.toString(checkBounds(sender, params, matchingStacks, param.boundsIndex));
 			}
 			else if (type.equals("block")) {
 				if (!isTargetSelector(params[0]) || !params[0].startsWith("@b")) 
@@ -184,7 +184,7 @@ public class CommandNbt extends MultipleCommands implements ServerCommandPropert
 				
 				TestBlockCallback callback = new TestBlockCallback();
 				TargetSelector.BlockSelector.matchBlocks(sender.getMinecraftISender(), params[0], false, callback);
-				checkBounds(sender, params, callback.getMatchingBlocks(), 1);
+				Integer.toString(checkBounds(sender, params, callback.getMatchingBlocks(), 1));
 			}
 			else if (type.equals("entity")) {
 				if (!isTargetSelector(params[0]) || params[0].startsWith("@b")) 
@@ -194,7 +194,7 @@ public class CommandNbt extends MultipleCommands implements ServerCommandPropert
 					throw new CommandException("command.nbt.noBounds", sender);
 				
 				int matchingEntites = TargetSelector.EntitySelector.matchEntites(sender.getMinecraftISender(), params[0], Entity.class).size();
-				checkBounds(sender, params, matchingEntites, 1);
+				Integer.toString(checkBounds(sender, params, matchingEntites, 1));
 			}
 			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
 		}
@@ -203,7 +203,7 @@ public class CommandNbt extends MultipleCommands implements ServerCommandPropert
 		return null;
 	}
 	
-	private static void checkBounds(CommandSender sender, String[] params, int matched, int boundsIndex) throws CommandException {
+	private static int checkBounds(CommandSender sender, String[] params, int matched, int boundsIndex) throws CommandException {
 		Pair<Integer, Integer> bounds = getBounds(sender, params, boundsIndex);
 		
 		if (bounds.getLeft() == -1)
@@ -213,6 +213,8 @@ public class CommandNbt extends MultipleCommands implements ServerCommandPropert
 			throw new CommandException("command.nbt.noMatch", sender);
 		else
 			sender.sendLangfileMessage("command.nbt.matched", matched);
+		
+		return matched;
 	}
 	
 	private static Pair getBounds(CommandSender sender, String[] params, int boundsIndex) throws CommandException {
