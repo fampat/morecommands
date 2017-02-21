@@ -899,8 +899,8 @@ command.nbt.test.entity.syntax=/nbt_test_entity <ZIEL> [equal] [GRENZEN] >10 <50
 command.nbt.test.entity.videoURL=youtu.be/opVMnXz2ndQ
 
 command.nbt.noBounds=Du hast keine Grenzen für den Test angegeben
-command.nbt.matched=Test war erfolgreich
-command.nbt.noMatch=Teste fehlgeschlagen
+command.nbt.matched=Test war erfolgreich (%d Treffer gefunden)
+command.nbt.noMatch=Test fehlgeschlagen
 command.nbt.invalidTarget=Ungültiges Ziel
 command.nbt.NAN=Es war ein nicht-numerisches Argument angegeben, wo ein numerisches erwartet wurde
 command.nbt.blockNotFound=Block %s wurde nicht gefunden
