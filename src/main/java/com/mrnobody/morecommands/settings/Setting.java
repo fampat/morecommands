@@ -133,6 +133,7 @@ public final class Setting<T> {
 		this.properties = new EnumMap<SettingsProperty, Set<String>>(properties);
 		this.propPriorityLevel = SettingsProperty.getPropertyBits(this.properties.keySet());
 		this.customPriorityLevel = customPriorityLevel;
+		this.allowMerge = allowMerge;
 		
 		this.properties.values().remove(Collections.EMPTY_SET);
 	}
