@@ -241,7 +241,7 @@ class RootSettingsSerializer implements SettingsSerializer<SetMultimap<String, S
 				this.defaultSerializer.serialize(setting.getValue()) : ((SettingsSerializer) serializer).serialize(setting.getValue());
 				} catch (ClassCastException ex) {value = this.defaultSerializer.serialize(setting.getValue());}
 				
-				if (value.isJsonObject() || !setting.getProperties().isEmpty()) {
+				if (value.isJsonObject() || value.isJsonArray() || !setting.getProperties().isEmpty()) {
 					JsonObject obj = new JsonObject();
 					
 					for (Map.Entry<SettingsProperty, Set<String>> entry : setting.getProperties().entrySet()) {
@@ -257,7 +257,7 @@ class RootSettingsSerializer implements SettingsSerializer<SetMultimap<String, S
 					
 					if (setting.getCustomPriorityLevel() >= 0) 
 						obj.add("priority", new JsonPrimitive(setting.getCustomPriorityLevel()));
-
+					
 					if (!setting.allowMerge())
 						obj.add("allowMerge", new JsonPrimitive(false));
 					
