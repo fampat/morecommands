@@ -119,7 +119,7 @@ public class JsonSettingsManager extends SettingsManager {
 			return;
 		}
 		
-		String out = new GsonBuilder().setPrettyPrinting().create().toJson(this.serializeSettings());
+		String out = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create().toJson(this.serializeSettings());
 		OutputStreamWriter w = null;
 		
 		try {
