@@ -179,7 +179,10 @@ public class PacketHandlerClient {
 			pendingRemoteCommands.retainEntries(new TIntObjectProcedure<PendingRemoteCommand>() {
 				@Override
 				public boolean execute(int a, PendingRemoteCommand b) {
-					if (currentTime - b.startTime > MoreCommandsConfig.remoteCommandsTimeout) return false;
+					if (currentTime - b.startTime > MoreCommandsConfig.remoteCommandsTimeout) {
+						b.callback.timeout();
+						return false;
+					}
 					return true;
 				}
 			});
@@ -588,5 +591,10 @@ public class PacketHandlerClient {
 		 * @param result the result
 		 */
 		void setCommandResult(String result);
+		
+		/**
+		 * Invoked when the remote command execution timed out
+		 */
+		void timeout();
 	}
 }
