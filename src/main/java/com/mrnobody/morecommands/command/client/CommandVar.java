@@ -175,5 +175,8 @@ public class CommandVar extends StandardCommand implements ClientCommandProperti
 		public void setCommandResult(String result) {
 			CommandVar.setCommandResult(this.sender, this.settings, this.variable, result);
 		}
+		
+		@Override
+		public void timeout() {}
 	};
 }
