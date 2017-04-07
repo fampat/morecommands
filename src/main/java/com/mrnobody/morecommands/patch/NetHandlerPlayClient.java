@@ -42,8 +42,8 @@ public class NetHandlerPlayClient extends net.minecraft.client.network.NetHandle
 	@Override
     public void handleJoinGame(S01PacketJoinGame packetIn)
     {
-		if (this.clientWorldController == null) super.handleJoinGame(packetIn);
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.mc);
+		PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.mc);
+        if (this.clientWorldController == null) super.handleJoinGame(packetIn);
         this.mc.playerController = new com.mrnobody.morecommands.patch.PlayerControllerMP(this.mc, this); //Replaces the playerController with my own patched PlayerControllerMP
         ReflectionHelper.set(ObfuscatedField.NetHandlerPlayClient_clientWorldController, this.clientWorldController, this, new WorldClient(this, new WorldSettings(0L, packetIn.getGameType(), false, packetIn.isHardcoreMode(), packetIn.getWorldType()), packetIn.getDimension(), packetIn.getDifficulty(), this.mc.mcProfiler));
         this.mc.gameSettings.difficulty = packetIn.getDifficulty();

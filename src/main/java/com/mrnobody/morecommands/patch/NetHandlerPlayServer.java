@@ -73,44 +73,44 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
 	
     @Override
     public void processChatMessage(C01PacketChatMessage p_147354_1_) {
+    	PacketThreadUtil.checkThreadAndEnqueue(p_147354_1_, this, this.playerEntity.getServerForPlayer());
     	String message = p_147354_1_.getMessage();
     	
-    	//required because because PacketThreadUtil.checkThreadAndQueue() terminates this method if we are not on the main thread
-    	if (this.playerEntity.getServerForPlayer().isCallingFromMinecraftThread()) {
-        	ServerPlayerSettings settings = MoreCommands.getEntityProperties(ServerPlayerSettings.class, PlayerSettings.MORECOMMANDS_IDENTIFIER, this.playerEntity);
-    		Map<String, String> playerVars = settings == null ? new HashMap<String, String>() : settings.variables;
-    		boolean replaceIgnored;
+    	ServerPlayerSettings settings = MoreCommands.getEntityProperties(ServerPlayerSettings.class, PlayerSettings.MORECOMMANDS_IDENTIFIER, this.playerEntity);
+		Map<String, String> playerVars = settings == null ? new HashMap<String, String>() : settings.variables;
+		boolean replaceIgnored;
+		
+		if (message.length() > 1 && message.charAt(0) == '%') {
+			int end = message.indexOf('%', 1);
+			String val = end > 0 ? playerVars.get(message.substring(1, end)) : null;
+			
+			replaceIgnored = val == null || !val.startsWith("/") ||
+							(message.length() - 1 != end && message.charAt(end + 1) != ' ') ||
+							!MinecraftServer.getServer().getCommandManager().getCommands().containsKey(val.substring(1));
+		}
+		else replaceIgnored = !message.startsWith("/") || !MinecraftServer.getServer().getCommandManager().getCommands().containsKey(message.substring(1).split(" ")[0]);
+		
+    	try {
+    		String world = this.playerEntity.getEntityWorld().getSaveHandler().getWorldDirectoryName(), dim = this.playerEntity.getEntityWorld().provider.getDimensionName();
     		
-    		if (message.length() > 1 && message.charAt(0) == '%') {
-    			int end = message.indexOf('%', 1);
-    			String val = end > 0 ? playerVars.get(message.substring(1, end)) : null;
-    			
-    			replaceIgnored = val == null || !val.startsWith("/") ||
-    							(message.length() - 1 != end && message.charAt(end + 1) != ' ') ||
-    							!MinecraftServer.getServer().getCommandManager().getCommands().containsKey(val.substring(1));
-    		}
-    		else replaceIgnored = !message.startsWith("/") || !MinecraftServer.getServer().getCommandManager().getCommands().containsKey(message.substring(1).split(" ")[0]);
-    		
-        	try {
-        		String world = this.playerEntity.getEntityWorld().getSaveHandler().getWorldDirectoryName(), dim = this.playerEntity.getEntityWorld().provider.getDimensionName();
-        		
-    			if (MoreCommandsConfig.enableGlobalVars && MoreCommandsConfig.enablePlayerVars)
-    				message = Variables.replaceVars(message, replaceIgnored, playerVars, GlobalSettings.getInstance().variables.get(ImmutablePair.of(world, dim)));
-    			else if (MoreCommandsConfig.enablePlayerVars)
-    				message = Variables.replaceVars(message, replaceIgnored, playerVars);
-    			else if (MoreCommandsConfig.enableGlobalVars)
-    				message = Variables.replaceVars(message, replaceIgnored, GlobalSettings.getInstance().variables.get(ImmutablePair.of(world, dim)));
-        	}
-            catch (Variables.VariablesCouldNotBeResolvedException vcnbre) {
-                message = vcnbre.getNewString();
-            }
+			if (MoreCommandsConfig.enableGlobalVars && MoreCommandsConfig.enablePlayerVars)
+				message = Variables.replaceVars(message, replaceIgnored, playerVars, GlobalSettings.getInstance().variables.get(ImmutablePair.of(world, dim)));
+			else if (MoreCommandsConfig.enablePlayerVars)
+				message = Variables.replaceVars(message, replaceIgnored, playerVars);
+			else if (MoreCommandsConfig.enableGlobalVars)
+				message = Variables.replaceVars(message, replaceIgnored, GlobalSettings.getInstance().variables.get(ImmutablePair.of(world, dim)));
     	}
+        catch (Variables.VariablesCouldNotBeResolvedException vcnbre) {
+            message = vcnbre.getNewString();
+        }
     	
     	super.processChatMessage(new C01PacketChatMessage(message));
     }
     
     @Override
     public void processPlayer(C03PacketPlayer packet) {
+    	PacketThreadUtil.checkThreadAndEnqueue(packet, this, this.playerEntity.getServerForPlayer());
+        
         if (this.enabled && this.overrideNoclip) {
         	handleNoclip(packet);
         } else {
@@ -156,9 +156,9 @@ public class NetHandlerPlayServer extends net.minecraft.network.NetHandlerPlaySe
     
     public void handleNoclip(C03PacketPlayer packetIn)
     {
-    	checkSafe(this, this.playerEntity);
+    	PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.playerEntity.getServerForPlayer());
+        checkSafe(this, this.playerEntity);
     	
-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.playerEntity.getServerForPlayer());
         WorldServer worldserver = this.mcServer.worldServerForDimension(this.playerEntity.dimension);
         setBoolean(FIELD_147366_G, true);
 
