@@ -8,6 +8,7 @@ import com.mrnobody.morecommands.util.Reference;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.network.NetHandlerPlayServer;
@@ -93,26 +94,38 @@ public final class PacketDispatcher {
 	 * Invoked when the client receives a packet from the server
 	 */
 	@SubscribeEvent
-	public void onServerPacket(ClientCustomPacketEvent event) {
+	public void onServerPacket(final ClientCustomPacketEvent event) {
 		if (!event.getPacket().channel().equals(Reference.CHANNEL)) return;
-		try {handleServerPacket(event.getPacket());}
-		catch (Exception ex) {
-			ex.printStackTrace(); 
-			MoreCommands.INSTANCE.getLogger().warn("Error handling Packet");
-		}
+		
+		Minecraft.getMinecraft().addScheduledTask(new Runnable() {
+			@Override
+			public void run() {
+				try {handleServerPacket(event.getPacket());}
+				catch (Exception ex) {
+					ex.printStackTrace(); 
+					MoreCommands.INSTANCE.getLogger().warn("Error handling Packet");
+				}
+			}
+		});
 	}
 	
 	/**
 	 * Invoked when the server receives a packet from the client
 	 */
 	@SubscribeEvent
-	public void onClientPacket(ServerCustomPacketEvent event) {
+	public void onClientPacket(final ServerCustomPacketEvent event) {
 		if (!event.getPacket().channel().equals(Reference.CHANNEL)) return;
-		try {handleClientPacket(event.getPacket(), ((NetHandlerPlayServer) event.getHandler()).playerEntity);}
-		catch (Exception ex) {
-			ex.printStackTrace(); 
-			MoreCommands.INSTANCE.getLogger().warn("Error handling Packet");
-		}
+		
+		((NetHandlerPlayServer) event.getHandler()).playerEntity.getServerForPlayer().addScheduledTask(new Runnable() {
+			@Override
+			public void run() {
+				try {handleClientPacket(event.getPacket(), ((NetHandlerPlayServer) event.getHandler()).playerEntity);}
+				catch (Exception ex) {
+					ex.printStackTrace(); 
+					MoreCommands.INSTANCE.getLogger().warn("Error handling Packet");
+				}
+			}
+		});
 	}
 	
 	/**
