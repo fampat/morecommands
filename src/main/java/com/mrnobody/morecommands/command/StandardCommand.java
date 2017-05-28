@@ -14,7 +14,7 @@ import net.minecraft.util.IChatComponent;
 public abstract class StandardCommand extends AbstractCommand {
 	@Override
 	public final void processCommand(ICommandSender sender, String[] params) {
-		IChatComponent error = this.checkRequirements(sender, params, this instanceof ClientCommandProperties ? Side.CLIENT : Side.SERVER);
+		IChatComponent error = this.checkRequirements(sender, params);
 		ResultAcceptingCommandSender resultAcceptor = sender instanceof ResultAcceptingCommandSender ? (ResultAcceptingCommandSender) sender : null;
 		
     	if (error == null) {

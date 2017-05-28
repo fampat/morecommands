@@ -52,8 +52,8 @@ public class ClientProxy extends CommonProxy {
 	}
 	
 	@Override
-	protected void setPatcher() {
-		this.patcher = new ClientPatcher();
+	protected CommonHandler newHandler() {
+		return new ClientHandler();
 	}
 
 	@Override
@@ -76,7 +76,7 @@ public class ClientProxy extends CommonProxy {
 		if (MinecraftServer.getServer() != null && !MinecraftServer.getServer().isDedicatedServer()) {
 			for (Object o : MinecraftServer.getServer().getConfigurationManager().playerEntityList)
 				if (MinecraftServer.getServer().getServerOwner().equals(((EntityPlayer) o).getCommandSenderName()))
-						this.patcher.playerLogout(new PlayerLoggedOutEvent((EntityPlayer) o));
+						this.handler.playerLogout(new PlayerLoggedOutEvent((EntityPlayer) o));
 		}
 	}
 	

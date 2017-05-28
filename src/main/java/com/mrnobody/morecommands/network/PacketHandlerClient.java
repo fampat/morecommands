@@ -12,7 +12,6 @@ import com.mrnobody.morecommands.asm.transform.TransformTextureCompass;
 import com.mrnobody.morecommands.asm.transform.TransformTextureCompass.CompassTargetCallBack;
 import com.mrnobody.morecommands.command.ClientCommand;
 import com.mrnobody.morecommands.command.CommandSender;
-import com.mrnobody.morecommands.core.AppliedPatches;
 import com.mrnobody.morecommands.core.ClientProxy;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.event.DamageItemEvent;
@@ -20,8 +19,11 @@ import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.ItemStackChangeSizeEvent;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.network.PacketDispatcher.BlockUpdateType;
-import com.mrnobody.morecommands.patch.EntityClientPlayerMP;
-import com.mrnobody.morecommands.patch.PlayerControllerMP;
+import com.mrnobody.morecommands.patch.PatchEntityClientPlayerMP.EntityClientPlayerMP;
+import com.mrnobody.morecommands.patch.PatchEntityClientPlayerMP.PlayerControllerMP;
+import com.mrnobody.morecommands.patch.PatchList;
+import com.mrnobody.morecommands.patch.PatchManager;
+import com.mrnobody.morecommands.patch.PatchManager.AppliedPatches;
 import com.mrnobody.morecommands.settings.ClientPlayerSettings;
 import com.mrnobody.morecommands.settings.ClientPlayerSettings.XrayInfo;
 import com.mrnobody.morecommands.settings.GlobalSettings;
@@ -122,10 +124,14 @@ public class PacketHandlerClient {
 			public void run() {	
 				long t = System.currentTimeMillis() + timeout;
 				boolean added = false;
+				AppliedPatches appliedPatches = PatchManager.instance().getGlobalAppliedPatches();
 				
 				while (t > System.currentTimeMillis()) {
-					if (!added && AppliedPatches.serverModded()) {t = System.currentTimeMillis() + timeout; added = true;}
-					if (AppliedPatches.handshakeFinished()) break;
+					if (!added && appliedPatches.wasPatchSuccessfullyApplied(PatchList.SERVER_MODDED)) {
+						t = System.currentTimeMillis() + timeout; added = true;
+					}
+					
+					if (appliedPatches.wasPatchSuccessfullyApplied(PatchList.HANDSHAKE_FINISHED)) break;
 				}
 				
 				if (Minecraft.getMinecraft().thePlayer == null) return;
@@ -201,7 +207,7 @@ public class PacketHandlerClient {
 			return;
 		}
 		
-		AppliedPatches.setServerModded(true);
+		PatchManager.instance().getGlobalAppliedPatches().setPatchSuccessfullyApplied(PatchList.SERVER_MODDED, true);
 		
 		List<String> remove = new ArrayList<String>();
 		for (Object command : ClientCommandHandler.instance.getCommands().keySet()) {
@@ -219,14 +225,15 @@ public class PacketHandlerClient {
 		}
 		
 		MoreCommands.INSTANCE.getLogger().info("Sending client handshake");
-		MoreCommands.INSTANCE.getPacketDispatcher().sendC00Handshake(Minecraft.getMinecraft().thePlayer instanceof EntityClientPlayerMP);
+		MoreCommands.INSTANCE.getPacketDispatcher().sendC00Handshake(
+				PatchManager.instance().getGlobalAppliedPatches().wasPatchSuccessfullyApplied(PatchList.PATCH_ENTITYCLIENTPLAYERMP));
 	}
 	
 	/**
 	 * Called when the handshake is finished
 	 */
 	public void handshakeFinished() {
-		AppliedPatches.setHandshakeFinished(true);
+		PatchManager.instance().getGlobalAppliedPatches().setPatchSuccessfullyApplied(PatchList.HANDSHAKE_FINISHED, true);
 		MoreCommands.INSTANCE.getLogger().info("Handshake finished");
 	}
 	
@@ -275,7 +282,7 @@ public class PacketHandlerClient {
             this.freecamOriginalPlayer.motionY = 0;
             this.freecamOriginalPlayer.motionZ = 0;
             this.freecamOriginalPlayer.setFreeCam(true);
-            Minecraft.getMinecraft().renderViewEntity = new EntityCamera(Minecraft.getMinecraft(), Minecraft.getMinecraft().theWorld, Minecraft.getMinecraft().getSession(), this.freecamOriginalPlayer.getHandler(), this.freecamOriginalPlayer.getWriter(), this.freecamOriginalPlayer.movementInput);
+            Minecraft.getMinecraft().renderViewEntity = new EntityCamera(Minecraft.getMinecraft(), Minecraft.getMinecraft().theWorld, Minecraft.getMinecraft().getSession(), this.freecamOriginalPlayer.getNetHandler(), this.freecamOriginalPlayer.getStatWriter(), this.freecamOriginalPlayer.movementInput);
             Minecraft.getMinecraft().renderViewEntity.setPositionAndRotation(this.freecamOriginalPlayer.posX, this.freecamOriginalPlayer.posY, this.freecamOriginalPlayer.posZ, this.freecamOriginalPlayer.rotationYaw, this.freecamOriginalPlayer.rotationPitch);
 		}
 	}
@@ -293,7 +300,7 @@ public class PacketHandlerClient {
 		}
 		else {
 			this.freezecamOriginalPlayer = ((EntityClientPlayerMP) Minecraft.getMinecraft().renderViewEntity);
-			EntityCamera camera = new EntityCamera(Minecraft.getMinecraft(), Minecraft.getMinecraft().theWorld, Minecraft.getMinecraft().getSession(), this.freezecamOriginalPlayer.getHandler(), this.freezecamOriginalPlayer.getWriter(), this.freezecamOriginalPlayer.movementInput);
+			EntityCamera camera = new EntityCamera(Minecraft.getMinecraft(), Minecraft.getMinecraft().theWorld, Minecraft.getMinecraft().getSession(), this.freezecamOriginalPlayer.getNetHandler(), this.freezecamOriginalPlayer.getStatWriter(), this.freezecamOriginalPlayer.movementInput);
 			camera.setPositionAndRotation(this.freezecamOriginalPlayer.posX, this.freezecamOriginalPlayer.posY, this.freezecamOriginalPlayer.posZ, this.freezecamOriginalPlayer.rotationYaw, this.freezecamOriginalPlayer.rotationPitch);
 			camera.setFreezeCamera(0, 0, 0, this.freezecamOriginalPlayer.rotationYaw, this.freezecamOriginalPlayer.rotationPitch);
 			this.freezecamOriginalPlayer.setFreezeCamYawAndPitch(this.freezecamOriginalPlayer.rotationYaw, this.freezecamOriginalPlayer.rotationPitch);

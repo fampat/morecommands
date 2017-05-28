@@ -14,6 +14,7 @@ import com.mrnobody.morecommands.util.Coordinate;
 import com.mrnobody.morecommands.util.EntityUtils;
 import com.mrnobody.morecommands.util.WorldUtils;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.DamageSource;

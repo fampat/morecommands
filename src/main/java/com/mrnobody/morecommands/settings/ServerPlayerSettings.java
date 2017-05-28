@@ -128,6 +128,9 @@ public final class ServerPlayerSettings extends PlayerSettings {
 		super(other.manager, false);
 		this.properties = other.properties;
 		
+		if (other.manager instanceof LazySettingsManagerLoader) 
+			this.loader = (LazySettingsManagerLoader) other.manager;
+		
 		this.player = newPlayer;
 		this.copyProperties(other);
 	}
@@ -227,7 +230,8 @@ public final class ServerPlayerSettings extends PlayerSettings {
 	
 	@Override
 	protected synchronized void readSettings() {
-		this.loader.checkLoaded();
+		if (this.loader != null)
+			this.loader.checkLoaded();
 		
 		super.readSettings();
 		this.inventories = super.readMergedMappedSettings("inventories", NBTTagList.class, SettingsProperty.SERVER_PROPERTY);

@@ -1,6 +1,6 @@
 package com.mrnobody.morecommands.util;
 
-import com.mrnobody.morecommands.patch.EntityClientPlayerMP;
+import com.mrnobody.morecommands.patch.PatchEntityClientPlayerMP.EntityClientPlayerMP;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;

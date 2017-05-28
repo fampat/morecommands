@@ -16,6 +16,7 @@ import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
 import com.mrnobody.morecommands.network.PacketDispatcher;
+import com.mrnobody.morecommands.patch.PatchList;
 import com.mrnobody.morecommands.settings.GlobalSettings;
 import com.mrnobody.morecommands.settings.MoreCommandsConfig;
 import com.mrnobody.morecommands.util.CommandClassLoader;
@@ -239,6 +240,7 @@ public enum MoreCommands {
 		MoreCommandsConfig.readConfig();
 		
 		DefaultChannelPolicies.registerPolicies();
+		PatchList.registerPatches();
 		
 		this.dispatcher = new PacketDispatcher();
 		if (this.loadCommands()) this.logger.info("Command Classes successfully loaded");

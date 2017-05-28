@@ -107,13 +107,13 @@ public class CommandVar extends StandardCommand implements ClientCommandProperti
     		}
     		else if (params[0].equalsIgnoreCase("grab") && params.length > 2) {
     			String var = params[1], command = rejoinParams(Arrays.copyOfRange(params, 2, params.length));
-    			if (!isSenderOfEntityType(sender.getMinecraftISender(), com.mrnobody.morecommands.patch.EntityClientPlayerMP.class))
+    			if (!isSenderOfEntityType(sender.getMinecraftISender(), com.mrnobody.morecommands.patch.PatchEntityClientPlayerMP.EntityClientPlayerMP.class))
     				throw new CommandException("command.generic.clientPlayerNotPatched", sender);
     			
     			if (command.startsWith("macro") || command.startsWith("/macro"))
     				throw new CommandException("command.var.grabMacro", sender);
     			
-    			com.mrnobody.morecommands.patch.EntityClientPlayerMP patchedPlayer = getSenderAsEntity(sender.getMinecraftISender(), com.mrnobody.morecommands.patch.EntityClientPlayerMP.class);
+    			com.mrnobody.morecommands.patch.PatchEntityClientPlayerMP.EntityClientPlayerMP patchedPlayer = getSenderAsEntity(sender.getMinecraftISender(), com.mrnobody.morecommands.patch.PatchEntityClientPlayerMP.EntityClientPlayerMP.class);
     			patchedPlayer.setCaptureNextCommandResult();
     			
     			if (ClientCommandHandler.instance.executeCommand(patchedPlayer, command) != 0) {
