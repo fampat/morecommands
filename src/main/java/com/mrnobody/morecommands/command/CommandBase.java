@@ -47,7 +47,7 @@ public abstract class CommandBase<T extends StandardCommand> extends AbstractCom
 	
 	@Override
 	public final void execute(MinecraftServer server, ICommandSender sender, String[] params) throws net.minecraft.command.CommandException {
-		ITextComponent error = this.checkRequirements(sender, params, this.getSide());
+		ITextComponent error = this.checkRequirements(sender, params);
 		ResultAcceptingCommandSender resultAcceptor = sender instanceof ResultAcceptingCommandSender ? (ResultAcceptingCommandSender) sender : null;
 		
     	if (error == null) {
@@ -91,9 +91,4 @@ public abstract class CommandBase<T extends StandardCommand> extends AbstractCom
 	public int getDefaultPermissionLevel(String[] args) {
 		return this.delegate.getDefaultPermissionLevel(args);
 	}
-	
-	/**
-	 * @return the side on which the wrapped command should be executed
-	 */
-	public abstract Side getSide();
 }

@@ -49,10 +49,10 @@ public class ClientProxy extends CommonProxy {
 	}
 	
 	@Override
-	protected void setPatcher() {
-		this.patcher = new ClientPatcher();
+	protected CommonHandler newHandler() {
+		return new ClientHandler();
 	}
-
+	
 	@Override
 	protected void postInit(FMLPostInitializationEvent event) {
 		super.postInit(event);
@@ -74,7 +74,7 @@ public class ClientProxy extends CommonProxy {
 		if (server != null && !server.isDedicatedServer()) {
 			for (EntityPlayerMP player : server.getPlayerList().getPlayerList())
 				if (server.getServerOwner().equals(player.getName()))
-						this.patcher.playerLogout(new PlayerLoggedOutEvent(player));
+						this.handler.playerLogout(new PlayerLoggedOutEvent(player));
 		}
 	}
 	

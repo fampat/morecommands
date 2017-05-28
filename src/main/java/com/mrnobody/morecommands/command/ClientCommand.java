@@ -5,7 +5,6 @@ import com.mrnobody.morecommands.util.LanguageManager;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraftforge.fml.relauncher.Side;
 
 /**
  * A wrapper class for commands which are intended to be used
@@ -40,22 +39,17 @@ public final class ClientCommand<T extends StandardCommand & ClientCommandProper
 	}
 	
     @Override
-    public final ITextComponent checkRequirements(ICommandSender sender, String[] params, Side side) {
+    public final ITextComponent checkRequirements(ICommandSender sender, String[] params) {
 		String lang = MoreCommands.INSTANCE.getCurrentLang(sender);
 		
     	if (!(sender instanceof net.minecraft.client.entity.EntityPlayerSP))
     		return makeChatMsg(LanguageManager.translate(lang, "command.generic.notClient"));
     	
-    	return super.checkRequirements(sender, params, side);
+    	return super.checkRequirements(sender, params);
     }
 
 	@Override
 	public boolean registerIfServerModded() {
 		return this.delegate.registerIfServerModded();
-	}
-	
-	@Override
-	public Side getSide() {
-		return Side.CLIENT;
 	}
 }
