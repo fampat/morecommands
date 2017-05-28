@@ -11,11 +11,12 @@ import com.mrnobody.morecommands.command.CommandRequirement;
 import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.MultipleCommands;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
-import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
-import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
+import com.mrnobody.morecommands.patch.PatchList;
+import com.mrnobody.morecommands.patch.PatchManager;
+import com.mrnobody.morecommands.patch.PatchManager.AppliedPatches;
 import com.mrnobody.morecommands.settings.GlobalSettings;
 import com.mrnobody.morecommands.settings.MoreCommandsConfig;
 import com.mrnobody.morecommands.settings.ServerPlayerSettings;
@@ -52,8 +53,8 @@ public class CommandAlias extends MultipleCommands implements ServerCommandPrope
 			String command = null;
 			
 			if (isSenderOfEntityType(event.sender, EntityPlayerMP.class)) {
-				PlayerPatches playerInfo = MoreCommands.INSTANCE.getEntityProperties(PlayerPatches.class, PlayerPatches.PLAYERPATCHES_IDENTIFIER, getSenderAsEntity(event.sender, EntityPlayerMP.class));
-				command = playerInfo != null && playerInfo.clientModded() ? null :
+				AppliedPatches playerInfo = PatchManager.instance().getAppliedPatchesForPlayer(getSenderAsEntity(event.sender, EntityPlayerMP.class));
+				command = playerInfo != null && playerInfo.wasPatchSuccessfullyApplied(PatchList.CLIENT_MODDED) ? null :
 				getPlayerSettings(getSenderAsEntity(event.sender, EntityPlayerMP.class)).aliases.get(event.command.getCommandName());
 				
 				if (command == null && MoreCommandsConfig.enableGlobalAliases)
@@ -95,8 +96,8 @@ public class CommandAlias extends MultipleCommands implements ServerCommandPrope
 		ServerCommandManager commandManager = (ServerCommandManager) MinecraftServer.getServer().getCommandManager();
 		
 		if (!global) {
-			PlayerPatches playerInfo = MoreCommands.INSTANCE.getEntityProperties(PlayerPatches.class, PlayerPatches.PLAYERPATCHES_IDENTIFIER, getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
-			if (playerInfo != null && playerInfo.clientModded()) throw new CommandException(new CommandNotFoundException());
+			AppliedPatches playerInfo = PatchManager.instance().getAppliedPatchesForPlayer(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
+			if (playerInfo != null && playerInfo.wasPatchSuccessfullyApplied(PatchList.CLIENT_MODDED)) throw new CommandException(new CommandNotFoundException());
 		}
 		
 		if (global && !MoreCommandsConfig.enableGlobalAliases)

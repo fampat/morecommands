@@ -4,10 +4,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.mrnobody.morecommands.core.MoreCommands;
-import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
-import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedMethod;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRailBase;
@@ -15,7 +15,11 @@ import net.minecraft.block.BlockStem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.MusicTicker;
 import net.minecraft.client.gui.GuiChat;
+import net.minecraft.client.gui.GuiMultiplayer;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.ServerSelectionList;
+import net.minecraft.client.multiplayer.GuiConnecting;
+import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.resources.SimpleReloadableResourceManager;
@@ -29,6 +33,8 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.PlayerCapabilities;
 import net.minecraft.inventory.AnimalChest;
 import net.minecraft.network.NetHandlerPlayServer;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.NetworkSystem;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.stats.StatBase;
 import net.minecraft.stats.StatList;
@@ -36,6 +42,8 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.world.WorldType;
 import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.fml.client.ExtendedServerListData;
+import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
 /**
@@ -94,6 +102,16 @@ public final class ObfuscatedNames {
 		public static final ObfuscatedField<NetHandlerPlayClient, WorldClient> NetHandlerPlayClient_clientWorldController;
 		public static final ObfuscatedField<SimpleReloadableResourceManager, List<?>> SimpleReloadableResourceManager_reloadListeners;
 		public static final ObfuscatedField<GuiChat, String> GuiChat_defaultInputFieldText;
+		public static final ObfuscatedField<Minecraft, String> Minecraft_serverName;
+		public static final ObfuscatedField<Minecraft, Integer> Minecraft_serverPort;
+		public static final ObfuscatedField<Minecraft, NetworkManager> Minecraft_myNetworkManager;
+		public static final ObfuscatedField<GuiMultiplayer, GuiScreen> GuiMultiplayer_parentScreen;
+		public static final ObfuscatedField<GuiMultiplayer, ServerSelectionList> GuiMultiplayer_serverListSelector;
+		public static final ObfuscatedField<GuiMultiplayer, Boolean> GuiMultiplayer_directConnect;
+		public static final ObfuscatedField<GuiMultiplayer, ServerData> GuiMultiplayer_selectedServer;
+		public static final ObfuscatedField<FMLClientHandler, CountDownLatch> FMLClientHandler_startupConnectionData;
+		public static final ObfuscatedField<FMLClientHandler, Map<ServerData, ExtendedServerListData>> FMLClientHandler_serverDataTag;
+		public static final ObfuscatedField<GuiConnecting, AtomicInteger> GuiConnecting_CONNECTION_ID;
 		
 		static {if (FMLCommonHandler.instance().getSide().isClient()) {
 			Minecraft_mcMusicTicker = new ObfuscatedField<Minecraft, MusicTicker>("mcMusicTicker", "field_147126_aw", Minecraft.class, MusicTicker.class);
@@ -103,6 +121,16 @@ public final class ObfuscatedNames {
 			NetHandlerPlayClient_clientWorldController = new ObfuscatedField<NetHandlerPlayClient, WorldClient>("clientWorldController", "field_147300_g", NetHandlerPlayClient.class, WorldClient.class);
 			SimpleReloadableResourceManager_reloadListeners = new ObfuscatedField<SimpleReloadableResourceManager, List<?>>("reloadListeners", "field_110546_b", SimpleReloadableResourceManager.class, (Class<List<?>>) (Class<?>) List.class);
 			GuiChat_defaultInputFieldText = new ObfuscatedField<GuiChat, String>("defaultInputFieldText", "field_146409_v", GuiChat.class, String.class);
+			Minecraft_serverName = new ObfuscatedField<Minecraft, String>("serverName", "field_71475_ae", Minecraft.class, String.class);
+			Minecraft_serverPort = new ObfuscatedField<Minecraft, Integer>("serverPort", "field_71477_af", Minecraft.class, int.class);
+			Minecraft_myNetworkManager = new ObfuscatedField<Minecraft, NetworkManager>("myNetworkManager", "field_71453_ak", Minecraft.class, NetworkManager.class);
+			GuiMultiplayer_parentScreen = new ObfuscatedField<GuiMultiplayer, GuiScreen>("parentScreen", "field_146798_g", GuiMultiplayer.class, GuiScreen.class);
+			GuiMultiplayer_serverListSelector = new ObfuscatedField<GuiMultiplayer, ServerSelectionList>("serverListSelector", "field_146803_h", GuiMultiplayer.class, ServerSelectionList.class);
+			GuiMultiplayer_directConnect = new ObfuscatedField<GuiMultiplayer, Boolean>("directConnect", "field_146813_x", GuiMultiplayer.class, boolean.class);
+			GuiMultiplayer_selectedServer = new ObfuscatedField<GuiMultiplayer, ServerData>("selectedServer", "field_146811_z", GuiMultiplayer.class, ServerData.class);
+			FMLClientHandler_startupConnectionData = new ObfuscatedField<FMLClientHandler, CountDownLatch>("startupConnectionData", "startupConnectionData", FMLClientHandler.class, CountDownLatch.class);
+			FMLClientHandler_serverDataTag = new ObfuscatedField<FMLClientHandler, Map<ServerData, ExtendedServerListData>>("serverDataTag", "serverDataTag", FMLClientHandler.class, (Class<Map<ServerData, ExtendedServerListData>>) (Class<?>) Map.class);
+			GuiConnecting_CONNECTION_ID = new ObfuscatedField<GuiConnecting, AtomicInteger>("CONNECTION_ID", "field_146372_a", GuiConnecting.class, AtomicInteger.class);
 		} else {
 			Minecraft_mcMusicTicker = null;
 			MusicTicker_timeUntilNextMusic = null;
@@ -111,6 +139,16 @@ public final class ObfuscatedNames {
 			NetHandlerPlayClient_clientWorldController = null;
 			SimpleReloadableResourceManager_reloadListeners = null;
 			GuiChat_defaultInputFieldText = null;
+			Minecraft_serverName = null;
+			Minecraft_serverPort = null;
+			Minecraft_myNetworkManager = null;
+			GuiMultiplayer_parentScreen = null;
+			GuiMultiplayer_serverListSelector = null;
+			GuiMultiplayer_directConnect = null;
+			GuiMultiplayer_selectedServer = null;
+			FMLClientHandler_startupConnectionData = null;
+			FMLClientHandler_serverDataTag = null;
+			GuiConnecting_CONNECTION_ID = null;
 		}}
 		
 		public static final ObfuscatedField<NetHandlerPlayServer, Double> NetHandlerPlayServer_lastPosX = new ObfuscatedField
@@ -156,6 +194,8 @@ public final class ObfuscatedNames {
 				<EntityList, Map<Class<? extends Entity>, Integer>>("classToIDMapping", "field_75624_e", EntityList.class, (Class<Map<Class<? extends Entity>, Integer>>) (Class<?>) Map.class);
 		public static final ObfuscatedField<EntityList, Map<String, Integer>> EntityList_stringToIDMapping = new ObfuscatedField
 				<EntityList, Map<String, Integer>>("stringToIDMapping", "field_180126_g", EntityList.class, (Class<Map<String, Integer>>) (Class<?>) Map.class);
+		public static final ObfuscatedField<NetworkSystem, List<NetworkManager>> NetworkSystem_networkManagers = new ObfuscatedField
+				<NetworkSystem, List<NetworkManager>>("networkManagers", "field_151272_f", NetworkSystem.class, (Class<List<NetworkManager>>) (Class<?>) List.class);
 		
 		//This field is generated dynamically via com.mrnbobody.morecommands.asm.transform.TransformChatStyle
 		public static final ObfuscatedField<ChatStyle, ChatStyle> ChatStyle_defaultChatStyle = new ObfuscatedField

@@ -10,8 +10,10 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import com.mrnobody.morecommands.command.AbstractCommand;
-import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
 import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.patch.PatchList;
+import com.mrnobody.morecommands.patch.PatchManager;
+import com.mrnobody.morecommands.patch.PatchManager.AppliedPatches;
 import com.mrnobody.morecommands.settings.MoreCommandsConfig;
 import com.mrnobody.morecommands.settings.PlayerSettings;
 import com.mrnobody.morecommands.settings.ServerPlayerSettings;
@@ -141,10 +143,12 @@ public class PacketHandlerServer {
 		
 		MoreCommands.INSTANCE.getLogger().info("Client handshake received for player '" + player.getName() + "'");
 		
-		PlayerPatches patches = MoreCommands.getEntityProperties(PlayerPatches.class, PlayerPatches.PLAYERPATCHES_IDENTIFIER, player);
-		patches.setClientModded(true);
-		patches.setClientPlayerPatched(patched);
-		patches.setRenderGlobalPatched(renderGlobalPatched);
+		AppliedPatches patches = PatchManager.instance().getAppliedPatchesForPlayer(player);
+		if (patches != null) {
+			patches.setPatchSuccessfullyApplied(PatchList.CLIENT_MODDED, true);
+			patches.setPatchSuccessfullyApplied(PatchList.PATCH_ENTITYPLAYERSP, patched);
+			patches.setPatchSuccessfullyApplied(PatchList.PATCH_RENDERGLOBAL, renderGlobalPatched);
+		}
 		
 		handshakeRetries.remove(player);
 		MoreCommands.INSTANCE.getPacketDispatcher().sendS01HandshakeFinished(player);
@@ -170,14 +174,14 @@ public class PacketHandlerServer {
 	 * @param command the command
 	 */
 	public void handleExecuteRemoteCommand(EntityPlayerMP player, int executionID, String command) {
-		if (!AbstractCommand.isSenderOfEntityType(player, com.mrnobody.morecommands.patch.EntityPlayerMP.class)) {
+		if (!AbstractCommand.isSenderOfEntityType(player, com.mrnobody.morecommands.patch.PatchEntityPlayerMP.EntityPlayerMP.class)) {
 			String result = LanguageManager.translate(MoreCommands.INSTANCE.getCurrentLang(player), "command.generic.serverPlayerNotPatched");
 			ChatComponentText text = new ChatComponentText(result); text.getChatStyle().setColor(EnumChatFormatting.RED);
 			player.addChatMessage(text); MoreCommands.INSTANCE.getPacketDispatcher().sendS17RemoteCommandResult(player, executionID, result);
 			return;
 		}
 		
-		com.mrnobody.morecommands.patch.EntityPlayerMP patchedPlayer = AbstractCommand.getSenderAsEntity(player, com.mrnobody.morecommands.patch.EntityPlayerMP.class);
+		com.mrnobody.morecommands.patch.PatchEntityPlayerMP.EntityPlayerMP patchedPlayer = AbstractCommand.getSenderAsEntity(player, com.mrnobody.morecommands.patch.PatchEntityPlayerMP.EntityPlayerMP.class);
 		patchedPlayer.setCaptureNextCommandResult();
 		
 		MinecraftServer.getServer().getCommandManager().executeCommand(patchedPlayer, command);
