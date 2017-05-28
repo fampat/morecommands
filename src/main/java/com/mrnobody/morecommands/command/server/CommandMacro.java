@@ -10,9 +10,10 @@ import com.mrnobody.morecommands.command.CommandRequirement;
 import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
-import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
-import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.patch.PatchList;
+import com.mrnobody.morecommands.patch.PatchManager;
+import com.mrnobody.morecommands.patch.PatchManager.AppliedPatches;
 import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 
 import net.minecraft.command.CommandNotFoundException;
@@ -41,8 +42,8 @@ public class CommandMacro extends StandardCommand implements ServerCommandProper
 	@Override
 	public String execute(CommandSender sender, String[] params) throws CommandException {
 		ServerPlayerSettings settings = getPlayerSettings(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
-		PlayerPatches playerInfo = MoreCommands.INSTANCE.getEntityProperties(PlayerPatches.class, PlayerPatches.PLAYERPATCHES_IDENTIFIER, getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
-		if (playerInfo != null && playerInfo.clientModded()) throw new CommandException(new CommandNotFoundException());
+		AppliedPatches playerInfo = PatchManager.instance().getAppliedPatchesForPlayer(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
+		if (playerInfo != null && playerInfo.wasPatchSuccessfullyApplied(PatchList.CLIENT_MODDED)) throw new CommandException(new CommandNotFoundException());
 		
 		if (params.length > 0) {
 			if ((params[0].equalsIgnoreCase("delete") || params[0].equalsIgnoreCase("del") || params[0].equalsIgnoreCase("remove") || params[0].equalsIgnoreCase("rem")) && params.length > 1) {

@@ -40,22 +40,17 @@ public final class ClientCommand<T extends StandardCommand & ClientCommandProper
 	}
 	
     @Override
-    public final IChatComponent checkRequirements(ICommandSender sender, String[] params, Side side) {
+    public final IChatComponent checkRequirements(ICommandSender sender, String[] params) {
 		String lang = MoreCommands.INSTANCE.getCurrentLang(sender);
 		
     	if (!(sender instanceof net.minecraft.client.entity.EntityPlayerSP))
     		return makeChatMsg(LanguageManager.translate(lang, "command.generic.notClient"));
     	
-    	return super.checkRequirements(sender, params, side);
+    	return super.checkRequirements(sender, params);
     }
 
 	@Override
 	public boolean registerIfServerModded() {
 		return this.delegate.registerIfServerModded();
-	}
-	
-	@Override
-	public Side getSide() {
-		return Side.CLIENT;
 	}
 }

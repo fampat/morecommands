@@ -100,11 +100,12 @@ public final class ReflectionHelper {
 	 * @param obfusctatedField the {@link ObfuscatedField} of which the value should be set
 	 * @param instance the instance for which the field value should be set, null if static
 	 * @param value the value to set the field to
+	 * @return true if success, false if failure
 	 */
-	public static <O, T> void set(ObfuscatedField<O, T> obfusctatedField, O instance, T value) {
+	public static <O, T> boolean set(ObfuscatedField<O, T> obfusctatedField, O instance, T value) {
 		Field field = getField(obfusctatedField);
-		if (field == null) return;
-		else set(obfusctatedField, field, instance, value);
+		if (field == null) return false;
+		else return set(obfusctatedField, field, instance, value);
 	}
 	
 	/**
@@ -116,18 +117,23 @@ public final class ReflectionHelper {
 	 * @param field the field that is represented by <i>obfuscatedField</i> (can be fetched via {@link #getField(ObfuscatedField)})
 	 * @param instance the instance for which the field value should be set, null if static
 	 * @param value the value to set the field to
+	 * @return true if success, false if failure
 	 */
-	public static <O, T> void set(ObfuscatedField<O, T> obfusctatedField, Field field, O instance, T value) {
+	public static <O, T> boolean set(ObfuscatedField<O, T> obfusctatedField, Field field, O instance, T value) {
 		if (field.getDeclaringClass() != obfusctatedField.getOwnerClass()) {
 				MoreCommands.INSTANCE.getLogger().trace("Invalid field object: " + field.getDeclaringClass().getName() + 
 						"#" + field.getName() + ", required: " + obfusctatedField.getOwnerClass().getName() + "#" + 
 						(obfusctatedField.getEnvName() == null ? obfusctatedField.getDeobfName() + "/" + obfusctatedField.getObfName() : obfusctatedField.getEnvName()));
+		
+				return false;
 		}
 		else {
-			try {field.set(instance, value);}
+			try {field.set(instance, value); return true;}
 			catch (Exception ex) {
 				MoreCommands.INSTANCE.getLogger().trace("Failed to set field value for field " + obfusctatedField.getOwnerClass().getName() + "#" + 
 						(obfusctatedField.getEnvName() == null ? obfusctatedField.getDeobfName() + "/" + obfusctatedField.getObfName() : obfusctatedField.getEnvName()), ex);
+			
+				return false;
 			}
 		}
 	}

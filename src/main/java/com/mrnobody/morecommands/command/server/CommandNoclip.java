@@ -10,7 +10,8 @@ import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
-import com.mrnobody.morecommands.patch.NetHandlerPlayServer;
+import com.mrnobody.morecommands.patch.PatchEntityPlayerMP;
+import com.mrnobody.morecommands.patch.PatchNetHandlerPlayServer.NetHandlerPlayServer;
 import com.mrnobody.morecommands.util.EntityUtils;
 import com.mrnobody.morecommands.util.WorldUtils;
 
@@ -51,7 +52,7 @@ public class CommandNoclip extends StandardCommand implements ServerCommandPrope
 
 	@Override
 	public String execute(CommandSender sender, String[] params) throws CommandException {
-		EntityPlayerMP player = (EntityPlayerMP) sender.getMinecraftISender();
+		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
 		boolean allowNoclip = false;
 		
 		if (!player.capabilities.isFlying)

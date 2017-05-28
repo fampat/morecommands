@@ -13,9 +13,10 @@ import com.mrnobody.morecommands.command.CommandRequirement;
 import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.MultipleCommands;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
-import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
-import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.patch.PatchList;
+import com.mrnobody.morecommands.patch.PatchManager;
+import com.mrnobody.morecommands.patch.PatchManager.AppliedPatches;
 import com.mrnobody.morecommands.settings.GlobalSettings;
 import com.mrnobody.morecommands.settings.MoreCommandsConfig;
 import com.mrnobody.morecommands.settings.ServerPlayerSettings;
@@ -61,8 +62,8 @@ public class CommandVar extends MultipleCommands implements ServerCommandPropert
 		String world = sender.getWorld().getSaveHandler().getWorldDirectoryName(), dim = sender.getWorld().provider.getDimensionName();
 		
 		if (!global) {
-			PlayerPatches playerInfo = MoreCommands.INSTANCE.getEntityProperties(PlayerPatches.class, PlayerPatches.PLAYERPATCHES_IDENTIFIER, getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
-			if (playerInfo != null && playerInfo.clientModded()) throw new CommandException(new CommandNotFoundException());
+			AppliedPatches playerInfo = PatchManager.instance().getAppliedPatchesForPlayer(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
+			if (playerInfo != null && playerInfo.wasPatchSuccessfullyApplied(PatchList.CLIENT_MODDED)) throw new CommandException(new CommandNotFoundException());
 		}
 		
 		if (global && !MoreCommandsConfig.enableGlobalVars)
@@ -136,10 +137,10 @@ public class CommandVar extends MultipleCommands implements ServerCommandPropert
     			if (command.startsWith("macro") || command.startsWith("/macro"))
     				throw new CommandException("command.var.grabMacro", sender);
     			
-    			if (!isSenderOfEntityType(sender.getMinecraftISender(), com.mrnobody.morecommands.patch.EntityPlayerMP.class))
+    			if (!isSenderOfEntityType(sender.getMinecraftISender(), com.mrnobody.morecommands.patch.PatchEntityPlayerMP.EntityPlayerMP.class))
     				throw new CommandException("command.generic.serverPlayerNotPatched", sender);
     			
-				com.mrnobody.morecommands.patch.EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), com.mrnobody.morecommands.patch.EntityPlayerMP.class);
+				com.mrnobody.morecommands.patch.PatchEntityPlayerMP.EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), com.mrnobody.morecommands.patch.PatchEntityPlayerMP.EntityPlayerMP.class);
 				player.setCaptureNextCommandResult();
 				
 				MinecraftServer.getServer().getCommandManager().executeCommand(player, command);
