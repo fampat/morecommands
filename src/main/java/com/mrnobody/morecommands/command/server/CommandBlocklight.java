@@ -103,7 +103,7 @@ public class CommandBlocklight extends StandardCommand implements ServerCommandP
   
 	@Override
 	public CommandRequirement[] getRequirements() {
-		return new CommandRequirement[] {CommandRequirement.OTHER_SIDE_MUST_BE_MODDED};
+		return new CommandRequirement[] {CommandRequirement.ALL_CLIENTS_MUST_BE_MODDED};
 	}
   
 	@Override

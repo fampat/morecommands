@@ -132,6 +132,9 @@ public final class ServerPlayerSettings extends PlayerSettings implements INBTSe
 	
 	protected ServerPlayerSettings(SettingsManager manager, boolean load) {
 		super(manager, load);
+
+		if (manager instanceof LazySettingsManagerLoader) 
+			this.loader = (LazySettingsManagerLoader) manager;
 	}
 	
 	/**
@@ -216,7 +219,8 @@ public final class ServerPlayerSettings extends PlayerSettings implements INBTSe
 	
 	@Override
 	protected synchronized void readSettings() {
-		if (this.loader != null) this.loader.checkLoaded();
+		if (this.loader != null)
+			this.loader.checkLoaded();
 		
 		super.readSettings();
 		this.inventories = super.readMergedMappedSettings("inventories", NBTTagList.class, SettingsProperty.SERVER_PROPERTY);
