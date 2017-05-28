@@ -15,6 +15,8 @@ import com.mrnobody.morecommands.event.EventHandler;
 import com.mrnobody.morecommands.event.Listeners.EventListener;
 import com.mrnobody.morecommands.event.Listeners.TwoEventListener;
 import com.mrnobody.morecommands.network.PacketHandlerServer;
+import com.mrnobody.morecommands.patch.PatchList;
+import com.mrnobody.morecommands.patch.PatchManager;
 import com.mrnobody.morecommands.settings.MoreCommandsConfig;
 import com.mrnobody.morecommands.settings.NBTSettingsManager;
 import com.mrnobody.morecommands.settings.SettingsManager;
@@ -53,7 +55,7 @@ import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
  *
  */
 public class CommonProxy {
-	protected CommonPatcher patcher;
+	protected CommonHandler handler;
 	
 	protected MoreCommands mod = MoreCommands.INSTANCE;
 	private Field langCode = ReflectionHelper.getField(ObfuscatedField.EntityPlayerMP_translator);
@@ -62,7 +64,7 @@ public class CommonProxy {
 	protected boolean playerNotified = false;
 	
 	public CommonProxy() {
-		this.setPatcher();
+		this.handler = newHandler();
 	}
 	
 	/**
@@ -80,24 +82,24 @@ public class CommonProxy {
 	}
 	
 	/**
-	 * sets the patcher corresponding to the proxy
+	 * @return a new event handler
 	 */
-	protected void setPatcher() {
-		this.patcher = new CommonPatcher();
+	protected CommonHandler newHandler() {
+		return new CommonHandler();
 	}
 	
 	/**
 	 * Called from the main mod class to do pre initialization
 	 */
 	protected void preInit(FMLPreInitializationEvent event) {
-		this.patcher.applyModStatePatch(event);
+		this.handler.onStateEvent(event);
 	}
 
 	/**
 	 * Called from the main mod class to do initialization
 	 */
 	protected void init(FMLInitializationEvent event) {
-		this.patcher.applyModStatePatch(event);
+		this.handler.onStateEvent(event);
 		if (MoreCommandsConfig.searchUpdates) findMoreCommandsUpdates();
 	}
 
@@ -105,14 +107,14 @@ public class CommonProxy {
 	 * Called from the main mod class to do post initialization
 	 */
 	protected void postInit(FMLPostInitializationEvent event) {
-		this.patcher.applyModStatePatch(event);
+		this.handler.onStateEvent(event);
 	}
 
 	/**
 	 * Called from the main mod class to do stuff before the server starts
 	 */
 	protected void serverStart(FMLServerAboutToStartEvent event) {
-		this.patcher.applyModStatePatch(event);
+		this.handler.onStateEvent(event);
 		ensureChatChannelsLoaded();
 	}
 	
@@ -120,7 +122,7 @@ public class CommonProxy {
 	 * Called from the main mod class to handle the server start
 	 */
 	protected void serverInit(FMLServerStartingEvent event) {
-		this.patcher.applyModStatePatch(event);
+		this.handler.onStateEvent(event);
 		
 		try {
 			this.registerServerCommands(event.getServer());
@@ -137,18 +139,23 @@ public class CommonProxy {
 	 * On dedicated environments, this is executing server startup commands
 	 */
 	protected void serverStarted(FMLServerStartedEvent event) {
+		this.handler.onStateEvent(event);
 		PacketHandlerServer.executeStartupCommands();
 	}
 	
 	/**
 	 * Called from the main mod class to do stuff before the server is stopping
 	 */
-	protected void serverStopping(FMLServerStoppingEvent event) {} //NOOP on dedicated environment
+	protected void serverStopping(FMLServerStoppingEvent event) {
+		this.handler.onStateEvent(event);
+	}
 
 	/**
 	 * Called from the main mod class to handle the server stop
 	 */
 	protected void serverStop(FMLServerStoppedEvent event) {
+		this.handler.onStateEvent(event);
+		
 		if (MoreCommandsConfig.retryHandshake)
 			PacketHandlerServer.stopHandshakeRetryThread();
 		
@@ -163,9 +170,9 @@ public class CommonProxy {
 				if (listener instanceof ServerCommandProperties) handler.unregister(listener);
 			}
 		}
-		
-		AppliedPatches.setServerCommandManagerPatched(false);
-		AppliedPatches.setServerConfigManagerPatched(false);
+
+		PatchManager.instance().getGlobalAppliedPatches().setPatchSuccessfullyApplied(PatchList.PATCH_SV_CMD_MANAGER, false);
+		PatchManager.instance().getGlobalAppliedPatches().setPatchSuccessfullyApplied(PatchList.PATCH_PLAYERLIST, false);
 	}
 	
 	/**
@@ -179,11 +186,10 @@ public class CommonProxy {
 	}
 	
 	/**
-	 * Called from the main mod class to get the patcher instance
-	 * @return the patcher
+	 * @return the event handler
 	 */
-	public CommonPatcher getPatcher() {
-		return this.patcher;
+	public CommonHandler getHandler() {
+		return this.handler;
 	}
 	
 	/**
