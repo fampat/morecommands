@@ -17,9 +17,10 @@ import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
 import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.StandardCommand;
-import com.mrnobody.morecommands.core.AppliedPatches;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.patch.PatchList;
+import com.mrnobody.morecommands.patch.PatchManager;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
 import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedMethod;
 import com.mrnobody.morecommands.util.ReflectionHelper;
@@ -116,7 +117,7 @@ public class CommandWorld extends StandardCommand implements ClientCommandProper
 				sender.sendStringMessage(saves);
 			}
 			else if (params[0].equalsIgnoreCase("seed") || params[0].equals("name")) {
-				if (!AppliedPatches.serverModded())
+				if (!PatchManager.instance().getGlobalAppliedPatches().wasPatchSuccessfullyApplied(PatchList.SERVER_MODDED))
 					throw new CommandException("command.world.serverNotModded", sender);
 				
 				Minecraft.getMinecraft().player.sendChatMessage("/world " + rejoinParams(params));

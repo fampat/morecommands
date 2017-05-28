@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
-import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
 import com.mrnobody.morecommands.settings.ClientPlayerSettings;
@@ -128,11 +127,10 @@ public abstract class AbstractCommand extends net.minecraft.command.CommandBase 
 	 * 
 	 * @param sender the command sender
 	 * @param params the command parameters
-	 * @param side the side on which this command is executed
 	 * 
 	 * @return null if all requirements are satisfied, an IChatComponent containing an error message if not
 	 */
-    public ITextComponent checkRequirements(ICommandSender sender, String[] params, Side side) {
+    public ITextComponent checkRequirements(ICommandSender sender, String[] params) {
     	String lang = MoreCommands.INSTANCE.getCurrentLang(sender);
     	
     	if (!(this.getAllowedServerType() == ServerType.ALL || this.getAllowedServerType() == MoreCommands.getServerType())) {
@@ -143,21 +141,9 @@ public abstract class AbstractCommand extends net.minecraft.command.CommandBase 
     		throw new IllegalStateException("This should not happen");
     	}
     	
-    	PlayerPatches clientInfo = isSenderOfEntityType(sender, EntityPlayerMP.class) ? 
-    	getSenderAsEntity(sender, EntityPlayerMP.class).getCapability(PlayerPatches.PATCHES_CAPABILITY, null) : null;
-    	
-    	CommandRequirement[] requierements = this.getRequirements();
-    	if (clientInfo == null) {
-    		clientInfo = PlayerPatches.PATCHES_CAPABILITY.getDefaultInstance();
-    		
-    		if (isSenderOfEntityType(sender, EntityPlayerMP.class))
-    			clientInfo.setServerPlayHandlerPatched(getSenderAsEntity(sender, EntityPlayerMP.class).
-    					connection instanceof com.mrnobody.morecommands.patch.NetHandlerPlayServer);
-    	}
-    	
-    	for (CommandRequirement requierement : requierements) {
-    		if (!requierement.isSatisfied(sender, clientInfo, side)) {
-    			return makeChatMsg(LanguageManager.translate(lang, requierement.getLangfileMsg(side)));
+    	for (CommandRequirement requierement : getRequirements()) {
+    		if (!requierement.isSatisfied(sender)) {
+    			return makeChatMsg(LanguageManager.translate(lang, requierement.getLangfileMsg()));
     		}
     	}
     	

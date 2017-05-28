@@ -12,7 +12,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.fml.relauncher.Side;
 
 /**
  * A wrapper class for commands which are intended to be used
@@ -71,7 +70,7 @@ public final class ServerCommand<T extends StandardCommand & ServerCommandProper
 	}
     
     @Override
-    public ITextComponent checkRequirements(ICommandSender sender, String[] params, Side side) {
+    public ITextComponent checkRequirements(ICommandSender sender, String[] params) {
     	String lang = MoreCommands.INSTANCE.getCurrentLang(sender);
 
     	if (!checkPermLevel(sender, params))
@@ -80,7 +79,7 @@ public final class ServerCommand<T extends StandardCommand & ServerCommandProper
     	if (!this.canSenderUse(this.getCommandName(), sender, params))
         	return makeChatMsg(LanguageManager.translate(lang, "command.generic.cantUse"));
     	
-    	return super.checkRequirements(sender, params, side);
+    	return super.checkRequirements(sender, params);
     }
     
     private boolean checkPermLevel(ICommandSender sender, String[] params) {
@@ -91,10 +90,5 @@ public final class ServerCommand<T extends StandardCommand & ServerCommandProper
 	@Override
 	public boolean canSenderUse(String commandName, ICommandSender sender, String[] params) {
 		return this.delegate.canSenderUse(commandName, sender, params);
-	}
-	
-	@Override
-	public Side getSide() {
-		return Side.SERVER;
 	}
 }

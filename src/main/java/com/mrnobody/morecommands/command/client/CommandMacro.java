@@ -125,13 +125,13 @@ public class CommandMacro extends StandardCommand implements ClientCommandProper
 			command = command.substring("var grab ".length() + (command.startsWith("/") ? 1 : 0));
 			this.variable = command.split(" ")[0]; command = command.substring(this.variable.length()).trim();
 			
-			if (!isSenderOfEntityType(sender.getMinecraftISender(), com.mrnobody.morecommands.patch.EntityPlayerSP.class))
+			if (!isSenderOfEntityType(sender.getMinecraftISender(), com.mrnobody.morecommands.patch.PatchEntityPlayerSP.EntityPlayerSP.class))
 				this.sender.sendLangfileMessage("command.generic.clientPlayerNotPatched", TextFormatting.RED);
 			
 			if (command.startsWith("macro") || command.startsWith("/macro"))
 				this.sender.sendLangfileMessage("command.var.grabMacro", TextFormatting.RED);
 			
-			com.mrnobody.morecommands.patch.EntityPlayerSP patchedPlayer = getSenderAsEntity(this.sender.getMinecraftISender(), com.mrnobody.morecommands.patch.EntityPlayerSP.class);
+			com.mrnobody.morecommands.patch.PatchEntityPlayerSP.EntityPlayerSP patchedPlayer = getSenderAsEntity(this.sender.getMinecraftISender(), com.mrnobody.morecommands.patch.PatchEntityPlayerSP.EntityPlayerSP.class);
 			patchedPlayer.setCaptureNextCommandResult();
 			
 			if (ClientCommandHandler.instance.executeCommand(patchedPlayer, command) != 0) {
@@ -150,7 +150,7 @@ public class CommandMacro extends StandardCommand implements ClientCommandProper
 		
 		@Override
 		public void setCommandResult(String result) {
-			com.mrnobody.morecommands.patch.EntityPlayerSP patchedPlayer = getSenderAsEntity(this.sender.getMinecraftISender(), com.mrnobody.morecommands.patch.EntityPlayerSP.class);
+			com.mrnobody.morecommands.patch.PatchEntityPlayerSP.EntityPlayerSP patchedPlayer = getSenderAsEntity(this.sender.getMinecraftISender(), com.mrnobody.morecommands.patch.PatchEntityPlayerSP.EntityPlayerSP.class);
 			ClientPlayerSettings settings = getPlayerSettings(patchedPlayer);
 			
 			if (result != null && !result.isEmpty()) settings.variables.put(this.variable, result);

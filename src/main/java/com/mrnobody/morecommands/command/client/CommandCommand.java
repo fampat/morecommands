@@ -9,8 +9,9 @@ import com.mrnobody.morecommands.command.CommandException;
 import com.mrnobody.morecommands.command.CommandRequirement;
 import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.StandardCommand;
-import com.mrnobody.morecommands.core.AppliedPatches;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.patch.PatchList;
+import com.mrnobody.morecommands.patch.PatchManager;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommand;
@@ -42,7 +43,7 @@ public class CommandCommand extends StandardCommand implements ClientCommandProp
 			if (params[0].equalsIgnoreCase("enable")) {
 				ICommand enable = this.disabledCommands.get(params[1]);
 				
-				if (enable == null && AppliedPatches.serverModded())
+				if (enable == null && PatchManager.instance().getGlobalAppliedPatches().wasPatchSuccessfullyApplied(PatchList.SERVER_MODDED))
 					Minecraft.getMinecraft().player.sendChatMessage("/command enable " + params[1]);
 				else if (enable != null) {
 					ClientCommandHandler.instance.registerCommand(enable);
@@ -56,7 +57,7 @@ public class CommandCommand extends StandardCommand implements ClientCommandProp
 				
 				ICommand disable = (ICommand) ClientCommandHandler.instance.getCommands().get(params[1]);
 				
-				if (disable == null && AppliedPatches.serverModded())
+				if (disable == null && PatchManager.instance().getGlobalAppliedPatches().wasPatchSuccessfullyApplied(PatchList.SERVER_MODDED))
 					Minecraft.getMinecraft().player.sendChatMessage("/command disable " + params[1]);
 				else if (disable != null) {
 					this.disabledCommands.put(disable.getName(), disable);
