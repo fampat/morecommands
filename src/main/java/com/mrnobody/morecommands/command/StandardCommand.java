@@ -15,7 +15,7 @@ import net.minecraftforge.fml.relauncher.Side;
 public abstract class StandardCommand extends AbstractCommand {
 	@Override
 	public final void execute(MinecraftServer server, ICommandSender sender, String[] params) throws net.minecraft.command.CommandException {
-		ITextComponent error = this.checkRequirements(sender, params, this instanceof ClientCommandProperties ? Side.CLIENT : Side.SERVER);
+		ITextComponent error = this.checkRequirements(sender, params);
 		ResultAcceptingCommandSender resultAcceptor = sender instanceof ResultAcceptingCommandSender ? (ResultAcceptingCommandSender) sender : null;
 		
     	if (error == null) {
