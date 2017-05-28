@@ -6,9 +6,11 @@ import com.mrnobody.morecommands.command.CommandRequirement;
 import com.mrnobody.morecommands.command.CommandSender;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
-import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
 import com.mrnobody.morecommands.core.MoreCommands;
 import com.mrnobody.morecommands.core.MoreCommands.ServerType;
+import com.mrnobody.morecommands.patch.PatchList;
+import com.mrnobody.morecommands.patch.PatchManager;
+import com.mrnobody.morecommands.patch.PatchManager.AppliedPatches;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -34,14 +36,18 @@ public class CommandHandshake extends StandardCommand implements ServerCommandPr
 	@Override
 	public String execute(CommandSender sender, String[] params) throws CommandException {
 		EntityPlayerMP player = getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class);
-		PlayerPatches patches = player.getCapability(PlayerPatches.PATCHES_CAPABILITY, null);
+		AppliedPatches patches = PatchManager.instance().getAppliedPatchesForPlayer(player);
 		
 		if (params.length > 0 && params[0].equalsIgnoreCase("status")) {
-			if (patches != null && patches.clientModded()) sender.sendLangfileMessage("command.handshake.completed");
-			else sender.sendLangfileMessage("command.handshake.errored");
+			if (patches != null && patches.wasPatchSuccessfullyApplied(PatchList.CLIENT_MODDED)) 
+				sender.sendLangfileMessage("command.handshake.completed");
+			else
+				sender.sendLangfileMessage("command.handshake.errored");
 		}
 		else if (params.length > 0 && params[0].equalsIgnoreCase("redo")) {
-			if (patches != null && patches.clientModded()) throw new CommandException("command.handshake.handshakeFinished", sender);
+			if (patches != null && patches.wasPatchSuccessfullyApplied(PatchList.CLIENT_MODDED)) 
+				throw new CommandException("command.handshake.handshakeFinished", sender);
+			
 			sender.sendLangfileMessage("command.handshake.sendingHandshake");
 			MoreCommands.INSTANCE.getPacketDispatcher().sendS00Handshake(player);
 			MoreCommands.INSTANCE.getPacketDispatcher().sendS14RemoteWorld(player, player.worldObj.getSaveHandler().getWorldDirectory().getName());

@@ -15,13 +15,14 @@ import com.mrnobody.morecommands.asm.MoreCommandsLoadingPlugin;
 import com.mrnobody.morecommands.command.ClientCommandProperties;
 import com.mrnobody.morecommands.command.ServerCommandProperties;
 import com.mrnobody.morecommands.command.StandardCommand;
-import com.mrnobody.morecommands.core.AppliedPatches.PlayerPatches;
 import com.mrnobody.morecommands.network.PacketDispatcher;
+import com.mrnobody.morecommands.patch.PatchList;
+import com.mrnobody.morecommands.patch.PatchManager.AppliedPatches;
 import com.mrnobody.morecommands.settings.GlobalSettings;
 import com.mrnobody.morecommands.settings.MoreCommandsConfig;
 import com.mrnobody.morecommands.settings.PlayerSettings;
-import com.mrnobody.morecommands.util.DefaultChannelPolicies;
 import com.mrnobody.morecommands.util.CommandClassLoader;
+import com.mrnobody.morecommands.util.DefaultChannelPolicies;
 import com.mrnobody.morecommands.util.LanguageManager;
 import com.mrnobody.morecommands.util.ObfuscatedNames;
 import com.mrnobody.morecommands.util.Reference;
@@ -216,9 +217,10 @@ public enum MoreCommands {
 		MoreCommandsConfig.readConfig();
 		
 		PlayerSettings.registerCapabilities();
-		PlayerPatches.registerCapability();
+		AppliedPatches.registerCapability();
 		
 		DefaultChannelPolicies.registerPolicies();
+		PatchList.registerPatches();
 		
 		this.dispatcher = new PacketDispatcher();
 		if (this.loadCommands()) this.logger.info("Command Classes successfully loaded");
