@@ -45,7 +45,7 @@ public class CommandKillall extends StandardCommand implements ServerCommandProp
 		
 		if (params.length > 0) {
 			if (isTargetSelector(params[0])) {
-				List<net.minecraft.entity.Entity> removedEntities = EntityUtils.killEntities(TargetSelector.EntitySelector.matchEntites(sender.getMinecraftISender(), params[0], net.minecraft.entity.Entity.class));
+				List<net.minecraft.entity.Entity> removedEntities = EntityUtils.killEntities(TargetSelector.EntitySelector.matchEntities(sender.getMinecraftISender(), params[0], net.minecraft.entity.Entity.class));
 				sender.sendLangfileMessage("command.killall.killed", removedEntities.size());
 			}
 			else {

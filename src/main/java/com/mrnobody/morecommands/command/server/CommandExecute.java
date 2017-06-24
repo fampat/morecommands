@@ -146,7 +146,7 @@ public class CommandExecute extends MultipleCommands implements ServerCommandPro
 		
 		if (isTargetSelector(target)) {
 			if (target.startsWith("@b")) throw new CommandException("command.execute.invalidTarget", sender);
-			List<? extends Entity> entities = TargetSelector.EntitySelector.matchEntites(sender.getMinecraftISender(), target, Entity.class);
+			List<? extends Entity> entities = TargetSelector.EntitySelector.matchEntities(sender.getMinecraftISender(), target, Entity.class);
 			int tooManyRequests = 0;
 			
 			for (Entity entity : entities)
@@ -459,8 +459,9 @@ public class CommandExecute extends MultipleCommands implements ServerCommandPro
 		INSTANCE;
 		
 		@SubscribeEvent
-		public void attachCaps(AttachCapabilitiesEvent.Entity event) {
-			event.addCapability(REQUESTS_KEY, new CommandExecutionRequests(event.getEntity()));
+		public void attachCaps(AttachCapabilitiesEvent event) {
+			if (event.getObject() instanceof Entity)
+				event.addCapability(REQUESTS_KEY, new CommandExecutionRequests((Entity) event.getObject()));
 		}
 	}
 }

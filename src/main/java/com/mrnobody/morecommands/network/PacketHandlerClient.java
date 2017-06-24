@@ -277,7 +277,7 @@ public class PacketHandlerClient {
             this.freecamOriginalPlayer.motionY = 0;
             this.freecamOriginalPlayer.motionZ = 0;
             this.freecamOriginalPlayer.setFreeCam(true);
-            Minecraft.getMinecraft().setRenderViewEntity(new EntityCamera(Minecraft.getMinecraft(), Minecraft.getMinecraft().world, this.freecamOriginalPlayer.getNetHandler(), this.freecamOriginalPlayer.getStatWriter(), this.freecamOriginalPlayer.movementInput));
+            Minecraft.getMinecraft().setRenderViewEntity(new EntityCamera(Minecraft.getMinecraft(), Minecraft.getMinecraft().world, this.freecamOriginalPlayer.getNetHandler(), this.freecamOriginalPlayer.getStatWriter(), this.freecamOriginalPlayer.getRecipeBook(), this.freecamOriginalPlayer.movementInput));
             Minecraft.getMinecraft().getRenderViewEntity().setPositionAndRotation(this.freecamOriginalPlayer.posX, this.freecamOriginalPlayer.posY, this.freecamOriginalPlayer.posZ, this.freecamOriginalPlayer.rotationYaw, this.freecamOriginalPlayer.rotationPitch);
 		}
 	}
@@ -294,7 +294,7 @@ public class PacketHandlerClient {
 		}
 		else if (Minecraft.getMinecraft().player instanceof EntityPlayerSP) {
 			this.freezecamOriginalPlayer = (EntityPlayerSP) Minecraft.getMinecraft().player;
-			EntityCamera camera = new EntityCamera(Minecraft.getMinecraft(), Minecraft.getMinecraft().world, this.freezecamOriginalPlayer.getNetHandler(), this.freezecamOriginalPlayer.getStatWriter(), this.freezecamOriginalPlayer.movementInput);
+			EntityCamera camera = new EntityCamera(Minecraft.getMinecraft(), Minecraft.getMinecraft().world, this.freezecamOriginalPlayer.getNetHandler(), this.freezecamOriginalPlayer.getStatWriter(), this.freezecamOriginalPlayer.getRecipeBook(), this.freezecamOriginalPlayer.movementInput);
 			camera.setPositionAndRotation(this.freezecamOriginalPlayer.posX, this.freezecamOriginalPlayer.posY, this.freezecamOriginalPlayer.posZ, this.freezecamOriginalPlayer.rotationYaw, this.freezecamOriginalPlayer.rotationPitch);
 			camera.setFreezeCamera(0, 0, 0, this.freezecamOriginalPlayer.rotationYaw, this.freezecamOriginalPlayer.rotationPitch);
 			this.freezecamOriginalPlayer.setFreezeCamYawAndPitch(this.freezecamOriginalPlayer.rotationYaw, this.freezecamOriginalPlayer.rotationPitch);

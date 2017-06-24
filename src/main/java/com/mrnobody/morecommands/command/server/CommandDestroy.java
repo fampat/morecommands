@@ -86,7 +86,7 @@ public class CommandDestroy extends StandardCommand implements ServerCommandProp
 			List<? extends Entity> entities; int replaced = 0;
 			
 			if (!isTarget) entities = Arrays.asList(getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class));
-			else entities = TargetSelector.EntitySelector.matchEntites(sender.getMinecraftISender(), params[0], Entity.class);
+			else entities = TargetSelector.EntitySelector.matchEntities(sender.getMinecraftISender(), params[0], Entity.class);
 			
 			if (clearMode == 0) {
 				for (Entity entity : entities) {

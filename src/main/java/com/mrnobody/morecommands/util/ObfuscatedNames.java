@@ -9,11 +9,14 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.mrnobody.morecommands.core.MoreCommands;
+import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedField;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRailBase;
 import net.minecraft.block.BlockStem;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.ISound;
+import net.minecraft.client.audio.MusicTicker;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiMultiplayer;
 import net.minecraft.client.gui.GuiScreen;
@@ -94,7 +97,6 @@ public final class ObfuscatedNames {
 	 * @param <T> the field's type
 	 */
 	public static final class ObfuscatedField<O, T> {		
-		public static final ObfuscatedField<NetHandlerPlayClient, GuiScreen> NetHandlerPlayClient_guiScreenServer;
 		public static final ObfuscatedField<ClientCommandHandler, ClientCommandHandler> ClientCommandHandler_instance;
 		public static final ObfuscatedField<NetHandlerPlayClient, WorldClient> NetHandlerPlayClient_clientWorldController;
 		public static final ObfuscatedField<SimpleReloadableResourceManager, List<?>> SimpleReloadableResourceManager_reloadListeners;
@@ -109,9 +111,10 @@ public final class ObfuscatedNames {
 		public static final ObfuscatedField<FMLClientHandler, CountDownLatch> FMLClientHandler_startupConnectionData;
 		public static final ObfuscatedField<FMLClientHandler, Map<ServerData, ExtendedServerListData>> FMLClientHandler_serverDataTag;
 		public static final ObfuscatedField<GuiConnecting, AtomicInteger> GuiConnecting_CONNECTION_ID;
-		//field_146811_z
+		public static final ObfuscatedField<MusicTicker, ISound> MusicTicker_currentMusic;
+		public static final ObfuscatedField<MusicTicker, Integer> MusicTicker_timeUntilNextMusic;
+		
 		static {if (FMLCommonHandler.instance().getSide().isClient()) {
-			NetHandlerPlayClient_guiScreenServer = new ObfuscatedField<NetHandlerPlayClient, GuiScreen>("guiScreenServer", "field_147307_j", NetHandlerPlayClient.class, GuiScreen.class);
 			ClientCommandHandler_instance = new ObfuscatedField<ClientCommandHandler, ClientCommandHandler>("instance", "instance", ClientCommandHandler.class, ClientCommandHandler.class);
 			NetHandlerPlayClient_clientWorldController = new ObfuscatedField<NetHandlerPlayClient, WorldClient>("clientWorldController", "field_147300_g", NetHandlerPlayClient.class, WorldClient.class);
 			SimpleReloadableResourceManager_reloadListeners = new ObfuscatedField<SimpleReloadableResourceManager, List<?>>("reloadListeners", "field_110546_b", SimpleReloadableResourceManager.class, (Class<List<?>>) (Class<?>) List.class);
@@ -126,8 +129,9 @@ public final class ObfuscatedNames {
 			FMLClientHandler_startupConnectionData = new ObfuscatedField<FMLClientHandler, CountDownLatch>("startupConnectionData", "startupConnectionData", FMLClientHandler.class, CountDownLatch.class);
 			FMLClientHandler_serverDataTag = new ObfuscatedField<FMLClientHandler, Map<ServerData, ExtendedServerListData>>("serverDataTag", "serverDataTag", FMLClientHandler.class, (Class<Map<ServerData, ExtendedServerListData>>) (Class<?>) Map.class);
 			GuiConnecting_CONNECTION_ID = new ObfuscatedField<GuiConnecting, AtomicInteger>("CONNECTION_ID", "field_146372_a", GuiConnecting.class, AtomicInteger.class);
+			MusicTicker_currentMusic = new ObfuscatedField<MusicTicker, ISound>("currentMusic", "field_147678_c", MusicTicker.class, ISound.class);
+			MusicTicker_timeUntilNextMusic = new ObfuscatedField<MusicTicker, Integer>("timeUntilNextMusic", "field_147676_d", MusicTicker.class, int.class);
 		} else {
-			NetHandlerPlayClient_guiScreenServer = null;
 			ClientCommandHandler_instance = null;
 			NetHandlerPlayClient_clientWorldController = null;
 			SimpleReloadableResourceManager_reloadListeners = null;
@@ -142,6 +146,8 @@ public final class ObfuscatedNames {
 			FMLClientHandler_startupConnectionData = null;
 			FMLClientHandler_serverDataTag = null;
 			GuiConnecting_CONNECTION_ID = null;
+			MusicTicker_currentMusic = null;
+			MusicTicker_timeUntilNextMusic = null;
 		}}
 		
 		public static final ObfuscatedField<NetHandlerPlayServer, Double> NetHandlerPlayServer_firstGoodX = new ObfuscatedField
@@ -171,8 +177,6 @@ public final class ObfuscatedNames {
 		
 		public static final ObfuscatedField<MinecraftServer, ICommandManager> MinecraftServer_commandManager = new ObfuscatedField
 				<MinecraftServer, ICommandManager>("commandManager", "field_71321_q", MinecraftServer.class, ICommandManager.class);
-		public static final ObfuscatedField<StatList, Map<String, StatBase>> StatList_ID_TO_STAT_MAP = new ObfuscatedField
-				<StatList, Map<String, StatBase>>("ID_TO_STAT_MAP", "field_188093_a", StatList.class, (Class<Map<String, StatBase>>) (Class<?>) Map.class);
 		public static final ObfuscatedField<BlockStem, Block> BlockStem_crop = new ObfuscatedField
 				<BlockStem, Block>("crop", "field_149877_a", BlockStem.class, Block.class);
 		public static final ObfuscatedField<PlayerList, Map<UUID, EntityPlayerMP>> PlayerList_uuidToPlayerMap = new ObfuscatedField

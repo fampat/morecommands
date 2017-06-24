@@ -22,7 +22,7 @@ import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
  * @author MrNobody98
  */
 @IFMLLoadingPlugin.SortingIndex(1001)
-@IFMLLoadingPlugin.MCVersion("1.11.2")
+@IFMLLoadingPlugin.MCVersion("1.12")
 @IFMLLoadingPlugin.DependsOn("forge")
 @IFMLLoadingPlugin.TransformerExclusions({"com.mrnobody.morecommands.asm."})
 public class MoreCommandsLoadingPlugin implements IFMLLoadingPlugin {

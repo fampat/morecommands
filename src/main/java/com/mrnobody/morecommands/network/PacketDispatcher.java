@@ -116,10 +116,10 @@ public final class PacketDispatcher {
 	public void onClientPacket(final ServerCustomPacketEvent event) {
 		if (!event.getPacket().channel().equals(Reference.CHANNEL)) return;
 		
-		((NetHandlerPlayServer) event.getHandler()).playerEntity.getServerWorld().addScheduledTask(new Runnable() {
+		((NetHandlerPlayServer) event.getHandler()).player.getServerWorld().addScheduledTask(new Runnable() {
 			@Override
 			public void run() {
-				try {handleClientPacket(event.getPacket(), ((NetHandlerPlayServer) event.getHandler()).playerEntity);}
+				try {handleClientPacket(event.getPacket(), ((NetHandlerPlayServer) event.getHandler()).player);}
 				catch (Exception ex) {
 					ex.printStackTrace(); 
 					MoreCommands.INSTANCE.getLogger().warn("Error handling Packet");
@@ -136,8 +136,8 @@ public final class PacketDispatcher {
 	 * @throws Exception a possible exception that might occur
 	 */
 	private void handleClientPacket(FMLProxyPacket packet, EntityPlayerMP player) throws Exception {
-		byte id = readID(packet.payload());
-		ByteBuf payload = packet.payload();
+		byte id = packet.payload().readByte();
+		PacketBuffer payload = new PacketBuffer(packet.payload());
 		
 		switch (id) {
 			case C00HANDSHAKE:            processC00Handshake(payload, player); break;
@@ -154,8 +154,8 @@ public final class PacketDispatcher {
 	 * @throws Exception a possible exception that might occur
 	 */
 	private void handleServerPacket(FMLProxyPacket packet) throws Exception {
-		byte id = readID(packet.payload());
-		ByteBuf payload = packet.payload();
+		byte id = packet.payload().readByte();
+		PacketBuffer payload = new PacketBuffer(packet.payload());
 		
 		switch (id) {
 			case S00HANDSHAKE:            processS00Handshake(payload); break;
@@ -183,10 +183,10 @@ public final class PacketDispatcher {
 	/**
 	 * Processes a client handshake
 	 */
-	private void processC00Handshake(ByteBuf payload, EntityPlayerMP player) {
+	private void processC00Handshake(PacketBuffer payload, EntityPlayerMP player) {
 		boolean patched = payload.readBoolean();
 		boolean renderGlobalPatched = payload.readBoolean();
-		String version = readString(payload);
+		String version = payload.readString(32767);
 	    
 		this.packetHandlerServer.handshake(player, patched, renderGlobalPatched, version);
 	}
@@ -194,7 +194,7 @@ public final class PacketDispatcher {
 	/**
 	 * Processes a packet setting whether to enable/disable chat output
 	 */
-	private void processC01Output(ByteBuf payload, EntityPlayerMP player) {
+	private void processC01Output(PacketBuffer payload, EntityPlayerMP player) {
 		boolean output = payload.readBoolean();
 		this.packetHandlerServer.output(player, output);
 	}
@@ -203,9 +203,9 @@ public final class PacketDispatcher {
 	 * Processes a C03ExecuteRemoteCommand message.
 	 * @see PacketHandlerServer#handleExecuteRemoteCommand(EntityPlayerMP, int, String)
 	 */
-	private void processC02ExecuteRemoteCommand(ByteBuf payload, EntityPlayerMP player) {
+	private void processC02ExecuteRemoteCommand(PacketBuffer payload, EntityPlayerMP player) {
 		int executionID = payload.readInt();
-		String command = readString(payload);
+		String command = payload.readString(32767);
 		
 		this.packetHandlerServer.handleExecuteRemoteCommand(player, executionID, command);
 	}
@@ -213,8 +213,8 @@ public final class PacketDispatcher {
 	/**
 	 * Processes a server handshake
 	 */
-	private void processS00Handshake(ByteBuf payload) {
-		String version = readString(payload);
+	private void processS00Handshake(PacketBuffer payload) {
+		String version = payload.readString(32767);
 		MoreCommandsConfig.enablePlayerAliases = payload.readBoolean();
 		MoreCommandsConfig.enablePlayerVars = payload.readBoolean();
 		
@@ -224,7 +224,7 @@ public final class PacketDispatcher {
 	/**
 	 * Processes a packet indicating that the server is done processing the client handshake
 	 */
-	private void processS01HandshakeFinished(ByteBuf payload) {
+	private void processS01HandshakeFinished(PacketBuffer payload) {
 		this.packetHandlerClient.handshakeFinished();
 	}
 	
@@ -232,7 +232,7 @@ public final class PacketDispatcher {
 	 * Processes a S02Climb packet.
 	 * @see PacketHandlerClient#handleClimb(boolean)
 	 */
-	private void processS02Climb(ByteBuf payload) {
+	private void processS02Climb(PacketBuffer payload) {
 		boolean allowClimb = payload.readBoolean();
 		this.packetHandlerClient.handleClimb(allowClimb);
 	}
@@ -241,7 +241,7 @@ public final class PacketDispatcher {
 	 * Processes a S03Freecam packet.
 	 * @see PacketHandlerClient#handleFreecam()
 	 */
-	private void processS03Freecam(ByteBuf payload) {
+	private void processS03Freecam(PacketBuffer payload) {
 		this.packetHandlerClient.handleFreecam();
 	}
 	
@@ -249,7 +249,7 @@ public final class PacketDispatcher {
 	 * Processes a S04Frezeecam packet.
 	 * @see PacketHandlerClient#handleFreezeCam()
 	 */
-	private void processS04Freezecam(ByteBuf payload) {
+	private void processS04Freezecam(PacketBuffer payload) {
 		this.packetHandlerClient.handleFreezeCam();
 	}
 	
@@ -259,8 +259,8 @@ public final class PacketDispatcher {
 	 * @see PacketHandlerClient#handleXray(boolean, int)
 	 * @see PacketHandlerClient#handleXray(boolean, String)
 	 */
-	private void processS05Xray(ByteBuf payload) {
-		byte id = readID(payload);
+	private void processS05Xray(PacketBuffer payload) {
+		byte id = payload.readByte();
 		
 		if (id == XRAY_SHOWCONFIG) this.packetHandlerClient.handleXray();
 		else if (id == XRAY_CHANGESETTINGS) {
@@ -271,7 +271,7 @@ public final class PacketDispatcher {
 		}
 		else if (id == XRAY_LOADSAVESETTINGS) {
 			boolean load = payload.readBoolean();
-			String setting = readString(payload);
+			String setting = payload.readString(32767);
 			
 			this.packetHandlerClient.handleXray(load, setting);
 		}
@@ -281,7 +281,7 @@ public final class PacketDispatcher {
 	 * Processes a S06Noclip packet.
 	 * @see PacketHandlerClient#handleNoclip(boolean)
 	 */
-	private void processS06Noclip(ByteBuf payload) {
+	private void processS06Noclip(PacketBuffer payload) {
 		boolean allowNoclip = payload.readBoolean();
 		
 		this.packetHandlerClient.handleNoclip(allowNoclip);;
@@ -291,7 +291,7 @@ public final class PacketDispatcher {
 	 * Processes a S07Light packet.
 	 * @see PacketHandlerClient#handleLight()
 	 */
-	private void processS07Light(ByteBuf payload) {
+	private void processS07Light(PacketBuffer payload) {
 		this.packetHandlerClient.handleLight();
 	}
 	
@@ -299,7 +299,7 @@ public final class PacketDispatcher {
 	 * Processes a S08Reach packet.
 	 * @see PacketHandlerClient#handleReach(float)
 	 */
-	private void processS08Reach(ByteBuf payload) {
+	private void processS08Reach(PacketBuffer payload) {
 		float reachDistance = payload.readFloat();
 		this.packetHandlerClient.handleReach(reachDistance);
 	}
@@ -308,7 +308,7 @@ public final class PacketDispatcher {
 	 * Processes a S09Gravity packet.
 	 * @see PacketHandlerClient#setGravity(double)
 	 */
-	private void processS09Gravity(ByteBuf payload) {
+	private void processS09Gravity(PacketBuffer payload) {
 		float gravity = payload.readFloat();
 		this.packetHandlerClient.setGravity(gravity);
 	}
@@ -317,7 +317,7 @@ public final class PacketDispatcher {
 	 * Processes a S10Stepheight packet.
 	 * @see PacketHandlerClient#setStepheight(float)
 	 */
-	private void processS10Stepheight(ByteBuf payload) {
+	private void processS10Stepheight(PacketBuffer payload) {
 		float stepheight = payload.readFloat();
 		this.packetHandlerClient.setStepheight(stepheight);
 	}
@@ -326,7 +326,7 @@ public final class PacketDispatcher {
 	 * Processes a S11FluidMovement packet.
 	 * @see PacketHandlerClient#setFluidMovement(boolean)
 	 */
-	private void processS11FluidMovement(ByteBuf payload) {
+	private void processS11FluidMovement(PacketBuffer payload) {
 		boolean fluidmovement = payload.readBoolean();
 		this.packetHandlerClient.setFluidMovement(fluidmovement);
 	}
@@ -335,7 +335,7 @@ public final class PacketDispatcher {
 	 * Processes a S12Infiniteitems packet.
 	 * @see PacketHandlerClient#setInfiniteitems(boolean)
 	 */
-	private void processS12Infiniteitems(ByteBuf payload) {
+	private void processS12Infiniteitems(PacketBuffer payload) {
 		boolean infiniteitems = payload.readBoolean();
 		this.packetHandlerClient.setInfiniteitems(infiniteitems);
 	}
@@ -345,7 +345,7 @@ public final class PacketDispatcher {
 	 * @see PacketHandlerClient#resetCompassTarget()
 	 * @see PacketHandlerClient#setCompassTarget(int, int)
 	 */
-	private void processS13CompassTarget(ByteBuf payload) {
+	private void processS13CompassTarget(PacketBuffer payload) {
 		boolean reset = payload.readBoolean();
 		
 		if (reset) this.packetHandlerClient.resetCompassTarget();
@@ -356,8 +356,8 @@ public final class PacketDispatcher {
 	 * Processes a S14RemoteWorld packet.
 	 * @see PacketHandlerClient#handleRemoteWorldName(String)
 	 */
-	private void processS14RemoteWorld(ByteBuf payload) {
-		String worldName = readString(payload);
+	private void processS14RemoteWorld(PacketBuffer payload) {
+		String worldName = payload.readString(32767);
 		this.packetHandlerClient.handleRemoteWorldName(worldName);
 	}
 	
@@ -365,7 +365,7 @@ public final class PacketDispatcher {
 	 * Processes a S15UpdateBlock packet.
 	 * @see PacketHandlerClient#updateBlock(Block, BlockUpdateType, int)
 	 */
-	private void processS15UpdateBlock(ByteBuf payload) {
+	private void processS15UpdateBlock(PacketBuffer payload) {
 		int block = payload.readInt();
 		int type = payload.readInt();
 		int value = payload.readInt();
@@ -377,7 +377,7 @@ public final class PacketDispatcher {
 	 * Processes a S16ItemDamage packet.
 	 * @see PacketHandlerClient#setItemDamage(Item, boolean)
 	 */
-	private void processS16ItemDamage(ByteBuf payload) {
+	private void processS16ItemDamage(PacketBuffer payload) {
 		int item = payload.readInt();
 		boolean itemdamage = payload.readBoolean();
 		
@@ -388,9 +388,9 @@ public final class PacketDispatcher {
 	 * Processes a S17RemoteCommandResult packet.
 	 * @see PacketHandlerClient#handleRemoteCommandResult(int, String)
 	 */
-	private void processS17RemoteCommandResult(ByteBuf payload) {
+	private void processS17RemoteCommandResult(PacketBuffer payload) {
 		int executionID = payload.readInt();
-		String result = readString(payload);
+		String result = payload.readString(32767);
 		
 		this.packetHandlerClient.handleRemoteCommandResult(executionID, result);
 	}
@@ -401,11 +401,11 @@ public final class PacketDispatcher {
 	 */
 	public void sendC00Handshake(boolean clientPlayerPatched, boolean renderGlobalPatched) {
 		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, C00HANDSHAKE);
+	    payload.writeByte(C00HANDSHAKE);
 	    
 	    payload.writeBoolean(clientPlayerPatched);
 	    payload.writeBoolean(renderGlobalPatched);
-	    writeString(Reference.VERSION, payload);
+	    payload.writeString(Reference.VERSION);
 	    
 		this.channel.sendToServer(new FMLProxyPacket(payload, Reference.CHANNEL));
 	}
@@ -416,7 +416,7 @@ public final class PacketDispatcher {
 	 */
 	public void sendC01Output(boolean output) {
 	    PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, C01OUTPUT);
+	    payload.writeByte(C01OUTPUT);
 	    
 	    payload.writeBoolean(output);
 		this.channel.sendToServer(new FMLProxyPacket(payload, Reference.CHANNEL));
@@ -429,10 +429,10 @@ public final class PacketDispatcher {
 	 */
 	public void sendC02ExecuteRemoteCommand(int executionID, String command) {
 		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, C02EXECREMOTECOMMAND);
+		payload.writeByte(C02EXECREMOTECOMMAND);
 	    
 	    payload.writeInt(executionID);
-	    writeString(command, payload);
+	    payload.writeString(command);
 	    
 		this.channel.sendToServer(new FMLProxyPacket(payload, Reference.CHANNEL));
 	}
@@ -443,9 +443,9 @@ public final class PacketDispatcher {
 	 */
 	public void sendS00Handshake(EntityPlayerMP player) {
 	    PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S00HANDSHAKE);
+	    payload.writeByte(S00HANDSHAKE);
 	    
-	    writeString(Reference.VERSION, payload);
+	    payload.writeString(Reference.VERSION);
 	    payload.writeBoolean(MoreCommandsConfig.enablePlayerAliases);
 	    payload.writeBoolean(MoreCommandsConfig.enablePlayerVars);
 	    
@@ -458,7 +458,7 @@ public final class PacketDispatcher {
 	 */
 	public void sendS01HandshakeFinished(EntityPlayerMP player) {
 		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-		writeID(payload, S01HANDSHAKEFINISHED);
+		payload.writeByte(S01HANDSHAKEFINISHED);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	
@@ -469,7 +469,7 @@ public final class PacketDispatcher {
 	 */
 	public void sendS02Climb(EntityPlayerMP player, boolean climb) {
 	    PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S02CLIMB);
+	    payload.writeByte(S02CLIMB);
 	    
 	    payload.writeBoolean(climb);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
@@ -481,7 +481,7 @@ public final class PacketDispatcher {
 	 */
 	public void sendS03Freecam(EntityPlayerMP player) {
 	    PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S03FREECAM);
+	    payload.writeByte(S03FREECAM);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	
@@ -491,7 +491,7 @@ public final class PacketDispatcher {
 	 */
 	public void sendS04Freezecam(EntityPlayerMP player) {
 	    PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S04FREEZECAM);
+	    payload.writeByte(S04FREEZECAM);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	
@@ -501,8 +501,8 @@ public final class PacketDispatcher {
 	 */
 	public void sendS05Xray(EntityPlayerMP player) {
 	    PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S05XRAY);
-	    writeID(payload, XRAY_SHOWCONFIG);
+	    payload.writeByte(S05XRAY);
+	    payload.writeByte(XRAY_SHOWCONFIG);
 	    
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
@@ -515,8 +515,8 @@ public final class PacketDispatcher {
 	 */
 	public void sendS05Xray(EntityPlayerMP player, boolean xrayEnabled, int blockRadius) {
 	    PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S05XRAY);
-	    writeID(payload, XRAY_CHANGESETTINGS);
+	    payload.writeByte(S05XRAY);
+	    payload.writeByte(XRAY_CHANGESETTINGS);
 	    
 	    payload.writeBoolean(xrayEnabled);
 	    payload.writeInt(blockRadius);
@@ -531,11 +531,11 @@ public final class PacketDispatcher {
 	 */
 	public void sendS05Xray(EntityPlayerMP player, boolean load, String setting) {
 	    PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S05XRAY);
-	    writeID(payload, XRAY_LOADSAVESETTINGS);
+	    payload.writeByte(S05XRAY);
+	    payload.writeByte(XRAY_LOADSAVESETTINGS);
 	    
 	    payload.writeBoolean(load);
-	    writeString(setting, payload);
+	    payload.writeString(setting);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	
@@ -546,7 +546,7 @@ public final class PacketDispatcher {
 	 */
 	public void sendS06Noclip(EntityPlayerMP player, boolean noclip) {
 	    PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S06NOCLIP);
+	    payload.writeByte(S06NOCLIP);
 	    
 	    payload.writeBoolean(noclip);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
@@ -558,7 +558,7 @@ public final class PacketDispatcher {
 	 */
 	public void sendS07Light(EntityPlayerMP player) {
 	    PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S07LIGHT);
+	    payload.writeByte(S07LIGHT);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	
@@ -569,7 +569,7 @@ public final class PacketDispatcher {
 	 */
 	public void sendS08Reach(EntityPlayerMP player, float reachDistance) {
 	    PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S08REACH);
+	    payload.writeByte(S08REACH);
 	    
 	    payload.writeFloat(reachDistance);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
@@ -582,7 +582,7 @@ public final class PacketDispatcher {
 	 */
 	public void sendS09Gravity(EntityPlayerMP player, float gravity) {
 	    PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S09GRAVITY);
+	    payload.writeByte(S09GRAVITY);
 	    
 	    payload.writeFloat(gravity);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
@@ -595,7 +595,7 @@ public final class PacketDispatcher {
 	 */
 	public void sendS10Stepheight(EntityPlayerMP player, float stepheight) {
 	    PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S10STEPHEIGHT);
+	    payload.writeByte(S10STEPHEIGHT);
 	    
 	    payload.writeFloat(stepheight);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
@@ -608,7 +608,7 @@ public final class PacketDispatcher {
 	 */
 	public void sendS11FluidMovement(EntityPlayerMP player, boolean fluidmovement) {
 	    PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S11FLUIDMOVEMENT);
+	    payload.writeByte(S11FLUIDMOVEMENT);
 	    
 	    payload.writeBoolean(fluidmovement);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
@@ -621,7 +621,7 @@ public final class PacketDispatcher {
 	 */
 	public void sendS12Infiniteitems(EntityPlayerMP player, boolean infiniteitems) {
 	    PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S12INFINITEITEMS);
+	    payload.writeByte(S12INFINITEITEMS);
 	    
 	    payload.writeBoolean(infiniteitems);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
@@ -633,7 +633,7 @@ public final class PacketDispatcher {
 	 */
 	public void sendS13ResetCompassTarget(EntityPlayerMP player) {
 	    PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S13COMPASSTARGET);
+	    payload.writeByte(S13COMPASSTARGET);
 	    
 	    payload.writeBoolean(true);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
@@ -647,7 +647,7 @@ public final class PacketDispatcher {
 	 */
 	public void sendS13SetCompassTarget(EntityPlayerMP player, int x, int z) {
 	    PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S13COMPASSTARGET);
+	    payload.writeByte(S13COMPASSTARGET);
 	    
 	    payload.writeBoolean(false);
 	    payload.writeInt(x);
@@ -663,9 +663,9 @@ public final class PacketDispatcher {
 	 */
 	public void sendS14RemoteWorld(EntityPlayerMP player, String world) {
 		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S14REMOTEWORLD);
+		payload.writeByte(S14REMOTEWORLD);
 	    
-	    writeString(world, payload);
+		payload.writeString(world);
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
 	}
 	
@@ -677,7 +677,7 @@ public final class PacketDispatcher {
 	 */
 	public void sendS15UpdateBlock(Block block, BlockUpdateType type, int value) {
 	    PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S15UPDATEBLOCK);
+	    payload.writeByte(S15UPDATEBLOCK);
 	    
 	    payload.writeInt(Block.getIdFromBlock(block));
 	    payload.writeInt(type.ordinal());
@@ -694,7 +694,7 @@ public final class PacketDispatcher {
 	 */
 	public void sendS16ItemDamage(EntityPlayerMP player, Item item, boolean itemdamage) {
 	    PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S16ITEMDAMAGE);
+	    payload.writeByte(S16ITEMDAMAGE);
 	    
 	    payload.writeInt(Item.getIdFromItem(item));
 	    payload.writeBoolean(itemdamage);
@@ -710,55 +710,11 @@ public final class PacketDispatcher {
 	 */
 	public void sendS17RemoteCommandResult(EntityPlayerMP player, int executionID, String result) {
 		PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
-	    writeID(payload, S17REMOTECOMMANDRESULT);
+		payload.writeByte(S17REMOTECOMMANDRESULT);
 	    
 	    payload.writeInt(executionID);
-	    writeString(result, payload);
+	    payload.writeString(result);
 	    
 		this.channel.sendTo(new FMLProxyPacket(payload, Reference.CHANNEL), player);
-	}
-	
-	/**
-	 * writes a byte to the buffer which represents the packet id
-	 * 
-	 * @param buffer the buffer
-	 * @param id the id
-	 */
-	private static void writeID(ByteBuf buffer, byte id) {
-		buffer.writeByte(id);
-	}
-	
-	/**
-	 * reads a byte from the buffer which represents the packet id
-	 * 
-	 * @param buffer the buffer
-	 * @return the id
-	 */
-	private static byte readID(ByteBuf buffer) {
-		return buffer.readByte();
-	}
-	
-	/**
-	 * Reads a string from the buffer
-	 * 
-	 * @param buffer the buffer
-	 * @return the string
-	 */
-	private static String readString(ByteBuf buffer) {
-		int length = buffer.readInt();
-		byte[] string = buffer.readBytes(length).array();
-		return new String(string, Charsets.UTF_8);
-	}
-	
-	/**
-	 * Writes a string to the buffer
-	 * 
-	 * @param string the string
-	 * @param buffer the buffer
-	 */
-	private static void writeString(String string, ByteBuf buffer) {
-		byte[] bytes = string.getBytes(Charsets.UTF_8);
-		buffer.writeInt(bytes.length);
-		buffer.writeBytes(bytes);
 	}
 }

@@ -56,7 +56,7 @@ public class XrayConfGui extends GuiScreen {
 
 			protected void mouseDragged(Minecraft par1Minecraft, int par2, int par3) {
 	            	if (this.dragging) {
-	            		this.sliderValue = (float) (par2 - (this.xPosition + 4)) / (float) (this.width - 8);
+	            		this.sliderValue = (float) (par2 - (this.x + 4)) / (float) (this.width - 8);
 
 	            		if (this.sliderValue < 0.0F) {
 	            			this.sliderValue = 0.0F;
@@ -70,13 +70,13 @@ public class XrayConfGui extends GuiScreen {
 
 	            	this.displayString = label + ": " + (int) (sliderValue * sliderMaxValue);
 	            	GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-	            	this.drawTexturedModalRect(this.xPosition + (int) (this.sliderValue * (float) (this.width - 8)), this.yPosition, 0, 66, 4, 20);
-	            	this.drawTexturedModalRect(this.xPosition + (int) (this.sliderValue * (float) (this.width - 8)) + 4, this.yPosition, 196, 66, 4, 20);
+	            	this.drawTexturedModalRect(this.x + (int) (this.sliderValue * (float) (this.width - 8)), this.y, 0, 66, 4, 20);
+	            	this.drawTexturedModalRect(this.x + (int) (this.sliderValue * (float) (this.width - 8)) + 4, this.y, 196, 66, 4, 20);
 			}
 
 			public boolean mousePressed(Minecraft par1Minecraft, int par2, int par3) {
 				if (super.mousePressed(par1Minecraft, par2, par3)) {
-					this.sliderValue = (float) (par2 - (this.xPosition + 4)) / (float) (this.width - 8);
+					this.sliderValue = (float) (par2 - (this.x + 4)) / (float) (this.width - 8);
 
 					if (this.sliderValue < 0.0F) {
 						this.sliderValue = 0.0F;
@@ -174,8 +174,8 @@ public class XrayConfGui extends GuiScreen {
 		private FontRenderer fontRenderer;
 		
 		public GuiList() {
-			super(XrayConfGui.this.mc, XrayConfGui.this.width, XrayConfGui.this.height, 30, XrayConfGui.this.height - 30, XrayConfGui.this.mc.fontRendererObj.FONT_HEIGHT + 10);
-			this.fontRenderer = XrayConfGui.this.mc.fontRendererObj;
+			super(XrayConfGui.this.mc, XrayConfGui.this.width, XrayConfGui.this.height, 30, XrayConfGui.this.height - 30, XrayConfGui.this.mc.fontRenderer.FONT_HEIGHT + 10);
+			this.fontRenderer = XrayConfGui.this.mc.fontRenderer;
 		}
 
 		@Override
@@ -212,7 +212,7 @@ public class XrayConfGui extends GuiScreen {
 		protected void drawContainerBackground(Tessellator tessellator) {}
 
 		@Override
-		protected void drawSlot(int index, int left, int top, int p_180791_4_, int p_180791_5_, int p_180791_6_) {
+		protected void drawSlot(int index, int left, int top, int slotHeight, int mouseX, int mouseY, float partialTicks) {
 			String blockName = XrayConfGui.this.blockList[index].getLocalizedName();
 			Item blockItem = Item.getItemFromBlock(XrayConfGui.this.blockList[index]);
 			
@@ -269,7 +269,7 @@ public class XrayConfGui extends GuiScreen {
 	@Override
 	public void drawScreen(int p_73863_1_, int p_73863_2_, float p_73863_3_) {
 		this.guiList.drawScreen(p_73863_1_, p_73863_2_, p_73863_3_);
-        this.drawCenteredString(this.fontRendererObj, this.heading, this.width / 2, 10, 16777215);
+        this.drawCenteredString(this.fontRenderer, this.heading, this.width / 2, 10, 16777215);
         super.drawScreen(p_73863_1_, p_73863_2_, p_73863_3_);
 	}
 	

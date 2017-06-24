@@ -8,7 +8,6 @@ import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
@@ -18,7 +17,6 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.scoreboard.ScoreObjective;
-import net.minecraft.stats.Achievement;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -29,8 +27,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants.NBT;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
-import net.minecraftforge.fml.common.registry.FMLControlledNamespacedRegistry;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.registries.ForgeRegistry;
 
 public final class EntityUtils {
 	private EntityUtils() {}
@@ -46,7 +44,7 @@ public final class EntityUtils {
 	 * @return The entity name from its id
 	 */
 	public static ResourceLocation getEntityName(int id) {
-		EntityEntry entry = ((FMLControlledNamespacedRegistry<EntityEntry>) ForgeRegistries.ENTITIES).getObjectById(id);
+		EntityEntry entry = ((ForgeRegistry<EntityEntry>) ForgeRegistries.ENTITIES).getValue(id);
 		return entry == null ? null : entry.getRegistryName();
 	}
 	
@@ -300,7 +298,7 @@ public final class EntityUtils {
 		if (strict && ench != null) {
 			for (int i = 0; i < ench.tagCount(); i++) {
 				Enchantment other = Enchantment.getEnchantmentByID(ench.getCompoundTagAt(i).getShort("id"));
-				if (!other.func_191560_c(enchantment) || !enchantment.func_191560_c(other)) return false;
+				if (!other.isCompatibleWith(enchantment) || !enchantment.isCompatibleWith(other)) return false;
 			}
 		}
 		
@@ -368,14 +366,14 @@ public final class EntityUtils {
 	public static RayTraceResult rayTrace(Entity entity, double distance, double borderSize, float partialTickTime) {
 		Vec3d startVec = getPositionVec(entity, partialTickTime);
 		Vec3d lookVec = entity.getLook(partialTickTime);
-		Vec3d endVec = startVec.addVector(lookVec.xCoord * distance, lookVec.yCoord * distance, lookVec.zCoord * distance);
+		Vec3d endVec = startVec.addVector(lookVec.x * distance, lookVec.y * distance, lookVec.z * distance);
 	  
-		double minX = startVec.xCoord < endVec.xCoord ? startVec.xCoord : endVec.xCoord;
-		double minY = startVec.yCoord < endVec.yCoord ? startVec.yCoord : endVec.yCoord;
-		double minZ = startVec.zCoord < endVec.zCoord ? startVec.zCoord : endVec.zCoord;
-		double maxX = startVec.xCoord > endVec.xCoord ? startVec.xCoord : endVec.xCoord;
-		double maxY = startVec.yCoord > endVec.yCoord ? startVec.yCoord : endVec.yCoord;
-		double maxZ = startVec.zCoord > endVec.zCoord ? startVec.zCoord : endVec.zCoord;
+		double minX = startVec.x < endVec.x ? startVec.x : endVec.x;
+		double minY = startVec.y < endVec.y ? startVec.y : endVec.y;
+		double minZ = startVec.z < endVec.z ? startVec.z : endVec.z;
+		double maxX = startVec.x > endVec.x ? startVec.x : endVec.x;
+		double maxY = startVec.y > endVec.y ? startVec.y : endVec.y;
+		double maxZ = startVec.z > endVec.z ? startVec.z : endVec.z;
 		
 		AxisAlignedBB bb = new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ).expand(borderSize, borderSize, borderSize);
 		List<Entity> allEntities = entity.world.getEntitiesWithinAABBExcludingEntity(entity, bb);  
@@ -383,7 +381,7 @@ public final class EntityUtils {
 		
 		startVec = getPositionVec(entity, partialTickTime);
 		lookVec = entity.getLook(partialTickTime);
-		endVec = startVec.addVector(lookVec.xCoord * distance, lookVec.yCoord * distance, lookVec.zCoord * distance);
+		endVec = startVec.addVector(lookVec.x * distance, lookVec.y * distance, lookVec.z * distance);
 		
 		double maxDistance = endVec.distanceTo(startVec);
 	  
@@ -444,7 +442,7 @@ public final class EntityUtils {
 	public static RayTraceResult rayTraceBlock(Entity entity, double distance, float partialTickTime) {
 		Vec3d positionVec = getPositionVec(entity, partialTickTime);
 		Vec3d lookVec = entity.getLook(partialTickTime);
-		Vec3d hitVec = positionVec.addVector(lookVec.xCoord * distance, lookVec.yCoord * distance, lookVec.zCoord * distance);
+		Vec3d hitVec = positionVec.addVector(lookVec.x * distance, lookVec.y * distance, lookVec.z * distance);
 		return entity.world.rayTraceBlocks(positionVec, hitVec, false);
 	}
    
@@ -551,37 +549,6 @@ public final class EntityUtils {
 	 */
 	public static void setCurrentSlot(EntityPlayerMP player, ItemStack item) {
 		player.inventory.setInventorySlotContents(player.inventory.currentItem, item);
-	}
-	
-	/**
-	 * @return whether the player has this achievement
-	 */
-	public static boolean hasAchievement(EntityPlayerMP player, Achievement ach) {
-		return player.getStatFile().hasAchievementUnlocked(ach);
-	}
-   
-	/**
-	 * triggers an achievement
-	 */
-	public static void addAchievement(EntityPlayerMP player, Achievement ach) {
-		player.addStat(ach);
-	}
-	
-	/**
-	 * removes an achievement
-	 */
-	public static void removeAchievement(EntityPlayerMP player, Achievement ach) {
-        player.getStatFile().unlockAchievement(player, ach, 0);
-        Iterator iterator = player.getWorldScoreboard().getObjectivesFromCriteria(ach.getCriteria()).iterator();
-
-        while (iterator.hasNext()) {
-            ScoreObjective scoreobjective = (ScoreObjective) iterator.next();
-            player.getWorldScoreboard().getOrCreateScore(player.getName(), scoreobjective).setScorePoints(0);
-        }
-        
-        if (player.getStatFile().hasUnsentAchievement()) {
-            player.getStatFile().sendStats(player);
-        }
 	}
 	
 	/**

@@ -50,8 +50,8 @@ public class ClientHandler extends CommonHandler {
 	 */
 	@Override
 	@SubscribeEvent
-	public void attachCapabilities(AttachCapabilitiesEvent.Entity event) {
-		if (event.getEntity() instanceof EntityPlayerSP) {
+	public void attachCapabilities(AttachCapabilitiesEvent event) {
+		if (event.getObject() instanceof EntityPlayerSP) {
 			event.addCapability(PlayerSettings.SETTINGS_IDENTIFIER, PlayerSettings.SETTINGS_CAP_CLIENT.getDefaultInstance());
 		}
 		

@@ -34,6 +34,7 @@ import net.minecraft.network.play.server.SPacketPlayerAbilities;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldType;
@@ -41,7 +42,6 @@ import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.chunk.storage.AnvilSaveConverter;
 import net.minecraft.world.storage.ISaveFormat;
 import net.minecraft.world.storage.WorldInfo;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 
 @Command(
 		name = "world",
@@ -141,7 +141,7 @@ public class CommandWorld extends StandardCommand implements ServerCommandProper
 			}
 			else if (params[0].equalsIgnoreCase("exit")) {
 				if (isSenderOfEntityType(sender.getMinecraftISender(), EntityPlayerMP.class))
-						getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class).connection.disconnect("World exited");
+						getSenderAsEntity(sender.getMinecraftISender(), EntityPlayerMP.class).connection.disconnect(new TextComponentString("World exited"));
 				else throw new CommandException("command.generic.notServer", sender);
 			}
 			else if (params[0].equalsIgnoreCase("new") && params.length > 1) {
@@ -257,17 +257,17 @@ public class CommandWorld extends StandardCommand implements ServerCommandProper
 	
 	private void transferPlayer(DedicatedServer server, EntityPlayerMP player) {
 		NBTTagCompound nbttagcompound = server.getPlayerList().readPlayerDataFromFile(player);
-		player = server.getPlayerList().recreatePlayerEntity(player, player.dimension, player.playerConqueredTheEnd);
-        player.connection.playerEntity = player;
+		player = server.getPlayerList().recreatePlayerEntity(player, player.dimension, player.queuedEndExit);
+        player.connection.player = player;
 		nbttagcompound = server.getPlayerList().readPlayerDataFromFile(player);
 		
-        player.setWorld(server.worldServerForDimension(player.dimension));
+        player.setWorld(server.getWorld(player.dimension));
 
-        World playerWorld = server.worldServerForDimension(player.dimension);
+        World playerWorld = server.getWorld(player.dimension);
         if (playerWorld == null)
         {
             player.dimension = 0;
-            playerWorld = server.worldServerForDimension(0);
+            playerWorld = server.getWorld(0);
             BlockPos spawnPoint = playerWorld.provider.getRandomizedSpawnPoint();
             player.setPosition(spawnPoint.getX(), spawnPoint.getY(), spawnPoint.getZ());
         }
@@ -275,13 +275,13 @@ public class CommandWorld extends StandardCommand implements ServerCommandProper
         player.setWorld(playerWorld);
         player.interactionManager.setWorld((WorldServer)player.world);
         
-        WorldServer worldserver = server.worldServerForDimension(player.dimension);
+        WorldServer worldserver = server.getWorld(player.dimension);
         WorldInfo worldinfo = worldserver.getWorldInfo();
         player.connection.sendPacket(new SPacketPlayerAbilities(player.capabilities));
         player.connection.sendPacket(new SPacketHeldItemChange(player.inventory.currentItem));
         
         player.connection.setPlayerLocation(player.posX, player.posY, player.posZ, player.rotationYaw, player.rotationPitch);
-        server.getPlayerList().updateTimeAndWeatherForPlayer(player, server.worldServerForDimension(player.dimension));
+        server.getPlayerList().updateTimeAndWeatherForPlayer(player, server.getWorld(player.dimension));
         
         Iterator iterator = player.getActivePotionEffects().iterator();
 

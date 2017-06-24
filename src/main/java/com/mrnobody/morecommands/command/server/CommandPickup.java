@@ -41,7 +41,7 @@ public class CommandPickup extends StandardCommand implements ServerCommandPrope
 	@Override
 	public void onEvent(EntityItemPickupEvent event) {
 		if (event.getEntityPlayer() instanceof EntityPlayerMP) {
-			if (getPlayerSettings((EntityPlayerMP) event.getEntityPlayer()).disablePickups.contains(event.getItem().getEntityItem().getItem()))
+			if (getPlayerSettings((EntityPlayerMP) event.getEntityPlayer()).disablePickups.contains(event.getItem().getItem().getItem()))
 				event.setCanceled(true);
 		}
 	}

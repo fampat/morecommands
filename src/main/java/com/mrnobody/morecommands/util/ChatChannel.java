@@ -29,7 +29,7 @@ import com.mrnobody.morecommands.settings.ServerPlayerSettings;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.play.server.SPacketChat;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.ChatType;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -607,7 +607,7 @@ public class ChatChannel {
 	 * @param message the message
 	 * @param msgType the message type
 	 */
-	public void sendChatMessage(ITextComponent message, byte msgType) {
+	public void sendChatMessage(ITextComponent message, ChatType msgType) {
 		checkState();
 		ITextComponent msgToSend = message;
 		
@@ -820,7 +820,7 @@ public class ChatChannel {
 		}
 		
 		@Override
-		public void sendChatMessage(ITextComponent message, byte msgType) {
+		public void sendChatMessage(ITextComponent message, ChatType msgType) {
 			FMLCommonHandler.instance().getMinecraftServerInstance().sendMessage(message);
 			super.sendChatMessage(message, msgType);
 		}

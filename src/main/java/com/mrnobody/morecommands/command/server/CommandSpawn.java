@@ -17,8 +17,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.registry.EntityEntry;
-import net.minecraftforge.fml.common.registry.FMLControlledNamespacedRegistry;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.registries.ForgeRegistry;
 
 @Command(
 		name = "spawn",
@@ -58,7 +58,7 @@ public class CommandSpawn extends StandardCommand implements ServerCommandProper
     			
     			final int stop = (page + 1) * PAGE_MAX;
     			for (int i = page * PAGE_MAX; i < stop && i < names.length; i++)
-    				sender.sendStringMessage(" - '" + names[i] + "' " + " (ID " + ((FMLControlledNamespacedRegistry<EntityEntry>) ForgeRegistries.ENTITIES).getId(names[i]) + ")");
+    				sender.sendStringMessage(" - '" + names[i] + "' " + " (ID " + ((ForgeRegistry<EntityEntry>) ForgeRegistries.ENTITIES).getID(names[i]) + ")");
     			
     			sender.sendLangfileMessage("command.spawn.more", TextFormatting.RED);
 				return null;

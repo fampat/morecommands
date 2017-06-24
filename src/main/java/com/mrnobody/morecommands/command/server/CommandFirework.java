@@ -27,6 +27,7 @@ import net.minecraft.item.ItemFireworkCharge;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.RecipeFireworks;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 
 @Command(
@@ -68,12 +69,7 @@ public class CommandFirework extends StandardCommand implements ServerCommandPro
 			throw new CommandException("command.firework.notFound", sender);
 		
 		Random rand = new Random();
-		List recipes = CraftingManager.getInstance().getRecipeList();
-		RecipeFireworks recipe = null;
-		
-		for (Object o : recipes) {
-			if (o instanceof RecipeFireworks) {recipe = (RecipeFireworks) o; break;}
-		}
+		RecipeFireworks recipe = (RecipeFireworks) CraftingManager.REGISTRY.getObject(new ResourceLocation("fireworks"));
 		
 		if (recipe != null) {
 			InventoryCrafting inv = new InventoryCrafting(new Container()

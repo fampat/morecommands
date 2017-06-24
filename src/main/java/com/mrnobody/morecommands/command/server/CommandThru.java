@@ -48,7 +48,7 @@ public class CommandThru extends StandardCommand implements ServerCommandPropert
 		
 		Vec3d posVec = new Vec3d(entity.posX, entity.posY, entity.posZ);
 		Vec3d lookVec = entity.getLook(1F);
-		Vec3d traceVec = posVec.addVector(lookVec.xCoord * distance, 0, lookVec.zCoord * distance);
+		Vec3d traceVec = posVec.addVector(lookVec.x * distance, 0, lookVec.z * distance);
 		
 		RayTraceResult trace = entity.world.rayTraceBlocks(posVec, traceVec, false);
 		if (trace == null) throw new CommandException("command.thru.noWall", sender);

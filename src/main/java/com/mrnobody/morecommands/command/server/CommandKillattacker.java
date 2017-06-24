@@ -36,11 +36,11 @@ public class CommandKillattacker extends StandardCommand implements ServerComman
 		if (!(event.getEntity() instanceof EntityPlayerMP)) return;
 		
 		if (getPlayerSettings((EntityPlayerMP) event.getEntity()).killattacker) {
-			if (event.getSource().getSourceOfDamage() != null && (event.getSource().getSourceOfDamage() instanceof EntityCreature || event.getSource().getSourceOfDamage() instanceof EntityArrow)) {
-				if (event.getSource().getSourceOfDamage() instanceof EntityCreature) 
-					event.getSource().getSourceOfDamage().attackEntityFrom(DamageSource.causePlayerDamage((EntityPlayer) event.getEntity()), Float.MAX_VALUE);
-				if (event.getSource().getSourceOfDamage() instanceof EntityArrow && ((EntityArrow) event.getSource().getSourceOfDamage()).shootingEntity instanceof EntityCreature)
-					((EntityArrow) event.getSource().getSourceOfDamage()).shootingEntity.attackEntityFrom(DamageSource.causePlayerDamage((EntityPlayer) event.getEntity()), Float.MAX_VALUE);
+			if (event.getSource().getImmediateSource() instanceof EntityCreature || event.getSource().getTrueSource() instanceof EntityCreature) {
+				if (event.getSource().getImmediateSource() instanceof EntityCreature) 
+					event.getSource().getImmediateSource().attackEntityFrom(DamageSource.causePlayerDamage((EntityPlayer) event.getEntity()), Float.MAX_VALUE);
+				if (event.getSource().getTrueSource() instanceof EntityCreature)
+					event.getSource().getTrueSource().attackEntityFrom(DamageSource.causePlayerDamage((EntityPlayer) event.getEntity()), Float.MAX_VALUE);
 			}
 		}
 	}

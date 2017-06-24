@@ -28,6 +28,7 @@ import com.mrnobody.morecommands.util.DefaultChannelPolicies;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.text.ChatType;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.event.ServerChatEvent;
@@ -58,7 +59,7 @@ public class CommandChatchannel extends StandardCommand implements ServerCommand
 		ServerPlayerSettings settings = getPlayerSettings(event.getPlayer());
 		
 		for (ChatChannel channel : settings.chatChannels) 
-			channel.sendChatMessage(event.getComponent(), (byte) 0);
+			channel.sendChatMessage(event.getComponent(), ChatType.CHAT);
 		
 		event.setCanceled(true);
 	}

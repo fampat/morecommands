@@ -38,7 +38,7 @@ public class CommandBring extends StandardCommand implements ServerCommandProper
 	}
 
 	@Override
-	public String execute(CommandSender sender, String[] params)throws CommandException {
+	public String execute(CommandSender sender, String[] params) throws CommandException {
 		params = reparseParamsWithNBTData(params);
 		Entity entity = !isSenderOfEntityType(sender.getMinecraftISender(), Entity.class) ? null : getSenderAsEntity(sender.getMinecraftISender(), Entity.class);
 		double radius = 128.0D;
@@ -78,14 +78,14 @@ public class CommandBring extends StandardCommand implements ServerCommandProper
 			Vec3d vec3D = entity.getLook(1.0F);
 			double d = 5.0D;
 			double offsetY = entity.posY + entity.getEyeHeight();
-			double d1 = entity.posX + vec3D.xCoord * d;
-			double d2 = offsetY  + vec3D.yCoord * d;
-			double d3 = entity.posZ + vec3D.zCoord * d;
+			double d1 = entity.posX + vec3D.x * d;
+			double d2 = offsetY  + vec3D.y * d;
+			double d3 = entity.posZ + vec3D.z * d;
 			pos = new BlockPos(d1, d2 + 0.5D, d3);
 		}
 		
 		if (isTarget) {
-			List<? extends Entity> foundEntities = TargetSelector.EntitySelector.matchEntites(sender.getMinecraftISender(), params[0], net.minecraft.entity.Entity.class);
+			List<? extends Entity> foundEntities = TargetSelector.EntitySelector.matchEntities(sender.getMinecraftISender(), params[0], net.minecraft.entity.Entity.class);
 			
 			for (Entity foundEntity : foundEntities) {
 				if (entity != null && foundEntity == entity) continue;

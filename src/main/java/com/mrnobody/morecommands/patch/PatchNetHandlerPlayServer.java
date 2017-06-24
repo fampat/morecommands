@@ -35,6 +35,7 @@ import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
@@ -66,9 +67,9 @@ public class PatchNetHandlerPlayServer implements PatchManager.ForgeEventBasedPa
 		EntityPlayerMP player = (EntityPlayerMP) event.getEntity();
 		AppliedPatches patches = PatchManager.instance().getAppliedPatchesForPlayer(player);
 		
-		if (player.connection.playerEntity == event.getEntity() && !(player.connection instanceof NetHandlerPlayServer)) {
+		if (player.connection.player == event.getEntity() && !(player.connection instanceof NetHandlerPlayServer)) {
 			net.minecraft.network.NetHandlerPlayServer handler = player.connection;
-			player.connection = new NetHandlerPlayServer(player.getServer(), handler.netManager, handler.playerEntity);
+			player.connection = new NetHandlerPlayServer(player.getServer(), handler.netManager, handler.player);
 			
 			if (patches != null) 
 				patches.setPatchSuccessfullyApplied(this.displayName, true);
@@ -135,10 +136,10 @@ public class PatchNetHandlerPlayServer implements PatchManager.ForgeEventBasedPa
 		
 	    @Override
 	    public void processChatMessage(CPacketChatMessage p_147354_1_) {
-	    	PacketThreadUtil.checkThreadAndEnqueue(p_147354_1_, this, this.playerEntity.getServerWorld());
+	    	PacketThreadUtil.checkThreadAndEnqueue(p_147354_1_, this, this.player.getServerWorld());
 	    	String message = p_147354_1_.getMessage();
 			
-	    	ServerPlayerSettings settings = this.playerEntity.getCapability(PlayerSettings.SETTINGS_CAP_SERVER, null);
+	    	ServerPlayerSettings settings = this.player.getCapability(PlayerSettings.SETTINGS_CAP_SERVER, null);
 			Map<String, String> playerVars = settings == null ? new HashMap<String, String>() : settings.variables;
 			boolean replaceIgnored;
 			
@@ -148,12 +149,12 @@ public class PatchNetHandlerPlayServer implements PatchManager.ForgeEventBasedPa
 				
 				replaceIgnored = val == null || !val.startsWith("/") ||
 								(message.length() - 1 != end && message.charAt(end + 1) != ' ') ||
-								!this.playerEntity.getServer().getCommandManager().getCommands().containsKey(val.substring(1));
+								!this.player.getServer().getCommandManager().getCommands().containsKey(val.substring(1));
 			}
-			else replaceIgnored = !message.startsWith("/") || !this.playerEntity.getServer().getCommandManager().getCommands().containsKey(message.substring(1).split(" ")[0]);
+			else replaceIgnored = !message.startsWith("/") || !this.player.getServer().getCommandManager().getCommands().containsKey(message.substring(1).split(" ")[0]);
 			
 	    	try {
-	    		String world = this.playerEntity.getEntityWorld().getSaveHandler().getWorldDirectory().getName(), dim = this.playerEntity.getEntityWorld().provider.getDimensionType().getName();
+	    		String world = this.player.getEntityWorld().getSaveHandler().getWorldDirectory().getName(), dim = this.player.getEntityWorld().provider.getDimensionType().getName();
 	    		
 				if (MoreCommandsConfig.enableGlobalVars && MoreCommandsConfig.enablePlayerVars)
 					message = Variables.replaceVars(message, replaceIgnored, playerVars, GlobalSettings.getInstance().variables.get(ImmutablePair.of(world, dim)));
@@ -171,7 +172,7 @@ public class PatchNetHandlerPlayServer implements PatchManager.ForgeEventBasedPa
 	    
 	    @Override
 	    public void processPlayer(CPacketPlayer packet) {
-	    	PacketThreadUtil.checkThreadAndEnqueue(packet, this, this.playerEntity.getServerWorld());
+	    	PacketThreadUtil.checkThreadAndEnqueue(packet, this, this.player.getServerWorld());
 	    	
 	        if (this.enabled && this.overrideNoclip) {
 	        	handleNoclip(packet);
@@ -213,18 +214,18 @@ public class PatchNetHandlerPlayServer implements PatchManager.ForgeEventBasedPa
 		}
 		
 		public void handleNoclip(CPacketPlayer packetIn) {
-			PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.playerEntity.getServer());
-			checkSafe(this, this.playerEntity);
+			PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.player.getServer());
+			checkSafe(this, this.player);
 
 	        if (isMovePlayerPacketInvalid(packetIn))
 	        {
-	            this.disconnect("Invalid move player packet received");
+	            this.disconnect(new TextComponentTranslation("multiplayer.disconnect.invalid_player_movement"));
 	        }
 	        else
 	        {
-	            WorldServer worldserver = this.mcServer.worldServerForDimension(this.playerEntity.dimension);
+	            WorldServer worldserver = this.mcServer.getWorld(this.player.dimension);
 
-	            if (!this.playerEntity.playerConqueredTheEnd)
+	            if (!this.player.queuedEndExit)
 	            {
 	                if (getInt(networkTickCount) == 0)
 	                {
@@ -236,40 +237,40 @@ public class PatchNetHandlerPlayServer implements PatchManager.ForgeEventBasedPa
 	                    if (getInt(networkTickCount) - getInt(lastPositionUpdate) > 20)
 	                    {
 	                        setInt(lastPositionUpdate, getInt(networkTickCount));
-	                        this.setPlayerLocation(((Vec3d) getObject(targetPos)).xCoord, ((Vec3d) getObject(targetPos)).yCoord, ((Vec3d) getObject(targetPos)).zCoord, this.playerEntity.rotationYaw, this.playerEntity.rotationPitch);
+	                        this.setPlayerLocation(((Vec3d) getObject(targetPos)).x, ((Vec3d) getObject(targetPos)).y, ((Vec3d) getObject(targetPos)).z, this.player.rotationYaw, this.player.rotationPitch);
 	                    }
 	                }
 	                else
 	                {
 	                	setInt(lastPositionUpdate, getInt(networkTickCount));
 
-	                    if (this.playerEntity.isRiding())
+	                    if (this.player.isRiding())
 	                    {
-	                        this.playerEntity.setPositionAndRotation(this.playerEntity.posX, this.playerEntity.posY, this.playerEntity.posZ, packetIn.getYaw(this.playerEntity.rotationYaw), packetIn.getPitch(this.playerEntity.rotationPitch));
-	                        this.mcServer.getPlayerList().serverUpdateMovingPlayer(this.playerEntity);
+	                        this.player.setPositionAndRotation(this.player.posX, this.player.posY, this.player.posZ, packetIn.getYaw(this.player.rotationYaw), packetIn.getPitch(this.player.rotationPitch));
+	                        this.mcServer.getPlayerList().serverUpdateMovingPlayer(this.player);
 	                    }
 	                    else
 	                    {
-	                        double d0 = this.playerEntity.posX;
-	                        double d1 = this.playerEntity.posY;
-	                        double d2 = this.playerEntity.posZ;
-	                        double d3 = this.playerEntity.posY;
-	                        double d4 = packetIn.getX(this.playerEntity.posX);
-	                        double d5 = packetIn.getY(this.playerEntity.posY);
-	                        double d6 = packetIn.getZ(this.playerEntity.posZ);
-	                        float f = packetIn.getYaw(this.playerEntity.rotationYaw);
-	                        float f1 = packetIn.getPitch(this.playerEntity.rotationPitch);
+	                        double d0 = this.player.posX;
+	                        double d1 = this.player.posY;
+	                        double d2 = this.player.posZ;
+	                        double d3 = this.player.posY;
+	                        double d4 = packetIn.getX(this.player.posX);
+	                        double d5 = packetIn.getY(this.player.posY);
+	                        double d6 = packetIn.getZ(this.player.posZ);
+	                        float f = packetIn.getYaw(this.player.rotationYaw);
+	                        float f1 = packetIn.getPitch(this.player.rotationPitch);
 	                        double d7 = d4 - getDouble(firstGoodX);
 	                        double d8 = d5 - getDouble(firstGoodY);
 	                        double d9 = d6 - getDouble(firstGoodZ);
-	                        double d10 = this.playerEntity.motionX * this.playerEntity.motionX + this.playerEntity.motionY * this.playerEntity.motionY + this.playerEntity.motionZ * this.playerEntity.motionZ;
+	                        double d10 = this.player.motionX * this.player.motionX + this.player.motionY * this.player.motionY + this.player.motionZ * this.player.motionZ;
 	                        double d11 = d7 * d7 + d8 * d8 + d9 * d9;
 	                        
-	                        if (this.playerEntity.isPlayerSleeping())
+	                        if (this.player.isPlayerSleeping())
 	                        {
 	                            if (d11 > 1.0D)
 	                            {
-	                                this.setPlayerLocation(this.playerEntity.posX, this.playerEntity.posY, this.playerEntity.posZ, packetIn.getYaw(this.playerEntity.rotationYaw), packetIn.getPitch(this.playerEntity.rotationPitch));
+	                                this.setPlayerLocation(this.player.posX, this.player.posY, this.player.posZ, packetIn.getYaw(this.player.rotationYaw), packetIn.getPitch(this.player.rotationPitch));
 	                            }
 	                        }
 	                        else {
@@ -278,61 +279,61 @@ public class PatchNetHandlerPlayServer implements PatchManager.ForgeEventBasedPa
 	                            
 	                            if (i > 5)
 	                            {
-	                            	logger.debug("{} is sending move packets too frequently ({} packets since last tick)", this.playerEntity.getName(), i);
+	                            	logger.debug("{} is sending move packets too frequently ({} packets since last tick)", this.player.getName(), i);
 	                                i = 1;
 	                            }
 
-	                            if (!this.playerEntity.isInvulnerableDimensionChange() && (!this.playerEntity.world.getGameRules().getBoolean("disableElytraMovementCheck") || !this.playerEntity.isElytraFlying()))
+	                            if (!this.player.isInvulnerableDimensionChange() && (!this.player.world.getGameRules().getBoolean("disableElytraMovementCheck") || !this.player.isElytraFlying()))
 	                            {
-	                                float f2 = this.playerEntity.isElytraFlying() ? 300.0F : 100.0F;
+	                                float f2 = this.player.isElytraFlying() ? 300.0F : 100.0F;
 
-	                                if (d11 - d10 > (double)(f2 * (float)i) && (!this.mcServer.isSinglePlayer() || !this.mcServer.getServerOwner().equals(this.playerEntity.getName())))
+	                                if (d11 - d10 > (double)(f2 * (float)i) && (!this.mcServer.isSinglePlayer() || !this.mcServer.getServerOwner().equals(this.player.getName())))
 	                                {
-	                                    logger.warn("{} moved too quickly! {},{},{}", this.playerEntity.getName(), d7, d8, d9);
-	                                    this.setPlayerLocation(this.playerEntity.posX, this.playerEntity.posY, this.playerEntity.posZ, this.playerEntity.rotationYaw, this.playerEntity.rotationPitch);
+	                                    logger.warn("{} moved too quickly! {},{},{}", this.player.getName(), d7, d8, d9);
+	                                    this.setPlayerLocation(this.player.posX, this.player.posY, this.player.posZ, this.player.rotationYaw, this.player.rotationPitch);
 	                                    return;
 	                                }
 	                            }
 	                            
-	                            boolean flag2 = worldserver.getCollisionBoxes(this.playerEntity, this.playerEntity.getEntityBoundingBox().contract(0.0625D)).isEmpty();
+	                            boolean flag2 = worldserver.getCollisionBoxes(this.player, this.player.getEntityBoundingBox().shrink(0.0625D)).isEmpty();
 	                            d7 = d4 - getDouble(lastGoodX);
 	                            d8 = d5 - getDouble(lastGoodY);
 	                            d9 = d6 - getDouble(lastGoodZ);
 
-	                            if (this.playerEntity.onGround && !packetIn.isOnGround() && d8 > 0.0D)
+	                            if (this.player.onGround && !packetIn.isOnGround() && d8 > 0.0D)
 	                            {
-	                                this.playerEntity.jump();
+	                                this.player.jump();
 	                            }
 
-	                            this.playerEntity.move(MoverType.PLAYER, d7, d8, d9);
-	                            this.playerEntity.onGround = packetIn.isOnGround();
+	                            this.player.move(MoverType.PLAYER, d7, d8, d9);
+	                            this.player.onGround = packetIn.isOnGround();
 	                            double d12 = d8;
-	                            d7 = d4 - this.playerEntity.posX;
-	                            d8 = d5 - this.playerEntity.posY;
+	                            d7 = d4 - this.player.posX;
+	                            d8 = d5 - this.player.posY;
 
 	                            if (d8 > -0.5D || d8 < 0.5D)
 	                            {
 	                                d8 = 0.0D;
 	                            }
 
-	                            d9 = d6 - this.playerEntity.posZ;
+	                            d9 = d6 - this.player.posZ;
 	                            d11 = d7 * d7 + d8 * d8 + d9 * d9;
 	                            boolean flag = false;
 	                            
 	                            //BYPASSES MOVED WORNGLY WARNING
-	                            /*if (!this.playerEntity.isInvulnerableDimensionChange() && d11 > 0.0625D && !this.playerEntity.isPlayerSleeping() && !this.playerEntity.interactionManager.isCreative() && this.playerEntity.interactionManager.getGameType() != WorldSettings.GameType.SPECTATOR)
+	                            /*if (!this.player.isInvulnerableDimensionChange() && d11 > 0.0625D && !this.player.isPlayerSleeping() && !this.player.interactionManager.isCreative() && this.player.interactionManager.getGameType() != WorldSettings.GameType.SPECTATOR)
 	                            {
 	                                flag = true;
-	                                logger.warn("{} moved wrongly!", this.playerEntity.getName());
+	                                logger.warn("{} moved wrongly!", this.player.getName());
 	                            }*/
 
-	                            this.playerEntity.setPositionAndRotation(d4, d5, d6, f, f1);
-	                            this.playerEntity.addMovementStat(this.playerEntity.posX - d0, this.playerEntity.posY - d1, this.playerEntity.posZ - d2);
+	                            this.player.setPositionAndRotation(d4, d5, d6, f, f1);
+	                            this.player.addMovementStat(this.player.posX - d0, this.player.posY - d1, this.player.posZ - d2);
 	                            
 	                            //BYPASSES NOCLIP CHECK
-	                            /*if (!this.playerEntity.noClip && !this.playerEntity.isPlayerSleeping())
+	                            /*if (!this.player.noClip && !this.player.isPlayerSleeping())
 	                            {
-	                                boolean flag1 = worldserver.getCubes(this.playerEntity, this.playerEntity.getEntityBoundingBox().func_186664_h(0.0625D)).isEmpty();
+	                                boolean flag1 = worldserver.getCubes(this.player, this.player.getEntityBoundingBox().func_186664_h(0.0625D)).isEmpty();
 
 	                                if (flag2 && (flag || !flag1))
 	                                {
@@ -342,15 +343,15 @@ public class PatchNetHandlerPlayServer implements PatchManager.ForgeEventBasedPa
 	                            }*/
 	                            
 	                            boolean val = d12 >= -0.03125D;
-	                            val &= !this.mcServer.isFlightAllowed() && !this.playerEntity.capabilities.allowFlying;
-	                            val &= !this.playerEntity.isPotionActive(MobEffects.LEVITATION) && !this.playerEntity.isElytraFlying() && !worldserver.checkBlockCollision(this.playerEntity.getEntityBoundingBox().expandXyz(0.0625D).addCoord(0.0D, -0.55D, 0.0D));
+	                            val &= !this.mcServer.isFlightAllowed() && !this.player.capabilities.allowFlying;
+	                            val &= !this.player.isPotionActive(MobEffects.LEVITATION) && !this.player.isElytraFlying() && !worldserver.checkBlockCollision(this.player.getEntityBoundingBox().grow(0.0625D).expand(0.0D, -0.55D, 0.0D));
 	                            setBoolean(floating, val);
-	                            this.playerEntity.onGround = packetIn.isOnGround();
-	                            this.mcServer.getPlayerList().serverUpdateMovingPlayer(this.playerEntity);
-	                            this.playerEntity.handleFalling(this.playerEntity.posY - d3, packetIn.isOnGround());
-	                            setDouble(lastGoodX, this.playerEntity.posX);
-	                            setDouble(lastGoodY, this.playerEntity.posY);
-	                            setDouble(lastGoodZ, this.playerEntity.posZ);
+	                            this.player.onGround = packetIn.isOnGround();
+	                            this.mcServer.getPlayerList().serverUpdateMovingPlayer(this.player);
+	                            this.player.handleFalling(this.player.posY - d3, packetIn.isOnGround());
+	                            setDouble(lastGoodX, this.player.posX);
+	                            setDouble(lastGoodY, this.player.posY);
+	                            setDouble(lastGoodZ, this.player.posZ);
 	                        }
 	                    }
 	                }
@@ -359,12 +360,12 @@ public class PatchNetHandlerPlayServer implements PatchManager.ForgeEventBasedPa
 	    }
 		
 	    private void captureCurrentPosition() {
-			setDouble(firstGoodX, this.playerEntity.posX);
-			setDouble(firstGoodY, this.playerEntity.posY);
-			setDouble(firstGoodZ, this.playerEntity.posZ);
-			setDouble(lastGoodX, this.playerEntity.posX);
-			setDouble(lastGoodY, this.playerEntity.posY);
-			setDouble(lastGoodZ, this.playerEntity.posX);
+			setDouble(firstGoodX, this.player.posX);
+			setDouble(firstGoodY, this.player.posY);
+			setDouble(firstGoodZ, this.player.posZ);
+			setDouble(lastGoodX, this.player.posX);
+			setDouble(lastGoodY, this.player.posY);
+			setDouble(lastGoodZ, this.player.posX);
 	    }
 		
 	    private static boolean isMovePlayerPacketInvalid(CPacketPlayer packetIn) {

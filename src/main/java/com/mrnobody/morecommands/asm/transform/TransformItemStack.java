@@ -20,6 +20,7 @@ import org.objectweb.asm.tree.VarInsnNode;
 
 import com.google.common.collect.ImmutableSet;
 import com.mrnobody.morecommands.asm.ASMNames;
+import com.mrnobody.morecommands.asm.MoreCommandsLoadingPlugin;
 import com.mrnobody.morecommands.asm.NodeTransformer;
 
 /**
@@ -57,6 +58,7 @@ public class TransformItemStack extends NodeTransformer {
 	
 	private static final ASMNames.Type CHANGE_SIZE_EVENT = ASMNames.Type.ItemStackChangeSizeEvent;
 	private static final ASMNames.Type DAMAGE_ITEM_EVENT = ASMNames.Type.DamageItemEvent;
+	private static final ASMNames.Type ENUM_ACTION_RESULT = ASMNames.Type.EnumActionResult;
 	
 	private final ImmutableSet<String> transformClasses = ImmutableSet.of(ASMNames.Type.ItemStack.getName());
 	
@@ -173,7 +175,7 @@ public class TransformItemStack extends NodeTransformer {
 					postEvent.add(new FieldInsnNode(Opcodes.GETFIELD, NEW_SIZE.getOwnerInternalName(), NEW_SIZE.getEnvName(), NEW_SIZE.getDesc()));
 					postEvent.add(new FieldInsnNode(Opcodes.PUTFIELD, STACK_SIZE.getOwnerInternalName(), STACK_SIZE.getEnvName(), STACK_SIZE.getDesc()));
 					postEvent.add(label);
-					postEvent.add(new FrameNode(Opcodes.F_APPEND, 3, new Object[] {Opcodes.INTEGER, Opcodes.INTEGER, CHANGE_SIZE_EVENT.getInternalName()}, 0, null));
+					postEvent.add(new FrameNode(Opcodes.F_APPEND, 3, new Object[] {ENUM_ACTION_RESULT.getInternalName(), Opcodes.INTEGER, CHANGE_SIZE_EVENT.getInternalName()}, 0, null));
 					
 					method.instructions.insert(next2, postEvent);
 				}

@@ -19,8 +19,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EnumCreatureAttribute;
 import net.minecraft.entity.IEntityMultiPart;
+import net.minecraft.entity.MultiPartEntityPart;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.boss.EntityDragonPart;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.MobEffects;
@@ -28,7 +28,6 @@ import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.network.play.server.SPacketEntityVelocity;
-import net.minecraft.stats.AchievementList;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
@@ -264,13 +263,8 @@ public class CommandSuperpunch extends StandardCommand implements ServerCommandP
 	                        {
 	                            player.onEnchantmentCritical(target);
 	                        }
-
-	                        if (f >= 18.0F)
-	                        {
-	                            player.addStat(AchievementList.OVERKILL);
-	                        }
-
-	                        player.setLastAttacker(target);
+	                        
+	                        player.setLastAttackedEntity(target);
 
 	                        if (target instanceof EntityLivingBase)
 	                        {
@@ -281,9 +275,9 @@ public class CommandSuperpunch extends StandardCommand implements ServerCommandP
 	                        ItemStack itemstack1 = player.getHeldItemMainhand();
 	                        Entity entity = target;
 
-	                        if (target instanceof EntityDragonPart)
+	                        if (target instanceof MultiPartEntityPart)
 	                        {
-	                            IEntityMultiPart ientitymultipart = ((EntityDragonPart)target).entityDragonObj;
+	                            IEntityMultiPart ientitymultipart = ((MultiPartEntityPart)target).parent;
 
 	                            if (ientitymultipart instanceof EntityLivingBase)
 	                            {

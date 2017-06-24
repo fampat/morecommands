@@ -34,10 +34,8 @@ public class CommandMobdamage extends StandardCommand implements ServerCommandPr
 		if (!(event.getEntity() instanceof EntityPlayerMP)) return;
 		
 		if (!getPlayerSettings((EntityPlayerMP) event.getEntity()).mobdamage) {
-			if (event.getSource().getSourceOfDamage() != null && (event.getSource().getSourceOfDamage() instanceof EntityCreature || event.getSource().getSourceOfDamage() instanceof EntityArrow)) {
-				if (event.getSource().getSourceOfDamage() instanceof EntityCreature) event.setCanceled(true);
-				if (event.getSource().getSourceOfDamage() instanceof EntityArrow && ((EntityArrow) event.getSource().getSourceOfDamage()).shootingEntity instanceof EntityCreature) event.setCanceled(true);
-			}
+			if (event.getSource().getImmediateSource() instanceof EntityCreature || event.getSource().getTrueSource() instanceof EntityCreature)
+				event.setCanceled(true);
 		}
 	}
 	

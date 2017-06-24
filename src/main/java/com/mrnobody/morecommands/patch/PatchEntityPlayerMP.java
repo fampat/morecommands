@@ -32,16 +32,18 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.server.management.DemoPlayerInteractionManager;
 import net.minecraft.server.management.PlayerInteractionManager;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ChatType;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.GameType;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.demo.DemoWorldManager;
 import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.common.event.FMLStateEvent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -146,34 +148,37 @@ public class PatchEntityPlayerMP implements PatchManager.StateEventBasedPatch {
         	list.add(player);
         
         for (net.minecraft.entity.player.EntityPlayerMP player2 : list)
-        	player2.connection.disconnect("You logged in from another location");
+        	player2.connection.disconnect(new TextComponentTranslation("multiplayer.disconnect.duplicate_login"));
         
         PlayerInteractionManager pim;
 
         if (mcServer.isDemo())
-        	pim = new DemoWorldManager(mcServer.worldServerForDimension(0));
+        	pim = new DemoPlayerInteractionManager(mcServer.getWorld(0));
         else
-        	pim = new PlayerInteractionManager(mcServer.worldServerForDimension(0));
+        	pim = new PlayerInteractionManager(mcServer.getWorld(0));
 
-        return new EntityPlayerMP(mcServer, mcServer.worldServerForDimension(0), profile, pim);
+        return new EntityPlayerMP(mcServer, mcServer.getWorld(0), profile, pim);
 	}
 	
 	private static net.minecraft.entity.player.EntityPlayerMP recreatePlayerEntity(PlayerList playerList, GameType myGameType, 
 										net.minecraft.entity.player.EntityPlayerMP player, int dimension, boolean conqueredEnd) {
 		MinecraftServer mcServer = playerList.getServerInstance();
-		World world = mcServer.worldServerForDimension(dimension);
+		World world = mcServer.getWorld(dimension);
 		
 		if (world == null)
-			dimension = 0;
+			dimension = player.getSpawnDimension();
 		else if (!world.provider.canRespawnHere())
         	dimension = world.provider.getRespawnDimension(player);
+		
+		if (mcServer.getWorld(dimension) == null)
+			dimension = 0;
 
 		player.getServerWorld().getEntityTracker().removePlayerFromTrackers(player);
 		player.getServerWorld().getEntityTracker().untrack(player);
 		player.getServerWorld().getPlayerChunkMap().removePlayer(player);
         
 		playerList.getPlayers().remove(player);
-		mcServer.worldServerForDimension(player.dimension).removeEntityDangerously(player);
+		mcServer.getWorld(player.dimension).removeEntityDangerously(player);
         
 		BlockPos blockpos = player.getBedLocation(dimension);
 		boolean flag = player.isSpawnForced(dimension);
@@ -182,15 +187,15 @@ public class PatchEntityPlayerMP implements PatchManager.StateEventBasedPatch {
 		PlayerInteractionManager pim;
 
         if (mcServer.isDemo())
-        	pim = new DemoWorldManager(mcServer.worldServerForDimension(player.dimension));
+        	pim = new DemoPlayerInteractionManager(mcServer.getWorld(player.dimension));
         else
-        	pim = new PlayerInteractionManager(mcServer.worldServerForDimension(player.dimension));
+        	pim = new PlayerInteractionManager(mcServer.getWorld(player.dimension));
         
         net.minecraft.entity.player.EntityPlayerMP newPlayer = new EntityPlayerMP(mcServer, 
-        		mcServer.worldServerForDimension(player.dimension), player.getGameProfile(), pim);
+        		mcServer.getWorld(player.dimension), player.getGameProfile(), pim);
         
         newPlayer.connection = player.connection;
-        newPlayer.clonePlayer(player, conqueredEnd);
+        newPlayer.copyFrom(player, conqueredEnd);
         newPlayer.dimension = dimension;
         newPlayer.setEntityId(player.getEntityId());
         newPlayer.setCommandStats(player);
@@ -199,11 +204,11 @@ public class PatchEntityPlayerMP implements PatchManager.StateEventBasedPatch {
         for (String s : player.getTags())
         	newPlayer.addTag(s);
         
-        WorldServer worldserver = mcServer.worldServerForDimension(player.dimension);
+        WorldServer worldserver = mcServer.getWorld(player.dimension);
         setPlayerGameTypeBasedOnOther(myGameType, newPlayer, player, worldserver);
 
         if (blockpos != null) {
-        	BlockPos blockpos1 = EntityPlayer.getBedSpawnLocation(mcServer.worldServerForDimension(player.dimension), blockpos, flag);
+        	BlockPos blockpos1 = EntityPlayer.getBedSpawnLocation(mcServer.getWorld(player.dimension), blockpos, flag);
 
             if (blockpos1 != null) {
             	newPlayer.setLocationAndAngles((double)((float)blockpos1.getX() + 0.5F), (double)((float)blockpos1.getY() + 0.1F), (double)((float)blockpos1.getZ() + 0.5F), 0.0F, 0.0F);
@@ -251,9 +256,9 @@ public class PatchEntityPlayerMP implements PatchManager.StateEventBasedPatch {
 	
 	private static void transferPlayerToDimension(PlayerList playerList, net.minecraft.entity.player.EntityPlayerMP player, int dimension, Teleporter teleporter) {
         int i = player.dimension;
-        WorldServer worldserver = playerList.getServerInstance().worldServerForDimension(player.dimension);
+        WorldServer worldserver = playerList.getServerInstance().getWorld(player.dimension);
         player.dimension = dimension;
-        WorldServer worldserver1 = playerList.getServerInstance().worldServerForDimension(player.dimension);
+        WorldServer worldserver1 = playerList.getServerInstance().getWorld(player.dimension);
         player.connection.sendPacket(new SPacketRespawn(player.dimension, worldserver1.getDifficulty(), worldserver1.getWorldInfo().getTerrainType(), player.interactionManager.getGameType()));
         
         //MoreCommands Bug fix: client world has wrong spawn position, because WorldClient is recreated after receiving S07PacketRespawn
@@ -281,7 +286,7 @@ public class PatchEntityPlayerMP implements PatchManager.StateEventBasedPatch {
 	
 	private static void sendMessage(ITextComponent message, boolean isSystemMessage) {
 		MoreCommands.getProxy().ensureChatChannelsLoaded();
-		ChatChannel.getMasterChannel().sendChatMessage(message, isSystemMessage ? (byte) 1 : (byte) 0);
+		ChatChannel.getMasterChannel().sendChatMessage(message, isSystemMessage ? ChatType.SYSTEM : ChatType.CHAT);
 	}
 	
 	@SideOnly(Side.SERVER)

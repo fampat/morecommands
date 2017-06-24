@@ -56,10 +56,10 @@ public class CommandNoattack extends StandardCommand implements ServerCommandPro
 	
 	@Override
 	public void onEvent2(LivingAttackEvent event) {
-		if (event.getEntityLiving() instanceof EntityPlayerMP && event.getSource().getEntity() instanceof EntityLiving) {
-			if (getPlayerSettings((EntityPlayerMP) event.getEntityLiving()).disableAttacks.contains(event.getSource().getEntity().getClass())) {
-				((EntityLiving) event.getSource().getEntity()).setAttackTarget(null);
-				((EntityLiving) event.getSource().getEntity()).setRevengeTarget(null);
+		if (event.getEntityLiving() instanceof EntityPlayerMP && event.getSource().getImmediateSource() instanceof EntityLiving) {
+			if (getPlayerSettings((EntityPlayerMP) event.getEntityLiving()).disableAttacks.contains(event.getSource().getImmediateSource().getClass())) {
+				((EntityLiving) event.getSource().getImmediateSource()).setAttackTarget(null);
+				((EntityLiving) event.getSource().getImmediateSource()).setRevengeTarget(null);
 				event.setCanceled(true);
 			}
 		}

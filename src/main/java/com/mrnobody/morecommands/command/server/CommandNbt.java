@@ -131,7 +131,7 @@ public class CommandNbt extends MultipleCommands implements ServerCommandPropert
 				if (!(nbt instanceof NBTTagCompound)) throw new CommandException("command.nbt.noCompound", sender);
 				tag = (NBTTagCompound) nbt;
 				
-				List<? extends Entity> entities = TargetSelector.EntitySelector.matchEntites(sender.getMinecraftISender(), params[0], Entity.class);
+				List<? extends Entity> entities = TargetSelector.EntitySelector.matchEntities(sender.getMinecraftISender(), params[0], Entity.class);
 				
 				for (Entity entity : entities) {
 					NBTTagCompound compound = new NBTTagCompound();
@@ -193,7 +193,7 @@ public class CommandNbt extends MultipleCommands implements ServerCommandPropert
 				if (params.length <=1)
 					throw new CommandException("command.nbt.noBounds", sender);
 				
-				int matchingEntites = TargetSelector.EntitySelector.matchEntites(sender.getMinecraftISender(), params[0], Entity.class).size();
+				int matchingEntites = TargetSelector.EntitySelector.matchEntities(sender.getMinecraftISender(), params[0], Entity.class).size();
 				return Integer.toString(checkBounds(sender, params, matchingEntites, 1));
 			}
 			else throw new CommandException("command.generic.invalidUsage", sender, this.getCommandName());
@@ -237,7 +237,7 @@ public class CommandNbt extends MultipleCommands implements ServerCommandPropert
 	
 	private static List<? extends Entity> getEntities(ICommandSender sender, Target target) throws CommandException {
 		if (target.isTarget) 
-			return TargetSelector.EntitySelector.matchEntites(sender, target.target, Entity.class);
+			return TargetSelector.EntitySelector.matchEntities(sender, target.target, Entity.class);
 		else if (isSenderOfEntityType(sender, Entity.class))
 			return Arrays.asList(getSenderAsEntity(sender, Entity.class));
 		else

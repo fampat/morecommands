@@ -2,9 +2,9 @@ package com.mrnobody.morecommands.util;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -13,12 +13,15 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.google.common.collect.ArrayListMultimap;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -33,6 +36,7 @@ import com.mrnobody.morecommands.util.ObfuscatedNames.ObfuscatedMethod;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
@@ -58,16 +62,17 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTPrimitive;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.Team;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EntitySelectors;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.GameType;
@@ -89,73 +94,175 @@ import net.minecraftforge.items.wrapper.InvWrapper;
 public final class TargetSelector {
 	private TargetSelector() {}
 	
-	/** This matches the at-tokens introduced for command blocks, including their arguments, if any. */
-	private static final Pattern tokenPattern = Pattern.compile("^@([pareb])(?:\\[([\\w=,!-]*)\\])?$");
-	/** This matches things like "-1,,4", and is used for getting x,y,z,range from the token's argument list. */
-	private static final Pattern intListPattern = Pattern.compile("\\G([-!]?[\\w-]*)(?:$|,)");
-	/** This matches things like "rm=4,c=2" and is used for handling named token arguments. */
-    private static final Pattern keyValueListPattern = Pattern.compile("\\G(\\w+)=([-!]?[\\w-]*)(?:$|,)");
-    /** Coordinate Specifiers */
-    private static final ImmutableSet<String> coordSpecifiers = ImmutableSet.of("x", "y", "z", "dx", "dy", "dz", "rm", "r");
-	
-    /** the target selector types that select entities */
-    private static final ImmutableSet<String> entityTargetTypes = ImmutableSet.of("p", "a", "r", "e");
-    /** the target selector types that select blocks */
-    private static final ImmutableSet<String> blockTargetTypes = ImmutableSet.of("b");
-    /** a pattern to check whether a target selector has arguments */
-    private static final Pattern isTargetSeletorWithArguments = Pattern.compile("^@[pareb]\\[$");
+    private static final Pattern TOKEN_PATTERN = Pattern.compile("^@([paresb])(?:\\[([^ ]*)\\])?$");
+    private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings();
+    private static final Splitter EQUAL_SPLITTER = Splitter.on('=').limit(2);
     
-    private static final ResourceLocation LIGHTNING= new ResourceLocation("lightning_bolt");
-    private static final ResourceLocation PLAYER = new ResourceLocation("player");
+    private static final String ARGUMENT_RANGE_MAX;
+    private static final String ARGUMENT_RANGE_MIN;
+    private static final String ARGUMENT_LEVEL_MAX;
+    private static final String ARGUMENT_LEVEL_MIN;
+    private static final String ARGUMENT_COORDINATE_X;
+    private static final String ARGUMENT_COORDINATE_Y;
+    private static final String ARGUMENT_COORDINATE_Z;
+    private static final String ARGUMENT_DELTA_X;
+    private static final String ARGUMENT_DELTA_Y;
+    private static final String ARGUMENT_DELTA_Z;
+    private static final String ARGUMENT_DIM;
+    private static final String ARGUMENT_ROTX_MAX;
+    private static final String ARGUMENT_ROTX_MIN;
+    private static final String ARGUMENT_ROTY_MAX;
+    private static final String ARGUMENT_ROTY_MIN;
+    private static final String ARGUMENT_COUNT;
+    private static final String ARGUMENT_MODE;
+    private static final String ARGUMENT_TEAM_NAME;
+    private static final String ARGUMENT_PLAYER_NAME;
+    private static final String ARGUMENT_ENTITY_TYPE;
+    private static final String ARGUMENT_ENTITY_TAG;
+    private static final String ARGUMENT_NBT_DATA;
+    private static final String ARGUMENT_NBT_MODE;
+    private static final String ARGUMENT_META;
+    private static final String ARGUMENT_ID;
+    
+    private static final ImmutableSet<String> VALID_ARGUMENTS;
+    private static final ImmutableSet<String> ENTITY_TYPES = ImmutableSet.of("p", "a", "r", "e", "s");
+    private static final ImmutableSet<String> BLOCK_TYPES = ImmutableSet.of("b");
+    
+    static {
+    	ImmutableSet.Builder<String> builder = ImmutableSet.builder();
+    	
+        builder.add(ARGUMENT_RANGE_MAX     = "r");
+        builder.add(ARGUMENT_RANGE_MIN     = "rm");
+        builder.add(ARGUMENT_LEVEL_MAX     = "l");
+        builder.add(ARGUMENT_LEVEL_MIN     = "lm");
+        builder.add(ARGUMENT_COORDINATE_X  = "x");
+        builder.add(ARGUMENT_COORDINATE_Y  = "y");
+        builder.add(ARGUMENT_COORDINATE_Z  = "z");
+        builder.add(ARGUMENT_DELTA_X       = "dx");
+        builder.add(ARGUMENT_DELTA_Y       = "dy");
+        builder.add(ARGUMENT_DELTA_Z       = "dz");
+        builder.add(ARGUMENT_DIM           = "dim");
+        builder.add(ARGUMENT_ROTX_MAX      = "rx");
+        builder.add(ARGUMENT_ROTX_MIN      = "rxm");
+        builder.add(ARGUMENT_ROTY_MAX      = "ry");
+        builder.add(ARGUMENT_ROTY_MIN      = "rym");
+        builder.add(ARGUMENT_COUNT         = "c");
+        builder.add(ARGUMENT_MODE          = "m");
+        builder.add(ARGUMENT_TEAM_NAME     = "team");
+        builder.add(ARGUMENT_PLAYER_NAME   = "name");
+        builder.add(ARGUMENT_ENTITY_TYPE   = "type");
+        builder.add(ARGUMENT_ENTITY_TAG    = "tag");
+        builder.add(ARGUMENT_NBT_DATA      = "nbt");
+        builder.add(ARGUMENT_NBT_MODE      = "nbtm");
+        builder.add(ARGUMENT_META          = "meta");
+        builder.add(ARGUMENT_ID            = "id");
+        
+        VALID_ARGUMENTS = builder.build();
+    }
+    
+    private static final Predicate<String> IS_VALID_ARGUMENT = new Predicate<String>() {
+    	public boolean apply(@Nullable String argument) {
+    		return argument != null && (TargetSelector.VALID_ARGUMENTS.contains(argument) || argument.length() > "score_".length() && argument.startsWith("score_"));
+    	}
+    };
     
     /**
-     * Creates an argument map from the given argument map.
+     * A set of arguments that will change the selector's world list to the sender's world instead of all the worlds
+     * when present
+     */
+    private static final Set<String> WORLD_BINDING_ARGS = Sets.newHashSet(ARGUMENT_COORDINATE_X, ARGUMENT_COORDINATE_Y, ARGUMENT_COORDINATE_Z, ARGUMENT_DELTA_X, ARGUMENT_DELTA_Y, ARGUMENT_DELTA_Z, ARGUMENT_RANGE_MIN, ARGUMENT_RANGE_MAX);
+
+    /** a pattern to check whether a target selector has arguments */
+    //private static final Pattern isTargetSeletorWithArguments = Pattern.compile("^@[pareb]\\[$");
+    
+    //private static final ResourceLocation LIGHTNING= new ResourceLocation("lightning_bolt");
+    //private static final ResourceLocation PLAYER = new ResourceLocation("player");
+    
+    /**
+     * Creates an argument map from the given arguments.
      * The argument map is a {@link ListMultimap} that maps the argument name to several
      * values. This allows to target e.g. multiple entities instead of only one
      * 
      * @param argumentMapBuilder the argument map builder to which the arguments are added
      * @param arguments the argument string
+     * @return the vanilla map of arguments
      */
-	private static void getArguments(ImmutableListMultimap.Builder<String, String> argumentMapBuilder, String arguments) {
-		if (arguments == null) return;
+	private static Map<String, String> getArguments(ImmutableListMultimap.Builder<String, String> argumentMapBuilder, String arguments) throws com.mrnobody.morecommands.command.CommandException {
+		if (arguments == null) return Maps.newHashMap();
+		Map<String, String> vanillaArgsMap = Maps.newHashMap();
 		
-		Iterator<String> coords = Arrays.asList("x", "y", "z", "r").iterator();
-        int coordEnd = -1;
-
-        for (Matcher coordMatcher = intListPattern.matcher(arguments); coordMatcher.find(); coordEnd = coordMatcher.end()) {
-        	String coord = coords.hasNext() ? coords.next() : null;
-
-        	if (coord != null && coordMatcher.group(1).length() > 0)
-        		argumentMapBuilder.put(coord, coordMatcher.group(1));
+		for (String arg : COMMA_SPLITTER.split(arguments)) {
+			Iterator<String> iterator = EQUAL_SPLITTER.split(arg).iterator();
+			String key = iterator.next();
+			
+			if (!IS_VALID_ARGUMENT.apply(key))
+				throw new com.mrnobody.morecommands.command.CommandException(new CommandException("commands.generic.selector_argument", arg));
+			
+			String val = iterator.hasNext() ? iterator.next() : "";
+			argumentMapBuilder.put(key, val);
+			vanillaArgsMap.put(key, val);
         }
-
-        if (coordEnd < arguments.length()) {
-        	Matcher keyValueMatcher = keyValueListPattern.matcher(coordEnd == -1 ? arguments : arguments.substring(coordEnd));
-        	ListMultimap<String, String> tracker = ArrayListMultimap.create();
-        	
-        	while (keyValueMatcher.find()) {
-        		String key = keyValueMatcher.group(1), value = keyValueMatcher.group(2);
-        		
-        		if (!tracker.containsEntry(key, value)) {
-        			argumentMapBuilder.put(key, value);
-        			tracker.put(key, value);
-        		}
-        	}
-        }
+		
+		return vanillaArgsMap;
     }
 	
 	/**
-	 * Gets the target coordinate from the argument map
+	 * Returns the values for an argument key
+	 * 
+	 * @param argumentMap all arguments
+	 * @param key the argument name
+	 * @return the values for the argument
+	 */
+	@Nonnull
+	private static List<String> getArgument(ListMultimap<String, String> argumentMap, String key) {
+		return argumentMap.get(key);
+	}
+	
+	/**
+	 * Gets the target coordinate from the argument map as a BlockPos
 	 * 
 	 * @param argumentMap the argument map
-	 * @param default_ the default target coordinate
+	 * @param pos the default target coordinate
 	 * @return the target coordinate
 	 */
-	private static BlockPos getCoordinate(ListMultimap<String, String> argumentMap, BlockPos default_) {
-		return new BlockPos(
-				getIntWithDefault(argumentMap, "x", default_.getX()), 
-				getIntWithDefault(argumentMap, "y", default_.getY()), 
-				getIntWithDefault(argumentMap, "z", default_.getZ()));
+	private static BlockPos getBlockPosFromArguments(ListMultimap<String, String> argumentMap, BlockPos pos) {
+        return new BlockPos(getInt(argumentMap, ARGUMENT_COORDINATE_X, pos.getX()), getInt(argumentMap, ARGUMENT_COORDINATE_Y, pos.getY()), getInt(argumentMap, ARGUMENT_COORDINATE_Z, pos.getZ()));
+    }
+	
+	/**
+	 * Gets the target coordinate from the argument map as a Vec3d
+	 * 
+	 * @param argumentMap the argument map
+	 * @param pos the default target coordinate
+	 * @return the target coordinate
+	 */
+	private static Vec3d getPosVecFromArguments(ListMultimap<String, String> argumentMap, Vec3d pos) {
+        return new Vec3d(getDouble(argumentMap, ARGUMENT_COORDINATE_X, pos.x, true), getDouble(argumentMap, ARGUMENT_COORDINATE_Y, pos.y, false), getDouble(argumentMap, ARGUMENT_COORDINATE_Z, pos.z, true));
+    }
+	
+	/**
+	 * Gets the first double value of all key<->value mappings
+	 * 
+	 * @param argumentMap the argument map
+	 * @param key the key
+	 * @param defaultD the default value
+	 * @param offset the offset
+	 * @return the double value
+	 */
+	private static double getDouble(ListMultimap<String, String> argumentMap, String key, double defaultD, boolean offset) {
+		return argumentMap.containsKey(key) ? (double) MathHelper.getInt(argumentMap.get(key).get(0), MathHelper.floor(defaultD)) + (offset ? 0.5D : 0.0D) : defaultD;
+	}
+	
+	/**
+	 * Gets the first int value of all key<->value mappings
+	 * 
+	 * @param argumentMap the argument map
+	 * @param key the key
+	 * @param defaultI the default value
+	 * @return the double value
+	 */
+	private static int getInt(ListMultimap<String, String> argumentMap, String key, int defaultI) {
+		return argumentMap.containsKey(key) ? MathHelper.getInt(argumentMap.get(key).get(0), defaultI) : defaultI;
 	}
 	
 	/**
@@ -164,33 +271,14 @@ public final class TargetSelector {
 	 * @param argumentMap the argument map
 	 * @return whether the argument map contains any target coordinate
 	 */
-	private static boolean containsCoordinates(ListMultimap<String, String> argumentMap) {
-        Iterator<String> iterator = coordSpecifiers.iterator();
-        String coordSpecifier;
-
-        do {
-        	if (!iterator.hasNext()) return false;
-        	coordSpecifier = iterator.next();
-        }
-        while (!argumentMap.containsKey(coordSpecifier));
-
-        return true;
-	}
-    
-	/**
-	 * Gets an integer from the argument map. Uses always the first value of the list that is mapped to a key
-	 * 
-	 * @param argumentMap the argument map
-	 * @param key the key to get the integer from
-	 * @param default_ the default value (e.g. if the map does not contain the key or the key is not mapped to an integer)
-	 * @return the integer value
-	 */
-	private static int getIntWithDefault(ListMultimap<String, String> argumentMap, String key, int default_) {
-		return argumentMap.containsKey(key) ? 
-				MathHelper.getInt(argumentMap.get(key).get(0), default_)
-				: default_;
-	}
-    
+	private static boolean hasWorldBinding(ListMultimap<String, String> argumentMap) {
+		for (String arg : WORLD_BINDING_ARGS)
+			if (argumentMap.containsKey(arg))
+				return true;
+		
+        return false;
+    }
+	
 	/**
 	 * Extracts the nbt properties from a target selector. They can't be matched with regexes because
 	 * regex can't handle nested structures like nbt data that is represented by json strings.
@@ -275,23 +363,23 @@ public final class TargetSelector {
 		 * @param matchTileEntites whether to match tile entities
 		 * @param callback the callback that will be invoked when a match occurs
 		 */
-		public static void matchBlocks(ICommandSender sender, String selector, boolean matchTileEntites, BlockCallback callback) {
+		public static void matchBlocks(ICommandSender sender, String selector, boolean matchTileEntites, BlockCallback callback) throws com.mrnobody.morecommands.command.CommandException {
 			ImmutableListMultimap.Builder<String, String> argumentMapBuilder = ImmutableListMultimap.builder();
 			ImmutablePair<String, List<String>> pair = extractNBTProperties(selector);
 			if (pair.getRight() != null) argumentMapBuilder.putAll("nbt", pair.getRight());
 			selector = pair.getLeft();
 			
-			Matcher tokenMatcher = tokenPattern.matcher(selector);
+			Matcher tokenMatcher = TOKEN_PATTERN.matcher(selector);
 			
 			if (!tokenMatcher.matches()) return;
 			String targetType = tokenMatcher.group(1);
-			if (!blockTargetTypes.contains(targetType)) return;
+			if (!BLOCK_TYPES.contains(targetType)) return;
 			
 			getArguments(argumentMapBuilder, tokenMatcher.group(2));
 			ListMultimap<String, String> argumentMap = argumentMapBuilder.build();
-			if (!containsCoordinates(argumentMap)) return;
+			if (!hasWorldBinding(argumentMap)) return;
 			
-			BlockPos coordinate = getCoordinate(argumentMap, sender.getPosition());
+			BlockPos coordinate = getBlockPosFromArguments(argumentMap, sender.getPosition());
 			World world = sender.getEntityWorld();
 			if (world == null) return;
 
@@ -342,8 +430,8 @@ public final class TargetSelector {
 		 * @return the predicate that filters tile entities by their nbt data
 		 */
 		private static Predicate<TileEntity> getNBTPredicate(ListMultimap<String, String> argumentMap, ICommandSender sender) {
-			final boolean equalLists = argumentMap.containsKey("nbtm") && argumentMap.get("nbtm").get(0).equalsIgnoreCase("EQUAL");
-			List<String> nbtData = argumentMap.get("nbt");
+			final boolean equalLists = argumentMap.containsKey(ARGUMENT_NBT_MODE) && getArgument(argumentMap, ARGUMENT_NBT_MODE).get(0).equalsIgnoreCase("EQUAL");
+			List<String> nbtData = argumentMap.get(ARGUMENT_NBT_DATA);
 	        
 			if (nbtData != null && !nbtData.isEmpty()) {
 				final List<NBTBase> allowedNbt = Lists.<NBTBase>newArrayList();
@@ -410,13 +498,13 @@ public final class TargetSelector {
 		 * @return the bounding box representing the area of block that should be checked
 		 */
 		private static AxisAlignedBB getAABB(ListMultimap<String, String> argumentMap, final BlockPos coord) {
-	        int dx = getIntWithDefault(argumentMap, "dx", 0);
-	        int dy = getIntWithDefault(argumentMap, "dy", 0);
-	        int dz = getIntWithDefault(argumentMap, "dz", 0);
-	        int radius = getIntWithDefault(argumentMap, "r", -1);
+	        int dx = getInt(argumentMap, ARGUMENT_DELTA_X, 0);
+	        int dy = getInt(argumentMap, ARGUMENT_DELTA_Y, 0);
+	        int dz = getInt(argumentMap, ARGUMENT_DELTA_Z, 0);
+	        int radius = getInt(argumentMap, ARGUMENT_RANGE_MAX, -1);
 	        AxisAlignedBB aabb;
 	        
-	        if (!argumentMap.containsKey("dx") && !argumentMap.containsKey("dy") && !argumentMap.containsKey("dz"))
+	        if (!argumentMap.containsKey(ARGUMENT_DELTA_X) && !argumentMap.containsKey(ARGUMENT_DELTA_Y) && !argumentMap.containsKey(ARGUMENT_DELTA_Z))
 	        	aabb = new AxisAlignedBB(coord.getX() - radius, coord.getY() - radius, coord.getZ() - radius, coord.getX() + radius + 1, coord.getY() + radius + 1, coord.getZ() + radius + 1);
 	        else
 	        	aabb = getAABB(coord, dx, dy, dz);
@@ -454,8 +542,8 @@ public final class TargetSelector {
 		 * @return the predicate
 		 */
 		private static Predicate<BlockPos> getBlockRadiusPredicate(ListMultimap<String, String> argumentMap, final BlockPos coord) {
-			final int radiusMin = getIntWithDefault(argumentMap, "rm", -1);
-	        final int radiusMax = getIntWithDefault(argumentMap, "r", -1);
+			final int radiusMin = getInt(argumentMap, ARGUMENT_RANGE_MIN, -1);
+	        final int radiusMax = getInt(argumentMap, ARGUMENT_RANGE_MAX, -1);
 
 	        if (coord != null && (radiusMin >= 0 || radiusMax >= 0)) {
 	        	final int rmSquared = radiusMin * radiusMin;
@@ -493,7 +581,7 @@ public final class TargetSelector {
 		 * @return the predicate
 		 */
 		private static Predicate<Integer> getMetaPredicate(ListMultimap<String, String> argumentMap) {
-			List<String> meta = argumentMap.get("meta");
+			List<String> meta = getArgument(argumentMap, ARGUMENT_META);
 			final List<Integer> metas = Lists.<Integer>newArrayList();
 			if (meta == null || meta.isEmpty()) return null;
 			
@@ -516,7 +604,7 @@ public final class TargetSelector {
 		 * @return the predicate
 		 */
 		private static Predicate<Block> getBlocksPredicate(ListMultimap<String, String> argumentMap) {
-			List<String> ids = argumentMap.get("id");
+			List<String> ids = getArgument(argumentMap, ARGUMENT_ID);
 			final List<Block> blocks = Lists.<Block>newArrayList();
 			if (ids == null || ids.isEmpty()) return null;
 			
@@ -547,54 +635,83 @@ public final class TargetSelector {
 		 * @param entityClass the required entity super class
 		 * @return all matched entities
 		 */
-		public static <T extends Entity> List<? extends T> matchEntites(ICommandSender sender, String selector, Class<T> entityClass) {
+		public static <T extends Entity> List<? extends T> matchEntities(ICommandSender sender, String selector, Class <T> entityClass) throws com.mrnobody.morecommands.command.CommandException {
 			ImmutableListMultimap.Builder<String, String> argumentMapBuilder = ImmutableListMultimap.builder();
 			ImmutablePair<String, List<String>> pair = extractNBTProperties(selector);
-			if (pair.getRight() != null) argumentMapBuilder.putAll("nbt", pair.getRight());
+			
+			if (pair.getRight() != null) argumentMapBuilder.putAll(ARGUMENT_NBT_DATA, pair.getRight());
 			selector = pair.getLeft();
 			
-			Matcher tokenMatcher = tokenPattern.matcher(selector);
+			Matcher matcher = TOKEN_PATTERN.matcher(selector);
 			
-			if (!tokenMatcher.matches())
+			if (!matcher.matches())
 				return Collections.<T>emptyList();
 			
-			String targetType = tokenMatcher.group(1);
+			String targetType = matcher.group(1);
 			
-			if (!entityTargetTypes.contains(targetType))
+			if (!ENTITY_TYPES.contains(targetType))
 				return Collections.<T>emptyList();
 			
-			getArguments(argumentMapBuilder, tokenMatcher.group(2));
+			Map<String, String> vanillaArgsMap = getArguments(argumentMapBuilder, matcher.group(2));
 			ListMultimap<String, String> argumentMap = argumentMapBuilder.build();
 			
 			if (!isValidType(sender, argumentMap))
 				return Collections.<T>emptyList();
 			
-			BlockPos coordinate = getCoordinate(argumentMap, sender.getPosition());
-			Iterator<World> worlds = getWorlds(sender, argumentMap).iterator();
+			BlockPos pos = getBlockPosFromArguments(argumentMap, sender.getPosition());
+			Vec3d posVec = getPosVecFromArguments(argumentMap, sender.getPositionVector());
+			Set<World> worlds = getWorlds(sender, argumentMap);
 			List<T> entities = Lists.<T>newArrayList();
-            
-			ImmutableList.Builder<Predicate<Entity>> predicateBuilder = ImmutableList.builder();
-        	getEntityTypePredicates(argumentMap, targetType, predicateBuilder);
-        	getEntityExperiencePredicates(argumentMap, predicateBuilder);
-        	getEntityGamemodePredicates(argumentMap, predicateBuilder);
-        	getEntityTeamPredicates(argumentMap, predicateBuilder);
-        	getEntityScorePredicates(sender.getServer() == null ? FMLCommonHandler.instance().getMinecraftServerInstance() : sender.getServer(), argumentMap, predicateBuilder);
-        	getEntityNamePredicates(argumentMap, predicateBuilder);
-        	getEntityTagPredicates(argumentMap, predicateBuilder);
-        	getEntityRadiusPredicates(argumentMap, coordinate, predicateBuilder);
-        	getEntityLookPredicates(argumentMap, predicateBuilder);
-        	getEntityNBTPredicates(argumentMap, predicateBuilder);
 			
-			while (worlds.hasNext()) {
-                World world = worlds.next();
-
-                if (world != null)
-                	entities.addAll(getEntities(argumentMap, entityClass, predicateBuilder.build(), targetType, world, coordinate));
+			for (World world : worlds) {
+				if (world != null) {
+					ImmutableList.Builder<Predicate<Entity>> predicateBuilder = ImmutableList.builder();
+					
+					getTypePredicates(argumentMap, targetType, predicateBuilder);
+                    getXpLevelPredicates(argumentMap, predicateBuilder);
+                    getGamemodePredicates(argumentMap, predicateBuilder);
+                    getTeamPredicates(argumentMap, predicateBuilder);
+                    getScorePredicates(sender, argumentMap, predicateBuilder);
+                    getNamePredicates(argumentMap, predicateBuilder);
+                    getTagPredicates(argumentMap, predicateBuilder);
+                    getRadiusPredicates(argumentMap, posVec, predicateBuilder);
+                    getRotationsPredicates(argumentMap, predicateBuilder);
+                    getNBTPredicates(argumentMap, predicateBuilder);
+                    predicateBuilder.addAll(net.minecraftforge.fml.common.registry.GameRegistry.createEntitySelectors(vanillaArgsMap, targetType, sender, posVec));
+                    
+                    ImmutableList<Predicate<Entity>> predicates = predicateBuilder.build();
+                    
+                    if ("s".equalsIgnoreCase(targetType)) {
+                    	Entity entity = sender.getCommandSenderEntity();
+                    	
+                    	if (entity != null && entityClass.isAssignableFrom(entity.getClass())) {
+                    		if (argumentMap.containsKey(ARGUMENT_DELTA_X) || argumentMap.containsKey(ARGUMENT_DELTA_Y) || argumentMap.containsKey(ARGUMENT_DELTA_Z)) {
+                    			int i = getInt(argumentMap, ARGUMENT_DELTA_X, 0);
+                    			int j = getInt(argumentMap, ARGUMENT_DELTA_Y, 0);
+                    			int k = getInt(argumentMap, ARGUMENT_DELTA_Z, 0);
+                    			AxisAlignedBB aabb = getAABB(pos, i, j, k);
+                    			
+                    			if (!aabb.intersects(entity.getEntityBoundingBox()))
+                    				return Collections.<T>emptyList();
+                    		}
+                    		
+                    		for (Predicate<Entity> predicate : predicates)
+                    			if (!predicate.apply(entity))
+                    				return Collections.<T>emptyList();
+                    		
+                    		return Lists.newArrayList((T) entity);
+                    	}
+                    	
+                    	return Collections.<T>emptyList();
+                    }
+                    
+                    entities.addAll(filterResults(argumentMap, entityClass, predicates, targetType, world, pos));
+                }
 			}
-
-			return finalFilter(entities, argumentMap, sender, entityClass, targetType, coordinate);
-		}
-		
+			
+            return getEntitiesFromPredicates(entities, argumentMap, sender, entityClass, targetType, posVec);
+	    }
+	    
 		/**
 		 * Gets the target worlds of the target selector
 		 * 
@@ -604,28 +721,28 @@ public final class TargetSelector {
 		 */
 		private static Set<World> getWorlds(ICommandSender sender, ListMultimap<String, String> argumentMap) {
 			Set<World> worlds = Sets.<World>newHashSet();
-			
-			if (containsCoordinates(argumentMap)) 
-				worlds.add(sender.getEntityWorld());
-			else if (!argumentMap.containsKey("dim")) 
-				worlds.addAll(Arrays.asList(sender.getServer().worlds));
-			else {
-				Map<String, World> dims = Maps.newHashMapWithExpectedSize(sender.getServer().worlds.length);
-				for (World world : sender.getServer().worlds) dims.put(world.provider.getDimensionType().getName(), world);
+
+	        if (hasWorldBinding(argumentMap))
+	        	worlds.add(sender.getEntityWorld());
+	        else if (!argumentMap.containsKey(ARGUMENT_DIM))
+	        	Collections.addAll(worlds, sender.getServer().worlds);
+	        else {
+	        	Map<String, World> dims = Maps.newHashMapWithExpectedSize(sender.getServer().worlds.length);
+	        	for (World world : sender.getServer().worlds) dims.put(world.provider.getDimensionType().getName(), world);
 				
-				dims.put("0", sender.getServer().worldServerForDimension(0));
-				dims.put("-1", sender.getServer().worldServerForDimension(-1));
-				dims.put("1", sender.getServer().worldServerForDimension(1));
+				dims.put("0", sender.getServer().getWorld(0));
+				dims.put("-1", sender.getServer().getWorld(-1));
+				dims.put("1", sender.getServer().getWorld(1));
 				
-				dims.put("Surface", sender.getServer().worldServerForDimension(0));
-				dims.put("Nether", sender.getServer().worldServerForDimension(-1));
-				dims.put("End", sender.getServer().worldServerForDimension(1));
+				dims.put("Surface", sender.getServer().getWorld(0));
+				dims.put("Nether", sender.getServer().getWorld(-1));
+				dims.put("End", sender.getServer().getWorld(1));
 				
 				for (String dim : argumentMap.get("dim")) 
 					if (dims.containsKey(dim)) worlds.add(dims.get(dim));
-			}
-
-			return worlds;
+	        }
+	        
+	        return worlds;
 		}
 		
 		/**
@@ -636,33 +753,34 @@ public final class TargetSelector {
 		 * @param sender the command sender
 		 * @param entityClass the required entity superclass
 		 * @param targetType the target type (one of {@link TargetSelector#entityTargetTypes})
-		 * @param coord the source coordinate (middle point of a radius, achor of a bounding box, etc.)
+		 * @param pos the source coordinate (middle point of a radius, anchor of a bounding box, etc.)
 		 * @return the final list of filtered entities
 		 */
-		private static <T extends Entity> List<? extends T> finalFilter(List<T> entities, ListMultimap<String, String> argumentMap, ICommandSender sender, Class<T> entityClass, String targetType, final BlockPos coord) {
-	        int maxEntities = getIntWithDefault(argumentMap, "c", !targetType.equals("a") && !targetType.equals("e") ? 1 : 0);
-	        
-	        if (targetType.equals("r"))
-	        	Collections.shuffle(entities);
-	        else if (coord != null) {
-	        	Collections.sort(entities, new Comparator<T>() {
-	        		public int compare(T p_compare_1_, T p_compare_2_) {
-	        			return ComparisonChain.start().compare(p_compare_1_.getDistanceSq(coord), p_compare_2_.getDistanceSq(coord)).result();
-	        		}
-	        	});
+		private static <T extends Entity> List<? extends T> getEntitiesFromPredicates(List<T> entities, ListMultimap<String, String> argumentMap, ICommandSender sender, Class<T> entityClass, String targetType, final Vec3d pos) {
+			int maxEntities = getInt(argumentMap, ARGUMENT_COUNT, !targetType.equals("a") && !targetType.equals("e") ? 1 : 0);
+			
+			if (!targetType.equals("p") && !targetType.equals("a") && !targetType.equals("e")) {
+				if (targetType.equals("r")) Collections.shuffle(entities);
+			}
+			else {
+				Collections.sort(entities, new Comparator<Entity>() {
+					public int compare(Entity e1, Entity e2) {
+						return ComparisonChain.start().compare(e1.getDistanceSq(pos.x, pos.y, pos.z), e2.getDistanceSq(pos.x, pos.y, pos.z)).result();
+					}
+	            });
 	        }
-
-	        Entity entity = sender.getCommandSenderEntity();
-
-	        if (entity != null && entityClass.isAssignableFrom(entity.getClass()) && maxEntities == 1 && entities.contains(entity) && !"r".equals(targetType))
-	            entities = Lists.<T>newArrayList((T) entity);
-
-	        if (maxEntities != 0) {
-	        	if (maxEntities < 0) Collections.reverse(entities);
-	        	entities = entities.subList(0, Math.min(Math.abs(maxEntities), entities.size()));
-	        }
-
-	        return entities;
+			
+			Entity entity = sender.getCommandSenderEntity();
+			
+			if (entity != null && entityClass.isAssignableFrom(entity.getClass()) && maxEntities == 1 && entities.contains(entity) && !"r".equals(targetType))
+				entities = Lists.newArrayList((T) entity);
+			
+			if (maxEntities != 0) {
+				if (maxEntities < 0) Collections.reverse(entities);
+				entities = entities.subList(0, Math.min(Math.abs(maxEntities), entities.size()));
+			}
+			
+			return entities;
 	    }
 		
 		/**
@@ -676,57 +794,52 @@ public final class TargetSelector {
 		 * @param coord the source coordinate (middle point of a radius, anchor of a bounding box, etc.)
 		 * @return the filtered entity list
 		 */
-		private static <T extends Entity> List<? extends T> getEntities(ListMultimap<String, String> argumentMap, Class<T> entityClass, List<Predicate<Entity>> predicates, String targetType, World world, BlockPos coord) {
-			final Predicate<Entity> isEntityAlive = new Predicate<Entity>() {
-				public boolean apply(Entity entity) {
-					return entity.isEntityAlive();
+		private static <T extends Entity> List<? extends T> filterResults(ListMultimap<String, String> argumentMap, Class<T> entityClass, List<Predicate<Entity>> predicates, String targetType, World world, BlockPos pos) {
+			List<T> entities = Lists.<T>newArrayList();
+			boolean onlyPlayers = !targetType.equals("e");
+			boolean randomEntityWithType = targetType.equals("r") && !getArgument(argumentMap, ARGUMENT_ENTITY_TYPE).isEmpty();
+			
+			int dx = getInt(argumentMap, ARGUMENT_DELTA_X, 0);
+			int dy = getInt(argumentMap, ARGUMENT_DELTA_Y, 0);
+			int dz = getInt(argumentMap, ARGUMENT_DELTA_Z, 0);
+			int rMax = getInt(argumentMap, ARGUMENT_RANGE_MAX, -1);
+			
+			Predicate<Entity> entityNonAliveFilter = Predicates.and(predicates);
+			Predicate<Entity> entityAliveFilter = Predicates.<Entity>and(EntitySelectors.IS_ALIVE, entityNonAliveFilter);
+			
+			if (!argumentMap.containsKey(ARGUMENT_DELTA_X) && !argumentMap.containsKey(ARGUMENT_DELTA_Y) && !argumentMap.containsKey(ARGUMENT_DELTA_Z)) {
+				if (rMax >= 0) {
+					AxisAlignedBB aabb = new AxisAlignedBB((double)(pos.getX() - rMax), (double)(pos.getY() - rMax), (double)(pos.getZ() - rMax), (double)(pos.getX() + rMax + 1), (double)(pos.getY() + rMax + 1), (double)(pos.getZ() + rMax + 1));
+					
+					if (onlyPlayers && !randomEntityWithType)
+		                entities.addAll(world.getPlayers(entityClass, entityAliveFilter));
+					else
+						entities.addAll(world.getEntitiesWithinAABB(entityClass, aabb, entityAliveFilter));
 				}
-			};
-	    	
-	        List<T> entities = Lists.<T>newArrayList();
-	        boolean targetIsPlayer = !targetType.equals("e");
-	        boolean randomTargetSpecified = targetType.equals("r") && argumentMap.containsKey("type");
-	        int dx = getIntWithDefault(argumentMap, "dx", 0);
-	        int dy = getIntWithDefault(argumentMap, "dy", 0);
-	        int dz = getIntWithDefault(argumentMap, "dz", 0);
-	        int radius = getIntWithDefault(argumentMap, "r", -1);
-	        Predicate<Entity> entityPredicates = Predicates.<Entity>and(predicates);
-	        Predicate<Entity> entityAlivePredicates = Predicates.<Entity>and(isEntityAlive, entityPredicates);
-	        
-            final AxisAlignedBB aabb;
-
-            if (!argumentMap.containsKey("dx") && !argumentMap.containsKey("dy") && !argumentMap.containsKey("dz")) {
-                if (radius >= 0) {
-                    aabb = new AxisAlignedBB((double) (coord.getX() - radius), (double) (coord.getY() - radius), (double) (coord.getZ() - radius), (double) (coord.getX() + radius + 1), (double) (coord.getY() + radius + 1), (double) (coord.getZ() + radius + 1));
-
-                    if (targetIsPlayer && !randomTargetSpecified)
-                    	entities.addAll(world.getPlayers(entityClass, entityAlivePredicates));
-                    else
-                    	entities.addAll(world.getEntitiesWithinAABB(entityClass, aabb, entityAlivePredicates));
-                }
-                else if (targetType.equals("a"))
-                	entities.addAll(world.getPlayers(entityClass, entityPredicates));
-                else if (!targetType.equals("p") && (!targetType.equals("r") || randomTargetSpecified))
-                	entities.addAll(world.getEntities(entityClass, entityAlivePredicates));
-                else
-                	entities.addAll(world.getPlayers(entityClass, entityAlivePredicates));
-            }
-            else {
-                aabb = getAABB(coord, dx, dy, dz);
-
-                if (targetIsPlayer && !randomTargetSpecified) {
-                	Predicate<Entity> entityInAABB = new Predicate<Entity>() {
-                		@Override public boolean apply(Entity entity) {
-                			return entity != null && aabb.intersectsWith(entity.getEntityBoundingBox());
-                		}
-                	};
-                	entities.addAll(world.getPlayers(entityClass, Predicates.and(entityAlivePredicates, entityInAABB)));
-                }
-                else
-                	entities.addAll(world.getEntitiesWithinAABB(entityClass, aabb, entityAlivePredicates));
-            }
-
-	        return entities;
+				else if (targetType.equals("a"))
+					entities.addAll(world.getPlayers(entityClass, entityNonAliveFilter));
+				else if (!targetType.equals("p") && (!targetType.equals("r") || randomEntityWithType))
+					entities.addAll(world.getEntities(entityClass, entityAliveFilter));
+				else
+					entities.addAll(world.getPlayers(entityClass, entityAliveFilter));
+			}
+			else {
+				final AxisAlignedBB aabb = getAABB(pos, dx, dy, dz);
+				
+				if (onlyPlayers && !randomEntityWithType) {
+					Predicate<Entity> aabbPredicate = new Predicate<Entity>() {
+						@Override public boolean apply(@Nullable Entity entity) {
+							return entity != null && aabb.intersects(entity.getEntityBoundingBox());
+						}
+					};
+					
+					entities.addAll(world.getPlayers(entityClass, Predicates.and(entityAliveFilter, aabbPredicate)));
+				}
+				else
+					entities.addAll(world.getEntitiesWithinAABB(entityClass, aabb, entityAliveFilter));
+			}
+			
+			return entities;
 		}
 		
 		/**
@@ -748,7 +861,7 @@ public final class TargetSelector {
 			int maxX = coord.getX() + (dxNeg ? 0 : dx) + 1;
 			int maxY = coord.getY() + (dyNeg ? 0 : dy) + 1;
 			int maxZ = coord.getZ() + (dzNeg ? 0 : dz) + 1;
-			return new AxisAlignedBB((double)minX, (double)minY, (double)minZ, (double)maxX, (double)maxY, (double)maxZ);
+			return new AxisAlignedBB((double) minX, (double) minY, (double) minZ, (double) maxX, (double) maxY, (double) maxZ);
 		}
 		
 		/**
@@ -757,9 +870,9 @@ public final class TargetSelector {
 		 * @param argumentMap the argument map
 		 * @param predicateBuilder the list builder to add the predicates to
 		 */
-		private static void getEntityNBTPredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
-			final boolean equalLists = argumentMap.containsKey("nbtm") && argumentMap.get("nbtm").get(0).equalsIgnoreCase("EQUAL");
-			List<String> nbtData = argumentMap.get("nbt");
+		private static void getNBTPredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
+			final boolean equalLists = argumentMap.containsKey(ARGUMENT_NBT_MODE) && getArgument(argumentMap, ARGUMENT_NBT_MODE).get(0).equalsIgnoreCase("EQUAL");
+			List<String> nbtData = getArgument(argumentMap, ARGUMENT_NBT_DATA);
 	        
 			if (nbtData != null && !nbtData.isEmpty()) {
 				final List<NBTBase> allowedNbt = Lists.<NBTBase>newArrayList();
@@ -776,7 +889,7 @@ public final class TargetSelector {
 				predicateBuilder.add(new Predicate<Entity>() {
 					@Override public boolean apply(Entity entity) {
 						NBTTagCompound compound = new NBTTagCompound(); entity.writeToNBT(compound);
-						compound.setString("id", getEntityName(entity).toString());
+						compound.setString("id", EntityList.getKey(entity).toString());
 						
 						for (NBTBase nbt : allowedNbt)
 							if (nbtContains(compound, nbt, !equalLists)) return true;
@@ -797,46 +910,33 @@ public final class TargetSelector {
 		 * @param argumentMap the argument map
 		 * @param predicateBuilder the list builder to add the predicates to
 		 */
-		private static void getEntityLookPredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
-			if (argumentMap.containsKey("rym") || argumentMap.containsKey("ry")) {
-	            final int minYaw = trimAngle(getIntWithDefault(argumentMap, "rym", 0));
-	            final int maxYaw = trimAngle(getIntWithDefault(argumentMap, "ry", 359));
-	            
-	            predicateBuilder.add(new Predicate<Entity>() {
-	            	public boolean apply(Entity entity) {
-	            		int yaw = trimAngle((int) Math.floor((double) entity.rotationYaw));
-	            		return minYaw > maxYaw ? yaw >= minYaw || yaw <= maxYaw : yaw >= minYaw && yaw <= maxYaw;
-	            	}
+		private static void getRotationsPredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
+	        if (argumentMap.containsKey(ARGUMENT_ROTY_MIN) || argumentMap.containsKey(ARGUMENT_ROTY_MAX)) {
+	        	final int yawMin = MathHelper.clampAngle(getInt(argumentMap, ARGUMENT_ROTY_MIN, 0));
+	        	final int yawMax = MathHelper.clampAngle(getInt(argumentMap, ARGUMENT_ROTY_MAX, 359));
+	        	
+	        	predicateBuilder.add(new Predicate<Entity>() {
+	                @Override
+	                public boolean apply(Entity entity) {
+	                	int yaw = MathHelper.clampAngle(MathHelper.floor(entity.rotationYaw));
+	                	return yawMin > yawMax ? yaw >= yawMin || yaw <= yawMax : yaw >= yawMin && yaw <= yawMax;
+	                }
 	            });
-			}
-
-			if (argumentMap.containsKey("rxm") || argumentMap.containsKey("rx")) {
-	            final int minPitch = trimAngle(getIntWithDefault(argumentMap, "rxm", 0));
-	            final int maxPitch = trimAngle(getIntWithDefault(argumentMap, "rx", 359));
-	            
-	            predicateBuilder.add(new Predicate<Entity>() {
-	            	public boolean apply(Entity entity) {
-	            		int pitch = trimAngle((int) Math.floor((double) entity.rotationPitch));
-	            		return minPitch > maxPitch ? pitch >= minPitch || pitch <= maxPitch : pitch >= minPitch && pitch <= maxPitch;
-	            	}
+	        }
+	        
+	        if (argumentMap.containsKey(ARGUMENT_ROTX_MIN) || argumentMap.containsKey(ARGUMENT_ROTX_MAX)) {
+	        	final int pitchMin = MathHelper.clampAngle(getInt(argumentMap, ARGUMENT_ROTX_MIN, 0));
+	        	final int pitchMax = MathHelper.clampAngle(getInt(argumentMap, ARGUMENT_ROTX_MAX, 359));
+	        	
+	        	predicateBuilder.add(new Predicate<Entity>() {
+	        		@Override
+	        		public boolean apply(Entity entity) {
+	        			int pitch = MathHelper.clampAngle(MathHelper.floor(entity.rotationPitch));
+	        			return pitchMin > pitchMax ? pitch >= pitchMin || pitch <= pitchMax : pitch >= pitchMin && pitch <= pitchMax;
+	                }
 	            });
-			}
+	        }
 		}
-		
-		/**
-		 * Trims an angle to be between 0 and 359 degrees
-		 * 
-		 * @param angle the angle
-		 * @return the trimmed angle
-		 */
-		private static int trimAngle(int angle) {
-			angle %= 360;
-
-			if (angle >= 160) angle -= 360;
-			if (angle < 0) angle += 360;
-
-	        return angle;
-	    }
 		
 		/**
 		 * Creates predicates which accept only entities which have a certain distance to a point
@@ -845,35 +945,26 @@ public final class TargetSelector {
 		 * @param coord the point to which the distance should be measured
 		 * @param predicateBuilder the list builder to add the predicates to
 		 */
-		private static void getEntityRadiusPredicates(ListMultimap<String, String> argumentMap, final BlockPos coord, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
-			final int radiusMin = getIntWithDefault(argumentMap, "rm", -1);
-	        final int radiusMax = getIntWithDefault(argumentMap, "r", -1);
-
-	        if (coord != null && (radiusMin >= 0 || radiusMax >= 0)) {
-	        	final int rmSquared = radiusMin * radiusMin;
-	        	final int rSquared = radiusMax * radiusMax;
-	        	
-	        	predicateBuilder.add(new Predicate<Entity>() {
-	        		public boolean apply(Entity entity) {
-	        			int distance = (int) getDistanceSqToCenter(entity, coord);
-	        			return (radiusMin < 0 || distance >= rmSquared) && (radiusMax < 0 || distance <= rSquared);
-	        		}
-	        	});
-	        }
-		}
-		
-		/**
-		 * Gets the squared distance between an entity and a coordinate
-		 * 
-		 * @param entity the entity
-		 * @param coorda the coordinate
-		 * @return the squared distance
-		 */
-		private static double getDistanceSqToCenter(Entity entity, BlockPos coord) {
-			double d3 = coord.getX() + 0.5D - entity.posX;
-			double d4 = coord.getY() + 0.5D - entity.posY;
-			double d5 = coord.getZ() + 0.5D - entity.posZ;
-			return d3 * d3 + d4 * d4 + d5 * d5;
+		private static void getRadiusPredicates(ListMultimap<String, String> argumentMap, final Vec3d pos, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
+			double radiusMin = getInt(argumentMap, ARGUMENT_RANGE_MIN, -1);
+	        double radiusMax = getInt(argumentMap, ARGUMENT_RANGE_MAX, -1);
+	        final boolean tooSmallMin = radiusMin < -0.5D;
+	        final boolean tooSmallMax = radiusMax < -0.5D;
+	        
+	        if (tooSmallMin && tooSmallMax) return;
+	        
+	        radiusMin = Math.max(radiusMin, 1.0E-4D);
+            radiusMax = Math.max(radiusMax, 1.0E-4D);
+            
+            final double rMinSq = radiusMin * radiusMin;
+            final double rMaxSq = radiusMax * radiusMax;
+	        
+        	predicateBuilder.add(new Predicate<Entity>() {
+        		public boolean apply(Entity entity) {
+                    double distance = pos.squareDistanceTo(entity.posX, entity.posY, entity.posZ);
+                    return (tooSmallMin || distance >= rMinSq) && (tooSmallMax || distance <= rMaxSq);
+        		}
+        	});
 		}
 		
 		/**
@@ -882,10 +973,10 @@ public final class TargetSelector {
 		 * @param argumentMap the argument map
 		 * @param predicateBuilder the list builder to add the predicates to
 		 */
-		private static void getEntityNamePredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
-			List<String> names = argumentMap.get("name");
+		private static void getNamePredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
+			List<String> names = getArgument(argumentMap, ARGUMENT_PLAYER_NAME);
 	        
-			if (names != null && !names.isEmpty()) {
+			if (!names.isEmpty()) {
 				final List<String> allowedNames = Lists.<String>newArrayList();
 				final List<String> disallowedNames = Lists.<String>newArrayList();
 				
@@ -898,7 +989,7 @@ public final class TargetSelector {
 				predicateBuilder.add(new Predicate<Entity>() {
 					@Override public boolean apply(Entity entity) {
 							String name = entity.getName();
-							return allowedNames.contains(name) || (!disallowedNames.isEmpty() && !disallowedNames.contains(name));
+							return (allowedNames.isEmpty() || allowedNames.contains(name)) && (disallowedNames.isEmpty() || !disallowedNames.contains(name));
 					}
 				});
 			}
@@ -910,10 +1001,10 @@ public final class TargetSelector {
 		 * @param argumentMap the argument map
 		 * @param predicateBuilder the list builder to add the predicates to
 		 */
-		private static void getEntityTagPredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
-			List<String> tags = argumentMap.get("tag");
+		private static void getTagPredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
+			List<String> tags = getArgument(argumentMap, ARGUMENT_ENTITY_TAG);
 			
-			if (tags != null && !tags.isEmpty()) {
+			if (!tags.isEmpty()) {
 				final List<String> allowedTags = Lists.<String>newArrayList();
 				final List<String> disallowedTags = Lists.<String>newArrayList();
 				
@@ -926,7 +1017,8 @@ public final class TargetSelector {
 				predicateBuilder.add(new Predicate<Entity>() {
 					@Override public boolean apply(Entity entity) {
 						boolean containsAllowed = entity.getTags().containsAll(allowedTags);
-						boolean containsDisallowed = false; 
+						boolean containsDisallowed = false;
+						
 						for (String disallowed : disallowedTags) 
 							if (entity.getTags().contains(disallowed)) {containsDisallowed = true; break;}
 						
@@ -942,44 +1034,42 @@ public final class TargetSelector {
 		 * @param argumentMap the argument map
 		 * @param predicateBuilder the list builder to add the predicates to
 		 */
-		private static void getEntityScorePredicates(final MinecraftServer server, ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
-	        final Map<String, Integer> scores = getScores(argumentMap);
+		private static void getScorePredicates(final ICommandSender sender, ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
+	        final Map<String, Integer> scores = getScoreMap(argumentMap);
+	        if (scores.isEmpty()) return;
 	        
-	        if (scores != null && !scores.isEmpty()) {
-	        	predicateBuilder.add(new Predicate<Entity>() {
-	                public boolean apply(Entity entity) {
-	                	Scoreboard scoreboard = server.worldServerForDimension(0).getScoreboard();
-	                	Iterator<Entry<String, Integer>> iterator = scores.entrySet().iterator();
-	                	Entry<String, Integer> entry;
-	                	boolean isMin; int score;
+        	predicateBuilder.add(new Predicate<Entity>() {
+                public boolean apply(Entity entity) {
+                	Scoreboard scoreboard = sender.getServer().getWorld(0).getScoreboard();
+                	
+                    for (Entry<String, Integer> entry : scores.entrySet()) {
+                    	String scoreName = entry.getKey();
+                    	boolean isMin = false;
+                    	
+                    	if (scoreName.endsWith("_min") && scoreName.length() > 4) {
+                    		isMin = true;
+                    		scoreName = scoreName.substring(0, scoreName.length() - 4);
+                    	}
+                    	
+                    	ScoreObjective objective = scoreboard.getObjective(scoreName);
+                    	if (objective == null) return false;
+                    	
+                        String s1 = entity instanceof EntityPlayerMP ? entity.getName() : entity.getCachedUniqueIdString();
+                        if (!scoreboard.entityHasObjective(s1, objective)) return false;
+                        
+                        Score score = scoreboard.getOrCreateScore(s1, objective);
+                        int points = score.getScorePoints();
+                        
+                        if (points < entry.getValue() && isMin)
+                        	return false;
+                        
+                        if (points > entry.getValue() && !isMin)
+                        	return false;
+                    }
 
-	                	do {
-	                        if (!iterator.hasNext()) return true;
-
-	                        entry = iterator.next();
-	                        String key = entry.getKey();
-	                        isMin = false;
-
-	                        if (key.endsWith("_min") && key.length() > 4) {
-	                        	isMin = true;
-	                        	key = key.substring(0, key.length() - 4);
-	                        }
-
-	                        ScoreObjective scoreobjective = scoreboard.getObjective(key);
-	                        if (scoreobjective == null) return false;
-
-	                        String entityName = entity instanceof EntityPlayerMP ? entity.getName() : entity.getUniqueID().toString();
-	                        if (!scoreboard.entityHasObjective(entityName, scoreobjective)) return false;
-
-	                        score = scoreboard.getOrCreateScore(entityName, scoreobjective).getScorePoints();
-	                        if (score < entry.getValue() && isMin) return false;
-	                    }
-	                    while (score <= entry.getValue() || isMin);
-
-	                    return false;
-	                }
-	            });
-	        }
+                    return true;
+                }
+            });
 	    }
 		
 		/**
@@ -988,17 +1078,14 @@ public final class TargetSelector {
 		 * @param argumentMap the argument map
 		 * @return the team<->score map
 		 */
-		private static Map<String, Integer> getScores(ListMultimap<String, String> argumentMap) {
-	        Map<String, Integer> scores = Maps.<String, Integer>newHashMap();
-	        Iterator<String> iterator = argumentMap.keySet().iterator();
-
-	        while (iterator.hasNext()) {
-	        	String key = iterator.next();
-
-	        	if (key.startsWith("score_") && key.length() > "score_".length())
-	        		scores.put(key.substring("score_".length()), getIntWithDefault(argumentMap, key, 1));
-	        }
-
+		private static Map<String, Integer> getScoreMap(ListMultimap<String, String> argumentMap) {
+			Map<String, Integer> scores = Maps.<String, Integer>newHashMap();
+			Iterator<String> iterator = argumentMap.keySet().iterator();
+			
+			for (String score : argumentMap.keySet())
+				if (score.startsWith("score_") && score.length() > "score_".length())
+					scores.put(score.substring("score_".length()), getInt(argumentMap, score, 1));
+			
 	        return scores;
 	    }
 		
@@ -1008,10 +1095,10 @@ public final class TargetSelector {
 		 * @param argumentMap the argument map
 		 * @param predicateBuilder the list builder to add the predicates to
 		 */
-		private static void getEntityTeamPredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
-			List<String> teams = argumentMap.get("team");
+		private static void getTeamPredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
+	        List<String> teams = getArgument(argumentMap, ARGUMENT_TEAM_NAME);
 			
-			if (teams != null && !teams.isEmpty()) {
+			if (!teams.isEmpty()) {
 				final List<String> allowedTeams = Lists.<String>newArrayList();
 				final List<String> disallowedTeams = Lists.<String>newArrayList();
 				
@@ -1027,8 +1114,8 @@ public final class TargetSelector {
 						else {
 							EntityLivingBase entitylivingbase = (EntityLivingBase) entity;
 							Team team = entitylivingbase.getTeam();
-							String teamName = team == null ? null : team.getRegisteredName();
-							return allowedTeams.contains(teamName) || (!disallowedTeams.isEmpty() && !disallowedTeams.contains(teamName));
+							String teamName = team == null ? "" : team.getName();
+							return (allowedTeams.isEmpty() || allowedTeams.contains(teamName)) && (disallowedTeams.isEmpty() || !disallowedTeams.contains(teamName));
 	                    }
 					}
 				});
@@ -1041,48 +1128,48 @@ public final class TargetSelector {
 		 * @param argumentMap the argument map
 		 * @param predicateBuilder the list builder to add the predicates to
 		 */
-		private static void getEntityGamemodePredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
-			final List<GameType> gameTypes = getGameTypes(argumentMap);
+		private static void getGamemodePredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
+			final Pair<EnumSet<GameType>, EnumSet<GameType>> gameTypes = getGameTypes(argumentMap);
+			if (gameTypes == null) return;
 
-			if (!gameTypes.isEmpty()) {
-				predicateBuilder.add(new Predicate<Entity>() {
-					public boolean apply(Entity entity) {
-						if (!(entity instanceof EntityPlayerMP))return false;
-						else {
-							EntityPlayerMP player = (EntityPlayerMP) entity;
-							return gameTypes.contains(player.interactionManager.getGameType());
-						}
+			predicateBuilder.add(new Predicate<Entity>() {
+				public boolean apply(Entity entity) {
+					if (!(entity instanceof EntityPlayerMP)) return false;
+					else {
+						EntityPlayerMP player = (EntityPlayerMP) entity;
+						return (gameTypes.getLeft().isEmpty() || gameTypes.getLeft().contains(player.interactionManager.getGameType())) &&
+								(gameTypes.getRight().isEmpty() || !gameTypes.getRight().contains(player.interactionManager.getGameType()));
 					}
-				});
-			}
+				}
+			});
 	    }
 		
 		/**
-		 * Get the accepted game types from the argument map
+		 * Get the accepted and unaccepted game types from the argument map
 		 * 
 		 * @param argumentMap the argument map
-		 * @return the accepted game types
+		 * @return the accepted and unaccepted game types
 		 */
-		private static List<GameType> getGameTypes(ListMultimap<String, String> argumentMap) {
-			List<String> argumentTypes = argumentMap.get("m");
-			List<GameType> gameTypes = Lists.<GameType>newArrayList();
-			if (argumentTypes == null || argumentTypes.isEmpty()) return gameTypes;
+		private static Pair<EnumSet<GameType>, EnumSet<GameType>> getGameTypes(ListMultimap<String, String> argumentMap) {
+			List<String> modes = getArgument(argumentMap, ARGUMENT_MODE);
+			EnumSet<GameType> acceptedGameTypes = EnumSet.noneOf(GameType.class);
+			EnumSet<GameType> unaccaptedGameTypes = EnumSet.noneOf(GameType.class);
+			if (modes.isEmpty()) return null;
 			
-			for (String type : argumentTypes) {
-				int id; boolean isID;
-				try {id = Integer.parseInt(type); isID = true;}
-				catch (NumberFormatException nfe) {id = -1; isID = false;}
-				
+			for (String mode : modes) {
 				GameType gt;
 				
-				if (isID) gt = GameType.parseGameTypeWithDefault(id, GameType.NOT_SET);
-				else gt = GameType.parseGameTypeWithDefault(type, GameType.NOT_SET);
+				boolean negate = mode.startsWith("!");
+				if (negate) mode = mode.substring(1);
 				
-				if (gt != GameType.NOT_SET)
-					gameTypes.add(gt);
+				try {gt = GameType.parseGameTypeWithDefault(Integer.parseInt(mode), GameType.NOT_SET);}
+				catch (NumberFormatException nfe) {gt = GameType.parseGameTypeWithDefault(mode, GameType.NOT_SET);}
+				
+				if (negate) unaccaptedGameTypes.add(gt);
+				else acceptedGameTypes.add(gt);
 			}
 			
-			return gameTypes;
+			return ImmutablePair.of(acceptedGameTypes, unaccaptedGameTypes);
 		}
 		
 		/**
@@ -1091,17 +1178,17 @@ public final class TargetSelector {
 		 * @param argumentMap the argument map
 		 * @param predicateBuilder the list builder to add the predicates to
 		 */
-		private static void getEntityExperiencePredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
-			final int xpMin = getIntWithDefault(argumentMap, "lm", -1);
-	        final int xpMax = getIntWithDefault(argumentMap, "l", -1);
-	        
-	        if (xpMin > -1 || xpMax > -1) {
-	        	predicateBuilder.add(new Predicate<Entity>() {
-	        		@Override public boolean apply(Entity entity) {
-	        			if (!(entity instanceof EntityPlayerMP)) return false;
-	        			else {
-	        				EntityPlayerMP player = (EntityPlayerMP) entity;
-	        				return (xpMin <= -1 || player.experienceLevel >= xpMin) && (xpMax <= -1 || player.experienceLevel <= xpMax);
+		private static void getXpLevelPredicates(ListMultimap<String, String> argumentMap, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
+			final int xpMin = getInt(argumentMap, ARGUMENT_LEVEL_MIN, -1);
+			final int xpMax = getInt(argumentMap, ARGUMENT_LEVEL_MAX, -1);
+			
+			if (xpMin > -1 || xpMax > -1) {
+				predicateBuilder.add(new Predicate<Entity>() {
+					public boolean apply(@Nullable Entity entity) {
+	                    if (!(entity instanceof EntityPlayerMP)) return false;
+	                    else {
+	                    	EntityPlayerMP entityplayermp = (EntityPlayerMP) entity;
+	                    	return (xpMin <= -1 || entityplayermp.experienceLevel >= xpMin) && (xpMax <= -1 || entityplayermp.experienceLevel <= xpMax);
 	                    }
 	                }
 	            });
@@ -1115,48 +1202,30 @@ public final class TargetSelector {
 		 * @param targetType the entity target type (one of {@link TargetSelector#entityTargetTypes})
 		 * @param predicateBuilder the list builder to add the predicates to
 		 */
-		private static void getEntityTypePredicates(ListMultimap<String, String> argumentMap, String targetType, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
-	        List<String> entityTypes = argumentMap.get("type");
+		private static void getTypePredicates(ListMultimap<String, String> argumentMap, String targetType, ImmutableList.Builder<Predicate<Entity>> predicateBuilder) {
+	        List<String> entityTypes = getArgument(argumentMap, ARGUMENT_ENTITY_TYPE);
 	        
-	        if (entityTypes != null && !entityTypes.isEmpty() && (targetType.equals("e") || targetType.equals("r"))) {
-				final List<ResourceLocation> allowedTypes = Lists.<ResourceLocation>newArrayList();
-				final List<ResourceLocation> disallowedTypes = Lists.<ResourceLocation>newArrayList();
-				
-				for (String type : entityTypes) {
-					if (type == null) continue;
-					if (type.startsWith("!")) disallowedTypes.add(new ResourceLocation(type.substring(1)));
-					else allowedTypes.add(new ResourceLocation(type));
-				}
-				
-				predicateBuilder.add(new Predicate<Entity>() {
-					@Override public boolean apply(Entity entity) {
-						ResourceLocation entityType = getEntityName(entity); if (entityType == null) return false;
-						return allowedTypes.contains(entityType) || (!disallowedTypes.isEmpty() && !disallowedTypes.contains(entityType));
-					}
-				});
-	        }
-	        else if (!targetType.equals("e")){
-	        	predicateBuilder.add(new Predicate<Entity>() {
-	        		@Override public boolean apply(Entity entity) {
+	        if (entityTypes.isEmpty() || (!targetType.equals("e") && !targetType.equals("r") && !targetType.equals("s"))) {
+	        	if (!targetType.equals("e") && !targetType.equals("s")) predicateBuilder.add(new Predicate<Entity>() {
+	        		@Override
+	        		public boolean apply(@Nullable Entity entity) {
 	        			return entity instanceof EntityPlayer;
 	        		}
 	        	});
 	        }
-	    }
-		
-		/**
-		 * Gets a string representing the type of an entity
-		 * 
-		 * @param entity the entity
-		 * @return the string representing the entity type
-		 */
-		private static ResourceLocation getEntityName(Entity entity) {
-			ResourceLocation entityName = EntityList.getKey(entity.getClass());
-			
-			if (entityName == null && entity instanceof EntityPlayer) entityName = PLAYER;
-			else if (entityName == null && entity instanceof EntityLightningBolt) entityName = LIGHTNING;
-
-			return entityName;
+	        else {
+	        	for (String entityType : entityTypes) {
+	        		final boolean negate = entityType.startsWith("!");
+	        		final ResourceLocation location = new ResourceLocation(negate ? entityType.substring(1) : entityType);
+	        		
+	        		predicateBuilder.add(new Predicate<Entity>() {
+		        		@Override
+		        		public boolean apply(@Nullable Entity entity) {
+		        			return EntityList.isMatchingName(entity, location) != negate;
+		        		}
+	        		});
+	        	}
+	        }
 	    }
 		
 		/**
@@ -1167,31 +1236,23 @@ public final class TargetSelector {
 		 * @return whether the arguments contain legal entity types
 		 */
 		private static boolean isValidType(ICommandSender sender, ListMultimap<String, String> argumentMap) {
-	        List<String> types = argumentMap.get("type");
-	        if (types == null || types.isEmpty()) return true;
-	        
-	        for (String type : types) {
-	        	type = type != null && type.startsWith("!") ? type.substring(1) : type;
-	        	
-	        	if (type == null || (type != null && !isStringValidEntityType(type))) {
-	        		ITextComponent component = new TextComponentTranslation("commands.generic.entity.invalidType", type);
-	        		component.getStyle().setColor(TextFormatting.RED);
-		            sender.sendMessage(component);
-		            return false;
-	        	}
+			List<String> values = getArgument(argumentMap, ARGUMENT_ENTITY_TYPE);
+			
+			if (values.isEmpty()) return true;
+			else {
+				for (String val : values) {
+					ResourceLocation location = new ResourceLocation(val.startsWith("!") ? val.substring(1) : val);
+					
+					if (!EntityList.isRegistered(location)) {
+						TextComponentTranslation component = new TextComponentTranslation("commands.generic.entity.invalidType", location);
+						component.getStyle().setColor(TextFormatting.RED);
+						sender.sendMessage(component);
+						return false;
+		            }
+				}
+				
+				return true;
 	        }
-	        
-	        return true;
-		}
-		
-		/**
-		 * Whether the given string is a valid name for an entity type
-		 * 
-		 * @param type the entity type
-		 * @return whether the given entity type string is valid
-		 */
-		private static boolean isStringValidEntityType(String type) {
-			return EntityList.isRegistered(new ResourceLocation(type));
 		}
 	}
 	

@@ -75,8 +75,8 @@ public class CommonHandler {
 	 * Attaches capabilities to an entity
 	 */
 	@SubscribeEvent
-	public void attachCapabilities(AttachCapabilitiesEvent.Entity event) {
-		if (event.getEntity() instanceof EntityPlayerMP) {
+	public void attachCapabilities(AttachCapabilitiesEvent event) {
+		if (event.getObject() instanceof EntityPlayerMP) {
 			event.addCapability(AppliedPatches.PATCHES_IDENTIFIER, AppliedPatches.PATCHES_CAPABILITY.getDefaultInstance());
 			event.addCapability(PlayerSettings.SETTINGS_IDENTIFIER, PlayerSettings.SETTINGS_CAP_SERVER.getDefaultInstance());
 		}
@@ -88,7 +88,7 @@ public class CommonHandler {
 	 */
 	@SubscribeEvent
 	public void clientConnect(ServerConnectionFromClientEvent event) {
-		EntityPlayerMP player = ((NetHandlerPlayServer) event.getHandler()).playerEntity;
+		EntityPlayerMP player = ((NetHandlerPlayServer) event.getHandler()).player;
 		ServerPlayerSettings settings = player.getCapability(PlayerSettings.SETTINGS_CAP_SERVER, null);
 		
 		if (settings != null)  //Should never be null

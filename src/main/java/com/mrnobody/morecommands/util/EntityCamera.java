@@ -4,6 +4,7 @@ import com.mrnobody.morecommands.patch.PatchEntityPlayerSP.EntityPlayerSP;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.stats.RecipeBook;
 import net.minecraft.stats.StatisticsManager;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MovementInput;
@@ -16,8 +17,8 @@ import net.minecraft.world.World;
  */
 public class EntityCamera extends EntityPlayerSP {
 
-    public EntityCamera(Minecraft mcIn, World worldIn, NetHandlerPlayClient p_i46278_3_, StatisticsManager p_i46278_4_, MovementInput input) {
-        super(mcIn, worldIn, p_i46278_3_, p_i46278_4_);
+    public EntityCamera(Minecraft mcIn, World worldIn, NetHandlerPlayClient p_i46278_3_, StatisticsManager p_i46278_4_, RecipeBook p_i46278_5_, MovementInput input) {
+        super(mcIn, worldIn, p_i46278_3_, p_i46278_4_, p_i46278_5_);
 		this.movementInput = input;
 	}
 	

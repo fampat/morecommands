@@ -81,7 +81,7 @@ public class CommandCleardrops extends StandardCommand implements ServerCommandP
 			
 			if (entity instanceof EntityItem) {
 				EntityItem entityItem = (EntityItem)entity;
-				ItemStack stack = entityItem.getEntityItem();
+				ItemStack stack = entityItem.getItem();
 				
 				if (!(item == null || item == stack.getItem())) continue;
 				if (!(meta == -1 || meta == stack.getItemDamage())) continue;

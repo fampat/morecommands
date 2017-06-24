@@ -16,15 +16,14 @@ import com.mrnobody.morecommands.settings.MoreCommandsConfig;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.common.registry.GameData;
 
 /**
  * The class controlling xray.
@@ -114,7 +113,7 @@ public final class Xray implements Runnable, TwoEventListener<TickEvent, RenderW
 		
 		ImmutableMap.Builder<Block, BlockSettings> builder = ImmutableMap.builder();
 		Block block;
-		Iterator<Block> blocks = GameData.getBlockRegistry().iterator();
+		Iterator<Block> blocks = Block.REGISTRY.iterator();
 		
 		while (blocks.hasNext()) {
 			block = blocks.next();
@@ -239,7 +238,7 @@ public final class Xray implements Runnable, TwoEventListener<TickEvent, RenderW
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		GL11.glLineWidth(1f);
-		VertexBuffer buf = Tessellator.getInstance().getBuffer();
+		BufferBuilder buf = Tessellator.getInstance().getBuffer();
 		
 		List<BlockPosition> temp = new ArrayList();
 		temp.addAll(this.renderBlocks);

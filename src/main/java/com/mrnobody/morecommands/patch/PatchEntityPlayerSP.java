@@ -53,6 +53,7 @@ import net.minecraft.network.login.server.SPacketLoginSuccess;
 import net.minecraft.network.play.client.CPacketCustomPayload;
 import net.minecraft.network.play.server.SPacketJoinGame;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.stats.RecipeBook;
 import net.minecraft.stats.StatisticsManager;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -324,7 +325,7 @@ public class PatchEntityPlayerSP implements PatchManager.StateEventBasedPatch, P
 	    				inetaddress = InetAddress.getByName(ip);
 	    				GuiConnecting.this.networkManager = NetworkManager.createNetworkManagerAndConnect(inetaddress, port, GuiConnecting.this.mc.gameSettings.isUsingNativeTransport());
 	    				GuiConnecting.this.networkManager.setNetHandler(new NetHandlerLoginClient(GuiConnecting.this.networkManager, GuiConnecting.this.mc, GuiConnecting.this.previousGuiScreen));
-	    				GuiConnecting.this.networkManager.sendPacket(new C00Handshake(316, ip, port, EnumConnectionState.LOGIN, true));
+	    				GuiConnecting.this.networkManager.sendPacket(new C00Handshake(335, ip, port, EnumConnectionState.LOGIN, true));
 	    				GuiConnecting.this.networkManager.sendPacket(new CPacketLoginStart(GuiConnecting.this.mc.getSession().getProfile()));
 	    			}
 	    			catch (UnknownHostException unknownhostexception) {
@@ -391,9 +392,9 @@ public class PatchEntityPlayerSP implements PatchManager.StateEventBasedPatch, P
 	    	this.drawDefaultBackground();
 	    	
 	    	if (this.networkManager == null)
-	        	this.drawCenteredString(this.fontRendererObj, I18n.format("connect.connecting"), this.width / 2, this.height / 2 - 50, 16777215);
+	        	this.drawCenteredString(this.fontRenderer, I18n.format("connect.connecting"), this.width / 2, this.height / 2 - 50, 16777215);
 	        else
-	        	this.drawCenteredString(this.fontRendererObj, I18n.format("connect.authorizing"), this.width / 2, this.height / 2 - 50, 16777215);
+	        	this.drawCenteredString(this.fontRenderer, I18n.format("connect.authorizing"), this.width / 2, this.height / 2 - 50, 16777215);
 	    	
 	    	super.drawScreen(mouseX, mouseY, partialTicks);
 	    }
@@ -582,8 +583,8 @@ public class PatchEntityPlayerSP implements PatchManager.StateEventBasedPatch, P
 		}
 		
 		@Override
-		public net.minecraft.client.entity.EntityPlayerSP createClientPlayer(World worldIn, StatisticsManager writer) {
-			return new EntityPlayerSP(this.mc, worldIn, this.netClientHandler, writer);
+		public net.minecraft.client.entity.EntityPlayerSP createPlayer(World worldIn, StatisticsManager writer, RecipeBook p_192830_3_) {
+			return new EntityPlayerSP(this.mc, worldIn, this.netClientHandler, writer, p_192830_3_);
 		}
 		
 		@Override
@@ -613,8 +614,8 @@ public class PatchEntityPlayerSP implements PatchManager.StateEventBasedPatch, P
 		private StringBuilder capturedCommandMessages = new StringBuilder();
 		private boolean captureNextCommandResult = false;	
 		
-	    protected EntityPlayerSP(Minecraft mcIn, World worldIn, net.minecraft.client.network.NetHandlerPlayClient p_i46278_3_, StatisticsManager p_i46278_4_) {
-	        super(mcIn, worldIn, p_i46278_3_, p_i46278_4_);
+	    protected EntityPlayerSP(Minecraft mcIn, World worldIn, net.minecraft.client.network.NetHandlerPlayClient p_i46278_3_, StatisticsManager p_i46278_4_, RecipeBook p_i47378_5_) {
+	        super(mcIn, worldIn, p_i46278_3_, p_i46278_4_, p_i47378_5_);
 	        this.netClientHandler = p_i46278_3_;
 	        this.statManager = p_i46278_4_;
 	    }
